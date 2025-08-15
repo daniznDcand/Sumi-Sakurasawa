@@ -26,7 +26,7 @@ var handler = async (m, { conn }) => {
 
 handler.help = ['daily', 'claim'];
 handler.tags = ['rpg'];
-handler.command = ['daily', 'diario'];
+handler.command = ['daily', 'diario','claim'];
 handler.group = true;
 handler.register = true;
 
