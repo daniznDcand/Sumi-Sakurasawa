@@ -8,7 +8,7 @@ var handler = async (m, { conn }) => {
 
     let time = global.db.data.users[m.sender].lastclaim + 86400000;
     if (new Date() - global.db.data.users[m.sender].lastclaim < 7200000) {
-        return conn.reply(m.chat, `🎵💙 *Todavía no es hora del siguiente concierto virtual...* 💙🎵\n\n✨ Vuelve en ${msToTime(time - new Date())} para reclamar tu recompensa musical diaria ✨`, m);
+        return conn.reply(m.chat, `💙 *Todavía no es hora del siguiente concierto virtual...* 💙\n\n✨ Vuelve en ${msToTime(time - new Date())} para reclamar tu recompensa musical diaria ✨`, m, rcanal);
     }
 
     global.db.data.users[m.sender].exp += exp;
