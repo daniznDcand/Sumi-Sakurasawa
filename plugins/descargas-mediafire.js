@@ -1,13 +1,29 @@
 import fetch from 'node-fetch'
+import cheerio from 'cheerio'
 
-let handler = async (m, { conn, text, usedPrefix, command }) => {
+let handler = async (m, { conn, text }) => {
+  if (!text) throw m.reply('Por favor, ingresa un link de mediafire.')
+  conn.sendMessage(m.chat, { react: { text: "🕒", key: m.key } })
 
-if (!text) throw m.reply(`${emoji} Por favor, ingresa un link de mediafire.`);
-conn.sendMessage(m.chat, { react: { text: "🕒", key: m.key } });
-        let ouh = await fetch(`https://api.agatz.xyz/api/mediafire?url=${text}`)
-  let gyh = await ouh.json() 
-        await conn.sendFile(m.chat, gyh.data[0].link, `${gyh.data[0].nama}`, `乂  *¡MEDIAFIRE - DESCARGAS!*  乂\n\n💙 *Nombre* : ${gyh.data[0].nama}\n💙 *Peso* : ${gyh.data[0].size}\n💙 *MimeType* : ${gyh.data[0].mime}\n> ${dev}`, m)       
-        await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key }})
+
+  let res = await fetch(text)
+  if (!res.ok) throw m.reply('No se pudo acceder al enlace de MediaFire.')
+  let html = await res.text()
+  let $ = cheerio.load(html)
+
+  let downloadLink = $('#downloadButton').attr('href')
+  let fileName = $('.filename').text() || 'archivo'
+  let fileSize = $('.dl-info > span').eq(1).text() || ''
+  
+  if (!downloadLink) throw m.reply('No se pudo obtener el enlace de descarga.')
+
+  await conn.sendFile(m.chat, downloadLink, fileName, 
+    `乂  *¡MEDIAFIRE - DESCARGAS!*  乂
+💙 *Nombre* : ${fileName}
+💙 *Peso* : ${fileSize}
+💙 *Enlace* : ${downloadLink}`)
+
+  await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key }})
 }
 handler.help = ['mediafire']
 handler.tags = ['descargas']
