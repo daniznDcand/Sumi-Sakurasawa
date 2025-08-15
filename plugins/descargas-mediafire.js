@@ -4,7 +4,7 @@ import cheerio from 'cheerio';
 import {mediafiredl} from '@bochilteam/scraper';
 
 const handler = async (m, {conn, args, usedPrefix, command}) => {
-  if (!args[0]) throw `_*< DESCARGAS - MEDIAFIRE />*_\n\n*💙 Ingrese un enlace de MediaFire.*\n\n*[ 💡 ] Ejemplo:* ${usedPrefix + command} https://www.mediafire.com/file/r0lrc9ir5j3e2fs/DOOMv13_UNCLONE_`;
+  if (!args[0]) throw `*📁 < DESCARGAS - MEDIAFIRE />*\n\n*💙 Ingrese un enlace válido de MediaFire.*\n\n*[ 💡 ] Ejemplo:*\n${usedPrefix + command} https://www.mediafire.com/file/ejemplo123/archivo.pdf`;
   
   try {
     const resEX = await mediafiredl(args[0]);
