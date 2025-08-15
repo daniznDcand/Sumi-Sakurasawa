@@ -131,7 +131,7 @@ let handler = async (m, { conn }) => {
 
 handler.help = ['save', 'guardar', 'claim']
 handler.tags = ['rpg']
-handler.command = /^(save|guardar|c|claim|reclamar)$/i
+handler.command = /^(save|guardar|c|reclamar)$/i
 handler.group = true
 
 export default handler;
