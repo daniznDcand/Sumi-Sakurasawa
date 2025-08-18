@@ -6,14 +6,26 @@ let handler = async (m, { conn, args }) => {
     const subastas = global.db.waifu.subastas || {};
     if (!cantidad || cantidad <= 0) return m.reply('Debes indicar una cantidad válida. Ejemplo: .pujarwaifu 150');
     let owner = null;
+    // Si se menciona a alguien, usarlo
     if (m.mentionedJid && m.mentionedJid[0]) owner = m.mentionedJid[0];
     else if (args[1]) owner = (args[1].includes('@') ? args[1] : args[1] + '@s.whatsapp.net');
     else {
+        // Listar subastas activas con índices si no se especifica dueño
         const keys = Object.keys(subastas);
         if (keys.length === 0) return m.reply('No hay subastas activas en este momento.');
         if (keys.length === 1) owner = keys[0];
-        else return m.reply('Hay varias subastas activas. Menciona al dueño o indica su jid.');
+        else {
+            const list = keys.map((k, i) => `${i + 1}. @${k.split('@')[0]} » ${subastas[k].waifu?.name || 'Sin nombre'} (${subastas[k].mejorPuja || subastas[k].precioInicial} ${global.db?.settings?.moneda || 'coin'})`).join('\n');
+            return conn.reply(m.chat, `📢 Subastas activas:\n${list}\n\nUsa: .pujarwaifu <cantidad> <número|@dueño> para pujar en una subasta. Ejemplo: .pujarwaifu 150 2`, m);
+        }
     }
+    // Si owner es un número (índice de la lista), resolverlo
+    if (owner && !owner.includes('@')) {
+        const idx = parseInt(owner);
+        const keys = Object.keys(subastas);
+        if (!isNaN(idx) && keys[idx - 1]) owner = keys[idx - 1];
+    }
+
     const s = subastas[owner];
     if (!s) return m.reply('No se encontró la subasta especificada.');
     // Validar puja

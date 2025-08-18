@@ -12,7 +12,15 @@ let handler = async (m, { conn, args }) => {
     const normalize = (s) => (s || '').toString().normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
     const col = global.db.waifu.collection[owner] || [];
     let selected = null;
-    if (selector) {
+        // Si no especifica selector y tiene colección, mostrar lista numerada para elegir
+        if (!selector && col.length > 0) {
+            // Limitar a 20 para no crear mensajes gigantes
+            const list = col.slice(0, 20).map((w, i) => `${i + 1}. ${w.name || 'Sin nombre'} — ${w.rarity || ''}`).join('\n');
+            const more = col.length > 20 ? `\n...y ${col.length - 20} más` : '';
+            return conn.reply(m.chat, `🗂️ Tu colección:\n${list}${more}\n\nUsa: .subastawaifu <precio> <índice|nombre> para iniciar la subasta con el personaje elegido. Ejemplo: .subastawaifu 100 2`, m);
+        }
+
+        if (selector) {
         const idx = parseInt(selector);
         if (!isNaN(idx)) selected = col[idx - 1];
         else {
@@ -22,7 +30,9 @@ let handler = async (m, { conn, args }) => {
     }
     if (!selected && col.length > 0) selected = col[0];
     if (!selected && global.db.waifu.waifus && global.db.waifu.waifus[owner]) selected = global.db.waifu.waifus[owner];
-    if (!selected) return m.reply('No tienes ninguna waifu para subastar. Usa: .subastawaifu <precio> <índice|nombre>');
+        // Si no seleccionó y no tiene colección, usar slot único si existe
+        if (!selected && (!col || col.length === 0) && global.db.waifu.waifus && global.db.waifu.waifus[owner]) selected = global.db.waifu.waifus[owner];
+        if (!selected) return m.reply('No se seleccionó ninguna waifu. Si tienes una colección usa el comando sin selector para ver la lista: .subastawaifu <precio>');
 
     // Crear subasta
     global.db.waifu.subastas[owner] = {
