@@ -94,7 +94,7 @@ align: 'center',
 colors: ['cyanBright']
 })
 
-say(` By • Brauliovh3`, {
+say(` By (ㅎㅊDEPOOLㅊㅎ)`, {
 font: 'console',
 align: 'center',
 colors: ['magentaBright']
