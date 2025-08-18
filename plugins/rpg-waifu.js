@@ -439,3 +439,91 @@ export default handler
 
 
 
+// --- FUNCIONES PARA REGALAR Y SUBASTAR WAIFUS ---
+
+// Comando: .regalarwaifu @usuario
+let regalarWaifuHandler = async (m, { conn, args, participants }) => {
+    const userId = m.sender;
+    const mentionedJid = (m.mentionedJid && m.mentionedJid[0]) || args[0];
+    if (!mentionedJid) return m.reply('Debes mencionar a quién quieres regalar tu waifu.');
+    if (!global.db.waifu.waifus[userId]) return m.reply('No tienes ninguna waifu para regalar.');
+    if (userId === mentionedJid) return m.reply('No puedes regalarte una waifu a ti mismo.');
+    // Transferencia
+    global.db.waifu.waifus[mentionedJid] = global.db.waifu.waifus[userId];
+    delete global.db.waifu.waifus[userId];
+    m.reply(`🎁 Has regalado tu waifu a @${mentionedJid.split('@')[0]}!`, null, { mentions: [mentionedJid] });
+};
+
+regalarWaifuHandler.help = ['regalarwaifu @usuario'];
+regalarWaifuHandler.tags = ['rpg'];
+regalarWaifuHandler.command = /^(regalarwaifu)$/i;
+regalarWaifuHandler.register = true;
+regalarWaifuHandler.group = true;
+
+// Comando: .subastawaifu cantidad
+let subasta = {};
+let subastarWaifuHandler = async (m, { conn, args }) => {
+    const userId = m.sender;
+    const waifu = global.db.waifu.waifus[userId];
+    if (!waifu) return m.reply('No tienes ninguna waifu para subastar.');
+    const cantidad = parseInt(args[0]);
+    if (isNaN(cantidad) || cantidad <= 0) return m.reply('Debes indicar una cantidad válida para la subasta.');
+    if (subasta[userId]) return m.reply('Ya tienes una subasta activa. Espera a que termine.');
+    subasta[userId] = { waifu, cantidad, puja: 0, mejorPostor: null, timeout: null };
+    m.reply(`🔨 Subasta iniciada por @${userId.split('@')[0]}: ${waifu.name}\nPrecio inicial: ${cantidad} monedas\nUsa .pujarwaifu <cantidad> para pujar.`, null, { mentions: [userId] });
+    // Finaliza subasta en 1 minuto
+    subasta[userId].timeout = setTimeout(() => {
+        if (subasta[userId].mejorPostor) {
+            // Transferir waifu y monedas
+            global.db.waifu.waifus[subasta[userId].mejorPostor] = waifu;
+            delete global.db.waifu.waifus[userId];
+            // Resta monedas al ganador (asume global.db.data.users)
+            global.db.data.users[subasta[userId].mejorPostor].money -= subasta[userId].puja;
+            global.db.data.users[userId].money += subasta[userId].puja;
+            conn.reply(m.chat, `🏆 Subasta finalizada. Ganador: @${subasta[userId].mejorPostor.split('@')[0]} por ${subasta[userId].puja} monedas.`, null, { mentions: [subasta[userId].mejorPostor] });
+        } else {
+            conn.reply(m.chat, '⏰ Subasta finalizada sin postores.', null, { mentions: [userId] });
+        }
+        clearTimeout(subasta[userId].timeout);
+        delete subasta[userId];
+    }, 60000);
+};
+
+subastarWaifuHandler.help = ['subastawaifu <cantidad>'];
+subastarWaifuHandler.tags = ['rpg'];
+subastarWaifuHandler.command = /^(subastawaifu)$/i;
+subastarWaifuHandler.register = true;
+subastarWaifuHandler.group = true;
+
+// Comando: .pujarwaifu cantidad
+let pujarWaifuHandler = async (m, { conn, args }) => {
+    const userId = m.sender;
+    const cantidad = parseInt(args[0]);
+    let found = null, subastador = null;
+    for (const uid in subasta) {
+        if (uid !== userId && subasta[uid]) {
+            found = subasta[uid];
+            subastador = uid;
+            break;
+        }
+    }
+    if (!found) return m.reply('No hay subastas activas.');
+    if (isNaN(cantidad) || cantidad <= found.puja || cantidad < found.cantidad) return m.reply(`Debes pujar más de ${found.puja || found.cantidad} monedas.`);
+    if (!global.db.data.users[userId] || global.db.data.users[userId].money < cantidad) return m.reply('No tienes suficientes monedas.');
+    found.puja = cantidad;
+    found.mejorPostor = userId;
+    m.reply(`Nueva puja: @${userId.split('@')[0]} ofrece ${cantidad} monedas.`, null, { mentions: [userId] });
+};
+
+pujarWaifuHandler.help = ['pujarwaifu <cantidad>'];
+pujarWaifuHandler.tags = ['rpg'];
+pujarWaifuHandler.command = /^(pujarwaifu)$/i;
+pujarWaifuHandler.register = true;
+pujarWaifuHandler.group = true;
+
+export { regalarWaifuHandler as regalarwaifu, subastarWaifuHandler as subastawaifu, pujarWaifuHandler as pujarwaifu };
+
+
+
+
+
