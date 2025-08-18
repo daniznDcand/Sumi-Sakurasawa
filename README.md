@@ -67,6 +67,39 @@ Si encuentras algún problema o tienes preguntas sobre el bot, no dudes en conta
 
 ---
 
+## 📲 Instalación y Ejecución en Termux
+
+Si deseas ejecutar el bot en Termux (Android), sigue estos pasos sencillos:
+
+1. **Actualiza paquetes básicos**
+    ```sh
+    pkg update && pkg upgrade -y
+    ```
+2. **Instala Git y Node.js**
+    ```sh
+    pkg install git nodejs -y
+    ```
+3. **Clona este repositorio**
+    ```sh
+    git clone https://github.com/Brauliovh3/HATSUNE-MIKU.git
+    cd HATSUNE-MIKU
+    ```
+4. **Instala las dependencias**
+    ```sh
+    npm install
+    ```
+5. **Configura el archivo `.env` si es necesario**  
+   (Sigue las instrucciones del README para tokens y configuración extra)
+
+6. **Inicia el bot**
+    ```sh
+    npm start
+    ```
+
+¡Listo! El bot debería iniciar y mostrarte un código QR para vincularlo con WhatsApp Web.
+
+---
+
 <div align="center">
   
   ## 📊 Estadísticas del Repositorio
