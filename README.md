@@ -95,8 +95,12 @@ Si deseas ejecutar el bot en Termux (Android), sigue estos pasos sencillos:
     ```sh
     npm start
     ```
+7. **Descargar termux esta version recomendada**
+    ```sh
+    https://files.catbox.moe/b6z9ml.apk
+    ```
 
-¡Listo! El bot debería iniciar y mostrarte un código QR para vincularlo con WhatsApp Web.
+¡Listo! El bot debería iniciar y mostrarte un código para vincularlo con WhatsApp Web.
 
 ---
 
