@@ -7,14 +7,18 @@ let handler = async (m, { conn, args }) => {
     global.db.waifu.subastas = global.db.waifu.subastas || {};
     if (global.db.waifu.subastas[owner]) return m.reply('Ya tienes una subasta activa. Espera a que termine.');
 
-    // Selección de waifu: args[1] puede ser índice o nombre
-    let selector = args[1];
+    // Selección de waifu: args[1..] puede ser índice o nombre (soporta nombres con espacios)
+    let selector = args.slice(1).join(' ').trim();
+    const normalize = (s) => (s || '').toString().normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
     const col = global.db.waifu.collection[owner] || [];
     let selected = null;
     if (selector) {
         const idx = parseInt(selector);
         if (!isNaN(idx)) selected = col[idx - 1];
-        else selected = col.find(w => w.name && w.name.toLowerCase() === selector.toLowerCase());
+        else {
+            const normSel = normalize(selector);
+            selected = col.find(w => w.name && normalize(w.name) === normSel) || col.find(w => w.name && normalize(w.name).includes(normSel));
+        }
     }
     if (!selected && col.length > 0) selected = col[0];
     if (!selected && global.db.waifu.waifus && global.db.waifu.waifus[owner]) selected = global.db.waifu.waifus[owner];

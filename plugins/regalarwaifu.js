@@ -11,8 +11,9 @@ let handler = async (m, { conn, args }) => {
     if (!global.db.data.users) global.db.data.users = {};
     if (!global.db.data.users[to]) global.db.data.users[to] = {};
 
-    // Selección: si el usuario pasa un segundo argumento, puede ser índice (1-based) o nombre
-    let selector = args[1];
+    // Selección: args[1..] puede ser índice o nombre (soporta nombres con espacios)
+    let selector = args.slice(1).join(' ').trim();
+    const normalize = (s) => (s || '').toString().normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().trim();
     let selected = null;
 
     // Preferir colección si existe
@@ -20,7 +21,10 @@ let handler = async (m, { conn, args }) => {
     if (selector) {
         const idx = parseInt(selector);
         if (!isNaN(idx)) selected = col[idx - 1];
-        else selected = col.find(w => w.name && w.name.toLowerCase() === selector.toLowerCase());
+        else {
+            const normSel = normalize(selector);
+            selected = col.find(w => w.name && normalize(w.name) === normSel) || col.find(w => w.name && normalize(w.name).includes(normSel));
+        }
     }
 
     // Si no seleccionó nada y tiene colección, tomar la primera
