@@ -82,13 +82,16 @@ Si deseas ejecutar el bot en Termux (Android), sigue estos pasos sencillos:
 3. **Clona este repositorio**
     ```sh
     git clone https://github.com/Brauliovh3/HATSUNE-MIKU.git
+    ```
+ 4. **Ingresar a la carpeta proyecto**
+    ```sh
     cd HATSUNE-MIKU
     ```
-4. **Instala las dependencias**
+5. **Instala las dependencias**
     ```sh
     npm install
     ```
-5. **Inicia el bot**
+6. **Inicia el bot**
     ```sh
     npm start
     ```
