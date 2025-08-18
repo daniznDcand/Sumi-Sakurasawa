@@ -73,11 +73,11 @@ Si deseas ejecutar el bot en Termux (Android), sigue estos pasos sencillos:
 
 1. **Actualiza paquetes básicos**
     ```sh
-    pkg update && pkg upgrade -y
+    pkg update && pkg upgrade
     ```
 2. **Instala Git y Node.js**
     ```sh
-    pkg install git nodejs -y
+    pkg install git nodejs
     ```
 3. **Clona este repositorio**
     ```sh
@@ -88,10 +88,7 @@ Si deseas ejecutar el bot en Termux (Android), sigue estos pasos sencillos:
     ```sh
     npm install
     ```
-5. **Configura el archivo `.env` si es necesario**  
-   (Sigue las instrucciones del README para tokens y configuración extra)
-
-6. **Inicia el bot**
+5. **Inicia el bot**
     ```sh
     npm start
     ```
