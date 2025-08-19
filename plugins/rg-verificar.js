@@ -4,114 +4,113 @@ import PhoneNumber from 'awesome-phonenumber'
 import { createHash } from 'crypto'  
 import fetch from 'node-fetch'
 
-let Reg = /\|?(.*)([.|] *?)([0-9]*)$/i
+let Reg = /\\|?(.*)([.|] \*?)([0-9]*)$/i
 
 let handler = async function (m, { conn, text, usedPrefix, command }) {
-  let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender
+  let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid : m.fromMe ? conn.user.jid : m.sender
   let mentionedJid = [who]
-  let pp = await conn.profilePictureUrl(who, 'image').catch((_) => 'https://litter.catbox.moe/nket2c15aupjx684.png')
+  let pp = await conn.profilePictureUrl(who, 'image').catch(_ => 'https://litter.catbox.moe/nket2c15aupjx684.png')
   let user = global.db.data.users[m.sender]
   let name2 = conn.getName(m.sender)
-  if (user.registered === true) return m.reply(`╔══════════════╗
-║⚠️ YA REGISTRADO ⚠️ ║
-╚═══════════════════╝
 
-💙 Ya estás registrado en el sistema 💙
+  if (user.registered === true) return m.reply(
+`*⚠️ YA ESTÁS REGISTRADO ⚠️*
 
+💙 Ya estás registrado en el sistema.
 🔄 ¿Quieres registrarte de nuevo?
-📝 Usa: *${usedPrefix}unreg* para eliminar tu registro actual`)
-  if (!Reg.test(text)) return m.reply(`╔═══════════════════╗
-║📝 FORMATO INCORRECTO 📝║
-╚══════════════════════╝
+📝 Usa: *${usedPrefix}unreg* para eliminar tu registro actual.`)
 
-💙 Uso correcto del comando 💙
+  if (!Reg.test(text)) return m.reply(
+`*📝 FORMATO INCORRECTO 📝*
 
+💙 Uso correcto del comando:
 📋 *Formato:* ${usedPrefix + command} nombre.edad
 ✨ *Ejemplo:* ${usedPrefix + command} ${name2}.18
 
-🔌¡Regístrate para acceder a todas las funciones!🔌`)
+🔌 ¡Regístrate para acceder a todas las funciones!`)
+
   let [_, name, splitter, age] = text.match(Reg)
-  if (!name) return m.reply(`╔══════════════════╗
-║❌ NOMBRE VACÍO ❌║
-╚═══════════════════╝
 
-💙 El nombre no puede estar vacío 💙
-📝 Por favor ingresa tu nombre`)
-  if (!age) return m.reply(`╔═══════════════════╗
-║❌ EDAD VACÍA ❌║
-╚═════════════════╝
+  if (!name) return m.reply(
+`*❌ NOMBRE VACÍO ❌*
 
-💙 La edad no puede estar vacía 💙
-🎂 Por favor ingresa tu edad`)
-  if (name.length >= 100) return m.reply(`╔══════════════════╗
-║📏 NOMBRE MUY LARGO 📏║
-╚═══════════════════════╝
+💙 El nombre no puede estar vacío.
+📝 Por favor ingresa tu nombre.`)
 
-💙 El nombre es demasiado largo 💙
-✂️ Usa un nombre más corto (máximo 100 caracteres)`)
+  if (!age) return m.reply(
+`*❌ EDAD VACÍA ❌*
+
+💙 La edad no puede estar vacía.
+🎂 Por favor ingresa tu edad.`)
+
+  if (name.length >= 100) return m.reply(
+`*📏 NOMBRE MUY LARGO 📏*
+
+💙 El nombre es demasiado largo.
+✂️ Usa un nombre más corto (máximo 100 caracteres).`)
+
   age = parseInt(age)
-  if (age > 1000) return m.reply(`╔═══════════════════╗
-║👴 ¡WOW ABUELO! 👴║
-╚═══════════════════╝
 
-💙 ¡Increíble edad! 💙
+  if (age > 1000) return m.reply(
+`*👴 ¡WOW ABUELO! 👴*
+
+💙 ¡Increíble edad!
 🎉 ¿En serio tienes más de 1000 años?
-😄 Usa una edad más realista`)
-  if (age < 5) return m.reply(`╔════════════════════╗
-║  👶 MUY PEQUEÑO 👶  ║
-╚══════════════════════╝
+😄 Usa una edad más realista.`)
 
-💙¡Eres muy pequeño para usar el bot!💙
-🍼 Los bebés necesitan supervisión
-😊 Usa una edad mayor a 5 años`)
-  user.name = name + '✓'.trim()
+  if (age < 5) return m.reply(
+`*👶 MUY PEQUEÑO 👶*
+
+💙 ¡Eres muy pequeño para usar el bot!
+🍼 Los bebés necesitan supervisión.
+😊 Usa una edad mayor a 5 años.`)
+
+  user.name = name.trim() + ' ✓'
   user.age = age
-  user.regTime = + new Date      
+  user.regTime = +new Date      
   user.registered = true
+
   global.db.data.users[m.sender].coin += 40
   global.db.data.users[m.sender].exp += 300
   global.db.data.users[m.sender].joincount += 20
+
   let sn = createHash('md5').update(m.sender).digest('hex').slice(0, 20)
-let regbot = `╔═══════════════╗
-║💙¡REGISTRADO!💙║
-║   🎤¡Bienvenido!🎤   ║
-╚════════════════╝
-┏━━━━━━━━━━━━━━━━━┓
-┃ 📋 DATOS PERSONALES┃
-┣━━━━━━━━━━━━━━━━━┫
-┃ 👤 Nombre: ${name}
-┃ 🎂 Edad: ${age} años
-┃ ✅ Estado: Verificado ✓
-┃ 🆔 ID: ${sn}
-┗━━━━━━━━━━━━━━━┛
-┏━━━━━━━━━━━━━━━━━━━━┓
-┃🎁 RECOMPENSAS INICIALES┃
-┣━━━━━━━━━━━━━━━━━━━━┫
-┃ 💰 ${moneda}: +40
-┃ ✨ Experiencia: +300 XP
-┃ 🎟️ Tokens: +20
-┗━━━━━━━━━━━━━━━━━━━━┛
 
-${dev}`
-await m.react('💙')
+  let regbot = 
+`*🎉 ¡REGISTRO EXITOSO! 🎉*
 
-await conn.sendMessage(m.chat, {
-        text: regbot,
-        contextInfo: {
-            externalAdReply: {
-                title: '💙 ¡Registro Exitoso en Miku Bot! 💙',
-                body: '🎤 Bienvenido al mundo virtual de Hatsune Miku 🎤',
-                thumbnailUrl: pp,
-                sourceUrl: channel,
-                mediaType: 1,
-                showAdAttribution: true,
-                renderLargerThumbnail: true
-            }
-        }
-    }, { quoted: m });    
-}; 
+👤 *Nombre:* ${name}
+🎂 *Edad:* ${age} años
+✅ *Estado:* Verificado ✓
+🆔 *ID:* ${sn}
+
+🏆 *Recompensas iniciales:*
+💰 +40 monedas
+✨ +300 XP
+🎟️ +20 tokens
+
+¡Bienvenido al Miku Bot! 💙`
+
+  await m.react('💙')
+
+  await conn.sendMessage(m.chat, {
+    text: regbot,
+    contextInfo: {
+      externalAdReply: {
+        title: '💙 Registro en Miku Bot 💙',
+        body: '🎤 Bienvenido al mundo virtual de Hatsune Miku 🎤',
+        thumbnailUrl: pp,
+        sourceUrl: channel,
+        mediaType: 1,
+        showAdAttribution: true,
+        renderLargerThumbnail: true
+      }
+    }
+  }, { quoted: m })
+}
+
 handler.help = ['reg']
 handler.tags = ['rg']
-handler.command = ['verify', 'verificar', 'reg', 'register', 'registrar'] 
+handler.command = ['verify', 'verificar', 'reg', 'register', 'registrar']
 
 export default handler
