@@ -257,8 +257,8 @@ let txt = `╭━━━━━━━━━━━━━━━━━━━╮
 ╰ 🤖 .editautoresponder - Config auto respuesta
 
 ┏━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃💙 *¿Tu propio bot?* Usa .code      ┃
-┃✨ Escribe el comando para usarlo  ┃
+┃💙 *¿Tu propio bot?* Usa .code           ┃
+┃✨ Escribe el comando para usarlo    ┃
 ┗━━━━━━━━━━━━━━━━━━━━━━━━━┛`.trim()
 
 await conn.sendMessage(m.chat, { 
