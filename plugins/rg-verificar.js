@@ -9,7 +9,7 @@ let Reg = /\|?(.*)([.|] *?)([0-9]*)$/i
 let handler = async function (m, { conn, text, usedPrefix, command }) {
   let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender
   let mentionedJid = [who]
-  let pp = await conn.profilePictureUrl(who, 'image').catch((_) => 'https://files.catbox.moe/8wic22.jpg')
+  let pp = await conn.profilePictureUrl(who, 'image').catch((_) => 'https://litter.catbox.moe/nket2c15aupjx684.png')
   let user = global.db.data.users[m.sender]
   let name2 = conn.getName(m.sender)
   if (user.registered === true) return m.reply(`╔══════════════╗
@@ -76,9 +76,6 @@ let regbot = `╔═════════════════════
 ║💙¡REGISTRO EXITOSO!💙║
 ║   🎤¡Bienvenido!🎤   ║
 ╚═══════════════════════╝
-
-💙¡Te has registrado en el mundo de Miku!💙
-
 ┏━━━━━━━━━━━━━━━━━┓
 ┃ 📋 DATOS PERSONALES┃
 ┣━━━━━━━━━━━━━━━━━━━━┫
@@ -87,7 +84,6 @@ let regbot = `╔═════════════════════
 ┃ ✅ Estado: Verificado ✓
 ┃ 🆔 ID: ${sn}
 ┗━━━━━━━━━━━━━┛
-
 ┏━━━━━━━━━━━━━━━━━━━━━━┓
 ┃🎁 RECOMPENSAS INICIALES┃
 ┣━━━━━━━━━━━━━━━━━━━━━━┫
@@ -95,9 +91,6 @@ let regbot = `╔═════════════════════
 ┃ ✨ Experiencia: +300 XP
 ┃ 🎟️ Tokens: +20
 ┗━━━━━━━━━━━━━━━━━━━━━┛
-
-🎵 ¡Ahora puedes usar todos los comandos de Miku! 🎵
-💙 Usa *#menu* para ver todas las funciones disponibles 💙
 
 ${dev}`
 await m.react('💙')
