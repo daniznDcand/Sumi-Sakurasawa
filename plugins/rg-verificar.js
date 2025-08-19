@@ -73,7 +73,7 @@ let handler = async function (m, { conn, text, usedPrefix, command }) {
   global.db.data.users[m.sender].joincount += 20
   let sn = createHash('md5').update(m.sender).digest('hex').slice(0, 20)
 let regbot = `╔═══════════════╗
-║💙¡REGISTRO EXITOSO!💙║
+║💙¡REGISTRADO!💙║
 ║   🎤¡Bienvenido!🎤   ║
 ╚════════════════╝
 ┏━━━━━━━━━━━━━━━━━┓
@@ -83,7 +83,7 @@ let regbot = `╔═══════════════╗
 ┃ 🎂 Edad: ${age} años
 ┃ ✅ Estado: Verificado ✓
 ┃ 🆔 ID: ${sn}
-┗━━━━━━━━━━━━━┛
+┗━━━━━━━━━━━━━━━┛
 ┏━━━━━━━━━━━━━━━━━━━━┓
 ┃🎁 RECOMPENSAS INICIALES┃
 ┣━━━━━━━━━━━━━━━━━━━━┫
