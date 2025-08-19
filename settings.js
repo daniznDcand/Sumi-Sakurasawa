@@ -38,7 +38,7 @@ global.nameqr = '🎵 Hatsune-Miku-MD 🎵'
 global.namebot = '💙 Ｈａｔｓｕｎｅ Ｍｉｋｕ Ｂｏｔ 💙'
 global.sessions = 'Sessions'
 global.jadi = 'JadiBots' 
-global.mikuJadibts = true
+//global.mikuJadibts = true
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
