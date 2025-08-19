@@ -8,18 +8,18 @@ let totalreg = Object.keys(global.db.data.users).length
 let totalCommands = Object.values(global.plugins).filter((v) => v.help && v.tags).length
 
 
-let txt = `╭━━━━━━━━━━━━━━━━━━━━━━━╮
+let txt = `╭━━━━━━━━━━━━━━━━━━━╮
 ┃ 🎤 *HATSUNE MIKU BOT* 🎤 ┃
-╰━━━━━━━━━━━━━━━━━━━━━━━╯
+╰━━━━━━━━━━━━━━━━━━━━╯
 
 🌸 ¡Konnichiwa, @${userId.split('@')[0]}! 🌸
 
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┏━━━━━━━━━━━━━━━┓
 ┃ 💙 *Estado:* ${(conn.user.jid == global.conn.user.jid ? 'Principal ⚡️' : 'Sub-Bot 🔌')}
 ┃ ⏰ *Activo:* ${uptime}
 ┃ 👥 *Usuarios:* ${totalreg}
 ┃ 📊 *Comandos:* ${totalCommands}
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┗━━━━━━━━━━━━━━━┛
 
 ╭─「 🔍 *BUSCADORES* 」
 ├ 🌸 .pinterest - Imágenes Pinterest
