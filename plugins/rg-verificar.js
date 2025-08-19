@@ -4,10 +4,10 @@ import PhoneNumber from 'awesome-phonenumber'
 import { createHash } from 'crypto'  
 import fetch from 'node-fetch'
 
-let Reg = /\\|?(.*)([.|] \*?)([0-9]*)$/i
+let Reg = /^(.+)[.\|]\s*([0-9]+)$/i
 
 let handler = async function (m, { conn, text, usedPrefix, command }) {
-  let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid : m.fromMe ? conn.user.jid : m.sender
+  let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender
   let mentionedJid = [who]
   let pp = await conn.profilePictureUrl(who, 'image').catch(_ => 'https://litter.catbox.moe/nket2c15aupjx684.png')
   let user = global.db.data.users[m.sender]
@@ -29,7 +29,7 @@ let handler = async function (m, { conn, text, usedPrefix, command }) {
 
 🔌 ¡Regístrate para acceder a todas las funciones!`)
 
-  let [_, name, splitter, age] = text.match(Reg)
+  let [_, name, age] = text.match(Reg)
 
   if (!name) return m.reply(
 `*❌ NOMBRE VACÍO ❌*
@@ -76,6 +76,10 @@ let handler = async function (m, { conn, text, usedPrefix, command }) {
 
   let sn = createHash('md5').update(m.sender).digest('hex').slice(0, 20)
 
+  let moneda = 'moneda'  
+  let dev = 'DEPOOL'         
+  let channel = 'https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'      
+
   let regbot = 
 `*🎉 ¡REGISTRO EXITOSO! 🎉*
 
@@ -85,11 +89,11 @@ let handler = async function (m, { conn, text, usedPrefix, command }) {
 🆔 *ID:* ${sn}
 
 🏆 *Recompensas iniciales:*
-💰 +40 monedas
+💰 +40 ${moneda}
 ✨ +300 XP
 🎟️ +20 tokens
 
-`
+¡Bienvenido al Miku Bot! 💙`
 
   await m.react('💙')
 
@@ -114,3 +118,4 @@ handler.tags = ['rg']
 handler.command = ['verify', 'verificar', 'reg', 'register', 'registrar']
 
 export default handler
+
