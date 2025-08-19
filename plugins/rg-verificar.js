@@ -89,7 +89,7 @@ let handler = async function (m, { conn, text, usedPrefix, command }) {
 ✨ +300 XP
 🎟️ +20 tokens
 
-¡Bienvenido al Miku Bot! 💙`
+`
 
   await m.react('💙')
 
