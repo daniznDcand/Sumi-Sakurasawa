@@ -542,7 +542,7 @@ global.dfail = (type, m, usedPrefix, command, conn) => {
 
 let edadaleatoria = ['10', '28', '20', '40', '18', '21', '15', '11', '9', '17', '25'].getRandom()
 let user2 = m.pushName || 'Anónimo'
-let verifyaleatorio = ['registrar', 'reg', 'verificar', 'verify', 'register'].getRandom()
+let verifyaleatorio = ['reg', 'verificar', 'verify', 'register'].getRandom()
 
 const msg = {
 rowner: `💙 El comando *${comando}* solo puede ser usado por el creador de la bot \n(ㅎㅊDEPOOLㅊㅎ).`, 
