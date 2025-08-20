@@ -13,5 +13,7 @@ return console.log(e)
 handler.command = ['salir','leavegc','salirdelgrupo','leave']
 handler.group = true
 handler.rowner = true
+handler.botAdmin = true
+
 
 export default handler
