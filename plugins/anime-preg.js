@@ -16,7 +16,7 @@ let handler = async (m, { conn, usedPrefix }) => {
         : `\`${name2}\` *se embarazó a sí mismo >.<*`
     
     if (m.isGroup) {
-        let pp = 'https://qu.ax/uaYcl.mp4'
+        let pp = './src/embarazar.mp4'
         
        
         
