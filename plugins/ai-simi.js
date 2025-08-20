@@ -90,19 +90,66 @@ handler.tags = ['ai']
 handler.register = true
 handler.command = ['ia', 'chatgpt', 'miku']
 
+
+async function testGroqAPI() {
+    try {
+       
+        const modelsResponse = await axios.get(
+            'https://api.groq.com/openai/v1/models',
+            {
+                headers: {
+                    'Authorization': 'Bearer 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'
+                }
+            }
+        )
+        
+        console.log('🎵 Modelos disponibles en Groq:')
+        modelsResponse.data.data.forEach(model => {
+            console.log(`- ${model.id}`)
+        })
+        
+        
+        const testResponse = await axios.post(
+            'https://api.groq.com/openai/v1/chat/completions',
+            {
+                model: "llama-3.1-8b-instant",
+                messages: [
+                    { role: "system", content: "Eres Hatsune Miku, responde brevemente." },
+                    { role: "user", content: "Hola" }
+                ],
+                max_tokens: 100
+            },
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer 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'
+                }
+            }
+        )
+        
+        console.log('✅ API funciona correctamente!')
+        console.log('🎵 Respuesta de prueba:', testResponse.data.choices[0].message.content)
+        
+    } catch (error) {
+        console.error('❌ Error con la API:', error.response?.data || error.message)
+    }
+}
+
+
+
 export default handler
 
 
 async function getAIResponse(query, username, prompt) {
     const apis = [
-       
+      
         {
-            name: "Groq Llama",
+            name: "Groq Llama 3.1 70B",
             call: async () => {
                 const response = await axios.post(
                     'https://api.groq.com/openai/v1/chat/completions',
                     {
-                        model: "llama3-8b-8192", 
+                        model: "llama-3.1-70b-versatile", 
                         messages: [
                             { role: "system", content: prompt },
                             { role: "user", content: query }
@@ -113,7 +160,61 @@ async function getAIResponse(query, username, prompt) {
                     {
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer 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`
+                            'Authorization': `Bearer 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`
+                        },
+                        timeout: 30000
+                    }
+                )
+                return response.data.choices[0]?.message?.content
+            }
+        },
+
+       
+        {
+            name: "Groq Llama 3.1 8B",
+            call: async () => {
+                const response = await axios.post(
+                    'https://api.groq.com/openai/v1/chat/completions',
+                    {
+                        model: "llama-3.1-8b-instant", 
+                        messages: [
+                            { role: "system", content: prompt },
+                            { role: "user", content: query }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 500
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer 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`
+                        },
+                        timeout: 30000
+                    }
+                )
+                return response.data.choices[0]?.message?.content
+            }
+        },
+
+       
+        {
+            name: "Groq Mixtral",
+            call: async () => {
+                const response = await axios.post(
+                    'https://api.groq.com/openai/v1/chat/completions',
+                    {
+                        model: "mixtral-8x7b-32768", 
+                        messages: [
+                            { role: "system", content: prompt },
+                            { role: "user", content: query }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 500
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer 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`
                         },
                         timeout: 30000
                     }
@@ -149,7 +250,7 @@ async function getAIResponse(query, username, prompt) {
             }
         },
 
-       
+    
         {
             name: "Hugging Face Zephyr",
             call: async () => {
@@ -166,7 +267,7 @@ async function getAIResponse(query, username, prompt) {
                     },
                     {
                         headers: {
-                            'Authorization': 'Bearer hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', 
+                            'Authorization': 'Bearer hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', // Tu token de HF
                             'Content-Type': 'application/json'
                         },
                         timeout: 30000
@@ -176,7 +277,7 @@ async function getAIResponse(query, username, prompt) {
             }
         },
 
-       
+      
         {
             name: "Together AI",
             call: async () => {
@@ -203,7 +304,7 @@ async function getAIResponse(query, username, prompt) {
             }
         },
 
-       
+      
         {
             name: "Cohere",
             call: async () => {
@@ -247,20 +348,20 @@ async function getAIResponse(query, username, prompt) {
         }
     }
     
- 
+    
     return getLocalMikuResponse(query, username)
 }
 
 
 async function analyzeImage(imageBuffer) {
     try {
-       
+        
         const base64Image = imageBuffer.toString('base64')
         
         const response = await axios.post(
             'https://api.replicate.com/v1/predictions',
             {
-                version: "2e1dddc8621f72155f24cf2e0adbde548458d3cab9f00c0139eea840d0ac4746",
+                version: "2e1dddc8621f72155f24cf2e0adbde548458d3cab9f00c0139eea840d0ac4746", 
                 input: {
                     image: `data:image/jpeg;base64,${base64Image}`,
                     question: "Describe esta imagen en español de forma detallada y divertida"
@@ -275,7 +376,7 @@ async function analyzeImage(imageBuffer) {
             }
         )
         
-       
+        
         const predictionId = response.data.id
         let result
         for (let i = 0; i < 10; i++) {
