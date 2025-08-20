@@ -24,7 +24,7 @@ let handler = async (m, { conn, usedPrefix }) => {
     }
     
     if (m.isGroup) { 
-        
+       
         const videos = [
             'https://qu.ax/uaYcl.mp4',
             
@@ -33,22 +33,47 @@ let handler = async (m, { conn, usedPrefix }) => {
         let mentions = [who];
         let videoSent = false;
         
-        
-        for (let i = 0; i < videos.length && !videoSent; i++) {
+        try {
+            
+            await conn.sendMessage(m.chat, { 
+                video: { url: videos[0] }, 
+                gifPlayback: true,
+                caption: str, 
+                mentions,
+                mimetype: 'video/mp4'
+            }, { quoted: m });
+            videoSent = true;
+        } catch (error1) {
+            console.log('Error método GIF:', error1.message);
+            
             try {
+                // Método 2: Como video normal
                 await conn.sendMessage(m.chat, { 
-                    video: { url: videos[i] }, 
-                    gifPlayback: true, 
+                    video: { url: videos[0] }, 
                     caption: str, 
-                    mentions 
+                    mentions,
+                    mimetype: 'video/mp4'
                 }, { quoted: m });
                 videoSent = true;
-            } catch (error) {
-                console.log(`Error con video ${i + 1}:`, error.message);
+            } catch (error2) {
+                console.log('Error método video:', error2.message);
                 
-                if (i === videos.length - 1) {
+                try {
+                    
                     await conn.sendMessage(m.chat, { 
-                        text: str + '\n\n*[Video no disponible]*', 
+                        document: { url: videos[0] },
+                        fileName: 'embarazar.mp4',
+                        mimetype: 'video/mp4',
+                        caption: str,
+                        mentions
+                    }, { quoted: m });
+                    videoSent = true;
+                } catch (error3) {
+                    console.log('Error método documento:', error3.message);
+                    
+                   
+                    await conn.sendMessage(m.chat, { 
+                        text: str + '\n\n🤰 *¡Felicidades!*', 
                         mentions 
                     }, { quoted: m });
                 }
