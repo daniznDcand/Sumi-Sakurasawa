@@ -1,5 +1,5 @@
 const handler = async (m, { conn, command, text, usedPrefix }) => {
-  if (!text) return conn.reply(m.chat, `❀ Por favor, mensiona a un Usuario para comprobar su test.`, m, rcanal);
+  if (!text) return conn.reply(m.chat, `💙 Por favor, mensiona a un Usuario para comprobar su test.`, m, rcanal);
   const percentages = (500).getRandom();
   let emoji = '';
   let description = '';
@@ -71,7 +71,7 @@ const handler = async (m, { conn, command, text, usedPrefix }) => {
     case 'prostituta':
       emoji = '🫦👅';
       if (percentages < 50) {
-        description = `❀ Los cálculos han arrojado que ${text.toUpperCase()} es *${percentages}%* ${command} ${emoji}\n> ✰ El mercado está en auge!`;
+        description = `💙 Los cálculos han arrojado que ${text.toUpperCase()} es *${percentages}%* ${command} ${emoji}\n> ✰ El mercado está en auge!`;
       } else if (percentages > 100) {
         description = `💖 Los cálculos han arrojado que ${text.toUpperCase()} es *${percentages}%* ${command} ${emoji}\n> ✰ Un/a verdadero/a profesional!`;
       } else {
