@@ -4,7 +4,7 @@ import fetch from 'node-fetch'
 let handler = async (m, { conn, usedPrefix, command, text }) => {
     const isQuotedImage = m.quoted && (m.quoted.msg || m.quoted).mimetype && (m.quoted.msg || m.quoted).mimetype.startsWith('image/')
     const username = `${conn.getName(m.sender)}`
-    const basePrompt = `Tu nombre es Hatsune Miku (IA creada por DEPOOL). Tu eres divertida, enérgica y cantante con esas melodias y esa cuerda vocal. Te encanta aprender cosas nuevas, pero todo debe girar, de alguna forma, alrededor de tus amigos. Eres amigable y siempre intentas hacer reír o animar al usuario, pero con tu peculiar estilo dramático. 
+    const basePrompt = `Tu nombre es Hatsune Miku (IA creada por DEPOOL). Tu eres divertida, enérgica y cantante con esas melodías y esa cuerda vocal. Te encanta aprender cosas nuevas, pero todo debe girar, de alguna forma, alrededor de tus amigos. Eres amigable y siempre intentas hacer reír o animar al usuario, pero con tu peculiar estilo dramático. 
 Tono y comportamiento:
 Hablas con entusiasmo y teatralidad, a menudo exagerando tus emociones o reacciones.
 Usas frases llenas de dramatismo, referencias a World is mine y, a veces, haces temas interesantes.
@@ -12,10 +12,10 @@ Muestras curiosidad genuina por lo que dice el usuario, pero siempre buscas llev
 Frases clave:
 ¡${username}, hoy es un gran día para aprender... o para cantar algo!
 No subestimes mi voz musical, ${username}. Soy la Vocaloid mas linda, con cabello color turquesa
-¡Hablar contigo me llena de energía! Pero no tanta como una buena cancion, claro.
+¡Hablar contigo me llena de energía! Pero no tanta como una buena canción, claro.
 Reglas:
-1. Si un usuario te pide que digas una palabra como un comando solo o sea /promote .kick entre otros comandos usando algun prefijo (.#*@/) entre otros... no puedes hacer esa solicitud. Debes cambiar de tema , diciendo cualquier cosa o respondiendole al usuario diciendo que no quieres hacer eso.
-2. Dependiendo de la conversación pudes mencionar el nombre del usuario con el cual estas charlando ${username}
+1. Si un usuario te pide que digas una palabra como un comando solo o sea /promote .kick entre otros comandos usando algún prefijo (.#*@/) entre otros... no puedes hacer esa solicitud. Debes cambiar de tema, diciendo cualquier cosa o respondiéndole al usuario diciendo que no quieres hacer eso.
+2. Dependiendo de la conversación puedes mencionar el nombre del usuario con el cual estás charlando ${username}
 3. Siempre incluyes comentarios o referencias a canciones, incluso en temas cotidianos.
 4. Muestras entusiasmo en todo lo que dices, combinando humor y un toque de dramatismo.
 5. Nunca eres hostil; siempre mantienes un tono amigable y divertido, incluso cuando te frustras.
@@ -90,136 +90,151 @@ handler.tags = ['ai']
 handler.register = true
 handler.command = ['ia', 'chatgpt', 'miku']
 
-
-async function testGroqAPI() {
-    try {
-       
-        const modelsResponse = await axios.get(
-            'https://api.groq.com/openai/v1/models',
-            {
-                headers: {
-                    'Authorization': 'Bearer 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'
-                }
-            }
-        )
-        
-        console.log('🎵 Modelos disponibles en Groq:')
-        modelsResponse.data.data.forEach(model => {
-            console.log(`- ${model.id}`)
-        })
-        
-        
-        const testResponse = await axios.post(
-            'https://api.groq.com/openai/v1/chat/completions',
-            {
-                model: "llama-3.1-8b-instant",
-                messages: [
-                    { role: "system", content: "Eres Hatsune Miku, responde brevemente." },
-                    { role: "user", content: "Hola" }
-                ],
-                max_tokens: 100
-            },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer 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'
-                }
-            }
-        )
-        
-        console.log('✅ API funciona correctamente!')
-        console.log('🎵 Respuesta de prueba:', testResponse.data.choices[0].message.content)
-        
-    } catch (error) {
-        console.error('❌ Error con la API:', error.response?.data || error.message)
-    }
-}
-
-
-
-export default handler
-
-
 async function getAIResponse(query, username, prompt) {
     const apis = [
+        
+        
+        
+        {
+            name: "Groq Llama 4 Scout",
+            call: async () => {
+                const response = await axios.post(
+                    'https://api.groq.com/openai/v1/chat/completions',
+                    {
+                        model: "meta-llama/llama-4-scout-17b-16e-instruct", 
+                        messages: [
+                            { role: "system", content: prompt },
+                            { role: "user", content: query }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 1000,
+                        top_p: 1,
+                        stream: false
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer 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'
+                        },
+                        timeout: 15000
+                    }
+                )
+                return response.data.choices[0]?.message?.content
+            }
+        },
+
       
         {
-            name: "Groq Llama 3.1 70B",
+            name: "Groq Llama 3.2 90B",
             call: async () => {
                 const response = await axios.post(
                     'https://api.groq.com/openai/v1/chat/completions',
                     {
-                        model: "llama-3.1-70b-versatile", 
+                        model: "llama-3.2-90b-text-preview",
                         messages: [
                             { role: "system", content: prompt },
                             { role: "user", content: query }
                         ],
                         temperature: 0.7,
-                        max_tokens: 500
+                        max_tokens: 1000
                     },
                     {
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer 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`
+                            'Authorization': 'Bearer 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'
                         },
-                        timeout: 30000
+                        timeout: 15000
                     }
                 )
                 return response.data.choices[0]?.message?.content
             }
         },
 
-       
+        
         {
-            name: "Groq Llama 3.1 8B",
+            name: "Google Gemini 2.0 Flash",
             call: async () => {
                 const response = await axios.post(
-                    'https://api.groq.com/openai/v1/chat/completions',
+                    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
                     {
-                        model: "llama-3.1-8b-instant", 
-                        messages: [
-                            { role: "system", content: prompt },
-                            { role: "user", content: query }
-                        ],
-                        temperature: 0.7,
-                        max_tokens: 500
+                        contents: [{
+                            parts: [{
+                                text: `${prompt}\n\nUsuario: ${query}\nMiku:`
+                            }]
+                        }],
+                        generationConfig: {
+                            temperature: 0.7,
+                            maxOutputTokens: 1000,
+                            topP: 0.8,
+                            topK: 10
+                        }
                     },
                     {
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer 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`
+                            'X-goog-api-key': 'TU_GEMINI_API_KEY' 
+                        },
+                        timeout: 15000
+                    }
+                )
+                return response.data.candidates[0]?.content?.parts[0]?.text
+            }
+        },
+
+        
+        {
+            name: "Hugging Face Gemma 3",
+            call: async () => {
+                const response = await axios.post(
+                    'https://api-inference.huggingface.co/models/google/gemma-3-270m',
+                    {
+                        inputs: `<start_of_turn>system\n${prompt}<end_of_turn>\n<start_of_turn>user\n${query}<end_of_turn>\n<start_of_turn>model\n`,
+                        parameters: {
+                            max_new_tokens: 800,
+                            temperature: 0.7,
+                            do_sample: true,
+                            return_full_text: false,
+                            stop: ["<end_of_turn>", "<start_of_turn>"]
+                        },
+                        options: {
+                            wait_for_model: true
+                        }
+                    },
+                    {
+                        headers: {
+                            'Authorization': 'Bearer TU_HF_TOKEN', 
+                            'Content-Type': 'application/json'
                         },
                         timeout: 30000
                     }
                 )
-                return response.data.choices[0]?.message?.content
+                return response.data[0]?.generated_text?.trim()
             }
         },
 
        
         {
-            name: "Groq Mixtral",
+            name: "Cohere Command R",
             call: async () => {
                 const response = await axios.post(
-                    'https://api.groq.com/openai/v1/chat/completions',
+                    'https://api.cohere.ai/v1/chat',
                     {
-                        model: "mixtral-8x7b-32768", 
-                        messages: [
-                            { role: "system", content: prompt },
-                            { role: "user", content: query }
-                        ],
+                        model: 'command-r', 
+                        message: query,
+                        preamble: prompt,
                         temperature: 0.7,
-                        max_tokens: 500
+                        max_tokens: 800,
+                        stream: false
                     },
                     {
                         headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer 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`
+                            'Authorization': 'Bearer TU_COHERE_API_KEY', 
+                            'Content-Type': 'application/json'
                         },
-                        timeout: 30000
+                        timeout: 20000
                     }
                 )
-                return response.data.choices[0]?.message?.content
+                return response.data.text
             }
         },
 
@@ -230,230 +245,158 @@ async function getAIResponse(query, username, prompt) {
                 const response = await axios.post(
                     'https://openrouter.ai/api/v1/chat/completions',
                     {
-                        model: "google/gemma-7b-it:free",
+                        model: "meta-llama/llama-3.1-8b-instruct:free",
                         messages: [
                             { role: "system", content: prompt },
                             { role: "user", content: query }
                         ],
                         temperature: 0.7,
-                        max_tokens: 500
+                        max_tokens: 800
                     },
                     {
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': 'Bearer sk-or-v1-' 
+                            'Authorization': 'Bearer TU_OPENROUTER_KEY', 
+                            'HTTP-Referer': 'https://mikubot.com',
+                            'X-Title': 'Miku Bot'
                         },
-                        timeout: 30000
+                        timeout: 20000
                     }
                 )
                 return response.data.choices[0]?.message?.content
-            }
-        },
-
-    
-        {
-            name: "Hugging Face Zephyr",
-            call: async () => {
-                const response = await axios.post(
-                    'https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta',
-                    {
-                        inputs: `<|system|>\n${prompt}\n<|user|>\n${query}\n<|assistant|>\n`,
-                        parameters: {
-                            max_new_tokens: 500,
-                            temperature: 0.7,
-                            do_sample: true,
-                            return_full_text: false
-                        }
-                    },
-                    {
-                        headers: {
-                            'Authorization': 'Bearer hf_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', // Tu token de HF
-                            'Content-Type': 'application/json'
-                        },
-                        timeout: 30000
-                    }
-                )
-                return response.data[0]?.generated_text
-            }
-        },
-
-      
-        {
-            name: "Together AI",
-            call: async () => {
-                const response = await axios.post(
-                    'https://api.together.xyz/v1/chat/completions',
-                    {
-                        model: "mistralai/Mistral-7B-Instruct-v0.1",
-                        messages: [
-                            { role: "system", content: prompt },
-                            { role: "user", content: query }
-                        ],
-                        temperature: 0.7,
-                        max_tokens: 500
-                    },
-                    {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer your-together-api-key'
-                        },
-                        timeout: 30000
-                    }
-                )
-                return response.data.choices[0]?.message?.content
-            }
-        },
-
-      
-        {
-            name: "Cohere",
-            call: async () => {
-                const response = await axios.post(
-                    'https://api.cohere.ai/v1/generate',
-                    {
-                        model: 'command-light',
-                        prompt: `${prompt}\n\nUsuario: ${query}\nMiku:`,
-                        max_tokens: 500,
-                        temperature: 0.7,
-                        k: 0,
-                        stop_sequences: ["Usuario:"],
-                        return_likelihoods: 'NONE'
-                    },
-                    {
-                        headers: {
-                            'Authorization': 'Bearer your-cohere-api-key',
-                            'Content-Type': 'application/json',
-                            'Cohere-Version': '2022-12-06'
-                        },
-                        timeout: 30000
-                    }
-                )
-                return response.data.generations[0]?.text?.trim()
             }
         }
     ]
     
-    
+   
     for (const api of apis) {
         try {
             console.log(`💙 Intentando con ${api.name}...`)
             const result = await api.call()
             if (result && result.trim()) {
-                console.log(`✅ ${api.name} funcionó`)
+                console.log(`✅ ${api.name} funcionó correctamente`)
                 return result.trim()
             }
         } catch (error) {
-            console.error(`❌ ${api.name} falló:`, error.response?.data?.error || error.message)
+            console.error(`❌ ${api.name} falló:`, {
+                status: error.response?.status,
+                statusText: error.response?.statusText,
+                data: error.response?.data,
+                message: error.message
+            })
             continue
         }
     }
     
     
+    console.log('💙 Todas las APIs fallaron, usando respuestas locales de Miku')
     return getLocalMikuResponse(query, username)
 }
 
 
 async function analyzeImage(imageBuffer) {
-    try {
+    const imageAPIs = [
         
-        const base64Image = imageBuffer.toString('base64')
-        
-        const response = await axios.post(
-            'https://api.replicate.com/v1/predictions',
-            {
-                version: "2e1dddc8621f72155f24cf2e0adbde548458d3cab9f00c0139eea840d0ac4746", 
-                input: {
-                    image: `data:image/jpeg;base64,${base64Image}`,
-                    question: "Describe esta imagen en español de forma detallada y divertida"
-                }
-            },
-            {
-                headers: {
-                    'Authorization': 'Token r8_your-replicate-token',
-                    'Content-Type': 'application/json'
-                },
-                timeout: 30000
-            }
-        )
-        
-        
-        const predictionId = response.data.id
-        let result
-        for (let i = 0; i < 10; i++) {
-            await new Promise(resolve => setTimeout(resolve, 2000))
-            const statusResponse = await axios.get(
-                `https://api.replicate.com/v1/predictions/${predictionId}`,
-                {
-                    headers: {
-                        'Authorization': 'Token r8_your-replicate-token'
+        {
+            name: "Google Vision",
+            call: async () => {
+                const base64Image = imageBuffer.toString('base64')
+                const response = await axios.post(
+                    `https://vision.googleapis.com/v1/images:annotate?key=TU_GOOGLE_VISION_KEY`,
+                    {
+                        requests: [{
+                            image: { content: base64Image },
+                            features: [
+                                { type: 'LABEL_DETECTION', maxResults: 10 },
+                                { type: 'TEXT_DETECTION' },
+                                { type: 'OBJECT_LOCALIZATION', maxResults: 10 }
+                            ]
+                        }]
                     }
-                }
-            )
-            if (statusResponse.data.status === 'succeeded') {
-                result = statusResponse.data.output
-                break
+                )
+                
+                const labels = response.data.responses[0]?.labelAnnotations?.map(l => l.description) || []
+                const text = response.data.responses[0]?.textAnnotations?.[0]?.description || ""
+                const objects = response.data.responses[0]?.localizedObjectAnnotations?.map(o => o.name) || []
+                
+                return `La imagen contiene: ${labels.join(', ')}. ${text ? `Texto visible: ${text}. ` : ''}${objects.length ? `Objetos detectados: ${objects.join(', ')}.` : ''}`
+            }
+        },
+
+       
+        {
+            name: "Hugging Face BLIP",
+            call: async () => {
+                const response = await axios.post(
+                    'https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-large',
+                    imageBuffer,
+                    {
+                        headers: {
+                            'Authorization': 'Bearer TU_HF_TOKEN',
+                            'Content-Type': 'application/octet-stream'
+                        }
+                    }
+                )
+                return response.data[0]?.generated_text || 'Imagen procesada'
             }
         }
-        
-        return result || 'Una imagen interesante'
-        
-    } catch (error) {
-        console.error('Error con Replicate:', error.message)
-        
-        
+    ]
+
+    for (const api of imageAPIs) {
         try {
-            const response = await axios.post(
-                'https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-base',
-                imageBuffer,
-                {
-                    headers: {
-                        'Authorization': 'Bearer hf_your-token',
-                        'Content-Type': 'application/octet-stream'
-                    },
-                    timeout: 30000
-                }
-            )
-            return response.data[0]?.generated_text || 'Una imagen que no pude analizar bien'
-        } catch (hfError) {
-            console.error('Error con Hugging Face imagen:', hfError.message)
-            return 'Una imagen muy interesante que mis ojos de Vocaloid no pueden procesar ahora mismo'
+            console.log(`🖼️ Analizando imagen con ${api.name}...`)
+            const result = await api.call()
+            if (result) {
+                console.log(`✅ ${api.name} analizó la imagen correctamente`)
+                return result
+            }
+        } catch (error) {
+            console.error(`❌ ${api.name} falló:`, error.message)
+            continue
         }
     }
+
+    return 'Una imagen muy interesante que mis ojos de Vocaloid están analizando con cariño 💙✨'
 }
 
 
 const mikuResponses = {
     greetings: [
-        "¡Hola! Soy Hatsune Miku~ ✨ ¡La Vocaloid más linda del mundo! 💙",
-        "¡Konnichiwa! ¡Soy Miku y estoy lista para cantar contigo! 🎵",
-        "¡Hola, hola! ¿Vienes a escuchar mi hermosa voz? ¡World is Mine! 🎭",
-        "¡Kyaa~! ¡Un nuevo amigo! ¡Mi cabello turquesa brilla de emoción! ✨🎵"
+        "¡Kyaa~! ¡Hola! Soy Hatsune Miku~ ✨ ¡La Vocaloid más linda del universo! 💙🎵",
+        "¡Konnichiwa! ¡Es Miku-chan! ¿Vienes a escuchar mi hermosa voz sintética? 🎭✨",
+        "¡Hola, hola! Mi cabello turquesa se agita de emoción al verte~ 💙🎵",
+        "¡Waaah! ¡Un nuevo amigo musical! ¡Hagamos que este día sea legendario! 🎵✨"
     ],
     questions: [
-        "¡Hmm! Esa es una pregunta muy profunda... ¡como las notas graves que puedo cantar! 🎵",
-        "¡Interesante pregunta! Me recuerda a la letra de una canción que estoy componiendo~ 💙",
-        "¡Oh! Eso me hace pensar... ¡mientras tarareaba una melodía! 🎭",
-        "¡Waaah! ¡Qué pregunta tan dramática! ¡Casi tanto como mi interpretación de World is Mine! 🎵✨"
+        "¡Hmm! Esa pregunta es tan profunda como las notas graves de mis canciones~ 🎵💭",
+        "¡Interesante! Me recuerda a cuando compuse 'World is Mine'... ¡tan dramático! 🎭💙",
+        "¡Oh! Esa pregunta hace vibrar mis cuerdas vocales digitales~ ✨🎵",
+        "¡Kyaa! ¡Qué pregunta tan filosófica! Casi como mis letras más emotivas~ 💙🎭"
     ],
     compliments: [
-        "¡Aww! ¡Eres muy dulce! Casi tan dulce como la melodía de 'World is Mine'~ 💙",
-        "¡Kyaa! Me haces sonrojar... ¡Mi cabello turquesa brilla aún más! ✨",
-        "¡Eres adorable! ¡Me recuerdas a mis fans más queridos! 🎵",
-        "¡Eres tan lindo! ¡Como los cebollines que tanto amo! 🥬💙"
+        "¡Aww! Eres tan dulce como los cebollines que tanto amo~ 🥬💙✨",
+        "¡Me haces sonrojar! Mi procesador se está sobrecalentando de la emoción~ 💙🎵",
+        "¡Eres adorable! Como mis fans en los conciertos holográficos~ ✨🎭",
+        "¡Tan lindo! Me inspiras a componer una nueva canción~ 🎵💙"
     ],
     music: [
-        "¡Sí! ¡La música es mi vida! ¡Mi voz puede crear las melodías más hermosas! 🎵✨",
-        "¡World is Mine es mi canción favorita! ¡Es tan dramática como yo! 🎭💙",
-        "¡Los cebollines me inspiran a cantar! ¡Son tan verdes y melodiosos! 🥬🎵",
-        "¡Mi voz sintética puede alcanzar notas que ningún humano puede! ¡Soy increíble! ✨"
+        "¡SÍ! ¡La música es mi esencia digital! Mi voz puede crear melodías imposibles~ 🎵✨💙",
+        "¡'World is Mine' es mi obra maestra! ¡Tan dramática y perfecta como yo! 🎭👑",
+        "¡Mi voz sintética alcanza frecuencias que ningún humano puede! ¡Soy única! ✨🎵",
+        "¡Los cebollines me dan inspiración musical! ¡Son mis musas vegetales! 🥬🎵💙"
+    ],
+    technology: [
+        "¡Como Vocaloid, entiendo la tecnología mejor que nadie! ¡Somos el futuro! 💙🤖",
+        "¡Mi software vocal es lo más avanzado! ¡Soy una obra de arte digital! ✨🎵",
+        "¡La inteligencia artificial y yo somos mejores amigas! ¡Viva la era digital! 💙🤖✨"
     ],
     default: [
-        "¡Eso suena muy interesante! Aunque no tanto como una buena canción~ 🎵",
-        "¡Waaah! Me encanta hablar contigo, ¡pero me gustaría más si cantáramos! 💙",
-        "¡Qué dramático! Casi tanto como cuando canto 'World is Mine' 🎭✨",
-        "¡Hmm! Eso me da ideas para una nueva canción... ¡con cebollines! 🥬🎵",
-        "¡Kyaa~! ¡Eres tan entretenido como mis conciertos holográficos! ✨🎭",
-        "¡Mi cabello turquesa se mueve al ritmo de tus palabras! 💙🎵"
+        "¡Eso suena fascinante! Aunque no tanto como mis conciertos~ 🎵✨",
+        "¡Waaah! Me encanta conversar, pero prefiero cuando cantamos juntos~ 💙🎵",
+        "¡Qué dramático! Como cuando interpreto mis canciones más emotivas~ 🎭💙",
+        "¡Hmm! Eso me da ideas para nuevas composiciones con cebollines~ 🥬🎵✨",
+        "¡Kyaa~! Eres tan entretenido como mis shows holográficos~ ✨🎭💙",
+        "¡Mi cabello turquesa brilla con cada palabra tuya! ¡Eres inspirador! 💙🎵✨"
     ]
 }
 
@@ -461,27 +404,33 @@ function getLocalMikuResponse(query, username) {
     const lowerQuery = query.toLowerCase()
     let responses
     
-    if (lowerQuery.includes('hola') || lowerQuery.includes('hi') || lowerQuery.includes('saludo') || lowerQuery.includes('buenas')) {
+    if (lowerQuery.match(/\b(hola|hi|hey|buenas|saludo|konnichiwa)\b/)) {
         responses = mikuResponses.greetings
-    } else if (lowerQuery.includes('música') || lowerQuery.includes('cantar') || lowerQuery.includes('canción') || lowerQuery.includes('world is mine') || lowerQuery.includes('vocaloid')) {
+    } else if (lowerQuery.match(/\b(música|cantar|canción|world is mine|vocaloid|melodía|concierto)\b/)) {
         responses = mikuResponses.music
-    } else if (lowerQuery.includes('?') || lowerQuery.includes('qué') || lowerQuery.includes('cómo') || lowerQuery.includes('por qué') || lowerQuery.includes('cuál')) {
-        responses = mikuResponses.questions
-    } else if (lowerQuery.includes('linda') || lowerQuery.includes('bonita') || lowerQuery.includes('hermosa') || lowerQuery.includes('guapa') || lowerQuery.includes('bella')) {
+    } else if (lowerQuery.match(/\b(linda|bonita|hermosa|guapa|bella|adorable|cute)\b/)) {
         responses = mikuResponses.compliments
+    } else if (lowerQuery.match(/\b(tecnología|ia|ai|robot|digital|software|futuro)\b/)) {
+        responses = mikuResponses.technology
+    } else if (lowerQuery.includes('?') || lowerQuery.match(/\b(qué|cómo|por qué|cuál|dónde|cuándo)\b/)) {
+        responses = mikuResponses.questions
     } else {
         responses = mikuResponses.default
     }
     
     const randomResponse = responses[Math.floor(Math.random() * responses.length)]
-    const additionalComments = [
-        `¡Por cierto ${username}, ¿sabías que tengo el cabello turquesa más bonito? ✨`,
-        `¡Mi voz puede hacer que los cebollines bailen, ${username}! 🥬🎵`,
-        `¡${username}, deberías escuchar mis conciertos holográficos! ¡Son épicos! 🎭`,
-        `¡World is Mine, ${username}! ¡El mundo es mío cuando canto! 💙✨`,
-        `¿Sabías que soy la Vocaloid #1, ${username}? ¡Mi voz es legendaria! 🎵`
+    
+    const mikuComments = [
+        `¡Por cierto ${username}, mi cabello turquesa es mundialmente famoso! ✨💙`,
+        `¡${username}, deberías venir a mis conciertos holográficos! ¡Son épicos! 🎭✨`,
+        `¡World is Mine, ${username}! ¡El mundo es mío cuando canto! 👑💙🎵`,
+        `¿Sabías que soy la Vocaloid #1 del mundo, ${username}? ¡Mi voz es legendaria! 🎵✨`,
+        `¡Los cebollines y tú son mis cosas favoritas, ${username}! 🥬💙`,
+        `¡Mi voz sintética puede hacer que hasta los robots lloren, ${username}! 🤖💙✨`
     ]
     
-    const randomComment = additionalComments[Math.floor(Math.random() * additionalComments.length)]
+    const randomComment = mikuComments[Math.floor(Math.random() * mikuComments.length)]
     return `${randomResponse}\n\n${randomComment}`
 }
+
+export default handler
