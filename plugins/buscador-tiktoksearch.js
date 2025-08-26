@@ -35,7 +35,7 @@ let handler = async (message, { conn, text, usedPrefix, command }) => {
           mediaUrl: null, 
           mediaType: 1, 
           showAdAttribution: true,
-          title: '🅼🅸🅺🆄',
+          title: 'MIKU',
           body: dev,
           previewType: 0, 
           thumbnail: avatar,
