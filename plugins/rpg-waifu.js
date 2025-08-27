@@ -82,6 +82,12 @@ const waifuList = [
         probability: 5,
         img: "https://files.catbox.moe/5cyyis.png"
     },
+        {
+        name: "Sukone Chibi",
+        rarity: "común",
+        probability: 5,
+        img: "https://qu.ax/ROZWw.png"
+    },
     
     
     {
@@ -119,6 +125,12 @@ const waifuList = [
         rarity: "rara",
         probability: 3,
         img: "https://files.catbox.moe/zia0tk.png"
+    },
+    {
+        name: "Sukone Tei 2006",
+        rarity: "rara",
+        probability: 3,
+        img: "https://qu.ax/EyaRp.png"
     },
     {
         name: "Gumi Megpoid 2006",
@@ -175,6 +187,12 @@ const waifuList = [
         rarity: "épica",
         probability: 1.5,
         img: "https://files.catbox.moe/gje6q7.png"
+    },
+    {
+        name: "❤Sukone🤍",
+        rarity: "épica",
+        probability: 1.5,
+        img: "https://i1.sndcdn.com/artworks-000147734539-c348up-t1080x1080.jpg"
     },
     {
         name: "💜Defoko Utane💜",
@@ -255,6 +273,12 @@ const waifuList = [
         rarity: "ultra rara",
         probability: 0.4,
         img: "https://qu.ax/RwlPs.png"
+    },
+    {
+        name: "🤍Sukone Tei💘",
+        rarity: "ultra rara",
+        probability: 0.4,
+        img: "https://i.ytimg.com/vi/dxvU8lowsbg/maxresdefault.jpg"
     },
     {
         name: "💜Utane Defoko💜",
@@ -522,6 +546,7 @@ pujarWaifuHandler.register = true;
 pujarWaifuHandler.group = true;
 
 export { regalarWaifuHandler as regalarwaifu, subastarWaifuHandler as subastawaifu, pujarWaifuHandler as pujarwaifu };
+
 
 
 
