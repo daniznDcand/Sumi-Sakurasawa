@@ -29,6 +29,12 @@ const waifuList = [
         img: "https://qu.ax/snGCa.png"
     },
     {
+        name: "Ritsu chibi",
+        rarity: "común",
+        probability: 5,  
+        img: "https://i.pinimg.com/474x/6a/40/42/6a4042784e3330a180743d6cef798521.jpg"
+    },
+    {
         name: "Defoko Chibi",
         rarity: "común",
         probability: 5,  
@@ -107,6 +113,12 @@ const waifuList = [
         rarity: "rara",
         probability: 3,
         img: "https://qu.ax/VuWrg.png"
+    },
+    {
+        name: "Namine Ritsu 2006",
+        rarity: "rara",
+        probability: 3,
+        img: "https://qu.ax/sEVwC.png"
     },
     {
         name: "Defoko Utau",
@@ -201,6 +213,12 @@ const waifuList = [
         img: "https://files.catbox.moe/eb1jy3.png"
     },
     {
+        name: "❤Ritsu🖤",
+        rarity: "épica",
+        probability: 1.5,
+        img: "https://qu.ax/OhBgu.png"
+    },
+    {
         name: "💛Neru💛",
         rarity: "épica",
         probability: 1.5,
@@ -267,6 +285,12 @@ const waifuList = [
         rarity: "ultra rara",
         probability: 0.4,
         img: "https://qu.ax/NLdTF.png"
+    },
+    {
+        name: "🖤Namine Ritsu💞",
+        rarity: "ultra rara",
+        probability: 0.4,
+        img: "https://images.gamebanana.com/img/ss/mods/668cabe0bcbff.jpg"
     },
     {
         name: "🍻Yowane Haku🥂",
@@ -546,6 +570,7 @@ pujarWaifuHandler.register = true;
 pujarWaifuHandler.group = true;
 
 export { regalarWaifuHandler as regalarwaifu, subastarWaifuHandler as subastawaifu, pujarWaifuHandler as pujarwaifu };
+
 
 
 
