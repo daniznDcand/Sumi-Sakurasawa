@@ -20,21 +20,19 @@ let crm4 = "IF9hdXRvcmVzcG9uZGVyLmpzIGluZm8tYm90Lmpz"
 let drm1 = ""
 let drm2 = ""
 
-let rtx = "*💎✧ ┈ Hatsune Miku - Virtual Diva Bot ┈ ✧💎*\n\n🎤 Conexión Sub-Bot Modo QR\n\n✨ Con otro celular o PC escanea este QR para convertirte en un *Sub-Bot* de Miku.\n\n🎵 \`1\` » Toca los tres puntos en la esquina superior derecha\n\n🎶 \`2\` » Selecciona 'Dispositivos vinculados'\n\n🎼 \`3\` » Escanea este código QR para iniciar sesión\n\n💫 ¡Este código QR expira en 45 segundos!\n\n*～ La diva virtual te espera ～*"
+let rtx = "*💎✧ ┈ Hatsune Miku - Virtual Diva Bot ┈ ✧💎*\n\n🎤 Conexión Sub-Bot Modo QR\n\n✨ Con otro celular o PC escanea este QR para convertirte en un *Sub-Bot* de Miku.\n\n🎵 `[...]"
 
-let rtx2 = "*💎✧ ┈ Hatsune Miku - Virtual Diva Bot ┈ ✧💎*\n\n🎤 Conexión Sub-Bot Modo Código\n\n✨ Usa este código para convertirte en un *Sub-Bot* de Miku.\n\n🎵 \`1\` » Toca los tres puntos en la esquina superior derecha\n\n🎶 \`2\` » Selecciona 'Dispositivos vinculados'\n\n🎼 \`3\` » Elige 'Vincular con número de teléfono'\n\n💫 \`4\` » Ingresa el código para iniciar sesión\n\n⚠️ No uses tu cuenta principal - Miku te protege\n\n*～ ¡Únete al concierto digital! ～*"
+let rtx2 = "*💎✧ ┈ Hatsune Miku - Virtual Diva Bot ┈ ✧💎*\n\n🎤 Conexión Sub-Bot Modo Código\n\n✨ Usa este código para convertirte en un *Sub-Bot* de Miku.\n\n🎵 `1` » Toca los[...]"
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const mikuJBOptions = {}
 
-
-if (!global.conns) global.conns = new Map() 
-if (!global.connStatus) global.connStatus = new Map() 
-if (!global.reconnectAttempts) global.reconnectAttempts = new Map() 
+if (!global.conns || typeof global.conns.delete !== 'function') global.conns = new Map()
+if (!global.connStatus || typeof global.connStatus.delete !== 'function') global.connStatus = new Map()
+if (!global.reconnectAttempts || typeof global.reconnectAttempts.delete !== 'function') global.reconnectAttempts = new Map()
 
 let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
-    
     if (!globalThis.db.data.settings[conn.user.jid].jadibotmd) {
         return m.reply(`💎 El comando *${command}* está temporalmente deshabilitado por Miku.`, m, rcanal)
     }
@@ -43,29 +41,26 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
     if (new Date - global.db.data.users[m.sender].Subs < 120000) {
         return conn.reply(m.chat, `🎤 Debes esperar ${msToTime(time - new Date())} para volver a vincular un *Sub-Bot* con Miku.`, m, rcanal)
     }
-    
-   
+
     const activeSubBots = Array.from(global.conns.values()).filter(conn => 
         conn && conn.user && conn.ws && conn.ws.socket && 
         conn.ws.socket.readyState === ws.OPEN && conn.isInit
     )
-    
+
     if (activeSubBots.length >= 20) {
         return m.reply(`🎵 No hay espacios disponibles en el concierto de *Sub-Bots* de Miku. (${activeSubBots.length}/20)`)
     }
-    
+
     let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender
     let id = `${who.split`@`[0]}`
     let pathMikuJadiBot = path.join(`./${jadi}/`, id)
-    
-    
+
     if (global.conns.has(id)) {
         const existingConn = global.conns.get(id)
         if (existingConn && existingConn.ws && existingConn.ws.socket && 
             existingConn.ws.socket.readyState === ws.OPEN) {
             return m.reply(`🎵 Ya tienes una conexión activa con Miku. Cierra la sesión anterior primero.`)
         } else {
-           
             global.conns.delete(id)
             global.connStatus.delete(id)
         }
@@ -128,7 +123,6 @@ export async function mikuJadiBot(options) {
 
         let { version, isLatest } = await fetchLatestBaileysVersion()
         
-        
         const msgRetryCache = new NodeCache({ stdTTL: 3600 })
         const msgRetry = (MessageRetryMap) => { }
         const { state, saveState, saveCreds } = await useMultiFileAuthState(pathMikuJadiBot)
@@ -145,7 +139,6 @@ export async function mikuJadiBot(options) {
             browser: mcode ? Browsers.macOS("Chrome") : Browsers.macOS("Desktop"),
             version: version,
             generateHighQualityLinkPreview: true,
-            
             syncFullHistory: false,
             markOnlineOnConnect: true,
             emitOwnEvents: false,
@@ -159,14 +152,12 @@ export async function mikuJadiBot(options) {
         sock.connectionRetries = 0
         sock.maxRetries = 5
         
-        
         global.connStatus.set(userId, 'connecting')
 
         let isInit = true
         let connectionTimeout = null
         let heartbeatInterval = null
 
-       
         const startHeartbeat = () => {
             if (heartbeatInterval) clearInterval(heartbeatInterval)
             heartbeatInterval = setInterval(async () => {
@@ -197,7 +188,6 @@ export async function mikuJadiBot(options) {
             
             if (isNewLogin) sock.isInit = false
             
-           
             if (qr && !mcode) {
                 if (m?.chat) {
                     txtQR = await conn.sendMessage(m.chat, { 
@@ -212,7 +202,6 @@ export async function mikuJadiBot(options) {
                 }
                 return
             } 
-            
             
             if (qr && mcode) {
                 try {
@@ -240,20 +229,19 @@ export async function mikuJadiBot(options) {
 
             const endSession = async (reason = 'unknown') => {
                 console.log(`🎵 Terminando sesión ${userId} - Razón: ${reason}`)
-                
                 stopHeartbeat()
-                
                 try {
                     if (sock.ws && sock.ws.socket) {
                         sock.ws.close()
                     }
                 } catch (e) {}
-                
                 sock.ev.removeAllListeners()
+                if (!global.conns || typeof global.conns.delete !== 'function') global.conns = new Map()
+                if (!global.connStatus || typeof global.connStatus.delete !== 'function') global.connStatus = new Map()
+                if (!global.reconnectAttempts || typeof global.reconnectAttempts.delete !== 'function') global.reconnectAttempts = new Map()
                 global.conns.delete(userId)
                 global.connStatus.delete(userId)
                 global.reconnectAttempts.delete(userId)
-                
                 return true
             }
 
@@ -262,17 +250,12 @@ export async function mikuJadiBot(options) {
             if (connection === 'close') {
                 global.connStatus.set(userId, 'disconnected')
                 stopHeartbeat()
-                
                 console.log(`🎵 Conexión cerrada para ${userId} - Código: ${reason}`)
-                
-                
                 const shouldReconnect = [428, 408, 515].includes(reason)
                 const currentRetries = global.reconnectAttempts.get(userId) || 0
-                
                 if (shouldReconnect && currentRetries < sock.maxRetries) {
                     console.log(`🎵 Intentando reconectar ${userId} (${currentRetries + 1}/${sock.maxRetries})`)
                     global.reconnectAttempts.set(userId, currentRetries + 1)
-                    
                     setTimeout(async () => {
                         try {
                             await creloadHandler(true)
@@ -283,8 +266,6 @@ export async function mikuJadiBot(options) {
                     }, Math.min(5000 * (currentRetries + 1), 30000)) 
                     return
                 }
-                
-                
                 switch (reason) {
                     case 440: 
                         console.log(chalk.bold.magenta(`💎 Sesión duplicada detectada para ${userId}`))
@@ -299,7 +280,6 @@ export async function mikuJadiBot(options) {
                             console.error(`🎵 Error notificando duplicación a ${userId}`)
                         }
                         break
-                        
                     case 401:
                     case 405:
                         console.log(chalk.bold.red(`🎼 Credenciales inválidas para ${userId}`))
@@ -307,27 +287,22 @@ export async function mikuJadiBot(options) {
                             fs.rmSync(pathMikuJadiBot, { recursive: true, force: true })
                         }
                         break
-                        
                     case 403:
                         console.log(chalk.bold.red(`⚠️ Cuenta suspendida: ${userId}`))
                         if (fs.existsSync(pathMikuJadiBot)) {
                             fs.rmSync(pathMikuJadiBot, { recursive: true, force: true })
                         }
                         break
-                        
                     case 500:
                         console.log(chalk.bold.red(`🎶 Error interno del servidor para ${userId}`))
                         break
                 }
-                
                 endSession(`connection_closed_${reason}`)
             }
             
             if (connection === 'connecting') {
                 global.connStatus.set(userId, 'connecting')
                 console.log(`🎵 Conectando ${userId}...`)
-                
-                
                 connectionTimeout = setTimeout(() => {
                     console.log(`🎵 Timeout de conexión para ${userId}`)
                     endSession('connection_timeout')
@@ -338,22 +313,15 @@ export async function mikuJadiBot(options) {
             if (connection === 'open') {
                 global.connStatus.set(userId, 'connected')
                 global.reconnectAttempts.delete(userId) 
-                
                 if (!global.db.data?.users) loadDatabase()
-                
                 let userName = sock.authState.creds.me?.name || `Fan de Miku ${userId}`
                 let userJid = sock.authState.creds.me?.jid || `${userId}@s.whatsapp.net`
-                
                 console.log(chalk.bold.cyan(`🎤 ${userName} (${userId}) ¡Conectado al concierto de Miku!`))
-                
                 sock.isInit = true
+                if (!global.conns || typeof global.conns.set !== 'function') global.conns = new Map()
                 global.conns.set(userId, sock)
-                
-                
                 startHeartbeat()
-                
                 await joinChannels(sock)
-                
                 if (m?.chat) {
                     await conn.sendMessage(m.chat, {
                         text: args[0] ? 
@@ -365,24 +333,22 @@ export async function mikuJadiBot(options) {
             }
         }
 
-        
         const healthCheck = setInterval(async () => {
             if (!sock.user || !sock.ws || !sock.ws.socket || sock.ws.socket.readyState !== ws.OPEN) {
                 console.log(`🎵 Conexión no saludable detectada para ${userId}`)
                 clearInterval(healthCheck)
                 stopHeartbeat()
-                
                 try { 
                     if (sock.ws && sock.ws.socket) sock.ws.close() 
                 } catch (e) { }
-                
                 sock.ev.removeAllListeners()
+                if (!global.conns || typeof global.conns.delete !== 'function') global.conns = new Map()
+                if (!global.connStatus || typeof global.connStatus.delete !== 'function') global.connStatus = new Map()
                 global.conns.delete(userId)
                 global.connStatus.delete(userId)
             }
         }, 60000)
 
-        
         let handler = await import('../handler.js')
         let creloadHandler = async function (restatConn) {
             try {
@@ -391,7 +357,6 @@ export async function mikuJadiBot(options) {
             } catch (e) {
                 console.error(`🎵 Error en Miku Handler para ${userId}: `, e)
             }
-            
             if (restatConn) {
                 const oldChats = sock.chats
                 try { sock.ws.close() } catch { }
@@ -401,31 +366,32 @@ export async function mikuJadiBot(options) {
                 sock.isSubBot = true
                 isInit = true
             }
-            
             if (!isInit) {
                 sock.ev.off("messages.upsert", sock.handler)
                 sock.ev.off("connection.update", sock.connectionUpdate)
                 sock.ev.off('creds.update', sock.credsUpdate)
             }
-
-            
             sock.handler = handler.handler.bind(sock)
             sock.connectionUpdate = connectionUpdate.bind(sock)
             sock.credsUpdate = saveCreds.bind(sock, true)
-            
             sock.ev.on("messages.upsert", sock.handler)
             sock.ev.on("connection.update", sock.connectionUpdate)
             sock.ev.on("creds.update", sock.credsUpdate)
             isInit = false
             return true
         }
-        
         creloadHandler(false)
     })
 }
 
-
 export function cleanupDeadConnections() {
+ 
+    if (!global.conns || typeof global.conns.delete !== 'function') {
+        global.conns = new Map()
+    }
+    if (!global.connStatus || typeof global.connStatus.delete !== 'function') {
+        global.connStatus = new Map()
+    }
     for (const [userId, conn] of global.conns.entries()) {
         if (!conn || !conn.ws || !conn.ws.socket || conn.ws.socket.readyState !== ws.OPEN) {
             console.log(`🎵 Limpiando conexión muerta: ${userId}`)
@@ -434,7 +400,6 @@ export function cleanupDeadConnections() {
         }
     }
 }
-
 
 setInterval(cleanupDeadConnections, 300000)
 
