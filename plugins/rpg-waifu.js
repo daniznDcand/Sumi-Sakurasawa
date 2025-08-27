@@ -136,7 +136,7 @@ const waifuList = [
         name: "Teto",
         rarity: "rara",
         probability: 3,
-        img: "https://qu.ax/iAlvK.png"
+        img: "https://qu.ax/ZxvtB.png"
     },
     {
         name: "Emu Otori",
@@ -168,7 +168,7 @@ const waifuList = [
         name: "💚Momo💗",
         rarity: "épica",
         probability: 1.5,
-        img: "https://qu.ax/sdZBE.png"
+        img: "https://i.pinimg.com/736x/e7/8e/99/e78e995ea0bd0c4affd17c8d476c4c09.jpg"
     },
     {
         name: "🩵Aoki Lapis🩵",
@@ -316,7 +316,7 @@ const waifuList = [
         name: "🖤Inabakumori🖤",
         rarity: "Legendaria",
         probability: 0.167,
-        img: "https://files.catbox.moe/1oiyvv.jpg"
+        img: "https://qu.ax/cfEbf.jpg"
     },
     {
         name: "❤KASANE TETO❤",
@@ -328,7 +328,7 @@ const waifuList = [
         name: "☢️Cyberpunk Edgeruners💫",
         rarity: "Legendaria",
         probability: 0.167,
-        img: "https://files.catbox.moe/3bl6qe.png"
+        img: "https://i.pinimg.com/736x/41/20/97/4120973c715fbcaa8baeb348e7610b5d.jpg"
     },
     {
         name: "❤️🩷VOCALOIDS💛💙",
@@ -340,7 +340,7 @@ const waifuList = [
         name: "🌌HALO⚕️",
         rarity: "Legendaria",
         probability: 0.167,
-        img: "https://files.catbox.moe/h2hvi4.png"
+        img: "https://c4.wallpaperflare.com/wallpaper/752/1001/122/halo-master-chief-hd-wallpaper-preview.jpg"
     }
 ];
 
@@ -522,6 +522,7 @@ pujarWaifuHandler.register = true;
 pujarWaifuHandler.group = true;
 
 export { regalarWaifuHandler as regalarwaifu, subastarWaifuHandler as subastawaifu, pujarWaifuHandler as pujarwaifu };
+
 
 
 
