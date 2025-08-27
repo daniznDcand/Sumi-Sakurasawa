@@ -26,19 +26,18 @@ var handler = async (m, { conn, text, participants, command }) => {
 
   const delay = time => new Promise(res => setTimeout(res, time))
 
- 
   const emoji = '👻'
   const emoji2 = '🗒️'
 
   switch (command) {
     case 'fantasmas':
       if (total == 0) return conn.reply(m.chat, `${emoji} Este grupo es activo, no tiene fantasmas.`, m)
-      m.reply(`${emoji} *Revisión de inactivos*\n\n${emoji2} *Lista de fantasmas*\n${sider.map(v => '@' + v.replace(/@.+/, '')).join('\n')}\n\n*📝 NOTA:*\nEsto no es 100% exacto, el bot cuenta mensajes escritos, no lecturas.`, m, { mentions: sider })
+      m.reply(`${emoji} *Revisión de inactivos*\n\n${emoji2} *Lista de fantasmas*\n${sider.map(v => '@' + v.replace(/@.+/, '')).join('\n')}\n\n*📝 NOTA:*\nEsto no es 100% exacto, el bot cuenta mensajes en la base de datos, pero puede haber errores si el bot fue agregado después de que algunos miembros ya estaban inactivos.`)
       break
 
     case 'kickfantasmas':
       if (total == 0) return conn.reply(m.chat, `${emoji} Este grupo es activo, no tiene fantasmas.`, m)
-      await m.reply(`${emoji} *Eliminación de inactivos*\n\n${emoji2} *Lista de fantasmas*\n${sider.map(v => '@' + v.replace(/@.+/, '')).join('\n')}\n\n_El bot eliminará a estos usuarios, uno cada 10 segundos..._`, m, { mentions: sider })
+      await m.reply(`${emoji} *Eliminación de inactivos*\n\n${emoji2} *Lista de fantasmas*\n${sider.map(v => '@' + v.replace(/@.+/, '')).join('\n')}\n\n_El bot eliminará a estos usuarios, uno cada 10 segundos._`)
       await delay(10000)
       let chat = global.db.data.chats[m.chat]
       chat.welcome = false
@@ -46,7 +45,7 @@ var handler = async (m, { conn, text, participants, command }) => {
         for (let user of sider) {
           let participant = participants.find(p => p.id === user)
           let isAdmin = participant?.admin === 'admin' || participant?.admin === 'superadmin' || participant?.isAdmin || participant?.isSuperAdmin || false
-          if (user.endsWith('@s.whatsapp.net') && !isAdmin) {
+          if (typeof user === 'string' && user.endsWith('@s.whatsapp.net') && !isAdmin) {
             try {
               await conn.groupParticipantsUpdate(m.chat, [user], 'remove')
               await delay(10000)
