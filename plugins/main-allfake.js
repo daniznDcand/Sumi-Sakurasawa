@@ -34,7 +34,7 @@ global.namechannel2 = '💙HATSUNE MIKU CHANNEL💙'
 global.namegrupo = '💙HATSUNE MIKU CHANNEL💙'
 global.namecomu = '💙HATSUNE MIKU CHANNEL💙'
 global.listo = '*Aquí tienes ฅ^•ﻌ•^ฅ*'
-global.fotoperfil = await conn.profilePictureUrl(m.sender, 'image').catch(_ => 'https://litter.catbox.moe/qlzlko9niav5gtu9.png')
+global.fotoperfil = await conn.profilePictureUrl(m.sender, 'image').catch(_ => 'https://i.pinimg.com/736x/14/52/eb/1452eba350f5e77ec58cf5c1893eb211.jpg')
 
 global.canalIdM = ["120363315369913363@newsletter", "120363315369913363@newsletter"]
 global.canalNombreM = ["💙HATSUNE MIKU CHANNEL💙"]
@@ -108,7 +108,7 @@ global.fake = { contextInfo: { isForwarded: true, forwardedNewsletterMessageInfo
 }}, { quoted: m }
 
 global.icono = [
-'https://litter.catbox.moe/qlzlko9niav5gtu9.png',
+'https://i.pinimg.com/736x/14/52/eb/1452eba350f5e77ec58cf5c1893eb211.jpg',
 ].getRandom()
 
 global.rcanal = { contextInfo: { isForwarded: true, forwardedNewsletterMessageInfo: { newsletterJid: channelRD.id, serverMessageId: 100, newsletterName: channelRD.name, }, externalAdReply: { showAdAttribution: true, title: packname, body: dev, mediaUrl: null, description: null, previewType: "PHOTO", thumbnailUrl: icono, sourceUrl: redes, mediaType: 1, renderLargerThumbnail: false }, }, }}
