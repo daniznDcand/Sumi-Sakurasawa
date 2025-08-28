@@ -34,13 +34,23 @@ export async function handler(chatUpdate) {
 
 	if (global.db?.data == null) await global.loadDatabase()
 
+	// Ensure DB shape exists to avoid undefined reads in plugins
+	global.db.data = global.db.data || {}
+	global.db.data.users = global.db.data.users || {}
+	global.db.data.chats = global.db.data.chats || {}
+	global.db.data.settings = global.db.data.settings || {}
+
 	try {
 		m = smsg(this, m) || m
 		if (!m) return
 		m.exp = m.exp || 0
 		m.coin = m.coin || 0
 
-		const _user = global.db?.data?.users?.[m.sender] || {}
+		// ensure per-message user & chat defaults exist
+		if (!global.db.data.users[m.sender]) global.db.data.users[m.sender] = { registered: false }
+		if (!global.db.data.chats[m.chat]) global.db.data.chats[m.chat] = {}
+		if (!global.db.data.settings[this.user?.jid]) global.db.data.settings[this.user?.jid] = {}
+		const _user = global.db.data.users[m.sender]
 		const detectwhat = m.sender && m.sender.includes('@lid') ? '@lid' : '@s.whatsapp.net'
 		const owners = (global.owner || []).map(([number]) => (number || '').replace(/[^0-9]/g, '') + detectwhat)
 		const isROwner = owners.includes(m.sender)
