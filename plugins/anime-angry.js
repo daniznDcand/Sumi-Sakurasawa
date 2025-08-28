@@ -17,14 +17,14 @@ let handler = async (m, { conn, usedPrefix }) => {
         : `💙 \`${name2}\` está expresando su sentimiento en el concierto virtual 😤`
     
     if (m.isGroup) {
-        let pp = 'https://files.catbox.moe/9fmjzk.mp4'
-        let pp2 = 'https://litter.catbox.moe/2zkou4u399196qwm.mp4'
-        let pp3 = 'https://litter.catbox.moe/88kat648a7baqkj2.mp4'
-        let pp4 = 'https://files.catbox.moe/kg3fti.mp4'
-        let pp5 = 'https://files.catbox.moe/vpb0rg.mp4'
-        let pp6 = 'https://files.catbox.moe/7eltxa.mp4'
-        let pp7 = 'https://litter.catbox.moe/gcoa1d2ztc3y3ap9.mp4'
-        let pp8 = 'https://litter.catbox.moe/vcj8gb5c1ptcwjyl.mp4'
+        let pp = 'https://media.tenor.com/YPBIySGgoM0AAAPo/anime-rem.mp4'
+        let pp2 = 'https://media.tenor.com/z2iFD-hLYnAAAAPo/anime-girl-anime.mp4'
+        let pp3 = 'https://media.tenor.com/xMFhPvyO7m0AAAPo/smartphone-anime.mp4'
+        let pp4 = 'https://media.tenor.com/X1Ux_VD2ME0AAAPo/tokyoghoul.mp4'
+        let pp5 = 'https://media.tenor.com/cYRAeQqpaUMAAAPo/anime-angry-slow-loop.mp4'
+        let pp6 = 'https://media.tenor.com/hkoyf1VeaZ4AAAPo/anime-angry.mp4'
+        let pp7 = 'https://media.tenor.com/rzDkOlEDun0AAAPo/hayase-nagatoro-nagatoro-angry.mp4'
+        let pp8 = 'https://media.tenor.com/Q_SHYUU4NccAAAPo/anime-evil.mp4'
         
         const videos = [pp, pp2, pp3, pp4, pp5, pp6, pp7, pp8]
         const video = videos[Math.floor(Math.random() * videos.length)]
