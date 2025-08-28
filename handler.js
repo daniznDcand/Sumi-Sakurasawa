@@ -7,13 +7,16 @@ import chalk from 'chalk'
 
 const isNumber = x => typeof x === 'number' && !isNaN(x)
 
+
+const DEFAULT_PREFIXES = ['#', '!', '.', '/', '¿', '?']
+
 export async function handler(chatUpdate) {
 	const conn = this
 	const opts = this.opts || global.opts || {}
 	this.msgqueque = this.msgqueque || []
 	this.uptime = this.uptime || Date.now()
 
-	// small TTL cache for group metadata (10s)
+	
 	this._groupMetaCache = this._groupMetaCache || new Map()
 	const getGroupMetaCached = async (jid) => {
 		try {
@@ -34,7 +37,7 @@ export async function handler(chatUpdate) {
 
 	if (global.db?.data == null) await global.loadDatabase()
 
-	// Ensure DB shape exists to avoid undefined reads in plugins
+	
 	global.db.data = global.db.data || {}
 	global.db.data.users = global.db.data.users || {}
 	global.db.data.chats = global.db.data.chats || {}
@@ -83,22 +86,24 @@ export async function handler(chatUpdate) {
 		const isAdmin = isRAdmin || user?.admin === 'admin'
 		const isBotAdmin = !!bot?.admin
 
-		// plugin cache (precompute regexes)
+	
 		const ___dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), './plugins')
 		if (!this._pluginCache) {
 			const str2Regex = str => String(str).replace(/[|\\{}()[\]^$+*?.]/g, '\\$&')
 			this._pluginCache = Object.keys(global.plugins || {}).map(name => {
 				const plugin = global.plugins[name]
 				if (!plugin) return null
-				const _prefix = plugin.customPrefix ?? (conn.prefix ?? global.prefix)
+				
+				const _prefix = plugin.customPrefix ?? DEFAULT_PREFIXES
 				let prefixRegexes = []
 				if (_prefix instanceof RegExp) prefixRegexes = [_prefix]
-				else if (Array.isArray(_prefix)) prefixRegexes = _prefix.map(p => p instanceof RegExp ? p : new RegExp(str2Regex(p)))
-				else prefixRegexes = [new RegExp(str2Regex(_prefix))]
+				else if (Array.isArray(_prefix)) prefixRegexes = _prefix.map(p => p instanceof RegExp ? p : new RegExp('^' + str2Regex(p)))
+				else prefixRegexes = [new RegExp('^' + str2Regex(_prefix))]
 				return { name, plugin, prefixRegexes, rawPrefix: _prefix }
 			}).filter(Boolean)
 		}
 
+	
 		for (const item of this._pluginCache) {
 			const { name, plugin, prefixRegexes } = item
 			if (!plugin) continue
@@ -116,11 +121,11 @@ export async function handler(chatUpdate) {
 
 			if (!opts['restrict'] && plugin.tags && plugin.tags.includes('admin')) continue
 
-			// match prefixes
+			
 			let match = null
 			let usedPrefix = null
 			for (const re of prefixRegexes) {
-				const exec = re.exec(m.text)
+				const exec = re.exec(m.text.trim())
 				if (exec) { match = exec; usedPrefix = exec[0]; break }
 			}
 
@@ -133,7 +138,7 @@ export async function handler(chatUpdate) {
 			if (typeof plugin !== 'function' && typeof plugin !== 'object') continue
 
 			if (match && usedPrefix != null) {
-				const noPrefix = m.text.replace(usedPrefix, '')
+				const noPrefix = m.text.trim().slice(usedPrefix.length)
 				let [command, ...args] = noPrefix.trim().split(/\s+/).filter(Boolean)
 				args = args || []
 				const _args = noPrefix.trim().split(/\s+/).slice(1)
@@ -148,6 +153,8 @@ export async function handler(chatUpdate) {
 
 				const extra = { match, usedPrefix, noPrefix, _args, args, command, text, conn: this, participants, groupMetadata, user, bot, isROwner, isOwner, isRAdmin, isAdmin, isBotAdmin, isPrems, chatUpdate, __dirname: ___dirname, __filename }
 				try {
+					
+					console.log(chalk.green(`[CMD] ${command} | plugin: ${name} | by: ${m.sender}`))
 					await plugin.call(this, m, extra)
 				} catch (e) {
 					m.error = e
@@ -207,7 +214,7 @@ global.dfail = (type, m, usedPrefix, comando, conn) => {
 	if (msg) return m?.reply?.(msg).then?.(_ => m?.react?.('✖️'))
 }
 
-// watch file and attempt to reload handler in sub-conns
+
 const file = global.__filename(import.meta.url, true)
 watchFile(file, async () => {
 	unwatchFile(file)
