@@ -47,7 +47,9 @@ mentionedJid: [randomUserId],
 }}, { quoted: m })
 break
 }
-global.db.write()}
+try { global.saveDB?.() } catch(e) { console.error(e) }
+
+}
 
 handler.tags = ['economy']
 handler.help = ['crimen']

@@ -140,6 +140,20 @@ global.loadDatabase = async function loadDatabase() {
 }
 loadDatabase()
 
+// Debounced save helper to avoid frequent immediate writes
+let _saveTimeout = null
+global.saveDB = async (delay = 2000) => {
+  try {
+    if (_saveTimeout) clearTimeout(_saveTimeout)
+    _saveTimeout = setTimeout(async () => {
+      _saveTimeout = null
+      if (global.db && global.db.data) await global.db.write().catch(console.error)
+    }, delay)
+  } catch (e) {
+    console.error(e)
+  }
+}
+
 const {state, saveState, saveCreds} = await useMultiFileAuthState(global.sessions)
 const msgRetryCounterMap = (MessageRetryMap) => { }
 const msgRetryCounterCache = new NodeCache()
@@ -226,7 +240,7 @@ conn.well = false
 
 if (!opts['test']) {
   if (global.db) setInterval(async () => {
-    if (global.db.data) await global.db.write()
+  if (global.db.data) await global.saveDB()
     if (opts['autocleartmp'] && (global.support || {}).find) {
       const tmp = [tmpdir(), 'tmp', `${global.sessions || 'sessions'}`]
       tmp.forEach((filename) => spawn('find', [filename, '-amin', '3', '-type', 'f', '-delete']))

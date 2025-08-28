@@ -60,7 +60,7 @@ let handler = async (m, { conn }) => {
 
   await conn.sendFile(m.chat, img, 'gremio.jpg', info, fkontak);
 
-  await global.db.write();
+  try { global.saveDB?.() } catch(e) { console.error(e) }
 };
 
 handler.tags = ['rpg'];

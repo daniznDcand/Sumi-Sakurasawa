@@ -39,7 +39,7 @@ let handler = async (m, { conn, text }) => {
     users[who].exp = 0;
     users[who].level = 0;
 
-    await global.db.write();
+    await global.saveDB();
 
     const getConnsArray = () => {
         if (!global.conns) return []

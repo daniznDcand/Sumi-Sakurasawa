@@ -23,7 +23,7 @@ let handler = async (m, { text, usedPrefix, command }) => {
         packstickers.text1 = packText1;
         packstickers.text2 = packText2;
 
-        await global.db.write();
+    try { await global.saveDB?.() } catch (e) { console.error(e) }
 
         return m.reply(`${emoji4} Se actualizo el pack y autor por defecto para tus stickers.`);
     }
@@ -37,7 +37,7 @@ let handler = async (m, { text, usedPrefix, command }) => {
         delete packstickers.text1;
         delete packstickers.text2;
 
-        await global.db.write();
+    try { await global.saveDB?.() } catch (e) { console.error(e) }
 
         return m.reply(`${emoji} Se restablecio el pack y autor por defecto para tus stickers.`);
     }

@@ -54,7 +54,7 @@ let handler = async (m, { conn, usedPrefix, command }) => {
 
   await conn.sendFile(m.chat, img, 'miku.jpg', info, fkontak);
 
-  global.db.write();
+  try { global.saveDB?.() } catch(e) { console.error(e) }
 };
 
 handler.tags = ['rpg'];
