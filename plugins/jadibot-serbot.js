@@ -33,6 +33,23 @@ if (!global.connStatus || typeof global.connStatus.delete !== 'function') global
 if (!global.reconnectAttempts || typeof global.reconnectAttempts.delete !== 'function') global.reconnectAttempts = new Map()
 
 let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
+
+    // Comando para ver subbots conectados
+    if (/^(verbots|subbots|botsconectados)$/i.test(command)) {
+        const subbots = Array.from(global.conns.values()).filter(conn => conn && conn.user && conn.ws && conn.ws.socket && conn.ws.socket.readyState === ws.OPEN && conn.isInit)
+        if (subbots.length === 0) {
+            return m.reply('No hay subbots activos en este momento.')
+        }
+
+        let txt = '*💎 SUB-BOTS CONECTADOS:*\n';
+        subbots.forEach((bot, i) => {
+            const nombre = bot.user.name || 'Sub-Bot';
+            const jid = bot.user.jid || 'Desconocido';
+            txt += `*${i+1}.* ${nombre} - wa.me/${jid.replace(/[^0-9]/g, '')}\n`;
+        });
+        return m.reply(txt);
+    }
+
     if (!globalThis.db.data.settings[conn.user.jid].jadibotmd) {
         return m.reply(`💎 El comando *${command}* está temporalmente deshabilitado por Miku.`, m, rcanal)
     }
@@ -81,11 +98,10 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
     
     mikuJadiBot(mikuJBOptions)
     global.db.data.users[m.sender].Subs = new Date * 1
-} 
-
-handler.help = ['qr', 'code']
+}
+handler.help = ['qr', 'code', 'verbots', 'subbots', 'botsconectados']
 handler.tags = ['serbot']
-handler.command = ['qr', 'code']
+handler.command = ['qr', 'code', 'verbots', 'subbots', 'botsconectados']
 export default handler 
 
 export async function mikuJadiBot(options) {
@@ -127,6 +143,7 @@ export async function mikuJadiBot(options) {
         const msgRetry = (MessageRetryMap) => { }
         const { state, saveState, saveCreds } = await useMultiFileAuthState(pathMikuJadiBot)
 
+        // --- CONEXIÓN AISLADA PARA SUBBOTS ---
         const connectionOptions = {
             logger: pino({ level: "fatal" }),
             printQRInTerminal: false,
@@ -142,8 +159,12 @@ export async function mikuJadiBot(options) {
             syncFullHistory: false,
             markOnlineOnConnect: true,
             emitOwnEvents: false,
-            getMessage: async (key) => ({ conversation: 'Miku Bot Message' })
-        };
+            getMessage: async (key) => ({ conversation: 'Miku Bot Message' }),
+            // Aislar eventos y evitar colisión con el principal
+            shouldSyncHistoryMessage: false,
+            emitOwnEvents: false,
+            patchMessageBeforeSending: async m => m,
+        }
 
         let sock = makeWASocket(connectionOptions)
         sock.isInit = false
