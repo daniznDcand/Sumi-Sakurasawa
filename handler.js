@@ -563,9 +563,17 @@ watchFile(file, async () => {
 unwatchFile(file)
 console.log(chalk.magenta("Se actualizo 'handler.js'"))
 
-if (global.conns && global.conns.length > 0 ) {
-const users = [...new Set([...global.conns.filter((conn) => conn.user && conn.ws.socket && conn.ws.socket.readyState !== ws.CLOSED).map((conn) => conn)])]
-for (const userr of users) {
-userr.subreloadHandler(false)
-}}})
+	if (global.conns) {
+		const getConnsArray = () => {
+			if (!global.conns) return []
+			if (global.conns instanceof Map) return Array.from(global.conns.values())
+			if (Array.isArray(global.conns)) return global.conns
+			return Object.values(global.conns || {})
+		}
+
+		const connsArr = getConnsArray()
+		if (connsArr.length > 0) {
+			const users = [...new Set(connsArr.filter((conn) => conn.user && conn.ws?.socket && conn.ws.socket.readyState !== ws.CLOSED).map((conn) => conn))]
+			for (const userr of users) userr.subreloadHandler?.(false)
+		}
 

@@ -5,7 +5,13 @@ let totalreg = Object.keys(global.db.data.users).length
 let totalchats = Object.keys(global.db.data.chats).length
 
 let uptime = clockString(_uptime);
-let users = [...new Set([...global.conns.filter((conn) => conn.user && conn.ws.socket && conn.ws.socket.readyState !== ws.CLOSED).map((conn) => conn)])];
+const getConnsArray = () => {
+    if (!global.conns) return []
+    if (global.conns instanceof Map) return Array.from(global.conns.values())
+    if (Array.isArray(global.conns)) return global.conns
+    return Object.values(global.conns || {})
+}
+let users = [...new Set(getConnsArray().filter((conn) => conn.user && conn.ws?.socket && conn.ws.socket.readyState !== ws.CLOSED).map((conn) => conn))];
 const chats = Object.entries(conn.chats).filter(([id, data]) => id && data.isChats)
 const groupsIn = chats.filter(([id]) => id.endsWith('@g.us')) 
 const totalUsers = users.length;

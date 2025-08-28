@@ -41,13 +41,20 @@ let handler = async (m, { conn, text }) => {
 
     await global.db.write();
 
-    for (let subbot of global.conns) {
+    const getConnsArray = () => {
+        if (!global.conns) return []
+        if (global.conns instanceof Map) return Array.from(global.conns.values())
+        if (Array.isArray(global.conns)) return global.conns
+        return Object.values(global.conns || {})
+    }
+
+    for (let subbot of getConnsArray()) {
         try {
-            if (subbot.user) {
+            if (subbot?.user) {
                 await subbot.sendMessage(m.chat, { text: `/deschetar ${who.split`@`[0]}` });
             }
         } catch (error) {
-            console.log(`${msm} Error al deschetar al usuario: ${error.message}`);
+            console.log(`${msm} Error al deschetar al usuario: ${error?.message || error}`);
         }
     }
 

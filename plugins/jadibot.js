@@ -43,7 +43,13 @@ break
 
 case isCommand3:
 //if (global.db.data.settings[conn.user.jid].jadibotmd) return m.reply(`${emoji} Este comando está desactivado por mi creador.`)
-const users = [...new Set([...global.conns.filter((conn) => conn.user && conn.ws.socket && conn.ws.socket.readyState !== ws.CLOSED).map((conn) => conn)])];
+const getConnsArray = () => {
+	if (!global.conns) return []
+	if (global.conns instanceof Map) return Array.from(global.conns.values())
+	if (Array.isArray(global.conns)) return global.conns
+	return Object.values(global.conns || {})
+}
+const users = [...new Set(getConnsArray().filter((conn) => conn.user && conn.ws?.socket && conn.ws.socket.readyState !== ws.CLOSED).map((conn) => conn))];
 function convertirMsADiasHorasMinutosSegundos(ms) {
 var segundos = Math.floor(ms / 1000);
 var minutos = Math.floor(segundos / 60);
