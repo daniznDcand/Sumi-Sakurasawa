@@ -26,18 +26,17 @@ const mikuJBOptions = {}
 if (global.conns instanceof Array) console.log()
 else global.conns = []
 let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
-// Evitar que un subbot use la sesión principal
 const mainSessionPath = global.sessions || './sessions';
 const jadiDir = typeof jadi !== 'undefined' ? jadi : 'JadiBots';
 if (!globalThis.db.data.settings[conn.user.jid].jadibotmd) {
 	return m.reply(`🌱💙 El Comando *${command}* está desactivado temporalmente.`)
 }
 let time = global.db.data.users[m.sender].Subs + 120000
-if (new Date - global.db.data.users[m.sender].Subs < 120000) return conn.reply(m.chat, `🌱 Debes esperar ${msToTime(time - new Date())} para volver a vincular un *Sub-Bot* de Miku. 💙`, m)
-
+if (new Date - global.db.data.users[m.sender].Subs < 120000) {
+	return conn.reply(m.chat, `🌱 Debes esperar ${msToTime(time - new Date())} para volver a vincular un *Sub-Bot* de Miku. 💙`, m)
+}
 if (!Array.isArray(global.conns)) global.conns = []
 
-// Solo contar subbots, nunca la conexión principal
 const subBots = [...new Set([...global.conns.filter((c) => c.user && c.ws && c.ws.socket && c.ws.socket.readyState !== ws.CLOSED && c !== global.conn)])]
 const subBotsCount = subBots.length
 if (subBotsCount >= 20) {
@@ -46,7 +45,7 @@ if (subBotsCount >= 20) {
 let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender
 let id = `${who.split`@`[0]}`
 let pathMikuJadiBot = path.join(`./${jadiDir}/`, id)
-// Nunca permitir que un subbot use la carpeta de sesión principal
+
 if (path.resolve(pathMikuJadiBot) === path.resolve(mainSessionPath)) {
 	return m.reply('❌ No puedes usar la sesión principal para un subbot.');
 }
@@ -62,7 +61,7 @@ mikuJBOptions.command = command
 mikuJBOptions.fromCommand = true
 mikuJadiBot(mikuJBOptions)
 global.db.data.users[m.sender].Subs = new Date * 1
-} 
+}
 handler.help = ['qr', 'code']
 handler.tags = ['serbot']
 handler.command = ['qr', 'code']
@@ -81,7 +80,7 @@ if (args[1]) args[1] = args[1].replace(/^--code$|^code$/, "").trim()
 if (args[0] == "") args[0] = undefined
 }
 
-// Nunca permitir que un subbot use la sesión principal
+
 const mainSessionPath = global.sessions || './sessions';
 const pathCreds = path.join(pathMikuJadiBot, "creds.json")
 if (path.resolve(pathMikuJadiBot) === path.resolve(mainSessionPath)) {
@@ -264,19 +263,21 @@ creloadHandler(false)
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 function sleep(ms) {
-return new Promise(resolve => setTimeout(resolve, ms));}
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
 function msToTime(duration) {
-var milliseconds = parseInt((duration % 1000) / 100),
-seconds = Math.floor((duration / 1000) % 60),
-minutes = Math.floor((duration / (1000 * 60)) % 60),
-hours = Math.floor((duration / (1000 * 60 * 60)) % 24)
-hours = (hours < 10) ? '0' + hours : hours
-minutes = (minutes < 10) ? '0' + minutes : minutes
-seconds = (seconds < 10) ? '0' + seconds : seconds
-return minutes + ' m y ' + seconds + ' s '
+	var milliseconds = parseInt((duration % 1000) / 100),
+		seconds = Math.floor((duration / 1000) % 60),
+		minutes = Math.floor((duration / (1000 * 60)) % 60),
+		hours = Math.floor((duration / (1000 * 60 * 60)) % 24)
+	hours = (hours < 10) ? '0' + hours : hours
+	minutes = (minutes < 10) ? '0' + minutes : minutes
+	seconds = (seconds < 10) ? '0' + seconds : seconds
+	return minutes + ' m y ' + seconds + ' s '
 }
 
 async function joinChannels(conn) {
-for (const channelId of Object.values(global.ch)) {
-await conn.newsletterFollow(channelId).catch(() => {})
-}}
+	for (const channelId of Object.values(global.ch)) {
+		await conn.newsletterFollow(channelId).catch(() => {})
+	}
+}
