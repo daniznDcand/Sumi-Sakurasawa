@@ -26,25 +26,32 @@ const mikuJBOptions = {}
 if (global.conns instanceof Array) console.log()
 else global.conns = []
 let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
+// Evitar que un subbot use la sesión principal
+const mainSessionPath = global.sessions || './sessions';
+const jadiDir = typeof jadi !== 'undefined' ? jadi : 'JadiBots';
 if (!globalThis.db.data.settings[conn.user.jid].jadibotmd) {
-return m.reply(`🌱💙 El Comando *${command}* está desactivado temporalmente.`)
+	return m.reply(`🌱💙 El Comando *${command}* está desactivado temporalmente.`)
 }
 let time = global.db.data.users[m.sender].Subs + 120000
 if (new Date - global.db.data.users[m.sender].Subs < 120000) return conn.reply(m.chat, `🌱 Debes esperar ${msToTime(time - new Date())} para volver a vincular un *Sub-Bot* de Miku. 💙`, m)
 
-
 if (!Array.isArray(global.conns)) global.conns = []
 
-const subBots = [...new Set([...global.conns.filter((conn) => conn.user && conn.ws.socket && conn.ws.socket.readyState !== ws.CLOSED).map((conn) => conn)])]
+// Solo contar subbots, nunca la conexión principal
+const subBots = [...new Set([...global.conns.filter((c) => c.user && c.ws && c.ws.socket && c.ws.socket.readyState !== ws.CLOSED && c !== global.conn)])]
 const subBotsCount = subBots.length
-if (subBotsCount === 20) {
-return m.reply(`🌱💙 No se han encontrado espacios para *Sub-Bots* de Miku disponibles.`)
+if (subBotsCount >= 20) {
+	return m.reply(`🌱💙 No se han encontrado espacios para *Sub-Bots* de Miku disponibles.`)
 }
 let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender
 let id = `${who.split`@`[0]}`
-let pathMikuJadiBot = path.join(`./${jadi}/`, id)
+let pathMikuJadiBot = path.join(`./${jadiDir}/`, id)
+// Nunca permitir que un subbot use la carpeta de sesión principal
+if (path.resolve(pathMikuJadiBot) === path.resolve(mainSessionPath)) {
+	return m.reply('❌ No puedes usar la sesión principal para un subbot.');
+}
 if (!fs.existsSync(pathMikuJadiBot)){
-fs.mkdirSync(pathMikuJadiBot, { recursive: true })
+	fs.mkdirSync(pathMikuJadiBot, { recursive: true })
 }
 mikuJBOptions.pathMikuJadiBot = pathMikuJadiBot
 mikuJBOptions.m = m
@@ -73,14 +80,22 @@ args[0] = args[0].replace(/^--code$|^code$/, "").trim()
 if (args[1]) args[1] = args[1].replace(/^--code$|^code$/, "").trim()
 if (args[0] == "") args[0] = undefined
 }
+
+// Nunca permitir que un subbot use la sesión principal
+const mainSessionPath = global.sessions || './sessions';
 const pathCreds = path.join(pathMikuJadiBot, "creds.json")
+if (path.resolve(pathMikuJadiBot) === path.resolve(mainSessionPath)) {
+	if (m && m.chat) conn.reply(m.chat, '❌ No puedes usar la sesión principal para un subbot.', m)
+	return;
+}
 if (!fs.existsSync(pathMikuJadiBot)){
-fs.mkdirSync(pathMikuJadiBot, { recursive: true })}
+	fs.mkdirSync(pathMikuJadiBot, { recursive: true })
+}
 try {
-args[0] && args[0] != undefined ? fs.writeFileSync(pathCreds, JSON.stringify(JSON.parse(Buffer.from(args[0], "base64").toString("utf-8")), null, '\t')) : ""
+	args[0] && args[0] != undefined ? fs.writeFileSync(pathCreds, JSON.stringify(JSON.parse(Buffer.from(args[0], "base64").toString("utf-8")), null, '\t')) : ""
 } catch {
-conn.reply(m.chat, `💙🌱 Use correctamente el comando » ${usedPrefix + command} code`, m)
-return
+	conn.reply(m.chat, `💙🌱 Use correctamente el comando » ${usedPrefix + command} code`, m)
+	return
 }
 
 const comb = Buffer.from(crm1 + crm2 + crm3 + crm4, "base64")
@@ -188,16 +203,19 @@ fs.rmdirSync(pathMikuJadiBot, { recursive: true })
 }}
 if (global.db.data == null) loadDatabase()
 if (connection == `open`) {
-if (!global.db.data?.users) loadDatabase()
-await joinChannels(conn)
-let userName, userJid
-userName = sock.authState.creds.me.name || 'Anónimo'
-userJid = sock.authState.creds.me.jid || `${path.basename(pathMikuJadiBot)}@s.whatsapp.net`
-console.log(chalk.bold.cyanBright(`\n🌱💙──【• MIKU SUB-BOT •】──💙🌱\n│\n│ ✨ ${userName} (+${path.basename(pathMikuJadiBot)}) conectado exitosamente con Miku.\n│\n🌱💙──【• CONECTADO •】──💙🌱`))
-sock.isInit = true
-global.conns.push(sock)
-m?.chat ? await conn.sendMessage(m.chat, {text: args[0] ? `@${m.sender.split('@')[0]}, ya estás conectado con Miku 🌱💙, leyendo mensajes entrantes...` : `@${m.sender.split('@')[0]}, genial ya eres parte de la familia de Sub-Bots de Miku 🌱💙`, mentions: [m.sender]}, { quoted: m }) : ''
-}}
+	if (!global.db.data?.users) loadDatabase()
+	await joinChannels(conn)
+	let userName, userJid
+	userName = sock.authState.creds.me.name || 'Anónimo'
+	userJid = sock.authState.creds.me.jid || `${path.basename(pathMikuJadiBot)}@s.whatsapp.net`
+	console.log(chalk.bold.cyanBright(`\n🌱💙──【• MIKU SUB-BOT •】──💙🌱\n│\n│ ✨ ${userName} (+${path.basename(pathMikuJadiBot)}) conectado exitosamente con Miku.\n│\n🌱💙──【• CONECTADO •】──💙🌱`))
+	sock.isInit = true
+	// Nunca agregar la conexión principal a global.conns
+	if (sock !== global.conn && !global.conns.includes(sock)) {
+		global.conns.push(sock)
+	}
+	m?.chat ? await conn.sendMessage(m.chat, {text: args[0] ? `@${m.sender.split('@')[0]}, ya estás conectado con Miku 🌱💙, leyendo mensajes entrantes...` : `@${m.sender.split('@')[0]}, genial ya eres parte de la familia de Sub-Bots de Miku 🌱💙`, mentions: [m.sender]}, { quoted: m }) : ''
+}
 setInterval(async () => {
 if (!sock.user) {
 try { sock.ws.close() } catch (e) {      

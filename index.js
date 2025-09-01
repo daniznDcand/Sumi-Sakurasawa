@@ -203,29 +203,33 @@ version,
 
 global.conn = makeWASocket(connectionOptions);
 
+// Protección: nunca permitir que un subbot reemplace la conexión principal
+// Solo la sesión principal debe inicializar global.conn
 if (!fs.existsSync(`./${sessions}/creds.json`)) {
-if (opcion === '2' || methodCode) {
-opcion = '2'
-if (!conn.authState.creds.registered) {
-let addNumber
-if (!!phoneNumber) {
-addNumber = phoneNumber.replace(/[^0-9]/g, '')
-} else {
-do {
-phoneNumber = await question(chalk.bgBlack(chalk.bold.greenBright(` Por favor, Ingrese el número de WhatsApp.\n${chalk.bold.yellowBright(`✏  Ejemplo: 519530734XX`)}\n${chalk.bold.magentaBright('---> ')}`)))
-phoneNumber = phoneNumber.replace(/\D/g,'')
-if (!phoneNumber.startsWith('+')) {
-phoneNumber = `+${phoneNumber}`
-}
-} while (!await isValidPhoneNumber(phoneNumber))
-rl.close()
-addNumber = phoneNumber.replace(/\D/g, '')
-setTimeout(async () => {
-let codeBot = await conn.requestPairingCode(addNumber)
-codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot
-console.log(chalk.bold.white(chalk.bgMagenta(`💙 CÓDIGO DE VINCULACIÓN 💙`)), chalk.bold.white(chalk.white(codeBot)))
-}, 3000)
-}}}
+  if (opcion === '2' || methodCode) {
+    opcion = '2'
+    if (!conn.authState.creds.registered) {
+      let addNumber
+      if (!!phoneNumber) {
+        addNumber = phoneNumber.replace(/[^0-9]/g, '')
+      } else {
+        do {
+          phoneNumber = await question(chalk.bgBlack(chalk.bold.greenBright(` Por favor, Ingrese el número de WhatsApp.\n${chalk.bold.yellowBright(`✏  Ejemplo: 519530734XX`)}\n${chalk.bold.magentaBright('---> ')}`)))
+          phoneNumber = phoneNumber.replace(/\D/g,'')
+          if (!phoneNumber.startsWith('+')) {
+            phoneNumber = `+${phoneNumber}`
+          }
+        } while (!await isValidPhoneNumber(phoneNumber))
+        rl.close()
+        addNumber = phoneNumber.replace(/\D/g, '')
+        setTimeout(async () => {
+          let codeBot = await conn.requestPairingCode(addNumber)
+          codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot
+          console.log(chalk.bold.white(chalk.bgMagenta(`💙 CÓDIGO DE VINCULACIÓN 💙`)), chalk.bold.white(chalk.white(codeBot)))
+        }, 3000)
+      }
+    }
+  }
 }
 
 conn.isInit = false;
@@ -244,43 +248,46 @@ global.stopped = connection;
 if (isNewLogin) conn.isInit = true;
 const code = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode;
 if (code && code !== DisconnectReason.loggedOut && conn?.ws.socket == null) {
-await global.reloadHandler(true).catch(console.error);
-global.timestamp.connect = new Date;
+  await global.reloadHandler(true).catch(console.error);
+  global.timestamp.connect = new Date;
 }
 if (global.db.data == null) loadDatabase();
 if (update.qr != 0 && update.qr != undefined || methodCodeQR) {
-if (opcion == '1' || methodCodeQR) {
-console.log(chalk.bold.yellow(`\n❐ ESCANEA EL CÓDIGO QR DE MIKU - EXPIRA EN 45 SEGUNDOS`))}
+  if (opcion == '1' || methodCodeQR) {
+    console.log(chalk.bold.yellow(`\n❐ ESCANEA EL CÓDIGO QR DE MIKU - EXPIRA EN 45 SEGUNDOS`))
+  }
 }
 if (connection == 'open') {
-console.log(chalk.bold.green('\n💙 Hatsune Miku Conectada con éxito 💙'))
-// Detener música de inicio cuando se conecta
-stopStartupMusic()
+  console.log(chalk.bold.green('\n💙 Hatsune Miku Conectada con éxito 💙'))
+  // Detener música de inicio cuando se conecta
+  stopStartupMusic()
 }
 let reason = new Boom(lastDisconnect?.error)?.output?.statusCode
 if (connection === 'close') {
-if (reason === DisconnectReason.badSession) {
-console.log(chalk.bold.cyanBright(`\n⚠︎ SIN CONEXIÓN, BORRE LA CARPETA ${global.sessions} Y ESCANEA EL CÓDIGO QR ⚠︎`))
-} else if (reason === DisconnectReason.connectionClosed) {
-console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☹\n┆ ⚠︎ CONEXION CERRADA, RECONECTANDO....\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☹`))
-await global.reloadHandler(true).catch(console.error)
-} else if (reason === DisconnectReason.connectionLost) {
-console.log(chalk.bold.blueBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☂\n┆ ⚠︎ CONEXIÓN PERDIDA CON EL SERVIDOR, RECONECTANDO....\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☂`))
-await global.reloadHandler(true).catch(console.error)
-} else if (reason === DisconnectReason.connectionReplaced) {
-console.log(chalk.bold.yellowBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✗\n┆ ⚠︎ CONEXIÓN REEMPLAZADA, SE HA ABIERTO OTRA NUEVA SESION DE MIKU, POR FAVOR, CIERRA LA SESIÓN ACTUAL PRIMERO.\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✗`))
-} else if (reason === DisconnectReason.loggedOut) {
-console.log(chalk.bold.redBright(`\n⚠︎ SIN CONEXIÓN, BORRE LA CARPETA ${global.sessions} Y ESCANEA EL CÓDIGO QR ⚠︎`))
-await global.reloadHandler(true).catch(console.error)
-} else if (reason === DisconnectReason.restartRequired) {
-console.log(chalk.bold.cyanBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✓\n┆ ✧ CONECTANDO MIKU AL SERVIDOR VIRTUAL...\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✓`))
-await global.reloadHandler(true).catch(console.error)
-} else if (reason === DisconnectReason.timedOut) {
-console.log(chalk.bold.yellowBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ▸\n┆ ⧖ TIEMPO DE CONEXIÓN AGOTADO PARA MIKU, RECONECTANDO....\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ▸`))
-await global.reloadHandler(true).catch(console.error) //process.send('reset')
-} else {
-console.log(chalk.bold.redBright(`\n⚠︎！ RAZON DE DESCONEXIÓN DESCONOCIDA: ${reason || 'No encontrado'} >> ${connection || 'No encontrado'}`))
-}}
+  if (reason === DisconnectReason.badSession) {
+    console.log(chalk.bold.cyanBright(`\n⚠︎ SIN CONEXIÓN, BORRE LA CARPETA ${global.sessions} Y ESCANEA EL CÓDIGO QR ⚠︎`))
+  } else if (reason === DisconnectReason.connectionClosed) {
+    console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☹\n┆ ⚠︎ CONEXION CERRADA, RECONECTANDO....\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☹`))
+    await global.reloadHandler(true).catch(console.error)
+  } else if (reason === DisconnectReason.connectionLost) {
+    console.log(chalk.bold.blueBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☂\n┆ ⚠︎ CONEXIÓN PERDIDA CON EL SERVIDOR, RECONECTANDO....\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☂`))
+    await global.reloadHandler(true).catch(console.error)
+  } else if (reason === DisconnectReason.connectionReplaced) {
+    // Solo mostrar advertencia, nunca permitir que un subbot reemplace la principal
+    console.log(chalk.bold.yellowBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✗\n┆ ⚠︎ CONEXIÓN REEMPLAZADA, SE HA ABIERTO OTRA NUEVA SESION DE MIKU, POR FAVOR, CIERRA LA SESIÓN ACTUAL PRIMERO.\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✗`))
+    // Aquí podrías agregar lógica para cerrar solo la sesión secundaria, nunca la principal
+  } else if (reason === DisconnectReason.loggedOut) {
+    console.log(chalk.bold.redBright(`\n⚠︎ SIN CONEXIÓN, BORRE LA CARPETA ${global.sessions} Y ESCANEA EL CÓDIGO QR ⚠︎`))
+    await global.reloadHandler(true).catch(console.error)
+  } else if (reason === DisconnectReason.restartRequired) {
+    console.log(chalk.bold.cyanBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✓\n┆ ✧ CONECTANDO MIKU AL SERVIDOR VIRTUAL...\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✓`))
+    await global.reloadHandler(true).catch(console.error)
+  } else if (reason === DisconnectReason.timedOut) {
+    console.log(chalk.bold.yellowBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ▸\n┆ ⧖ TIEMPO DE CONEXIÓN AGOTADO PARA MIKU, RECONECTANDO....\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ▸`))
+    await global.reloadHandler(true).catch(console.error) //process.send('reset')
+  } else {
+    console.log(chalk.bold.redBright(`\n⚠︎！ RAZON DE DESCONEXIÓN DESCONOCIDA: ${reason || 'No encontrado'} >> ${connection || 'No encontrado'}`))
+  }
 }
 process.on('uncaughtException', console.error)
 
