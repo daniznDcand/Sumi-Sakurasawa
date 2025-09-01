@@ -42,7 +42,7 @@ console.log(chalk.magentaBright('\n💙 Iniciando 💙'))
 say('Hatsune\nMiku', {
 font: 'simple',
 align: 'left',
-gradient: ['cyanBright']
+gradient: ['cyan']
 })
 say(' By  Brauliovh3', {
 font: 'console',
