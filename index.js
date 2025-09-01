@@ -40,9 +40,9 @@ const PORT = process.env.PORT || process.env.SERVER_PORT || 3000
 let { say } = cfonts
 console.log(chalk.magentaBright('\n💙 Iniciando 💙'))
 say('Hatsune\nMiku', {
-font: 'simple',
-align: 'left',
-gradient: ['cyan']
+font: 'block',
+align: 'center',
+colors: ['cyanBright']
 })
 say(' By  Brauliovh3', {
 font: 'console',
