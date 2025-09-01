@@ -203,8 +203,7 @@ version,
 
 global.conn = makeWASocket(connectionOptions);
 
-// Protección: nunca permitir que un subbot reemplace la conexión principal
-// Solo la sesión principal debe inicializar global.conn
+
 if (!fs.existsSync(`./${sessions}/creds.json`)) {
   if (opcion === '2' || methodCode) {
     opcion = '2'
@@ -259,7 +258,7 @@ if (update.qr != 0 && update.qr != undefined || methodCodeQR) {
 }
 if (connection == 'open') {
   console.log(chalk.bold.green('\n💙 Hatsune Miku Conectada con éxito 💙'))
-  // Detener música de inicio cuando se conecta
+  
   stopStartupMusic()
 }
 let reason = new Boom(lastDisconnect?.error)?.output?.statusCode
@@ -273,10 +272,9 @@ if (connection === 'close') {
     console.log(chalk.bold.blueBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☂\n┆ ⚠︎ CONEXIÓN PERDIDA CON EL SERVIDOR, RECONECTANDO....\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☂`))
     await global.reloadHandler(true).catch(console.error)
   } else if (reason === DisconnectReason.connectionReplaced) {
-    // Solo mostrar advertencia, nunca permitir que un subbot reemplace la principal
+    
     console.log(chalk.bold.yellowBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✗\n┆ ⚠︎ CONEXIÓN REEMPLAZADA, SE HA ABIERTO OTRA NUEVA SESION DE MIKU, POR FAVOR, CIERRA LA SESIÓN ACTUAL PRIMERO.\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✗`))
-    // Aquí podrías agregar lógica para cerrar solo la sesión secundaria, nunca la principal
-  } else if (reason === DisconnectReason.loggedOut) {
+    
     console.log(chalk.bold.redBright(`\n⚠︎ SIN CONEXIÓN, BORRE LA CARPETA ${global.sessions} Y ESCANEA EL CÓDIGO QR ⚠︎`))
     await global.reloadHandler(true).catch(console.error)
   } else if (reason === DisconnectReason.restartRequired) {
@@ -284,7 +282,7 @@ if (connection === 'close') {
     await global.reloadHandler(true).catch(console.error)
   } else if (reason === DisconnectReason.timedOut) {
     console.log(chalk.bold.yellowBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ▸\n┆ ⧖ TIEMPO DE CONEXIÓN AGOTADO PARA MIKU, RECONECTANDO....\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ▸`))
-    await global.reloadHandler(true).catch(console.error) //process.send('reset')
+    await global.reloadHandler(true).catch(console.error) 
   } else {
     console.log(chalk.bold.redBright(`\n⚠︎！ RAZON DE DESCONEXIÓN DESCONOCIDA: ${reason || 'No encontrado'} >> ${connection || 'No encontrado'}`))
   }
@@ -543,3 +541,7 @@ return phoneUtil.isValidNumber(parsedNumber)
 } catch (error) {
 return false
 }}
+// Llave de cierre agregada para evitar SyntaxError
+}
+
+// Fin seguro para evitar SyntaxError: Unexpected end of input
