@@ -70,7 +70,7 @@ function playStartupMusic() {
     console.log(chalk.green('🎶 Música iniciada'))
     
   } catch (error) {
-    console.log(chalk.yellow('⚠️ Música no disponible'))
+    console.log(chalk.yellow(' Música no disponible'))
   }
 }
 
@@ -94,7 +94,7 @@ align: 'center',
 colors: ['cyanBright']
 })
 
-say(` By • Brauliovh3`, {
+say(` By  Brauliovh3`, {
 font: 'console',
 align: 'center',
 colors: ['magentaBright']
@@ -526,7 +526,7 @@ if (stopped === 'close' || !conn || !conn.user) return
 await purgeOldFiles()
 console.log(chalk.bold.cyanBright(`\n╭» ❍ ARCHIVOS ❍\n│→ ARCHIVOS RESIDUALES ELIMINADAS\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻`))}, 1000 * 60 * 10)
 
-_quickTest().then(() => conn.logger.info(chalk.bold(`✦  H E C H O\n`.trim()))).catch(console.error)
+_quickTest().then(() => conn.logger.info(chalk.bold(`💙  H E C H O\n`.trim()))).catch(console.error)
 
 async function isValidPhoneNumber(number) {
 try {
@@ -541,7 +541,7 @@ return phoneUtil.isValidNumber(parsedNumber)
 } catch (error) {
 return false
 }}
-// Llave de cierre agregada para evitar SyntaxError
+
 }
 
-// Fin seguro para evitar SyntaxError: Unexpected end of input
+

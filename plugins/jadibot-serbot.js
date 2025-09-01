@@ -103,7 +103,7 @@ const msgRetry = (MessageRetryMap) => { }
 const msgRetryCache = new NodeCache()
 const { state, saveState, saveCreds } = await useMultiFileAuthState(pathMikuJadiBot)
 
-// Manejo optimizado de conexión
+
 async function initializeSubBot() {
 
 const connectionOptions = {
@@ -115,7 +115,7 @@ msgRetryCache,
 browser: mcode ? Browsers.macOS("Chrome") : Browsers.macOS("Desktop"),
 version: version,
 generateHighQualityLinkPreview: true,
-// Optimizaciones de conexión
+
 keepAliveIntervalMs: 10000,
 markOnlineOnConnect: true,
 syncFullHistory: false,
@@ -174,7 +174,7 @@ setTimeout(() => { conn.sendMessage(m.sender, { delete: codeBot.key })}, 30000)
             }
         }
 
-        // Sistema avanzado de monitoreo de conexión
+        
         let connectionMonitorInterval
         const startConnectionMonitoring = () => {
             if (connectionMonitorInterval) clearInterval(connectionMonitorInterval)
@@ -188,13 +188,13 @@ setTimeout(() => { conn.sendMessage(m.sender, { delete: codeBot.key })}, 30000)
                         setTimeout(() => startSubBot(), 5000)
                     }
                 }
-            }, 15000) // Verificar cada 15 segundos
+            }, 15000) 
         }
 
-// Manejo mejorado de desconexiones con reintentos automáticos
+
 const reason = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode
 if (connection === 'close') {
-// Incrementar contador de reintentos solo en errores recuperables
+
 if ([428, 408, 515, DisconnectReason.connectionClosed, DisconnectReason.connectionLost, DisconnectReason.timedOut].includes(reason)) {
 reconnectAttempts++
 }
@@ -241,18 +241,18 @@ await creloadHandler(true).catch(console.error)
 }
 if (reason === 403) {
 console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ 🌱💙 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡\n┆ Sesión de Miku cerrada o cuenta en soporte para la sesión (+${path.basename(pathMikuJadiBot)}).\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ 💙🌱 ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡`))
-// Limpiar sesión corrupta
+
 fs.rmSync(pathMikuJadiBot, { recursive: true, force: true })
 return
 }
-// Resetear contador en conexión exitosa
+
 if (connection === 'connecting') {
 console.log(chalk.bold.yellow(`🔄 Conectando subbot de Miku (+${path.basename(pathMikuJadiBot)})...`))
 }
 }
 if (global.db.data == null) loadDatabase()
 if (connection == `open`) {
-	// Resetear contador de reintentos en conexión exitosa
+	
 	reconnectAttempts = 0
 	if (!global.db.data?.users) loadDatabase()
 	await joinChannels(sock).catch(console.error)
@@ -261,11 +261,11 @@ if (connection == `open`) {
 	userJid = sock.authState.creds.me.jid || `${path.basename(pathMikuJadiBot)}@s.whatsapp.net`
 	console.log(chalk.bold.cyanBright(`\n🌱💙──【• MIKU SUB-BOT •】──💙🌱\n│\n│ ✨ ${userName} (+${path.basename(pathMikuJadiBot)}) conectado exitosamente con Miku.\n│\n🌱💙──【• CONECTADO •】──💙🌱`))
 	sock.isInit = true
-	// Protección: Nunca agregar la conexión principal a global.conns
+	
 	if (sock !== global.conn && !global.conns.some(c => c.user?.jid === sock.user?.jid)) {
 		global.conns.push(sock)
 	}
-	// Notificar conexión exitosa
+	
 	if (m?.chat) {
 		try {
 			await conn.sendMessage(m.chat, {
@@ -279,7 +279,7 @@ if (connection == `open`) {
 		}
 	}
 }
-// Optimización: Monitoreo mejorado de la conexión
+
 const connectionMonitor = setInterval(async () => {
 	if (!sock.user) {
 		try { sock.ws.close() } catch (e) { }
@@ -291,9 +291,9 @@ const connectionMonitor = setInterval(async () => {
 		clearInterval(connectionMonitor)
 		console.log(chalk.bold.red(`\n❌ SubBot de Miku (+${path.basename(pathMikuJadiBot)}) desconectado y removido`))
 	}
-}, 30000) // Reducido de 60s a 30s para mejor monitoreo
+}, 30000) 
 
-// Manejador mejorado de recarga
+
 let handler = await import('../handler.js')
 let creloadHandler = async function (restatConn) {
 	try {
@@ -310,7 +310,7 @@ let creloadHandler = async function (restatConn) {
 		} catch { }
 		sock.ev.removeAllListeners()
 		
-		// Crear nueva instancia con configuración mejorada
+		
 		sock = makeWASocket(connectionOptions, { chats: oldChats })
 		isInit = true
 	}
@@ -321,7 +321,7 @@ let creloadHandler = async function (restatConn) {
 		sock.ev.off('creds.update', sock.credsUpdate)
 	}
 
-        // Función para manejar reconexión mejorada
+        
         const startSubBot = async () => {
             try {
                 if (reconnectAttempts >= maxReconnectAttempts) {
@@ -350,12 +350,12 @@ let creloadHandler = async function (restatConn) {
 	return true
 }
 
-// Inicializar handlers y comenzar el monitoreo
+
 await creloadHandler(false)
 }
 }
 
-// Función para inicializar el subbot con configuración optimizada
+
 async function initializeSubBot() {
     try {
         const conn = await mikuJadiBot(true, handler)
@@ -366,7 +366,7 @@ async function initializeSubBot() {
     }
         }
 
-        // Iniciar monitoreo de conexión
+        
         startConnectionMonitoring()
 
         return sock
