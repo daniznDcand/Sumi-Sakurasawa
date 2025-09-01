@@ -103,9 +103,6 @@ const msgRetry = (MessageRetryMap) => { }
 const msgRetryCache = new NodeCache()
 const { state, saveState, saveCreds } = await useMultiFileAuthState(pathMikuJadiBot)
 
-
-async function initializeSubBot() {
-
 const connectionOptions = {
 logger: pino({ level: "fatal" }),
 printQRInTerminal: false,
@@ -347,30 +344,15 @@ let creloadHandler = async function (restatConn) {
 	sock.ev.on("connection.update", sock.connectionUpdate)
 	sock.ev.on("creds.update", sock.credsUpdate)
 	isInit = false
+	
+	// Iniciar monitoreo de conexión
+	startConnectionMonitoring()
+	
+	// Cargar handler inicial
+	await creloadHandler(false)
+	
 	return true
 }
-
-
-await creloadHandler(false)
-}
-}
-
-
-async function initializeSubBot() {
-    try {
-        const conn = await mikuJadiBot(true, handler)
-        return conn
-    } catch (error) {
-        console.error('Error al inicializar subbot:', error)
-        throw error
-    }
-        }
-
-        
-        startConnectionMonitoring()
-
-        return sock
-    }
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 function sleep(ms) {
