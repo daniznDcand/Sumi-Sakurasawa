@@ -260,6 +260,7 @@ return true
 creloadHandler(false)
 })
 }
+}
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 function sleep(ms) {
