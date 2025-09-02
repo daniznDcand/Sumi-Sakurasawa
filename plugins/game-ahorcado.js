@@ -44,9 +44,9 @@ return dibujo.join("\n")
 function juegoTerminado(sender, mensaje, palabra, letrasAdivinadas, intentos) {
     if (intentos === 0) {
         gam.delete(sender);
-        return `╔═══════════════════════════════╗
-║          💀 GAME OVER 💀        ║
-╚═══════════════════════════════╝
+        return `╔═════════════╗
+║💀 GAME OVER 💀║
+╚════════════════╝
 
 😵 ¡Has perdido! La palabra era: *${palabra.toUpperCase()}*
 
@@ -54,15 +54,15 @@ ${mostrarAhorcado(intentos)}
 
 💡 ¡Inténtalo de nuevo con .ahorcado!`;
     } else if (!mensaje.includes("_")) {
-        let expGanada = Math.floor(Math.random() * 300); //fáciles
+        let expGanada = Math.floor(Math.random() * 300); 
         if (palabra.length >= 8) {
-            expGanada = Math.floor(Math.random() * 3500); //difíciles
+            expGanada = Math.floor(Math.random() * 3500);
         }
         global.db.data.users[sender].exp += expGanada;
         gam.delete(sender);
-        return `╔═══════════════════════════════╗
-║        🎉 ¡VICTORIA! 🎉        ║
-╚═══════════════════════════════╝
+        return `╔═════════════════╗
+║ 🎉 ¡VICTORIA! 🎉 ║
+╚═══════════════════╝
 
 🥳 ¡Felicitaciones! Adivinaste: *${palabra.toUpperCase()}*
 
@@ -70,9 +70,9 @@ ${mostrarAhorcado(intentos)}
 
 🏆 ¡Sigue jugando para conseguir más puntos!`;
     } else {
-        return `╔═══════════════════════════════╗
-║         🎯 AHORCADO 🎯         ║
-╚═══════════════════════════════╝
+        return `╔══════════╗
+║🎯 AHORCADO ║
+╚════════════╝
 
 ${mostrarAhorcado(intentos)}
 
@@ -87,9 +87,9 @@ ${mostrarAhorcado(intentos)}
 let handler = async (m, { conn }) => {
 let users = global.db.data.users[m.sender]
 if (gam.has(m.sender)) {
-return conn.reply(m.chat, `╔═══════════════════════════════╗
-║        ⚠️ ADVERTENCIA ⚠️        ║
-╚═══════════════════════════════╝
+return conn.reply(m.chat, `╔════════════════╗
+║⚠️ ADVERTENCIA ⚠️║
+╚══════════════════╝
 
 🎮 Ya tienes un juego activo en curso
 ⏳ Debes terminar el juego actual primero
@@ -101,9 +101,9 @@ let letrasAdivinadas = []
 let intentos = intentosMaximos
 let mensaje = ocultarPalabra(palabra, letrasAdivinadas)
 gam.set(m.sender, { palabra, letrasAdivinadas, intentos })
-let text = `╔═══════════════════════════════╗
-║         🎯 AHORCADO 🎯         ║
-╚═══════════════════════════════╝
+let text = `╔═══════════╗
+║🎯 AHORCADO 🎯║
+╚═══════════════╝
 
 🎮 ¡Nuevo juego iniciado!
 
@@ -143,9 +143,9 @@ conn.reply(m.chat, respuesta, m)
 }
 } else {
 let mensaje = ocultarPalabra(palabra, letrasAdivinadas);
-let respuesta = `╔═══════════════════════════════╗
-║         🏳️ RENDIRSE 🏳️         ║
-╚═══════════════════════════════╝
+let respuesta = `╔══════════════╗
+║🏳️ RENDIRSE 🏳️ ║
+╚════════════════╝
 
 😔 Te has rendido del juego
 🔤 La palabra era: *${palabra.toUpperCase()}*
