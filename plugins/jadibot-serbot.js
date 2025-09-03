@@ -13,10 +13,8 @@ const { CONNECTING } = ws
 import { makeWASocket } from '../lib/simple.js'
 import { fileURLToPath } from 'url'
 
-/**
- * Branding updated to Hatsune Miku 🌱💙
- * Function renamed to mikuJadiBot, with compatibility alias exported as yukiJadiBot
- */
+
+
 
 let crm1 = "Y2QgcGx1Z2lucy"
 let crm2 = "A7IG1kNXN1b"
