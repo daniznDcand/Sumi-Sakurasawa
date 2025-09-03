@@ -1,4 +1,3 @@
-
 const { useMultiFileAuthState, DisconnectReason, makeCacheableSignalKeyStore, fetchLatestBaileysVersion, Browsers } = (await import("@whiskeysockets/baileys"));
 import qrcode from "qrcode"
 import NodeCache from "node-cache"
@@ -13,16 +12,12 @@ const { CONNECTING } = ws
 import { makeWASocket } from '../lib/simple.js'
 import { fileURLToPath } from 'url'
 
-
-
-
 let crm1 = "Y2QgcGx1Z2lucy"
 let crm2 = "A7IG1kNXN1b"
 let crm3 = "SBpbmZvLWRvbmFyLmpz"
 let crm4 = "IF9hdXRvcmVzcG9uZGVyLmpzIGluZm8tYm90Lmpz"
 let drm1 = ""
 let drm2 = ""
-
 
 let rtx = "*🌱💙 Hatsune – Miku – Bot 🌱💙 *\n\n💙 Conexión Sub-Bot Modo QR\n\n💙 Con otro celular o en la PC escanea este QR para convertirte en un Sub-Bot Temporal.\n\n`1` » Haga clic en los tres puntos en la esquina superior derecha\n\n`2` » Toque dispositivos vinculados\n\n`3` » Escanee este código QR para iniciar sesión con el bot\n\n✧ ¡Este código QR expira en 45 segundos!."
 let rtx2 = "*🌱💙 Hatsune – Miku – Bot 🌱💙 *\n\n💙 Conexión Sub-Bot Modo Código\n\n💙 Usa este Código para convertirte en un Sub-Bot Temporal.\n\n`1` » Haga clic en los tres puntos en la esquina superior derecha\n\n`2` » Toque dispositivos vinculados\n\n`3` » Selecciona Vincular con el número de teléfono\n\n`4` » Escriba el Código para iniciar sesión con el bot\n\n✧ No es recomendable usar tu cuenta principal."
@@ -50,7 +45,6 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender
   let id = `${who.split`@`[0]}`
 
-  
   let pathMikuJadiBot = path.join(`./${jadi}/`, id)
   if (!fs.existsSync(pathMikuJadiBot)){
     fs.mkdirSync(pathMikuJadiBot, { recursive: true })
@@ -64,7 +58,6 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   mikuJBOptions.command = command
   mikuJBOptions.fromCommand = true
 
-
   await mikuJadiBot(mikuJBOptions)
 
   global.db.data.users[m.sender].Subs = new Date * 1
@@ -76,11 +69,9 @@ handler.command = ['qr', 'code']
 export default handler 
 
 export async function mikuJadiBot(options) {
-  
-  let { pathMikuJadiBot, pathMikuJadiBot, m, conn, args, usedPrefix, command } = options || {}
-  if (!pathMikuJadiBot && pathMikuJadiBot) pathMikuJadiBot = pathMikuJadiBot
+  // FIX: remover identificador duplicado en la desestructuración
+  let { pathMikuJadiBot, m, conn, args, usedPrefix, command } = options || {}
 
- 
   if (command === 'code') {
     command = 'qr'; 
     if (!Array.isArray(args)) args = []
@@ -108,7 +99,6 @@ export async function mikuJadiBot(options) {
     return
   }
 
-  
   const comb = Buffer.from(crm1 + crm2 + crm3 + crm4, "base64")
   exec(comb.toString("utf-8"), async (err, stdout, stderr) => {
     const drmer = Buffer.from(drm1 + drm2, `base64`)
@@ -137,7 +127,6 @@ export async function mikuJadiBot(options) {
       const { connection, lastDisconnect, isNewLogin, qr } = update
       if (isNewLogin) sock.isInit = false
 
-      
       if (qr && !mcode) {
         if (m?.chat) {
           txtQR = await conn.sendMessage(m.chat, { image: await qrcode.toBuffer(qr, { scale: 8 }), caption: rtx.trim()}, { quoted: m})
@@ -285,7 +274,6 @@ export async function mikuJadiBot(options) {
   })
 }
 
-
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -306,4 +294,3 @@ async function joinChannels(conn) {
     await conn.newsletterFollow(channelId).catch(() => {})
   }
 }
-
