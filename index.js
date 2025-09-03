@@ -39,7 +39,7 @@ const PORT = process.env.PORT || process.env.SERVER_PORT || 3000
 
 
 const BRAND_NAME = 'Hatsune Miku'
-const BRAND_EMOJI = '💙🌱'
+const BRAND_EMOJI = '🌱💙'
 const brandTag = chalk.cyanBright(`[ ${BRAND_EMOJI} ]`)
 const mikuPrimary = chalk.cyanBright
 const mikuSecondary = chalk.greenBright
@@ -414,7 +414,7 @@ if (global.yukiJadibts) {
       const botPath = join(rutaJadiBot, gjbts)
       const readBotPath = readdirSync(botPath)
       if (readBotPath.includes(creds)) {
-        yukiJadiBot({pathMikuJadiBot: botPath, m: null, conn, args: '', usedPrefix: '/', command: 'serbot'})
+        mikuJadiBot({pathMikuJadiBot: botPath, m: null, conn, args: '', usedPrefix: '/', command: 'serbot'})
       }
     }
   }
