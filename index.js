@@ -414,7 +414,7 @@ if (global.yukiJadibts) {
       const botPath = join(rutaJadiBot, gjbts)
       const readBotPath = readdirSync(botPath)
       if (readBotPath.includes(creds)) {
-        yukiJadiBot({pathYukiJadiBot: botPath, m: null, conn, args: '', usedPrefix: '/', command: 'serbot'})
+        yukiJadiBot({pathMikuJadiBot: botPath, m: null, conn, args: '', usedPrefix: '/', command: 'serbot'})
       }
     }
   }
