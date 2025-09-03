@@ -400,7 +400,7 @@ if (!existsSync(rtU)) {
 }
 
 global.rutaJadiBot = join(__dirname, `./${jadi}`)
-if (global.yukiJadibts) {
+if (global.mikuJadibts) {
   if (!existsSync(global.rutaJadiBot)) {
     mkdirSync(global.rutaJadiBot, { recursive: true }) 
     console.log(mikuPrimary.bold(`💙 La carpeta: ${jadi} se creó correctamente. ${BRAND_EMOJI}`))
@@ -414,7 +414,7 @@ if (global.yukiJadibts) {
       const botPath = join(rutaJadiBot, gjbts)
       const readBotPath = readdirSync(botPath)
       if (readBotPath.includes(creds)) {
-        yukiJadiBot({pathMikuJadiBot: botPath, m: null, conn, args: '', usedPrefix: '/', command: 'serbot'})
+        mikuJadiBot({pathMikuJadiBot: botPath, m: null, conn, args: '', usedPrefix: '/', command: 'serbot'})
       }
     }
   }
