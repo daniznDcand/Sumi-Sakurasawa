@@ -403,9 +403,9 @@ global.rutaJadiBot = join(__dirname, `./${jadi}`)
 if (global.yukiJadibts) {
   if (!existsSync(global.rutaJadiBot)) {
     mkdirSync(global.rutaJadiBot, { recursive: true }) 
-    console.log(mikuPrimary.bold(`ꕥ La carpeta: ${jadi} se creó correctamente. ${BRAND_EMOJI}`))
+    console.log(mikuPrimary.bold(`💙 La carpeta: ${jadi} se creó correctamente. ${BRAND_EMOJI}`))
   } else {
-    console.log(mikuPrimary.bold(`ꕥ La carpeta: ${jadi} ya está creada. ${BRAND_EMOJI}`)) 
+    console.log(mikuPrimary.bold(`💙 La carpeta: ${jadi} ya está creada. ${BRAND_EMOJI}`)) 
   }
   const readRutaJadiBot = readdirSync(rutaJadiBot)
   if (readRutaJadiBot.length > 0) {
