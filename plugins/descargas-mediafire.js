@@ -1,86 +1,84 @@
-import fetch from 'node-fetch'
-import cheerio from 'cheerio'
-import { basename } from 'path'
+import axios from 'axios';
+import cheerio from 'cheerio';
+import { lookup } from 'mime-types';
 
-let handler = async (m, { conn, text }) => {
-  if (!text) throw m.reply('Por favor, ingresa un link de MediaFire.')
-  conn.sendMessage(m.chat, { react: { text: "🕒", key: m.key } })
+  if (!args[0]) throw `_*< DESCARGAS - MEDIAFIRE />*_\n\n*[ ℹ️ ] Ingrese un enlace de MediaFire.*\n\n*[ 💡 ] Ejemplo:* ${usedPrefix + command} http://www.mediafire.com/file/7a28wroqlhtfws7/FgsiRestAPI_1754243494124_fgsi_1754243490723.jpeg`;
+  
+  try {
+    const res = await mediafireDl(args[0]);
+    const {name, size, date, mime, link} = res;
+    const caption = `${tradutor.texto2[0]}\n\n${tradutor.texto2[1]} ${name}\n${tradutor.texto2[2]} ${size}\n${tradutor.texto2[3]} ${mime}\n\n${tradutor.texto2[4]}`.trim();
+    await m.reply(caption);
+    await conn.sendFile(m.chat, link, name, '', m, null, {mimetype: mime, asDocument: true});
+  } catch (error) {
+    console.error('Error en MediaFire:', error);
+    await m.reply(tradutor.texto3);
+  }
+};
 
-  const apikey = '' 
-  
-  
-  const apis = [
-    {
-      name: "zahwazein",
-      url: (url) => `https://api.zahwazein.xyz/downloader/mediafire?url=${encodeURIComponent(url)}&apikey=${apikey}`,
-      parse: (json) => json.result?.url ? {
-        url: json.result.url,
-        filename: json.result.filename,
-        size: json.result.size,
-      } : null
-    },
-    {
-      name: "enznoz",
-      url: (url) => `https://enznoz-api-7prl.vercel.app/api/mediafire?url=${encodeURIComponent(url)}`,
-      parse: (json) => json.url ? {
-        url: json.url,
-        filename: json.filename,
-        size: json.size,
-      } : null
-    },
-    {
-      name: "latam-api",
-      url: (url) => `https://latam-api.vercel.app/api/mediafire?url=${encodeURIComponent(url)}`,
-      parse: (json) => json.url ? {
-        url: json.url,
-        filename: json.filename,
-        size: json.size,
-      } : null
+handler.command = /^(mediafire|mediafiredl|dlmediafire)$/i;
+export default handler;
+
+async function mediafireDl(url) {
+  try {
+    if (!url.includes('www.mediafire.com')) throw new Error('URL de MediaFire inválida');
+    let res;
+    let $;
+    let link = null;
+    try {
+      res = await axios.get(url, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }});
+      $ = cheerio.load(res.data);
+      const downloadButton = $('#downloadButton');
+      link = downloadButton.attr('href');
+      if (!link || link.includes('javascript:void(0)')) { 
+        link = downloadButton.attr('data-href') || downloadButton.attr('data-url') || downloadButton.attr('data-link');
+        const scrambledUrl = downloadButton.attr('data-scrambled-url');
+        if (scrambledUrl) {
+          try {
+            link = atob(scrambledUrl);
+          } catch (e) {
+            console.log('Error decodificando scrambled URL:', e.message);
+          }
+        }
+        if (!link || link.includes('javascript:void(0)')) {
+          const htmlContent = res.data;
+          const linkMatch = htmlContent.match(/href="(https:\/\/download\d+\.mediafire\.com[^"]+)"/);
+          if (linkMatch) {
+            link = linkMatch[1];
+          } else {
+            const altMatch = htmlContent.match(/"(https:\/\/[^"]*mediafire[^"]*\.(zip|rar|pdf|jpg|jpeg|png|gif|mp4|mp3|exe|apk|txt)[^"]*)"/i);
+            if (altMatch) {
+              link = altMatch[1];
+            }
+          }
+        }
+      }
+    } catch (directError) {
+      const translateUrl = `https://www-mediafire-com.translate.goog/${url.replace('https://www.mediafire.com/', '')}?_x_tr_sl=en&_x_tr_tl=fr&_x_tr_hl=en&_x_tr_pto=wapp`;
+      res = await axios.get(translateUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }});
+      $ = cheerio.load(res.data);
+      const downloadButton = $('#downloadButton');
+      link = downloadButton.attr('href');
+      if (!link || link.includes('javascript:void(0)')) {
+        const scrambledUrl = downloadButton.attr('data-scrambled-url');
+        if (scrambledUrl) {
+          try {
+            link = atob(scrambledUrl);
+          } catch (e) {}
+        }
+      }
     }
-  ]
-
-  let info = null
-  for (let api of apis) {
-    try {
-      let res = await fetch(api.url(text))
-      let json = await res.json()
-      info = api.parse(json)
-      if (info) break
-    } catch (e) {}
+    if (!link || link.includes('javascript:void(0)')) throw new Error('No se pudo encontrar el enlace de descarga válido');
+    const name = $('body > main > div.content > div.center > div > div.dl-btn-cont > div.dl-btn-labelWrap > div.promoDownloadName.notranslate > div').attr('title')?.replace(/\s+/g, '')?.replace(/\n/g, '') || $('.dl-btn-label').attr('title') || $('.filename').text().trim() || 'archivo_descargado';
+    const date = $('body > main > div.content > div.center > div > div.dl-info > ul > li:nth-child(2) > span').text().trim() || $('.details li:nth-child(2) span').text().trim() || 'Fecha no disponible';
+    const size = $('#downloadButton').text().replace('Download', '').replace(/[()]/g, '').replace(/\n/g, '').replace(/\s+/g, ' ').trim() || $('.details li:first-child span').text().trim() || 'Tamaño no disponible';
+    let mime = '';
+    const ext = name.split('.').pop()?.toLowerCase();
+    mime = lookup(ext) || 'application/octet-stream';
+    if (!link.startsWith('http')) throw new Error('Enlace de descarga inválido');
+    return { name, size, date, mime, link };
+  } catch (error) {
+    console.error('Error en mediafireDl:', error.message);
+    throw new Error(`Error al procesar MediaFire: ${error.message}`);
   }
-
- 
-  if (!info) {
-    try {
-      let res = await fetch(text)
-      let html = await res.text()
-      let $ = cheerio.load(html)
-      let downloadLink = $('#downloadButton').attr('href') || $("a[aria-label='Download file']").attr('href')
-      let fileName = $('.filename').first().text().trim() || basename(downloadLink).split('?')[0]
-      let fileSize = $('.dl-info > span').eq(1).text().trim() || $('.download_fileinfo').text().replace(/.*\((.*)\).*/, '$1').trim() || 'Desconocido'
-      if (downloadLink) info = { url: downloadLink, filename: fileName, size: fileSize }
-    } catch (e) {}
-  }
-
-  if (!info?.url) throw m.reply('No se pudo obtener el archivo de MediaFire con ninguna API.')
-
- 
-  let fileRes = await fetch(info.url)
-  if (!fileRes.ok) throw m.reply('Error descargando el archivo.')
-  let buffer = await fileRes.buffer()
-  await conn.sendFile(m.chat, buffer, info.filename, 
-    `乂  *¡MEDIAFIRE - DESCARGAS!* 乂
-💙 *Nombre* : ${info.filename}
-💙 *Peso* : ${info.size}
-💙 *Enlace directo* : ${info.url}`)
-  await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key }})
 }
-
-handler.help = ['mediafire']
-handler.tags = ['descargas']
-handler.command = ['mf', 'mediafire']
-handler.coin = 10
-handler.register = true
-handler.group = true
-
-export default handler
