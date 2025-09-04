@@ -2,8 +2,8 @@ import fetch from 'node-fetch'
 import cheerio from 'cheerio'
 
 let handler = async (m, { conn, usedPrefix, command, args }) => {
-    if (!args[0]) return conn.reply(m.chat, `💙🌱 Hola! Soy Hatsune Miku! Necesito un link de TikTok con imágenes para ayudarte ✨`, m, rcanal)
-    if (!args[0].match(/tiktok/gi)) return conn.reply(m.chat, `💙🌱 ¡Oye! Verifica que el link sea de TikTok, por favor 📱`, m, rcanal)
+    if (!args[0]) return conn.reply(m.chat, `💙 Hola! Soy Hatsune Miku! Necesito un link de TikTok con imágenes para ayudarte ✨`, m, rcanal)
+    if (!args[0].match(/tiktok/gi)) return conn.reply(m.chat, `💙 ¡Oye! Verifica que el link sea de TikTok, por favor 📱`, m, rcanal)
     
     await m.react('⏳')
     
@@ -33,7 +33,7 @@ let handler = async (m, { conn, usedPrefix, command, args }) => {
             
             if (videoData && videoData.imagePost && videoData.imagePost.images) {
                 let txt = '┏━━━━━━━━━━━━━━━━━━━━┓\n'
-                txt += '┃💙🌱 𝐇𝐚𝐭𝐬𝐮𝐧𝐞 𝐌𝐢𝐤𝐮 𝐃𝐨𝐰𝐧𝐥𝐨𝐚𝐝𝐞𝐫 💙🌱┃\n'
+                txt += '┃💙 𝐇𝐚𝐭𝐬𝐮𝐧𝐞 𝐌𝐢𝐤𝐮 𝐃𝐨𝐰𝐧𝐥𝐨𝐚𝐝𝐞𝐫 💙┃\n'
                 txt += '┗━━━━━━━━━━━━━━━━━━━━━━━┛\n'
                 txt += '╭─────────────╮\n'
                 txt += '│🎵 𝐈𝐧𝐟𝐨 𝐆𝐞𝐧𝐞𝐫𝐚𝐥 🎵│\n'
@@ -42,7 +42,7 @@ let handler = async (m, { conn, usedPrefix, command, args }) => {
                 txt += `│📝 𝐃𝐞𝐬𝐜𝐫𝐢𝐩𝐜𝐢ó𝐧: ${videoData.desc}\n`
                 txt += `│🖼️ 𝐈𝐦á𝐠𝐞𝐧𝐞𝐬: ${videoData.imagePost.images.length}\n`
                 txt += '├─────────────────────┤\n'
-                txt += '│💙🌱 "¡Descargando imágenes!" 💙🌱│\n'
+                txt += '│💙"¡Descargando imágenes!"💙│\n'
                 txt += '╰─────────────────────╯\n'
                 txt += '♪(´▽｀)♪\n'
                 txt += '╭──────────────────────╮\n'
@@ -88,7 +88,7 @@ let handler = async (m, { conn, usedPrefix, command, args }) => {
                 
                 
                 let imageCaption = '┏━━━━━━━━━━━━━━━━━━━━━━┓\n'
-                imageCaption += '┃💙🌱 𝐇𝐚𝐭𝐬𝐮𝐧𝐞 𝐌𝐢𝐤𝐮 𝐃𝐞𝐥𝐢𝐯𝐞𝐫𝐲 💙🌱┃\n'
+                imageCaption += '┃💙𝐇𝐚𝐭𝐬𝐮𝐧𝐞 𝐌𝐢𝐤𝐮 𝐃𝐞𝐥𝐢𝐯𝐞𝐫𝐲💙┃\n'
                 imageCaption += '┗━━━━━━━━━━━━━━━━━━━━━━━━┛\n'
                 imageCaption += '╭───────────────────╮\n'
                 imageCaption += `│🖼️ ${images.length} 𝐈𝐦á𝐠𝐞𝐧𝐞𝐬 𝐝𝐞 𝐓𝐢𝐤𝐓𝐨𝐤 │\n`
@@ -104,7 +104,7 @@ let handler = async (m, { conn, usedPrefix, command, args }) => {
                 imageCaption += '╭────────────────────╮\n'
                 imageCaption += '│"¡Espero que te gusten todas!"│\n'
                 imageCaption += '╰────────────────────╯\n'
-                imageCaption += '💙🌱 𝐌𝐢𝐤𝐮 𝐒𝐭𝐲𝐥𝐞 𝐂𝐨𝐥𝐥𝐞𝐜𝐭𝐢𝐨𝐧 💙🌱'
+                imageCaption += '💙𝐌𝐢𝐤𝐮 𝐒𝐭𝐲𝐥𝐞 𝐂𝐨𝐥𝐥𝐞𝐜𝐭𝐢𝐨𝐧 💙'
                 
                 
                 if (images.length > 0) {
@@ -127,18 +127,18 @@ let handler = async (m, { conn, usedPrefix, command, args }) => {
                 
                 
                 let finalMsg = '┏━━━━━━━━━━━━━━━┓\n'
-                finalMsg += '┃💙🌱 𝐌𝐢𝐬𝐢ó𝐧 𝐂𝐨𝐦𝐩𝐥𝐞𝐭𝐚 💙🌱┃\n'
+                finalMsg += '┃💙𝐌𝐢𝐬𝐢ó𝐧 𝐂𝐨𝐦𝐩𝐥𝐞𝐭𝐚 💙┃\n'
                 finalMsg += '┗━━━━━━━━━━━━━━━━━━┛\n'
                 finalMsg += '╭──────────────╮\n'
                 finalMsg += '│🎵 𝐑𝐞𝐬𝐮𝐥𝐭𝐚𝐝𝐨 🎵│\n'
                 finalMsg += '├──────────────┤\n'
                 finalMsg += `│📸 𝐈𝐦á𝐠𝐞𝐧𝐞𝐬 𝐞𝐧𝐯𝐢𝐚𝐝𝐚𝐬: ${images.length}\n`
                 finalMsg += '│✅ 𝐄𝐬𝐭𝐚𝐝𝐨: ¡Completado!\n'
-                finalMsg += '│💙🌱 𝐀𝐠𝐞𝐧𝐭𝐞: Hatsune Miku\n'
+                finalMsg += '│💙𝐀𝐠𝐞𝐧𝐭𝐞: Hatsune Miku\n'
                 finalMsg += '├──────────────────────────┤\n'
                 finalMsg += '│"¡Misión cumplida! ♪(´▽｀)♪"│\n'
                 finalMsg += '╰──────────────────────────╯\n'
-                finalMsg += '💙🌱 ¡𝐆𝐫𝐚𝐜𝐢𝐚𝐬 𝐩𝐨𝐫 𝐮𝐬𝐚𝐫𝐦𝐞! 💙🌱'
+                finalMsg += '💙¡𝐆𝐫𝐚𝐜𝐢𝐚𝐬 𝐩𝐨𝐫 𝐮𝐬𝐚𝐫𝐦𝐞! 💙'
                 
                 await conn.reply(m.chat, finalMsg, m, rcanal)
                 return
@@ -151,7 +151,7 @@ let handler = async (m, { conn, usedPrefix, command, args }) => {
         console.error('Error:', error)
         await m.react('💔')
         
-        let errorMsg = `💔🌱 **Error** 💔🌱\n\n⚠️ Miku: "¡Oh no! Algo salió mal..."\n\n🔍 Verifica que el link contenga imágenes\n📱 Que sea un link válido de TikTok\n\n*"¡Inténtalo de nuevo!"*`
+        let errorMsg = `💔 **Error** 💔\n\n⚠️ Miku: "¡Oh no! Algo salió mal..."\n\n🔍 Verifica que el link contenga imágenes\n📱 Que sea un link válido de TikTok\n\n*"¡Inténtalo de nuevo!"*`
         
         conn.reply(m.chat, errorMsg, m, rcanal)
     }
