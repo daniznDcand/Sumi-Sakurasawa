@@ -2,8 +2,8 @@ import fetch from 'node-fetch'
 import cheerio from 'cheerio'
 
 let handler = async (m, { conn, usedPrefix, command, args }) => {
-    if (!args[0]) return conn.reply(m.chat, `💙 Hola! Soy Hatsune Miku! Necesito un link de TikTok con imágenes para ayudarte ✨`, m, rcanal)
-    if (!args[0].match(/tiktok/gi)) return conn.reply(m.chat, `💙 ¡Oye! Verifica que el link sea de TikTok, por favor 📱`, m, rcanal)
+    if (!args[0]) return conn.reply(m.chat, `💙🌱 Hola! Soy Hatsune Miku! Necesito un link de TikTok con imágenes para ayudarte ✨`, m, rcanal)
+    if (!args[0].match(/tiktok/gi)) return conn.reply(m.chat, `💙🌱 ¡Oye! Verifica que el link sea de TikTok, por favor 📱`, m, rcanal)
     
     await m.react('⏳')
     
@@ -42,14 +42,14 @@ let handler = async (m, { conn, usedPrefix, command, args }) => {
                 txt += `│📝 𝐃𝐞𝐬𝐜𝐫𝐢𝐩𝐜𝐢ó𝐧: ${videoData.desc}\n`
                 txt += `│🖼️ 𝐈𝐦á𝐠𝐞𝐧𝐞𝐬: ${videoData.imagePost.images.length}\n`
                 txt += '├─────────────────────┤\n'
-                txt += '│💙"¡Descargando imágenes!"💙│\n'
+                txt += '│💙"¡Descargando imágenes!" 💙│\n'
                 txt += '╰─────────────────────╯\n'
                 txt += '♪(´▽｀)♪\n'
                 txt += '╭──────────────────────╮\n'
                 txt += '│"¡Aquí van todas tus imágenes!"│\n'
                 txt += '╰──────────────────────╯\n'
                 
-                
+               
                 await conn.reply(m.chat, txt, m, rcanal)
                 
                 
@@ -82,13 +82,13 @@ let handler = async (m, { conn, usedPrefix, command, args }) => {
                             filename: `miku_tiktok_${i + 1}.jpg`
                         })
                     } else {
-                        console.log(`💙🌱 Miku: Error descargando imagen ${i + 1}: ${imageResponse.status}`)
+                        console.log(`💙Miku: Error descargando imagen ${i + 1}: ${imageResponse.status}`)
                     }
                 }
                 
-                
+    
                 let imageCaption = '┏━━━━━━━━━━━━━━━━━━━━━━┓\n'
-                imageCaption += '┃💙𝐇𝐚𝐭𝐬𝐮𝐧𝐞 𝐌𝐢𝐤𝐮 𝐃𝐞𝐥𝐢𝐯𝐞𝐫𝐲💙┃\n'
+                imageCaption += '┃💙𝐇𝐚𝐭𝐬𝐮𝐧𝐞 𝐌𝐢𝐤𝐮 𝐃𝐞𝐥𝐢𝐯𝐞𝐫𝐲 💙┃\n'
                 imageCaption += '┗━━━━━━━━━━━━━━━━━━━━━━━━┛\n'
                 imageCaption += '╭───────────────────╮\n'
                 imageCaption += `│🖼️ ${images.length} 𝐈𝐦á𝐠𝐞𝐧𝐞𝐬 𝐝𝐞 𝐓𝐢𝐤𝐓𝐨𝐤 │\n`
@@ -113,7 +113,7 @@ let handler = async (m, { conn, usedPrefix, command, args }) => {
                         
                         await conn.sendFile(m.chat, images[0].buffer, images[0].filename, imageCaption, m, null, rcanal)
                         
-                        
+                      
                         for (let i = 1; i < images.length; i++) {
                             await conn.sendFile(m.chat, images[i].buffer, images[i].filename, '', m, null, rcanal)
                         }
@@ -134,7 +134,7 @@ let handler = async (m, { conn, usedPrefix, command, args }) => {
                 finalMsg += '├──────────────┤\n'
                 finalMsg += `│📸 𝐈𝐦á𝐠𝐞𝐧𝐞𝐬 𝐞𝐧𝐯𝐢𝐚𝐝𝐚𝐬: ${images.length}\n`
                 finalMsg += '│✅ 𝐄𝐬𝐭𝐚𝐝𝐨: ¡Completado!\n'
-                finalMsg += '│💙𝐀𝐠𝐞𝐧𝐭𝐞: Hatsune Miku\n'
+                finalMsg += '│💙🌱 𝐀𝐠𝐞𝐧𝐭𝐞: Hatsune Miku\n'
                 finalMsg += '├──────────────────────────┤\n'
                 finalMsg += '│"¡Misión cumplida! ♪(´▽｀)♪"│\n'
                 finalMsg += '╰──────────────────────────╯\n'
