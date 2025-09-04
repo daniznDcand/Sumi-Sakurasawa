@@ -1,84 +1,116 @@
-import { areJidsSameUser } from '@whiskeysockets/baileys'
+const DAY = 24 * 60 * 60 * 1000
+
+function getUserRecord(jid) {
+  return global?.db?.data?.users?.[jid] || null
+}
+
+function isWhitelisted(user) {
+  if (!user) return false
+  return !!(user.whitelist || user.vip || user.premium)
+}
+
+function getIsAdmin(participant) {
+  return participant?.admin === 'admin' ||
+         participant?.admin === 'superadmin' ||
+         participant?.isAdmin ||
+         participant?.isSuperAdmin ||
+         false
+}
+
+function getBotJid(conn) {
+  return conn?.user?.jid || conn?.user?.id || ''
+}
+
+function getLastActive(user, chatId, jid) {
+  if (!user) return 0
+  const candidates = [
+    user.lastChat, user.lastchat,
+    user.lastseen, user.lastSeen,
+    user.lastmsg, user.lastMessage,
+    user.last, user.seen,
+    user.time, user.lm, user.lmsg,
+    user.lastactivity
+  ].filter(v => typeof v === 'number' && isFinite(v))
+  
+  const perChatActivity = global?.db?.data?.chats?.[chatId]?.activity?.[jid]
+  if (typeof perChatActivity === 'number' && isFinite(perChatActivity)) {
+    candidates.push(perChatActivity)
+  }
+  if (candidates.length === 0) return 0
+  return Math.max(...candidates)
+}
+
+function getMessageCount(user) {
+  if (!user) return 0
+  const cands = [user.chat, user.msg, user.msgs, user.messages, user.mcount]
+    .filter(v => typeof v === 'number' && isFinite(v))
+  if (cands.length === 0) return 0
+  return Math.max(...cands)
+}
+
+function isInactive(user, chatId, jid, now, thresholdMs) {
+  const last = getLastActive(user, chatId, jid)
+  const msgs = getMessageCount(user)
+
+  if (!user) return true
+  const tooOld = last === 0 || (now - last) >= thresholdMs
+  const noMsgs = !msgs || msgs <= 0
+  return tooOld || noMsgs
+}
 
 var handler = async (m, { conn, text, participants, command }) => {
-  let member = participants.map(u => u.id)
-  let sum = (!text) ? member.length : text
-  var total = 0
-  var sider = []
+  if (!m.isGroup) return
+  const groupId = m.chat
+  const now = Date.now()
+  const days = Number.isFinite(parseInt(text)) && parseInt(text) > 0 ? parseInt(text) : 14
+  const thresholdMs = days * DAY
+  const botJid = getBotJid(conn)
 
-  for (let i = 0; i < sum; i++) {
-    let users = m.isGroup ? participants.find(u => u.id == member[i]) : {}
-    let isAdmin = users?.admin === 'admin' || users?.admin === 'superadmin' || users?.isAdmin || users?.isSuperAdmin || false
-  
-    if (
-      member[i].endsWith('@s.whatsapp.net') &&
-      (typeof global.db.data.users[member[i]] == 'undefined' || global.db.data.users[member[i]].chat == 0) &&
-      !isAdmin
-    ) {
-      if (typeof global.db.data.users[member[i]] !== 'undefined') {
-        if (!global.db.data.users[member[i]].whitelist) {
-          total++
-          sider.push(member[i])
-        }
-      } else {
-        total++
-        sider.push(member[i])
-      }
+  const memberJids = (participants || []).map(p => p.id).filter(Boolean)
+  let ghosts = []
+
+  for (const jid of memberJids) {
+    if (!jid.endsWith('@s.whatsapp.net')) continue
+    const p = participants.find(u => u.id === jid)
+    const admin = getIsAdmin(p)
+    if (admin) continue
+    if (botJid && jid === botJid) continue
+
+    const user = getUserRecord(jid)
+    if (isWhitelisted(user)) continue
+
+    if (isInactive(user, groupId, jid, now, thresholdMs)) {
+      ghosts.push({
+        jid,
+        last: getLastActive(user, groupId, jid),
+        msgs: getMessageCount(user) || 0
+      })
     }
   }
 
-  const delay = time => new Promise(res => setTimeout(res, time))
+ 
+  ghosts.sort((a, b) => (a.last || 0) - (b.last || 0))
 
   const emoji = '👻'
   const emoji2 = '🗒️'
 
-  switch (command) {
-    case 'fantasmas':
-      if (total == 0) return conn.reply(m.chat, `${emoji} Este grupo es activo, no tiene fantasmas.`, m)
-      
-      await conn.reply(
-        m.chat,
-        `${emoji} *Revisión de inactivos*\n\n${emoji2} *Lista de fantasmas*\n${sider.map(v => '@' + v.split('@')[0]).join('\n')}\n\n*📝 NOTA:*\nEsto no es 100% exacto, el bot cuenta mensajes registrados por él, no cuenta los mensajes antiguos ni los enviados antes de que se añadiera el bot.`,
-        m,
-        { mentions: sider }
-      )
-      break
-
-    case 'kickfantasmas':
-      if (total == 0) return conn.reply(m.chat, `${emoji} Este grupo es activo, no tiene fantasmas.`, m)
-      await conn.reply(
-        m.chat,
-        `${emoji} *Eliminación de inactivos*\n\n${emoji2} *Lista de fantasmas*\n${sider.map(v => '@' + v.split('@')[0]).join('\n')}\n\n_El bot eliminará a estos usuarios, uno cada 10 segundos..._`,
-        m,
-        { mentions: sider }
-      )
-      await delay(10000)
-      let chat = global.db.data.chats[m.chat]
-      chat.welcome = false
-      try {
-        for (let user of sider) {
-          let participant = participants.find(p => p.id === user)
-          let isAdmin = participant?.admin === 'admin' || participant?.admin === 'superadmin' || participant?.isAdmin || participant?.isSuperAdmin || false
-          if (typeof user === 'string' && user.endsWith('@s.whatsapp.net') && !isAdmin) {
-            try {
-              await conn.groupParticipantsUpdate(m.chat, [user], 'remove')
-              await delay(10000)
-            } catch (e) {
-              console.log(`Error eliminando a ${user}:`, e)
-            }
-          } else {
-            console.log(`No se puede eliminar a admin o usuario inválido: ${user}`)
-          }
-        }
-      } finally {
-        chat.welcome = true
-      }
-      break
+  if (ghosts.length === 0) {
+    return conn.reply(m.chat, `${emoji} Este grupo es activo, no tiene fantasmas (umbral ${days} día(s)).`, m)
   }
+
+  const mentions = ghosts.map(g => g.jid)
+  const list = ghosts.map(g => `@${g.jid.split('@')[0]} • msgs:${g.msgs} • last:${g.last ? new Date(g.last).toLocaleDateString() : '—'}`).join('\n')
+
+  await conn.reply(
+    m.chat,
+    `${emoji} Revisión de inactivos (${days} día(s))\n\n${emoji2} Lista de fantasmas (${ghosts.length})\n${list}\n\n📝 NOTA:\nEsto no es 100% exacto. Se estima por última actividad y conteo de mensajes en la base de datos.`,
+    m,
+    { mentions }
+  )
 }
 
 handler.tags = ['grupo']
-handler.command = ['fantasmas', 'kickfantasmas']
+handler.command = ['fantasmas']
 handler.group = true
 handler.botAdmin = true
 handler.admin = true
