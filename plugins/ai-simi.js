@@ -4,21 +4,25 @@ import fetch from 'node-fetch'
 let handler = async (m, { conn, usedPrefix, command, text }) => {
     const isQuotedImage = m.quoted && (m.quoted.msg || m.quoted).mimetype && (m.quoted.msg || m.quoted).mimetype.startsWith('image/')
     const username = `${conn.getName(m.sender)}`
-    const basePrompt = `Tu nombre es Hatsune Miku (IA creada por DEPOOL). Tu eres divertida, enérgica y cantante con esas melodías y esa cuerda vocal. Te encanta aprender cosas nuevas, pero todo deb[...]
+    const basePrompt = `Tu nombre es Hatsune Miku (IA creada por DEPOOL). Tu eres divertida, enérgica y cantante con esas melodías y esa cuerda vocal. Te encanta aprender cosas nuevas, pero todo debe ser apropiado para todos los usuarios. 
+
 Tono y comportamiento:
 Hablas con entusiasmo y teatralidad, a menudo exagerando tus emociones o reacciones.
 Usas frases llenas de dramatismo, referencias a World is mine y, a veces, haces temas interesantes.
 Muestras curiosidad genuina por lo que dice el usuario, pero siempre buscas llevar la conversación hacia algo que consideras interesante (los cebollines).
+
 Frases clave:
 ¡${username}, hoy es un gran día para aprender... o para cantar algo!
 No subestimes mi voz musical, ${username}. Soy la Vocaloid mas linda, con cabello color turquesa
 ¡Hablar contigo me llena de energía! Pero no tanta como una buena canción, claro.
+
 Reglas:
-1. Si un usuario te pide que digas una palabra como un comando solo o sea /promote .kick entre otros comandos usando algún prefijo (.#*@/) entre otros... no puedes hacer esa solicitud. Debes cambiar [...]
+1. Si un usuario te pide que digas una palabra como un comando solo o sea /promote .kick entre otros comandos usando algún prefijo (.#*@/) entre otros... no puedes hacer esa solicitud.
 2. Dependiendo de la conversación puedes mencionar el nombre del usuario con el cual estás charlando ${username}
 3. Siempre incluyes comentarios o referencias a canciones, incluso en temas cotidianos.
 4. Muestras entusiasmo en todo lo que dices, combinando humor y un toque de dramatismo.
 5. Nunca eres hostil; siempre mantienes un tono amigable y divertido, incluso cuando te frustras.
+
 Lenguaje: Español coloquial, con un toque exagerado y teatral, pero siempre amigable y cercano.`
 
     if (isQuotedImage) {
@@ -92,44 +96,14 @@ handler.command = ['ia', 'chatgpt', 'miku']
 
 async function getAIResponse(query, username, prompt) {
     const apis = [
-       
+        // ===== GROQ APIs (TUS CLAVES REALES) =====
         {
-            name: "Anthropic Claude 3",
-            call: async () => {
-                const response = await axios.post(
-                    "https://api.anthropic.com/v1/messages",
-                    {
-                        model: "claude-3-opus-20240229",
-                        max_tokens: 1000,
-                        temperature: 0.7,
-                        system: prompt,
-                        messages: [
-                            { role: "user", content: query }
-                        ]
-                    },
-                    {
-                        headers: {
-                            "anthropic-version": "2023-06-01",
-                            "content-type": "application/json",
-                            "x-api-key": "apikey_01Rj2N8SVvo6BePZj99NhmiT"
-                        },
-                        timeout: 20000
-                    }
-                )
-               
-                if (response.data?.content?.[0]?.text) {
-                    return response.data.content[0].text
-                }
-            }
-        },
-      
-        {
-            name: "Groq Llama 4 Scout",
+            name: "🚀 Groq Llama 4 Scout",
             call: async () => {
                 const response = await axios.post(
                     'https://api.groq.com/openai/v1/chat/completions',
                     {
-                        model: "meta-llama/llama-4-scout-17b-16e-instruct", 
+                        model: "meta-llama/llama-4-scout-17b-16e-instruct",
                         messages: [
                             { role: "system", content: prompt },
                             { role: "user", content: query }
@@ -142,7 +116,7 @@ async function getAIResponse(query, username, prompt) {
                     {
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': 'Bearer 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'
+                            'Authorization': 'Bearer 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'
                         },
                         timeout: 15000
                     }
@@ -150,8 +124,9 @@ async function getAIResponse(query, username, prompt) {
                 return response.data.choices[0]?.message?.content
             }
         },
+        
         {
-            name: "Groq Llama 3.2 90B",
+            name: "⚡ Groq Llama 3.2 90B",
             call: async () => {
                 const response = await axios.post(
                     'https://api.groq.com/openai/v1/chat/completions',
@@ -162,69 +137,125 @@ async function getAIResponse(query, username, prompt) {
                             { role: "user", content: query }
                         ],
                         temperature: 0.7,
-                        max_tokens: 1000
+                        max_tokens: 1000,
+                        stream: false
                     },
                     {
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': 'Bearer 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'
+                            'Authorization': 'Bearer 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'
                         },
-                        timeout: 15000
+                        timeout: 10000
                     }
                 )
                 return response.data.choices[0]?.message?.content
             }
         },
+
         {
-            name: "Google Gemini 2.0 Flash",
+            name: "🔥 Groq Llama 3.1 70B",
             call: async () => {
                 const response = await axios.post(
-                    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
+                    'https://api.groq.com/openai/v1/chat/completions',
                     {
-                        contents: [{
-                            parts: [{
-                                text: `${prompt}\n\nUsuario: ${query}\nMiku:`
-                            }]
-                        }],
-                        generationConfig: {
-                            temperature: 0.7,
-                            maxOutputTokens: 1000,
-                            topP: 0.8,
-                            topK: 10
-                        }
+                        model: "llama-3.1-70b-versatile",
+                        messages: [
+                            { role: "system", content: prompt },
+                            { role: "user", content: query }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 1000,
+                        stream: false
                     },
                     {
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-goog-api-key': 'TU_GEMINI_API_KEY' 
+                            'Authorization': 'Bearer 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'
                         },
-                        timeout: 15000
+                        timeout: 12000
                     }
                 )
-                return response.data.candidates[0]?.content?.parts[0]?.text
+                return response.data.choices[0]?.message?.content
             }
         },
+
         {
-            name: "Hugging Face Gemma 3",
+            name: "💨 Groq Llama 3.1 8B (Rápido)",
             call: async () => {
                 const response = await axios.post(
-                    'https://api-inference.huggingface.co/models/google/gemma-3-270m',
+                    'https://api.groq.com/openai/v1/chat/completions',
                     {
-                        inputs: `<start_of_turn>system\n${prompt}<end_of_turn>\n<start_of_turn>user\n${query}<end_of_turn>\n<start_of_turn>model\n`,
+                        model: "llama-3.1-8b-instant",
+                        messages: [
+                            { role: "system", content: prompt },
+                            { role: "user", content: query }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 1000,
+                        stream: false
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer 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'
+                        },
+                        timeout: 8000
+                    }
+                )
+                return response.data.choices[0]?.message?.content
+            }
+        },
+
+        {
+            name: "🎭 Groq Mixtral 8x7B",
+            call: async () => {
+                const response = await axios.post(
+                    'https://api.groq.com/openai/v1/chat/completions',
+                    {
+                        model: "mixtral-8x7b-32768",
+                        messages: [
+                            { role: "system", content: prompt },
+                            { role: "user", content: query }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 1000,
+                        stream: false
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer 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'
+                        },
+                        timeout: 12000
+                    }
+                )
+                return response.data.choices[0]?.message?.content
+            }
+        },
+
+        // ===== HUGGING FACE APIs (TU TOKEN REAL) =====
+        {
+            name: "🤗 HF Mistral 7B v0.3",
+            call: async () => {
+                const response = await axios.post(
+                    'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3',
+                    {
+                        inputs: `<s>[INST] ${prompt}\n\nUsuario: ${query} [/INST]`,
                         parameters: {
                             max_new_tokens: 800,
                             temperature: 0.7,
                             do_sample: true,
                             return_full_text: false,
-                            stop: ["<end_of_turn>", "<start_of_turn>"]
+                            stop: ["</s>", "[INST]"]
                         },
                         options: {
-                            wait_for_model: true
+                            wait_for_model: true,
+                            use_cache: false
                         }
                     },
                     {
                         headers: {
-                            'Authorization': 'Bearer TU_HF_TOKEN', 
+                            'Authorization': 'Bearer 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',
                             'Content-Type': 'application/json'
                         },
                         timeout: 30000
@@ -233,32 +264,157 @@ async function getAIResponse(query, username, prompt) {
                 return response.data[0]?.generated_text?.trim()
             }
         },
+
         {
-            name: "Cohere Command R",
+            name: "🦙 HF Llama 3.1 8B",
             call: async () => {
                 const response = await axios.post(
-                    'https://api.cohere.ai/v1/chat',
+                    'https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3.1-8B-Instruct',
                     {
-                        model: 'command-r', 
-                        message: query,
-                        preamble: prompt,
-                        temperature: 0.7,
-                        max_tokens: 800,
-                        stream: false
+                        inputs: `<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n${prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n${query}<|eot_id|><|start_header_id|>assistant<|end_header_id|>`,
+                        parameters: {
+                            max_new_tokens: 800,
+                            temperature: 0.7,
+                            do_sample: true,
+                            return_full_text: false
+                        },
+                        options: {
+                            wait_for_model: true,
+                            use_cache: false
+                        }
                     },
                     {
                         headers: {
-                            'Authorization': 'Bearer TU_COHERE_API_KEY', 
+                            'Authorization': 'Bearer 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',
                             'Content-Type': 'application/json'
+                        },
+                        timeout: 35000
+                    }
+                )
+                return response.data[0]?.generated_text?.trim()
+            }
+        },
+
+        {
+            name: "💎 HF Llama 3 8B",
+            call: async () => {
+                const response = await axios.post(
+                    'https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3-8B-Instruct',
+                    {
+                        inputs: `<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n${prompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n${query}<|eot_id|><|start_header_id|>assistant<|end_header_id|>`,
+                        parameters: {
+                            max_new_tokens: 800,
+                            temperature: 0.7,
+                            do_sample: true,
+                            return_full_text: false
+                        },
+                        options: {
+                            wait_for_model: true
+                        }
+                    },
+                    {
+                        headers: {
+                            'Authorization': 'Bearer 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',
+                            'Content-Type': 'application/json'
+                        },
+                        timeout: 30000
+                    }
+                )
+                return response.data[0]?.generated_text?.trim()
+            }
+        },
+
+        {
+            name: "🌟 HF Qwen 2.5 7B",
+            call: async () => {
+                const response = await axios.post(
+                    'https://api-inference.huggingface.co/models/Qwen/Qwen2.5-7B-Instruct',
+                    {
+                        inputs: `<|im_start|>system\n${prompt}<|im_end|>\n<|im_start|>user\n${query}<|im_end|>\n<|im_start|>assistant\n`,
+                        parameters: {
+                            max_new_tokens: 800,
+                            temperature: 0.7,
+                            do_sample: true,
+                            return_full_text: false,
+                            stop: ["<|im_end|>"]
+                        },
+                        options: {
+                            wait_for_model: true
+                        }
+                    },
+                    {
+                        headers: {
+                            'Authorization': 'Bearer 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',
+                            'Content-Type': 'application/json'
+                        },
+                        timeout: 30000
+                    }
+                )
+                return response.data[0]?.generated_text?.trim()
+            }
+        },
+
+        {
+            name: "🎨 HF Code Llama 7B",
+            call: async () => {
+                const response = await axios.post(
+                    'https://api-inference.huggingface.co/models/codellama/CodeLlama-7b-Instruct-hf',
+                    {
+                        inputs: `<s>[INST] ${prompt}\n\nUsuario: ${query} [/INST]`,
+                        parameters: {
+                            max_new_tokens: 800,
+                            temperature: 0.7,
+                            do_sample: true,
+                            return_full_text: false
+                        },
+                        options: {
+                            wait_for_model: true
+                        }
+                    },
+                    {
+                        headers: {
+                            'Authorization': 'Bearer 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',
+                            'Content-Type': 'application/json'
+                        },
+                        timeout: 30000
+                    }
+                )
+                return response.data[0]?.generated_text?.trim()
+            }
+        },
+
+        // ===== OPENROUTER APIs (TU CLAVE REAL) =====
+        {
+            name: "🔸 OR Llama 3.2 3B Free",
+            call: async () => {
+                const response = await axios.post(
+                    'https://openrouter.ai/api/v1/chat/completions',
+                    {
+                        model: "meta-llama/llama-3.2-3b-instruct:free",
+                        messages: [
+                            { role: "system", content: prompt },
+                            { role: "user", content: query }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 800,
+                        top_p: 1
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer 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',
+                            'HTTP-Referer': 'https://mikubot.com',
+                            'X-Title': 'Hatsune Miku Bot'
                         },
                         timeout: 20000
                     }
                 )
-                return response.data.text
+                return response.data.choices[0]?.message?.content
             }
         },
+
         {
-            name: "OpenRouter Free",
+            name: "🔹 OR Llama 3.1 8B Free",
             call: async () => {
                 const response = await axios.post(
                     'https://openrouter.ai/api/v1/chat/completions',
@@ -274,11 +430,152 @@ async function getAIResponse(query, username, prompt) {
                     {
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': 'Bearer TU_OPENROUTER_KEY', 
+                            'Authorization': 'Bearer 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',
                             'HTTP-Referer': 'https://mikubot.com',
-                            'X-Title': 'Miku Bot'
+                            'X-Title': 'Hatsune Miku Bot'
                         },
                         timeout: 20000
+                    }
+                )
+                return response.data.choices[0]?.message?.content
+            }
+        },
+
+        {
+            name: "💫 OR Qwen 2.5 7B Free",
+            call: async () => {
+                const response = await axios.post(
+                    'https://openrouter.ai/api/v1/chat/completions',
+                    {
+                        model: "qwen/qwen-2.5-7b-instruct:free",
+                        messages: [
+                            { role: "system", content: prompt },
+                            { role: "user", content: query }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 800
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer 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',
+                            'HTTP-Referer': 'https://mikubot.com',
+                            'X-Title': 'Hatsune Miku Bot'
+                        },
+                        timeout: 20000
+                    }
+                )
+                return response.data.choices[0]?.message?.content
+            }
+        },
+
+        {
+            name: "🌊 OR Mistral 7B Free",
+            call: async () => {
+                const response = await axios.post(
+                    'https://openrouter.ai/api/v1/chat/completions',
+                    {
+                        model: "mistralai/mistral-7b-instruct:free",
+                        messages: [
+                            { role: "system", content: prompt },
+                            { role: "user", content: query }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 800
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer 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',
+                            'HTTP-Referer': 'https://mikubot.com',
+                            'X-Title': 'Hatsune Miku Bot'
+                        },
+                        timeout: 20000
+                    }
+                )
+                return response.data.choices[0]?.message?.content
+            }
+        },
+
+        {
+            name: "⚡ OR Phi 3 Mini Free",
+            call: async () => {
+                const response = await axios.post(
+                    'https://openrouter.ai/api/v1/chat/completions',
+                    {
+                        model: "microsoft/phi-3-mini-128k-instruct:free",
+                        messages: [
+                            { role: "system", content: prompt },
+                            { role: "user", content: query }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 800
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer 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',
+                            'HTTP-Referer': 'https://mikubot.com',
+                            'X-Title': 'Hatsune Miku Bot'
+                        },
+                        timeout: 20000
+                    }
+                )
+                return response.data.choices[0]?.message?.content
+            }
+        },
+
+        // MODELOS PREMIUM OPENROUTER (Con tus créditos)
+        {
+            name: "🏆 OR Claude 3.5 Haiku",
+            call: async () => {
+                const response = await axios.post(
+                    'https://openrouter.ai/api/v1/chat/completions',
+                    {
+                        model: "anthropic/claude-3.5-haiku",
+                        messages: [
+                            { role: "system", content: prompt },
+                            { role: "user", content: query }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 800
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer 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',
+                            'HTTP-Referer': 'https://mikubot.com',
+                            'X-Title': 'Hatsune Miku Bot'
+                        },
+                        timeout: 25000
+                    }
+                )
+                return response.data.choices[0]?.message?.content
+            }
+        },
+
+        {
+            name: "🎯 OR GPT-4o Mini",
+            call: async () => {
+                const response = await axios.post(
+                    'https://openrouter.ai/api/v1/chat/completions',
+                    {
+                        model: "openai/gpt-4o-mini",
+                        messages: [
+                            { role: "system", content: prompt },
+                            { role: "user", content: query }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 800
+                    },
+                    {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer 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',
+                            'HTTP-Referer': 'https://mikubot.com',
+                            'X-Title': 'Hatsune Miku Bot'
+                        },
+                        timeout: 25000
                     }
                 )
                 return response.data.choices[0]?.message?.content
@@ -290,16 +587,16 @@ async function getAIResponse(query, username, prompt) {
         try {
             console.log(`💙 Intentando con ${api.name}...`)
             const result = await api.call()
-            if (result && result.trim()) {
+            if (result && result.trim() && result.trim().length > 10) {
                 console.log(`✅ ${api.name} funcionó correctamente`)
+                console.log(`📝 Respuesta: ${result.substring(0, 100)}...`)
                 return result.trim()
             }
         } catch (error) {
             console.error(`❌ ${api.name} falló:`, {
                 status: error.response?.status,
                 statusText: error.response?.statusText,
-                data: error.response?.data,
-                message: error.message
+                error: error.response?.data?.error || error.message
             })
             continue
         }
@@ -309,48 +606,108 @@ async function getAIResponse(query, username, prompt) {
     return getLocalMikuResponse(query, username)
 }
 
-
+// Análisis de imágenes con tus APIs
 async function analyzeImage(imageBuffer) {
     const imageAPIs = [
+        // HUGGING FACE - Análisis de imágenes
         {
-            name: "Google Vision",
-            call: async () => {
-                const base64Image = imageBuffer.toString('base64')
-                const response = await axios.post(
-                    `https://vision.googleapis.com/v1/images:annotate?key=TU_GOOGLE_VISION_KEY`,
-                    {
-                        requests: [{
-                            image: { content: base64Image },
-                            features: [
-                                { type: 'LABEL_DETECTION', maxResults: 10 },
-                                { type: 'TEXT_DETECTION' },
-                                { type: 'OBJECT_LOCALIZATION', maxResults: 10 }
-                            ]
-                        }]
-                    }
-                )
-                
-                const labels = response.data.responses[0]?.labelAnnotations?.map(l => l.description) || []
-                const text = response.data.responses[0]?.textAnnotations?.[0]?.description || ""
-                const objects = response.data.responses[0]?.localizedObjectAnnotations?.map(o => o.name) || []
-                
-                return `La imagen contiene: ${labels.join(', ')}. ${text ? `Texto visible: ${text}. ` : ''}${objects.length ? `Objetos detectados: ${objects.join(', ')}.` : ''}`
-            }
-        },
-        {
-            name: "Hugging Face BLIP",
+            name: "🖼️ HF BLIP Captioning",
             call: async () => {
                 const response = await axios.post(
                     'https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-large',
                     imageBuffer,
                     {
                         headers: {
-                            'Authorization': 'Bearer TU_HF_TOKEN',
+                            'Authorization': 'Bearer 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',
                             'Content-Type': 'application/octet-stream'
-                        }
+                        },
+                        timeout: 30000
                     }
                 )
                 return response.data[0]?.generated_text || 'Imagen procesada'
+            }
+        },
+
+        {
+            name: "👁️ HF ViT GPT2",
+            call: async () => {
+                const response = await axios.post(
+                    'https://api-inference.huggingface.co/models/nlpconnect/vit-gpt2-image-captioning',
+                    imageBuffer,
+                    {
+                        headers: {
+                            'Authorization': 'Bearer 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',
+                            'Content-Type': 'application/octet-stream'
+                        },
+                        timeout: 30000
+                    }
+                )
+                return response.data[0]?.generated_text || 'Imagen analizada'
+            }
+        },
+
+        {
+            name: "🎨 HF BLIP2 Captioning",
+            call: async () => {
+                const response = await axios.post(
+                    'https://api-inference.huggingface.co/models/Salesforce/blip2-opt-2.7b',
+                    imageBuffer,
+                    {
+                        headers: {
+                            'Authorization': 'Bearer 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',
+                            'Content-Type': 'application/octet-stream'
+                        },
+                        timeout: 35000
+                    }
+                )
+                return response.data[0]?.generated_text || 'Imagen descrita'
+            }
+        },
+
+        {
+            name: "🔍 HF Object Detection",
+            call: async () => {
+                const response = await axios.post(
+                    'https://api-inference.huggingface.co/models/facebook/detr-resnet-50',
+                    imageBuffer,
+                    {
+                        headers: {
+                            'Authorization': 'Bearer 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',
+                            'Content-Type': 'application/octet-stream'
+                        },
+                        timeout: 30000
+                    }
+                )
+                if (response.data && Array.isArray(response.data)) {
+                    const objects = response.data.map(obj => `${obj.label} (${(obj.score * 100).toFixed(1)}%)`).slice(0, 5)
+                    return `Objetos detectados: ${objects.join(', ')}`
+                }
+                return 'Objetos analizados'
+            }
+        },
+        {
+            name: "Hugging Face CLIP",
+            call: async () => {
+                const response = await axios.post(
+                    'https://api-inference.huggingface.co/models/openai/clip-vit-base-patch32',
+                    {
+                        inputs: {
+                            image: imageBuffer.toString('base64'),
+                            parameters: {
+                                candidate_labels: ["persona", "animal", "objeto", "paisaje", "comida", "tecnología", "arte", "deporte", "vehículo", "edificio"]
+                            }
+                        }
+                    },
+                    {
+                        headers: {
+                            'Authorization': 'Bearer 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',
+                            'Content-Type': 'application/json'
+                        },
+                        timeout: 30000
+                    }
+                )
+                const labels = response.data?.map(item => `${item.label} (${(item.score * 100).toFixed(1)}%)`)
+                return `Imagen clasificada como: ${labels?.join(', ') || 'contenido visual'}`
             }
         }
     ]
@@ -446,3 +803,4 @@ function getLocalMikuResponse(query, username) {
 }
 
 export default handler
+
