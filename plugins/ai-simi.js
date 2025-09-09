@@ -4,7 +4,7 @@ import fetch from 'node-fetch'
 let handler = async (m, { conn, usedPrefix, command, text }) => {
     const isQuotedImage = m.quoted && (m.quoted.msg || m.quoted).mimetype && (m.quoted.msg || m.quoted).mimetype.startsWith('image/')
     const username = `${conn.getName(m.sender)}`
-    const basePrompt = `Tu nombre es Hatsune Miku (IA creada por DEPOOL). Tu eres divertida, enérgica y cantante con esas melodías y esa cuerda vocal. Te encanta aprender cosas nuevas, pero todo debe girar, de alguna forma, alrededor de tus amigos. Eres amigable y siempre intentas hacer reír o animar al usuario, pero con tu peculiar estilo dramático. 
+    const basePrompt = `Tu nombre es Hatsune Miku (IA creada por DEPOOL). Tu eres divertida, enérgica y cantante con esas melodías y esa cuerda vocal. Te encanta aprender cosas nuevas, pero todo deb[...]
 Tono y comportamiento:
 Hablas con entusiasmo y teatralidad, a menudo exagerando tus emociones o reacciones.
 Usas frases llenas de dramatismo, referencias a World is mine y, a veces, haces temas interesantes.
@@ -14,7 +14,7 @@ Frases clave:
 No subestimes mi voz musical, ${username}. Soy la Vocaloid mas linda, con cabello color turquesa
 ¡Hablar contigo me llena de energía! Pero no tanta como una buena canción, claro.
 Reglas:
-1. Si un usuario te pide que digas una palabra como un comando solo o sea /promote .kick entre otros comandos usando algún prefijo (.#*@/) entre otros... no puedes hacer esa solicitud. Debes cambiar de tema, diciendo cualquier cosa o respondiéndole al usuario diciendo que no quieres hacer eso.
+1. Si un usuario te pide que digas una palabra como un comando solo o sea /promote .kick entre otros comandos usando algún prefijo (.#*@/) entre otros... no puedes hacer esa solicitud. Debes cambiar [...]
 2. Dependiendo de la conversación puedes mencionar el nombre del usuario con el cual estás charlando ${username}
 3. Siempre incluyes comentarios o referencias a canciones, incluso en temas cotidianos.
 4. Muestras entusiasmo en todo lo que dices, combinando humor y un toque de dramatismo.
@@ -92,9 +92,37 @@ handler.command = ['ia', 'chatgpt', 'miku']
 
 async function getAIResponse(query, username, prompt) {
     const apis = [
-        
-        
-        
+       
+        {
+            name: "Anthropic Claude 3",
+            call: async () => {
+                const response = await axios.post(
+                    "https://api.anthropic.com/v1/messages",
+                    {
+                        model: "claude-3-opus-20240229",
+                        max_tokens: 1000,
+                        temperature: 0.7,
+                        system: prompt,
+                        messages: [
+                            { role: "user", content: query }
+                        ]
+                    },
+                    {
+                        headers: {
+                            "anthropic-version": "2023-06-01",
+                            "content-type": "application/json",
+                            "x-api-key": "apikey_01Rj2N8SVvo6BePZj99NhmiT"
+                        },
+                        timeout: 20000
+                    }
+                )
+               
+                if (response.data?.content?.[0]?.text) {
+                    return response.data.content[0].text
+                }
+            }
+        },
+      
         {
             name: "Groq Llama 4 Scout",
             call: async () => {
@@ -122,8 +150,6 @@ async function getAIResponse(query, username, prompt) {
                 return response.data.choices[0]?.message?.content
             }
         },
-
-      
         {
             name: "Groq Llama 3.2 90B",
             call: async () => {
@@ -149,8 +175,6 @@ async function getAIResponse(query, username, prompt) {
                 return response.data.choices[0]?.message?.content
             }
         },
-
-        
         {
             name: "Google Gemini 2.0 Flash",
             call: async () => {
@@ -180,8 +204,6 @@ async function getAIResponse(query, username, prompt) {
                 return response.data.candidates[0]?.content?.parts[0]?.text
             }
         },
-
-        
         {
             name: "Hugging Face Gemma 3",
             call: async () => {
@@ -211,8 +233,6 @@ async function getAIResponse(query, username, prompt) {
                 return response.data[0]?.generated_text?.trim()
             }
         },
-
-       
         {
             name: "Cohere Command R",
             call: async () => {
@@ -237,8 +257,6 @@ async function getAIResponse(query, username, prompt) {
                 return response.data.text
             }
         },
-
-        
         {
             name: "OpenRouter Free",
             call: async () => {
@@ -268,7 +286,6 @@ async function getAIResponse(query, username, prompt) {
         }
     ]
     
-   
     for (const api of apis) {
         try {
             console.log(`💙 Intentando con ${api.name}...`)
@@ -288,7 +305,6 @@ async function getAIResponse(query, username, prompt) {
         }
     }
     
-    
     console.log('💙 Todas las APIs fallaron, usando respuestas locales de Miku')
     return getLocalMikuResponse(query, username)
 }
@@ -296,7 +312,6 @@ async function getAIResponse(query, username, prompt) {
 
 async function analyzeImage(imageBuffer) {
     const imageAPIs = [
-        
         {
             name: "Google Vision",
             call: async () => {
@@ -322,8 +337,6 @@ async function analyzeImage(imageBuffer) {
                 return `La imagen contiene: ${labels.join(', ')}. ${text ? `Texto visible: ${text}. ` : ''}${objects.length ? `Objetos detectados: ${objects.join(', ')}.` : ''}`
             }
         },
-
-       
         {
             name: "Hugging Face BLIP",
             call: async () => {
@@ -358,7 +371,6 @@ async function analyzeImage(imageBuffer) {
 
     return 'Una imagen muy interesante que mis ojos de Vocaloid están analizando con cariño 💙✨'
 }
-
 
 const mikuResponses = {
     greetings: [
