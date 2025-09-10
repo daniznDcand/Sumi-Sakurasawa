@@ -2,9 +2,6 @@ import fetch from 'node-fetch'
 import axios from 'axios'
 
 
-console.log('🎵 AI-MIKU: Plugin cargado correctamente')
-
-
 const AI_APIS = {
   
   groq_llama4: {
@@ -474,7 +471,7 @@ let handler = async (m, { conn, text, isOwner }) => {
 
 
 handler.all = true 
-handler.priority = 0 
+handler.priority = 1 
 
 export default handler
 
