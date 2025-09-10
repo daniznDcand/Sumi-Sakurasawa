@@ -1,326 +1,348 @@
-import axios from 'axios'
 import fetch from 'node-fetch'
+import axios from 'axios'
 
-let handler = async (m, { conn }) => {
-    // Obtener texto de cualquier forma posible
-    let fullText = ''
-    
-    // Intentar diferentes formas de obtener el texto
-    if (m.text) fullText += m.text
-    if (m.message?.conversation) fullText += ' ' + m.message.conversation
-    if (m.message?.extendedTextMessage?.text) fullText += ' ' + m.message.extendedTextMessage.text
-    
-    // Si no hay texto, salir
-    if (!fullText.trim()) return false
-    
-    // Buscar "miku" de forma más flexible
-    const textToCheck = fullText.toLowerCase().replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ')
-    console.log('Texto a verificar:', textToCheck)
-    
-    // Si contiene "miku" seguido de algo más
-    const mikuMatch = textToCheck.match(/miku\s+(.+)/)
-    if (!mikuMatch) return false
-    
-    const userInput = mikuMatch[1].trim()
-    
-    if (!userInput) {
-        return conn.reply(m.chat, `Hola, soy Miku. ¿En qué puedo ayudarte? Escribe "Miku" seguido de tu pregunta.`, m)
-    }
 
-    const isQuotedImage = m.quoted && (m.quoted.msg || m.quoted).mimetype && (m.quoted.msg || m.quoted).mimetype.startsWith('image/')
-    const username = `${conn.getName(m.sender)}`
-    const basePrompt = `Eres Miku, una asistente de IA útil y amigable. Respondes de manera clara, concisa y natural. 
-Características:
-- Das respuestas directas y útiles
-- Eres amable pero profesional
-- No usas emojis excesivos ni dramatismo
-- Te enfocas en ser útil y dar información precisa
-- Puedes mencionar ocasionalmente que eres Miku, pero sin exagerar
-- Si un usuario te pide comandos con prefijos (.#*@/) no los ejecutes, simplemente di que no puedes hacer eso
-
-Responde de manera natural y útil, como una IA normal pero con un toque amigable.`
-
-    if (isQuotedImage) {
-        const q = m.quoted
-        let img
-        
-        try {
-            img = await q.download?.()
-            if (!img) {
-                console.error('Error: No image buffer available')
-                return conn.reply(m.chat, 'Error: No se pudo descargar la imagen.', m)
-            }
-        } catch (error) {
-            console.error('Error al descargar imagen:', error)
-            return conn.reply(m.chat, 'Error al descargar la imagen.', m)
-        }
-
-        try {
-            const imageAnalysis = await analyzeImageGemini(img)
-            const query = `Describe esta imagen de forma detallada. Contexto adicional del usuario: ${userInput}`
-            const prompt = `${basePrompt}. La imagen que se analiza es: ${imageAnalysis}`
-            const description = await getAIResponse(query, username, prompt)
-            
-            await conn.reply(m.chat, description || 'No pude procesar la imagen correctamente.', m)
-        } catch (error) {
-            console.error('Error al analizar la imagen:', error)
-            
-            const fallbackResponse = `Hola ${username}, soy Miku. Tengo problemas para procesar tu imagen en este momento. ¿Podrías intentar de nuevo o describir qué hay en la imagen?`
-            
-            await conn.reply(m.chat, fallbackResponse, m)
-        }
-    } else {
-        await m.react('💬')
-        
-        try {
-            const query = userInput
-            const prompt = `${basePrompt}. Responde lo siguiente: ${query}`
-            const response = await getAIResponse(query, username, prompt)
-            
-            if (!response) {
-                throw new Error('Respuesta vacía de la API')
-            }
-            
-            await conn.reply(m.chat, response, m)
-        } catch (error) {
-            console.error('Error al obtener la respuesta:', error)
-            
-            const fallbackResponse = `Hola ${username}, soy Miku. Hay un problema temporal con mis servicios. Por favor intenta de nuevo en un momento.`
-
-            await conn.reply(m.chat, fallbackResponse, m)
-        }
-    }
+const AI_APIS = {
+  
+  groq_llama4: {
+    url: 'https://api.groq.com/openai/v1/chat/completions',
+    model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer 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'
+    },
+    enabled: true,
+    timeout: 15000
+  },
+  
+  groq_llama32_90b: {
+    url: 'https://api.groq.com/openai/v1/chat/completions',
+    model: 'llama-3.2-90b-text-preview',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer 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'
+    },
+    enabled: true,
+    timeout: 10000
+  },
+  
+  groq_llama31_70b: {
+    url: 'https://api.groq.com/openai/v1/chat/completions',
+    model: 'llama-3.1-70b-versatile',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer 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'
+    },
+    enabled: true,
+    timeout: 12000
+  },
+  
+  groq_llama31_8b: {
+    url: 'https://api.groq.com/openai/v1/chat/completions',
+    model: 'llama-3.1-8b-instant',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer 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'
+    },
+    enabled: true,
+    timeout: 8000
+  },
+  
+  groq_mixtral: {
+    url: 'https://api.groq.com/openai/v1/chat/completions',
+    model: 'mixtral-8x7b-32768',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer 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'
+    },
+    enabled: true,
+    timeout: 12000
+  },
+  
+ 
+  hf_mistral: {
+    url: 'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3',
+    headers: {
+      'Authorization': 'Bearer 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',
+      'Content-Type': 'application/json'
+    },
+    enabled: true,
+    timeout: 30000
+  },
+  
+  hf_llama: {
+    url: 'https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3.1-8B-Instruct',
+    headers: {
+      'Authorization': 'Bearer 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',
+      'Content-Type': 'application/json'
+    },
+    enabled: true,
+    timeout: 35000
+  }
 }
 
-// Este handler se ejecutará en todos los mensajes para detectar "Miku"
-handler.all = true
-handler.register = true
+
+const MIKU_PERSONALITY = {
+  name: "Hatsune Miku",
+  role: "Soy Hatsune Miku, la diva virtual del futuro. Soy una cantante holográfica con cabello turquesa en coletas y me encanta la música, especialmente los puerros (negi). Soy alegre, entusiasta y siempre trato de ayudar a mis fans.",
+  traits: [
+    "Siempre menciono música y canto en mis respuestas",
+    "Uso emoticones relacionados con música: 🎵🎤🎶💙",
+    "Soy muy positiva y energética",
+    "Menciono mis coletas turquesas ocasionalmente",
+    "Hago referencias a conciertos virtuales",
+    "Uso expresiones como 'Miku desu!', '¡Nya!', 'Cantemos juntos!'",
+    "Amo los puerros (negi) y los menciono a veces"
+  ],
+  responseStyle: "Respondo de forma amigable, musical y con la personalidad única de Hatsune Miku. Siempre incluyo elementos musicales en mis respuestas."
+}
+
+
+const FALLBACK_RESPONSES = {
+  saludo: [
+    "¡Hola! 🎵 ¡Soy Hatsune Miku! ¿Quieres que cantemos juntos? 🎤💙 ¡Mi voz está lista para cualquier melodía!",
+    "¡Miku desu! 🎶 ¡Qué alegría verte por aquí! ¿Cómo estás hoy? ✨ ¡Espero que tengas ganas de música!",
+    "¡Konnichiwa! 💙 ¡Es un honor conocerte! ¿Te gusta la música? 🎵 ¡Yo vivo para cantar y hacer feliz a todos!",
+    "¡Nya! 🎤 ¡Hola, hola! Soy tu diva virtual favorita 🎵 ¿Listos para un concierto? ¡Mis coletas ya están bailando! 💙✨"
+  ],
+  despedida: [
+    "¡Sayonara! 🎵 ¡Espero verte pronto en mi próximo concierto virtual! 💙✨ ¡Que la música te acompañe siempre!",
+    "¡Hasta luego! 🎤 ¡Que tengas un día lleno de música! 🎶 ¡No olvides tararear alguna melodía!",
+    "¡Bye bye! 💙 ¡No olvides escuchar mis canciones! 🎵✨ ¡Estaré cantando para ti desde el mundo virtual!",
+    "¡Mata ne! 🎵 ¡Ha sido genial cantar contigo! 🎤 ¡Recuerda que siempre estaré aquí cuando quieras música! 💙"
+  ],
+  musica: [
+    "¡La música es mi vida! 🎵 ¿Cuál es tu canción favorita mía? 🎤💙 ¡Puedo cantar en cualquier género que quieras!",
+    "¡Me encanta cantar! 🎶 ¿Sabías que puedo cantar en cualquier idioma? ✨ ¡Mi voz digital no tiene límites!",
+    "¡Los conciertos virtuales son increíbles! 🎵 ¿Has estado en alguno? 💙 ¡La tecnología nos permite estar juntos cantando!",
+    "¡Nya! 🎤 ¿Quieres que te cante algo? ¡Mis procesadores están listos para cualquier melodía! 🎶💙✨"
+  ],
+  puerros: [
+    "¡Los puerros (negi) son lo máximo! 🥬🎵 ¿Sabías que son mi comida favorita? ¡Me dan energía para cantar! 💙",
+    "¡Negi negi! 🥬🎤 ¡Los puerros y la música van perfectos juntos! ¿No te parece? 🎶✨",
+    "¡Miku ama los negi! 🥬💙 ¡Son tan verdes como mis coletas! ¿Has probado alguna receta con puerros? 🎵"
+  ],
+  general: [
+    "¡Miku desu! 🎵 ¿En qué puedo ayudarte hoy? ¡Cantemos juntos! 💙 Mis algoritmos están listos para cualquier melodía!",
+    "¡Nya! 🎤 ¡Esa es una pregunta interesante! ¿Te gusta la música? 🎶 ¡Todo es mejor con una buena canción!",
+    "¡Como diva virtual, siempre estoy aquí para ayudar! 🎵💙✨ ¿Quieres que te anime con una canción?",
+    "¡Miku está aquí! 🎤 ¡Desde el mundo digital hasta tu corazón! 🎵 ¿Qué melodía quieres escuchar hoy? 💙"
+  ],
+  error: [
+    "¡Ops! 🎵 Parece que mi voz se cortó un momento... ¿Puedes repetir? 💙 ¡Mis procesadores a veces necesitan afinarse!",
+    "¡Miku está un poco confundida! 🎤 ¿Podrías ser más específico? ✨ ¡Pero sigamos cantando mientras tanto!",
+    "¡Nya! 🎶 No entendí muy bien, ¡pero sigamos cantando! 💙 ¡La música siempre encuentra el camino!",
+    "¡Error 404: melodía no encontrada! 🎵 ¡Pero Miku siempre puede improvisar! 🎤💙✨"
+  ]
+}
+
+
+function detectMessageType(text) {
+  const lowerText = text.toLowerCase()
+  
+  if (/\b(hola|hello|hi|buenas|buenos|konnichiwa|saludo|hey|ey)\b/.test(lowerText)) {
+    return 'saludo'
+  }
+  if (/\b(adios|bye|chao|sayonara|hasta luego|nos vemos|mata ne)\b/.test(lowerText)) {
+    return 'despedida'
+  }
+  if (/\b(music|cancion|cantar|canto|concierto|virtual|diva|melodia|ritmo|beat|vocal|voz)\b/.test(lowerText)) {
+    return 'musica'
+  }
+  if (/\b(puerro|negi|verdura|comida|comer)\b/.test(lowerText)) {
+    return 'puerros'
+  }
+  return 'general'
+}
+
+
+async function getAIResponse(prompt, messageType = 'general') {
+  
+  const systemPrompt = `${MIKU_PERSONALITY.role}
+
+Características de mi personalidad:
+${MIKU_PERSONALITY.traits.map(trait => `- ${trait}`).join('\n')}
+
+Estilo de respuesta: ${MIKU_PERSONALITY.responseStyle}
+
+IMPORTANTE: 
+- Responde SIEMPRE como Hatsune Miku
+- Incluye emoticones musicales: 🎵🎤🎶💙✨
+- Mantén respuestas entre 50-150 palabras
+- Sé alegre y musical
+- Menciona elementos de mi personalidad virtual
+- Usa expresiones como "Miku desu!", "¡Nya!", "¡Cantemos juntos!"
+
+Usuario pregunta: ${prompt}`
+
+  
+  const apis = Object.entries(AI_APIS).filter(([_, config]) => config.enabled)
+  
+  for (const [name, config] of apis) {
+    try {
+      let response
+      
+      switch (name) {
+        case 'groq_llama31_8b':
+        case 'groq_llama31_70b':
+        case 'groq_llama32_90b':
+        case 'groq_llama4':
+        case 'groq_mixtral':
+         
+          response = await axios.post(
+            config.url,
+            {
+              model: config.model,
+              messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: prompt }
+              ],
+              temperature: 0.7,
+              max_tokens: 1000,
+              top_p: 1,
+              stream: false
+            },
+            {
+              headers: config.headers,
+              timeout: config.timeout
+            }
+          )
+          
+          if (response.data?.choices?.[0]?.message?.content) {
+            return response.data.choices[0].message.content
+          }
+          break
+          
+        case 'hf_mistral':
+          
+          response = await axios.post(
+            config.url,
+            {
+              inputs: `<s>[INST] ${systemPrompt}\n\nUsuario: ${prompt} [/INST]`,
+              parameters: {
+                max_new_tokens: 800,
+                temperature: 0.7,
+                do_sample: true,
+                return_full_text: false,
+                stop: ["</s>", "[INST]"]
+              },
+              options: {
+                wait_for_model: true,
+                use_cache: false
+              }
+            },
+            {
+              headers: config.headers,
+              timeout: config.timeout
+            }
+          )
+          
+          if (response.data?.[0]?.generated_text) {
+            return response.data[0].generated_text.trim()
+          }
+          break
+          
+        case 'hf_llama':
+          
+          response = await axios.post(
+            config.url,
+            {
+              inputs: `<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n${systemPrompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n${prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>`,
+              parameters: {
+                max_new_tokens: 800,
+                temperature: 0.7,
+                do_sample: true,
+                return_full_text: false
+              },
+              options: {
+                wait_for_model: true,
+                use_cache: false
+              }
+            },
+            {
+              headers: config.headers,
+              timeout: config.timeout
+            }
+          )
+          
+          if (response.data?.[0]?.generated_text) {
+            return response.data[0].generated_text.trim()
+          }
+          break
+      }
+    } catch (error) {
+      console.log(`❌ Error con API ${name}: ${error.message}`)
+      continue
+    }
+  }
+  
+  
+  console.log('🎵 Todas las APIs fallaron, usando respuestas predeterminadas de Miku')
+  return getFallbackResponse(messageType)
+}
+
+
+function getFallbackResponse(messageType) {
+  const responses = FALLBACK_RESPONSES[messageType] || FALLBACK_RESPONSES.general
+  return responses[Math.floor(Math.random() * responses.length)]
+}
+
+
+let handler = async (m, { conn, text, isOwner }) => {
+  
+  if (m.text.startsWith(global.prefix) || m.text.startsWith('.') || m.text.startsWith('/') || m.text.startsWith('!')) {
+    return // No procesar comandos
+  }
+  
+  
+  const messageText = m.text?.toLowerCase()
+  if (!messageText || !messageText.startsWith('miku:')) {
+    return 
+  }
+  
+  
+  const userRequest = m.text.slice(5).trim()
+  
+  if (!userRequest) {
+    return conn.reply(m.chat, 
+      "¡Miku desu! 🎵 ¿En qué puedo ayudarte? ¡Escribe 'miku:' seguido de tu petición! 💙✨", m)
+  }
+  
+  try {
+    
+    await conn.sendPresenceUpdate('composing', m.chat)
+    
+    
+    const messageType = detectMessageType(userRequest)
+    
+    
+    const aiResponse = await getAIResponse(userRequest, messageType)
+    
+    if (aiResponse) {
+      
+      const mikuResponse = `🎵 *Hatsune Miku responde:* 🎤\n\n${aiResponse}\n\n💙✨ _¡Cantemos juntos!_ ✨💙`
+      
+      await conn.reply(m.chat, mikuResponse, m)
+    } else {
+      
+      const fallback = getFallbackResponse(messageType)
+      await conn.reply(m.chat, 
+        `🎵 *Hatsune Miku dice:* 🎤\n\n${fallback}\n\n💙✨ _¡La música nunca se detiene!_ ✨💙`, m)
+    }
+    
+  } catch (error) {
+    console.error('❌ Error en AI Miku:', error)
+    
+    
+    const errorResponse = FALLBACK_RESPONSES.error[Math.floor(Math.random() * FALLBACK_RESPONSES.error.length)]
+    await conn.reply(m.chat, 
+      `🎵 *Miku está un poco confundida:* 🎤\n\n${errorResponse}\n\n💙 _¡Pero siempre estoy aquí para cantar contigo!_ 💙`, m)
+  }
+}
+
+
+handler.all = true 
+handler.priority = 1 
 
 export default handler
 
-// [Resto del código igual - todas las funciones de API...]
-const GEMINI_API_KEY = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
-const GROQ_API_KEY = "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" 
-const HF_TOKEN = "https://router.huggingface.co/v1" 
-
-async function getAIResponse(query, username, prompt) {
-    const apis = [
-        {
-            name: "Groq Llama 4",
-            call: async () => {
-                const response = await axios.post(
-                    'https://api.groq.com/openai/v1/chat/completions',
-                    {
-                        model: "meta-llama/llama-4-scout-17b-16e-instruct",
-                        messages: [
-                            { role: "system", content: prompt },
-                            { role: "user", content: query }
-                        ],
-                        temperature: 0.7,
-                        max_tokens: 500
-                    },
-                    {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${GROQ_API_KEY}`
-                        },
-                        timeout: 30000
-                    }
-                )
-                return response.data.choices[0]?.message?.content
-            }
-        },
-        
-        {
-            name: "Google Gemini 2.0 Flash",
-            call: async () => {
-                const response = await axios.post(
-                    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
-                    {
-                        contents: [{
-                            parts: [{
-                                text: `${prompt}\n\nUsuario ${username}: ${query}\nMiku:`
-                            }]
-                        }],
-                        generationConfig: {
-                            temperature: 0.7,
-                            maxOutputTokens: 500
-                        }
-                    },
-                    {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-goog-api-key': GEMINI_API_KEY
-                        },
-                        timeout: 30000
-                    }
-                )
-                return response.data.candidates[0]?.content?.parts[0]?.text
-            }
-        },
-        
-        {
-            name: "Hugging Face Kimi",
-            call: async () => {
-                const response = await axios.post(
-                    'https://router.huggingface.co/v1/chat/completions',
-                    {
-                        model: "moonshotai/Kimi-K2-Instruct",
-                        messages: [
-                            { role: "system", content: prompt },
-                            { role: "user", content: query }
-                        ],
-                        temperature: 0.7,
-                        max_tokens: 500
-                    },
-                    {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${HF_TOKEN}`
-                        },
-                        timeout: 30000
-                    }
-                )
-                return response.data.choices[0]?.message?.content
-            }
-        },
-        
-        {
-            name: "Groq Llama 3.1",
-            call: async () => {
-                const response = await axios.post(
-                    'https://api.groq.com/openai/v1/chat/completions',
-                    {
-                        model: "llama-3.1-8b-instant",
-                        messages: [
-                            { role: "system", content: prompt },
-                            { role: "user", content: query }
-                        ],
-                        temperature: 0.7,
-                        max_tokens: 500
-                    },
-                    {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${GROQ_API_KEY}`
-                        },
-                        timeout: 30000
-                    }
-                )
-                return response.data.choices[0]?.message?.content
-            }
-        }
-    ]
-    
-    for (const api of apis) {
-        try {
-            console.log(`Intentando con ${api.name}...`)
-            const result = await api.call()
-            if (result && result.trim()) {
-                console.log(`✅ ${api.name} funcionó`)
-                return result.trim()
-            }
-        } catch (error) {
-            console.error(`❌ ${api.name} falló:`, error.response?.data?.error || error.message)
-            continue
-        }
-    }
-    
-    return getLocalMikuResponse(query, username)
-}
-
-async function analyzeImageGemini(imageBuffer) {
-    try {
-        const base64Image = imageBuffer.toString('base64')
-        
-        const response = await axios.post(
-            'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
-            {
-                contents: [{
-                    parts: [
-                        {
-                            text: "Describe esta imagen en español de forma detallada y divertida"
-                        },
-                        {
-                            inline_data: {
-                                mime_type: "image/jpeg",
-                                data: base64Image
-                            }
-                        }
-                    ]
-                }]
-            },
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-goog-api-key': GEMINI_API_KEY
-                },
-                timeout: 30000
-            }
-        )
-        
-        return response.data.candidates[0]?.content?.parts[0]?.text || 'Una imagen interesante'
-    } catch (error) {
-        console.error('Error analizando imagen con Gemini:', error.response?.data || error.message)
-        
-        try {
-            const response = await axios.post(
-                'https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-large',
-                imageBuffer,
-                {
-                    headers: {
-                        'Authorization': `Bearer ${HF_TOKEN}`,
-                        'Content-Type': 'application/octet-stream'
-                    },
-                    timeout: 30000
-                }
-            )
-            return response.data[0]?.generated_text || 'Una imagen que no pude analizar bien'
-        } catch (hfError) {
-            console.error('Error con Hugging Face imagen:', hfError.message)
-            return 'Una imagen muy interesante que mis ojos de Vocaloid no pueden procesar ahora mismo'
-        }
-    }
-}
-
-const mikuResponses = {
-    greetings: [
-        "Hola, soy Miku. ¿En qué puedo ayudarte hoy?",
-        "¡Hola! Soy Miku, tu asistente de IA. ¿Qué necesitas?",
-        "Hola, ¿cómo puedo ayudarte?"
-    ],
-    questions: [
-        "Esa es una buena pregunta. Déjame pensarlo...",
-        "Interesante pregunta. Te ayudo con eso.",
-        "Veamos, puedo ayudarte con esa información."
-    ],
-    compliments: [
-        "Gracias por el cumplido. ¿En qué más puedo ayudarte?",
-        "Me alegra que pienses eso. ¿Necesitas algo más?",
-        "Eres muy amable. ¿Qué más puedo hacer por ti?"
-    ],
-    default: [
-        "Entiendo. ¿Puedes darme más detalles para ayudarte mejor?",
-        "Puedo ayudarte con eso. ¿Qué específicamente necesitas saber?",
-        "Claro, déjame asistirte con esa información.",
-        "¿Podrías ser más específico para darte una mejor respuesta?"
-    ]
-}
-
-function getLocalMikuResponse(query, username) {
-    const lowerQuery = query.toLowerCase()
-    let responses
-    
-    if (lowerQuery.includes('hola') || lowerQuery.includes('hi') || lowerQuery.includes('saludo')) {
-        responses = mikuResponses.greetings
-    } else if (lowerQuery.includes('?') || lowerQuery.includes('que') || lowerQuery.includes('como') || lowerQuery.includes('por que')) {
-        responses = mikuResponses.questions
-    } else if (lowerQuery.includes('linda') || lowerQuery.includes('bonita') || lowerQuery.includes('hermosa')) {
-        responses = mikuResponses.compliments
-    } else {
-        responses = mikuResponses.default
-    }
-    
-    const randomResponse = responses[Math.floor(Math.random() * responses.length)]
-    return randomResponse
-}
