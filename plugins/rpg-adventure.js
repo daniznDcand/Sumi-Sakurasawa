@@ -2,16 +2,16 @@ import fetch from 'node-fetch';
 
 let handler = async (m, { conn }) => {
 let user = global.db.data.users[m.sender];
-let img = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1745557963353.jpeg';
+let img = 'https://files.catbox.moe/wfnbr8.jpg';
 if (!user) {
-return conn.reply(m.chat, `🎤💙 El fanático no se encuentra en la base de datos del concierto virtual ✨`, m);
+return conn.reply(m.chat, `💙 El fanático no se encuentra en la base de datos del concierto virtual ✨`, m);
 }
 if (user.health < 80) {
-return conn.reply(m.chat, '🎤� No tienes suficiente energía para aventurarte en el mundo virtual. Usa el comando .heal para recuperar tu energía ✨💫', m);
+return conn.reply(m.chat, '🎤 No tienes suficiente energía para aventurarte en el mundo virtual. Usa el comando .heal para recuperar tu energía ✨💫', m);
 }
 if (user.lastAdventure && new Date() - user.lastAdventure <= 1500000) {
 let timeLeft = 1500000 - (new Date() - user.lastAdventure);
-return conn.reply(m.chat, `🎤💙 Debes esperar ${msToTime(timeLeft)} antes de aventurarte de nuevo en el concierto virtual ✨🎵`, m);
+return conn.reply(m.chat, `💙 Debes esperar ${msToTime(timeLeft)} antes de aventurarte de nuevo en el concierto virtual ✨🎵`, m);
 }
 let kingdoms = [
 'Reino Virtual de Eldoria',

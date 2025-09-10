@@ -12,7 +12,7 @@ var handler = async (m, { conn }) => {
     }
 
     global.db.data.users[m.sender].exp += exp;
-    conn.reply(m.chat, `🎤💙 *Recompensa Musical Diaria* 💙🎤
+    conn.reply(m.chat, `💙 *Recompensa Musical Diaria* 💙
 
 🎵 Recursos del Concierto Virtual:
 ✨ Experiencia Musical : *+${exp}*
