@@ -301,7 +301,7 @@ async function mostrarCanciones(m, conn, studio) {
 
   const sortedSongs = studio.songs.sort((a, b) => b.views - a.views)
   
-  let albumMessage = `🎵 **TU ÁLBUM VIRTUAL** 🎤\n\n`
+  let albumMessage = `🎵 *TU ÁLBUM VIRTUAL* 🎤\n\n`
   
   sortedSongs.slice(0, 10).forEach((song, index) => {
     const rank = index + 1
@@ -316,7 +316,7 @@ async function mostrarCanciones(m, conn, studio) {
     albumMessage += `... y ${studio.songs.length - 10} canciones más\n\n`
   }
   
-  albumMessage += `📊 **Resumen:**\n`
+  albumMessage += `📊 *Resumen:*\n`
   albumMessage += `🎵 Total de canciones: ${studio.songs.length}\n`
   albumMessage += `👀 Vistas totales: ${studio.totalViews.toLocaleString()}\n`
   albumMessage += `💰 Ganancias totales: ${studio.totalEarnings} monedas`

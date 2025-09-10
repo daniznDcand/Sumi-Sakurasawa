@@ -92,7 +92,7 @@ Parece que tengo problemas para ver tu imagen ahora mismo... ¡Pero no te preocu
 handler.help = ['chatgpt <texto>', 'ia <texto>']
 handler.tags = ['ai']
 handler.register = true
-handler.command = ['ia', 'chatgpt', 'miku']
+handler.command = ['ia', 'chatgpt', 'mikuai', 'mikuchat', 'mikuchatgpt', 'mikuaigpt', 'miku-gpt']
 
 async function getAIResponse(query, username, prompt) {
     const apis = [
