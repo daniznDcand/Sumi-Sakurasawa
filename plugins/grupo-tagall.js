@@ -1,12 +1,7 @@
-/* 
-- tagall By Angel-OFC  
-- etiqueta en un grupo a todos
-- https://whatsapp.com/channel/0029VaJxgcB0bIdvuOwKTM2Y
-*/
 const handler = async (m, { isOwner, isAdmin, conn, text, participants, args, command, usedPrefix }) => {
   if (usedPrefix == 'a' || usedPrefix == 'A') return;
 
-  const customEmoji = global.db.data.chats[m.chat]?.customEmoji || '🍫';
+  const customEmoji = global.db.data.chats[m.chat]?.customEmoji || '📣';
   m.react(customEmoji);
 
   if (!(isAdmin || isOwner)) {
@@ -15,8 +10,8 @@ const handler = async (m, { isOwner, isAdmin, conn, text, participants, args, co
   }
 
   const pesan = args.join` `;
-  const oi = `*🎤💙 ANUNCIO DE MIKU :* ${pesan} 💙🎤`;
-  let teks = `*🎵✨  LLAMADA VIRTUAL A TODOS LOS FANÁTICOS  ✨🎵*\n  *🌟 PARA ${participants.length} MIEMBROS DEL CONCIERTO 🌟* 🎤\n\n ${oi}\n\n╭  ┄ 𝅄 ۪꒰ \`⡞᪲=͟͟͞${botname} ≼᳞ׄ\` ꒱ ۟ 𝅄 ┄\n`;
+  const oi = `*💙 ANUNCIO DE MIKU :* ${pesan} 💙`;
+  let teks = `*🎵  LLAMADA VIRTUAL A TODOS LOS FANÁTICOS  🎵*\n  *🌟 PARA ${participants.length} MIEMBROS DEL CONCIERTO 🌟* 🎤\n\n ${oi}\n\n╭  ┄ 𝅄 ۪꒰ \`⡞᪲=͟͟͞${botname} ≼᳞ׄ\` ꒱ ۟ 𝅄 ┄\n`;
   for (const mem of participants) {
     teks += `┊🎵 @${mem.id.split('@')[0]}\n`;
   }

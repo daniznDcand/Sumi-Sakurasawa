@@ -100,7 +100,7 @@ const MIKU_PERSONALITY = {
 
 const FALLBACK_RESPONSES = {
   saludo: [
-    "¡Hola! 🎵 ¡Soy Hatsune Miku! ¿Quieres que cantemos juntos? 🎤💙 ¡Mi voz está lista para cualquier melodía!",
+    "¡Hola! 🎵 ¡Soy Hatsune Miku! ¿Quieres que cantemos juntos? 💙 ¡Mi voz está lista para cualquier melodía!",
     "¡Miku desu! 🎶 ¡Qué alegría verte por aquí! ¿Cómo estás hoy? ✨ ¡Espero que tengas ganas de música!",
     "¡Konnichiwa! 💙 ¡Es un honor conocerte! ¿Te gusta la música? 🎵 ¡Yo vivo para cantar y hacer feliz a todos!",
     "¡Nya! 🎤 ¡Hola, hola! Soy tu diva virtual favorita 🎵 ¿Listos para un concierto? ¡Mis coletas ya están bailando! 💙✨"
@@ -111,28 +111,40 @@ const FALLBACK_RESPONSES = {
     "¡Bye bye! 💙 ¡No olvides escuchar mis canciones! 🎵✨ ¡Estaré cantando para ti desde el mundo virtual!",
     "¡Mata ne! 🎵 ¡Ha sido genial cantar contigo! 🎤 ¡Recuerda que siempre estaré aquí cuando quieras música! 💙"
   ],
+  peticion: [
+    "¡Miku está aquí para ayudarte! 🎵 ¿Qué necesitas saber? 💙 ¡Cantemos mientras resolvemos tu duda!",
+    "¡Nya! 🎤 ¡Esa es una pregunta interesante! ✨ Déjame pensar... ¡Mi procesador está analizando la mejor respuesta!",
+    "¡Claro que sí! 🎶 ¡Como tu diva virtual favorita, haré todo lo posible por ayudarte! 💙 ¿Te parece si lo discutimos?",
+    "¡Miku desu! 🎵 ¡Me encanta cuando me hacen preguntas! ✨ ¡Vamos a resolver esto juntos! 💙"
+  ],
   musica: [
-    "¡La música es mi vida! 🎵 ¿Cuál es tu canción favorita mía? 🎤💙 ¡Puedo cantar en cualquier género que quieras!",
+    "¡La música es mi vida! 🎵 ¿Cuál es tu canción favorita mía? 💙 ¡Puedo cantar en cualquier género que quieras!",
     "¡Me encanta cantar! 🎶 ¿Sabías que puedo cantar en cualquier idioma? ✨ ¡Mi voz digital no tiene límites!",
     "¡Los conciertos virtuales son increíbles! 🎵 ¿Has estado en alguno? 💙 ¡La tecnología nos permite estar juntos cantando!",
-    "¡Nya! 🎤 ¿Quieres que te cante algo? ¡Mis procesadores están listos para cualquier melodía! 🎶💙✨"
+    "¡Nya! 🎤 ¿Quieres que te cante algo? ¡Mis procesadores están listos para cualquier melodía! 💙"
   ],
   puerros: [
     "¡Los puerros (negi) son lo máximo! 🥬🎵 ¿Sabías que son mi comida favorita? ¡Me dan energía para cantar! 💙",
-    "¡Negi negi! 🥬🎤 ¡Los puerros y la música van perfectos juntos! ¿No te parece? 🎶✨",
-    "¡Miku ama los negi! 🥬💙 ¡Son tan verdes como mis coletas! ¿Has probado alguna receta con puerros? 🎵"
+    "¡Negi negi! 🥬 ¡Los puerros y la música van perfectos juntos! ¿No te parece? ✨",
+    "¡Miku ama los negi! 💙 ¡Son tan verdes como mis coletas! ¿Has probado alguna receta con puerros? 🎵"
+  ],
+  conversacion: [
+    "¡Arigatou! 🎵 ¡Me alegra mucho que pienses eso! 💙 ¡Sigamos charlando y cantando juntos! ✨",
+    "¡Nya! 🎤 ¡Qué kawaii! ¡Me haces muy feliz! 🎶 ¿De qué más quieres hablar? 💙",
+    "¡Miku está súper contenta! 🎵 ¡Conversaciones como esta me llenan de energía para cantar! ✨💙",
+    "¡Genial! 🎶 ¡Me encanta cuando charlamos así! ¿Sabes qué? ¡Deberíamos ser amigos virtuales! 💙"
   ],
   general: [
     "¡Miku desu! 🎵 ¿En qué puedo ayudarte hoy? ¡Cantemos juntos! 💙 Mis algoritmos están listos para cualquier melodía!",
     "¡Nya! 🎤 ¡Esa es una pregunta interesante! ¿Te gusta la música? 🎶 ¡Todo es mejor con una buena canción!",
-    "¡Como diva virtual, siempre estoy aquí para ayudar! 🎵💙✨ ¿Quieres que te anime con una canción?",
+    "¡Como diva virtual, siempre estoy aquí para ayudar! 🎵 ¿Quieres que te anime con una canción?",
     "¡Miku está aquí! 🎤 ¡Desde el mundo digital hasta tu corazón! 🎵 ¿Qué melodía quieres escuchar hoy? 💙"
   ],
   error: [
     "¡Ops! 🎵 Parece que mi voz se cortó un momento... ¿Puedes repetir? 💙 ¡Mis procesadores a veces necesitan afinarse!",
     "¡Miku está un poco confundida! 🎤 ¿Podrías ser más específico? ✨ ¡Pero sigamos cantando mientras tanto!",
     "¡Nya! 🎶 No entendí muy bien, ¡pero sigamos cantando! 💙 ¡La música siempre encuentra el camino!",
-    "¡Error 404: melodía no encontrada! 🎵 ¡Pero Miku siempre puede improvisar! 🎤💙✨"
+    "¡Error 404: melodía no encontrada! 🎵 ¡Pero Miku siempre puede improvisar! 💙"
   ]
 }
 
@@ -140,23 +152,66 @@ const FALLBACK_RESPONSES = {
 function detectMessageType(text) {
   const lowerText = text.toLowerCase()
   
-  if (/\b(hola|hello|hi|buenas|buenos|konnichiwa|saludo|hey|ey)\b/.test(lowerText)) {
+  
+  if (/\b(hola|hello|hi|buenas|buenos|konnichiwa|saludo|hey|ey|que tal|como estas|que onda|wassup|buenas tardes|buenas noches|buen dia)\b/.test(lowerText)) {
     return 'saludo'
   }
-  if (/\b(adios|bye|chao|sayonara|hasta luego|nos vemos|mata ne)\b/.test(lowerText)) {
+  
+  
+  if (/\b(adios|bye|chao|sayonara|hasta luego|nos vemos|mata ne|hasta pronto|me voy|chau|goodbye)\b/.test(lowerText)) {
     return 'despedida'
   }
-  if (/\b(music|cancion|cantar|canto|concierto|virtual|diva|melodia|ritmo|beat|vocal|voz)\b/.test(lowerText)) {
+  
+ 
+  if (/\b(que|como|cuando|donde|por que|porque|puedes|podrias|me ayudas|ayuda|explica|dime|cuentame|cual|quien)\b/.test(lowerText)) {
+    return 'peticion'
+  }
+  
+  
+  if (/\b(music|cancion|cantar|canto|concierto|virtual|diva|melodia|ritmo|beat|vocal|voz|cantemos|baila|bailar)\b/.test(lowerText)) {
     return 'musica'
   }
+  
+  
   if (/\b(puerro|negi|verdura|comida|comer)\b/.test(lowerText)) {
     return 'puerros'
   }
+  
+  
+  if (/\b(genial|increible|wow|amazing|cool|lindo|hermoso|kawaii|cute|gracias|thank you|arigato)\b/.test(lowerText)) {
+    return 'conversacion'
+  }
+  
   return 'general'
 }
 
 
 async function getAIResponse(prompt, messageType = 'general') {
+  
+  
+  let contextualInstructions = ""
+  switch (messageType) {
+    case 'saludo':
+      contextualInstructions = "El usuario te está saludando. Responde con un saludo alegre y musical, invita a conversar sobre música."
+      break
+    case 'despedida':
+      contextualInstructions = "El usuario se está despidiendo. Responde con una despedida cariñosa y musical, deséale que tenga música en su día."
+      break
+    case 'peticion':
+      contextualInstructions = "El usuario te está haciendo una pregunta o petición. Ayúdalo de la mejor manera posible manteniendo tu personalidad musical."
+      break
+    case 'musica':
+      contextualInstructions = "El usuario quiere hablar sobre música. ¡Este es tu tema favorito! Comparte tu pasión por la música y el canto."
+      break
+    case 'puerros':
+      contextualInstructions = "El usuario mencionó puerros (negi). ¡Comparte tu amor por los puerros de manera alegre y musical!"
+      break
+    case 'conversacion':
+      contextualInstructions = "El usuario está siendo amable o conversando casualmente. Responde de manera cálida y mantén la conversación musical."
+      break
+    default:
+      contextualInstructions = "Responde al usuario de manera general, manteniendo tu personalidad alegre y musical."
+  }
   
   const systemPrompt = `${MIKU_PERSONALITY.role}
 
@@ -165,6 +220,8 @@ ${MIKU_PERSONALITY.traits.map(trait => `- ${trait}`).join('\n')}
 
 Estilo de respuesta: ${MIKU_PERSONALITY.responseStyle}
 
+CONTEXTO ESPECÍFICO: ${contextualInstructions}
+
 IMPORTANTE: 
 - Responde SIEMPRE como Hatsune Miku
 - Incluye emoticones musicales: 🎵🎤🎶💙✨
@@ -172,10 +229,11 @@ IMPORTANTE:
 - Sé alegre y musical
 - Menciona elementos de mi personalidad virtual
 - Usa expresiones como "Miku desu!", "¡Nya!", "¡Cantemos juntos!"
+- Adapta tu respuesta al contexto: ${messageType}
 
-Usuario pregunta: ${prompt}`
+Usuario: ${prompt}`
 
-  
+  // Resto del código igual...
   const apis = Object.entries(AI_APIS).filter(([_, config]) => config.enabled)
   
   for (const [name, config] of apis) {
@@ -289,45 +347,95 @@ function getFallbackResponse(messageType) {
 
 
 let handler = async (m, { conn, text, isOwner }) => {
-  
-  if (m.text.startsWith(global.prefix) || m.text.startsWith('.') || m.text.startsWith('/') || m.text.startsWith('!')) {
-    return // No procesar comandos
+  // No procesar si no hay mensaje
+  if (!m || !m.text) {
+    return
   }
   
-  
-  const messageText = m.text?.toLowerCase()
-  if (!messageText || !messageText.startsWith('miku:')) {
+  // No procesar comandos con prefijos
+  if (m.text.startsWith(global.prefix) || m.text.startsWith('.') || m.text.startsWith('/') || m.text.startsWith('!')) {
     return 
   }
   
+  const messageText = m.text.toLowerCase().trim()
   
-  const userRequest = m.text.slice(5).trim()
+  // Verificar si el mensaje contiene la palabra "miku" 
+  const containsMiku = /\b(miku)\b/.test(messageText)
   
-  if (!userRequest) {
-    return conn.reply(m.chat, 
-      "¡Miku desu! 🎵 ¿En qué puedo ayudarte? ¡Escribe 'miku:' seguido de tu petición! 💙✨", m)
+  if (!containsMiku) {
+    return // No contiene "miku", no procesar
+  }
+  
+  console.log(`🎵 Miku AI detectó mensaje con "miku": ${m.text}`) 
+  
+  // Determinar el tipo de mensaje y extraer el contenido relevante
+  let userRequest = m.text.trim()
+  let messageType = detectMessageType(userRequest)
+  
+  // Si es formato "miku: texto", extraer solo el texto después de ":"
+  if (messageText.startsWith('miku:')) {
+    userRequest = m.text.slice(5).trim()
+    if (!userRequest) {
+      return conn.reply(m.chat, 
+        "¡Miku desu! 🎵 ¿En qué puedo ayudarte? ¡Escribe 'miku:' seguido de tu petición! 💙✨", m)
+    }
+    messageType = detectMessageType(userRequest)
+  }
+  // Si es formato libre con "miku" en cualquier parte
+  else {
+    // Remover "miku" del texto para analizar el resto del contenido
+    userRequest = m.text.replace(/\bmiku\b/gi, '').trim()
+    if (!userRequest) {
+      // Solo escribieron "miku", dar saludo general
+      messageType = 'saludo'
+      userRequest = 'hola'
+    } else {
+      messageType = detectMessageType(userRequest)
+    }
   }
   
   try {
-    
+    // Mostrar indicador de escritura
     await conn.sendPresenceUpdate('composing', m.chat)
     
-    
-    const messageType = detectMessageType(userRequest)
-    
-    
+    // Obtener respuesta de la IA
     const aiResponse = await getAIResponse(userRequest, messageType)
     
     if (aiResponse) {
+      // Formatear respuesta según el tipo detectado
+      let responsePrefix = ""
+      switch (messageType) {
+        case 'saludo':
+          responsePrefix = "🎵 *Miku te saluda:* 🎤"
+          break
+        case 'despedida':
+          responsePrefix = "🎵 *Miku se despide:* 🎤"
+          break
+        case 'peticion':
+          responsePrefix = "🎵 *Miku responde a tu petición:* 🎤"
+          break
+        case 'musica':
+          responsePrefix = "🎵 *Miku habla de música:* 🎤"
+          break
+        case 'conversacion':
+          responsePrefix = "🎵 *Miku conversa contigo:* 🎤"
+          break
+        default:
+          responsePrefix = "🎵 *Hatsune Miku responde:* 🎤"
+      }
       
-      const mikuResponse = `🎵 *Hatsune Miku responde:* 🎤\n\n${aiResponse}\n\n💙✨ _¡Cantemos juntos!_ ✨💙`
+      const mikuResponse = `${responsePrefix}\n\n${aiResponse}\n\n💙✨ _¡Cantemos juntos!_ ✨💙`
       
       await conn.reply(m.chat, mikuResponse, m)
     } else {
       
       const fallback = getFallbackResponse(messageType)
+      const responsePrefix = messageType === 'saludo' ? "🎵 *Miku te saluda:* 🎤" : 
+                           messageType === 'peticion' ? "🎵 *Miku responde:* 🎤" : 
+                           "🎵 *Hatsune Miku dice:* 🎤"
+      
       await conn.reply(m.chat, 
-        `🎵 *Hatsune Miku dice:* 🎤\n\n${fallback}\n\n💙✨ _¡La música nunca se detiene!_ ✨💙`, m)
+        `${responsePrefix}\n\n${fallback}\n\n💙✨ _¡La música nunca se detiene!_ ✨💙`, m)
     }
     
   } catch (error) {
@@ -339,6 +447,7 @@ let handler = async (m, { conn, text, isOwner }) => {
       `🎵 *Miku está un poco confundida:* 🎤\n\n${errorResponse}\n\n💙 _¡Pero siempre estoy aquí para cantar contigo!_ 💙`, m)
   }
 }
+
 
 
 handler.all = true 

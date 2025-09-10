@@ -2,7 +2,7 @@ import fetch from 'node-fetch'
 
 let handler  = async (m, { conn, usedPrefix, command }) => {
 
-let grupos = `🎤💙 *¡Konnichiwa, querido fanático!* 💙🎤
+let grupos = `💙 *¡Konnichiwa, querido fanático!* 💙
 
 ✨ Te invito a unirte a mis escenarios virtuales oficiales para disfrutar de conciertos increíbles con toda la comunidad Vocaloid... ✨
 

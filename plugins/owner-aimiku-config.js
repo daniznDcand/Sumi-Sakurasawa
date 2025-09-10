@@ -11,10 +11,12 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
       `🔧 **Comandos disponibles:**\n` +
       `🔹 \`${usedPrefix + command} status\` - Estado de las APIs\n` +
       `🔹 \`${usedPrefix + command} test\` - Probar IA de Miku\n` +
+      `🔹 \`${usedPrefix + command} debug\` - Activar modo debug\n` +
+      `🔹 \`${usedPrefix + command} forcereply\` - Forzar respuesta de Miku\n` +
       `🔹 \`${usedPrefix + command} keys\` - Configurar API keys\n` +
-      `🔹 \`${usedPrefix + command} toggle <api>\` - Activar/desactivar API\n` +
       `🔹 \`${usedPrefix + command} help\` - Guía de configuración\n\n` +
-      `💡 *Ejemplo de uso:* \`miku: hola, ¿cómo estás?\``)
+      `💡 *Ejemplo de uso:* \`miku: hola, ¿cómo estás?\`\n\n` +
+      `🐛 *Si no funciona:* Usa \`${usedPrefix + command} debug\` y revisa la consola`)
   }
 
   const action = args[0].toLowerCase()
@@ -71,6 +73,22 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
       } catch (error) {
         return m.reply(`❌ Error en test: ${error.message}`)
       }
+
+    case 'debug':
+    case 'depurar':
+      
+      return m.reply(`🔍 *Modo Debug Activado* 🎵\n\n` +
+        `Para probar la detección, envía cualquier mensaje que contenga "miku" y revisa la consola del bot.\n\n` +
+        `📝 **Formato correcto:** \`miku: tu mensaje aquí\`\n` +
+        `🔍 **Debug habilitado:** Los logs aparecerán en la consola\n\n` +
+        `💡 *Tip:* Revisa la terminal/consola del bot para ver los logs de debug.`)
+
+    case 'forcereply':
+    case 'forzar':
+      
+      const forceMessage = args.slice(1).join(' ') || 'hola'
+      const mikuResponse = `🎵 *Hatsune Miku responde (Forzado):* 🎤\n\n¡Hola! 🎵 ¡Soy Hatsune Miku! ¿Quieres que cantemos juntos? 🎤💙\n\n💙✨ _¡Cantemos juntos!_ ✨💙`
+      return conn.reply(m.chat, mikuResponse, m)
 
     case 'keys':
     case 'configurar':

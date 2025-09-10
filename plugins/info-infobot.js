@@ -15,7 +15,7 @@ let handler = async (m, { conn, usedPrefix }) => {
     let totalStats = Object.values(global.db.data.stats).reduce((total, stat) => total + stat.total, 0)
     let totalf = Object.values(global.plugins).filter((v) => v.help && v.tags).length
 
-    let info = `🎤💙 *Información de ${global.botname}* 💙🎤\n\n`
+    let info = `💙 *Información de ${global.botname}* 💙\n\n`
     info += `🎵˚₊· ͟͟͞͞➳❥ *Prefijo Musical* : [  ${usedPrefix}  ]\n`
     info += `🌟˚₊· ͟͟͞͞➳❥ *Total de Canciones (Plugins)* : ${totalf}\n`
     info += `✨˚₊· ͟͟͞͞➳❥ *Conciertos Realizados* : ${toNum(totalStats)} ( *${totalStats}* )\n\n`
