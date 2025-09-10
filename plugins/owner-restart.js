@@ -1,7 +1,7 @@
 let handler = async (m, { conn, usedPrefix, command }) => {
 
     try {
-        m.reply('🎤💙 Reiniciando el sistema virtual de Miku... ✨\n\n🎵 ¡El concierto continuará en un momento! 💫')
+        m.reply('💙 Reiniciando el sistema virtual de Miku... ✨\n\n🎵 ¡El concierto continuará en un momento! 💫')
         setTimeout(() => {
             process.exit(0)
         }, 3000) 

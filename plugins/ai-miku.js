@@ -2,6 +2,9 @@ import fetch from 'node-fetch'
 import axios from 'axios'
 
 
+console.log('🎵 AI-MIKU: Plugin cargado correctamente')
+
+
 const AI_APIS = {
   
   groq_llama4: {
@@ -233,7 +236,7 @@ IMPORTANTE:
 
 Usuario: ${prompt}`
 
-  // Resto del código igual...
+  
   const apis = Object.entries(AI_APIS).filter(([_, config]) => config.enabled)
   
   for (const [name, config] of apis) {
@@ -347,46 +350,66 @@ function getFallbackResponse(messageType) {
 
 
 let handler = async (m, { conn, text, isOwner }) => {
-  // No procesar si no hay mensaje
+  
+  console.log(`🔍 DEBUG AI-MIKU: Handler ejecutándose. Mensaje: "${m?.text || 'undefined'}"`)
+  
   if (!m || !m.text) {
+    console.log(`❌ DEBUG AI-MIKU: Sin mensaje o texto`)
     return
   }
   
-  // No procesar comandos con prefijos
+  
+  if (m.text.toLowerCase().includes('miku')) {
+    console.log(`✅ 🎵 MIKU TEST: Detecté "miku" en el mensaje: ${m.text}`)
+    
+    try {
+      await conn.reply(m.chat, 
+        "🎵 *TEST MIKU:* ¡Detecté que me escribiste! 🎤\n\n¡Hola! Soy Hatsune Miku y estoy funcionando correctamente 💙✨", m)
+      return
+    } catch (error) {
+      console.error('❌ Error enviando respuesta test:', error)
+    }
+  }
+  
+  
   if (m.text.startsWith(global.prefix) || m.text.startsWith('.') || m.text.startsWith('/') || m.text.startsWith('!')) {
+    console.log(`❌ DEBUG AI-MIKU: Es un comando, ignorando: ${m.text}`)
     return 
   }
   
   const messageText = m.text.toLowerCase().trim()
+  console.log(`🔍 DEBUG AI-MIKU: Texto en minúsculas: "${messageText}"`)
   
-  // Verificar si el mensaje contiene la palabra "miku" 
+ 
   const containsMiku = /\b(miku)\b/.test(messageText)
+  console.log(`🔍 DEBUG AI-MIKU: ¿Contiene 'miku'? ${containsMiku}`)
   
   if (!containsMiku) {
-    return // No contiene "miku", no procesar
+    console.log(`❌ DEBUG AI-MIKU: No contiene 'miku', saliendo`)
+    return 
   }
   
-  console.log(`🎵 Miku AI detectó mensaje con "miku": ${m.text}`) 
+  console.log(`✅ 🎵 Miku AI detectó mensaje con "miku": ${m.text}`) 
   
-  // Determinar el tipo de mensaje y extraer el contenido relevante
+  
   let userRequest = m.text.trim()
   let messageType = detectMessageType(userRequest)
   
-  // Si es formato "miku: texto", extraer solo el texto después de ":"
+  
   if (messageText.startsWith('miku:')) {
     userRequest = m.text.slice(5).trim()
     if (!userRequest) {
       return conn.reply(m.chat, 
-        "¡Miku desu! 🎵 ¿En qué puedo ayudarte? ¡Escribe 'miku:' seguido de tu petición! 💙✨", m)
+        "¡Miku desu! 🎵 ¿En qué puedo ayudarte? ¡Escribe 'miku:' seguido de tu petición! 💙", m)
     }
     messageType = detectMessageType(userRequest)
   }
-  // Si es formato libre con "miku" en cualquier parte
+  
   else {
-    // Remover "miku" del texto para analizar el resto del contenido
+    
     userRequest = m.text.replace(/\bmiku\b/gi, '').trim()
     if (!userRequest) {
-      // Solo escribieron "miku", dar saludo general
+      
       messageType = 'saludo'
       userRequest = 'hola'
     } else {
@@ -395,14 +418,14 @@ let handler = async (m, { conn, text, isOwner }) => {
   }
   
   try {
-    // Mostrar indicador de escritura
+    
     await conn.sendPresenceUpdate('composing', m.chat)
     
-    // Obtener respuesta de la IA
+    
     const aiResponse = await getAIResponse(userRequest, messageType)
     
     if (aiResponse) {
-      // Formatear respuesta según el tipo detectado
+      
       let responsePrefix = ""
       switch (messageType) {
         case 'saludo':
@@ -424,7 +447,7 @@ let handler = async (m, { conn, text, isOwner }) => {
           responsePrefix = "🎵 *Hatsune Miku responde:* 🎤"
       }
       
-      const mikuResponse = `${responsePrefix}\n\n${aiResponse}\n\n💙✨ _¡Cantemos juntos!_ ✨💙`
+      const mikuResponse = `${responsePrefix}\n\n${aiResponse}\n\n💙_¡Cantemos juntos!_💙`
       
       await conn.reply(m.chat, mikuResponse, m)
     } else {
@@ -451,7 +474,7 @@ let handler = async (m, { conn, text, isOwner }) => {
 
 
 handler.all = true 
-handler.priority = 1 
+handler.priority = 0 
 
 export default handler
 
