@@ -41,35 +41,35 @@ let handler = async (m, { conn, usedPrefix }) => {
   const expBar = createProgressBar(rpg.exp, rpg.level * 100, 10)
   
   const statsMessage = `
-🎲 **PERFIL RPG** 🎲
+🎲 *PERFIL RPG* 🎲
 
-👤 **Aventurero:** ${m.pushName || m.sender.split('@')[0]}
-🏆 **Nivel:** ${rpg.level}
-💰 **Monedas:** ${coins}
+👤 *Aventurero:* ${m.pushName || m.sender.split('@')[0]}
+🏆 *Nivel:* ${rpg.level}
+💰 *Monedas:* ${coins}
 
-❤️ **Salud:** ${rpg.hp}/${rpg.maxHp}
+❤️ *Salud:* ${rpg.hp}/${rpg.maxHp}
 ${hpBar}
 
-⭐ **Experiencia:** ${rpg.exp}/${rpg.level * 100}
+⭐ *Experiencia:* ${rpg.exp}/${rpg.level * 100}
 ${expBar}
 
-⚔️ **Estadísticas de Combate:**
+⚔️ *Estadísticas de Combate:*
 • Ataque: ${rpg.attack}
 • Defensa: ${rpg.defense}
 
-🏁 **Récord de Batallas:**
+🏁 *Récord de Batallas:*
 • Victorias: ${rpg.wins}
 • Derrotas: ${rpg.losses}
 • Ratio de victoria: ${winRate}%
 
 ${timeLeft}
 
-📝 **Comandos:**
+📝 *Comandos:*
 • \`${usedPrefix}aventura\` - Ir de aventura
 • \`${usedPrefix}rpgstats\` - Ver este perfil
 • \`${usedPrefix}toparpg\` - Ranking de aventureros
 
-🎮 **Consejos:**
+🎮 *Consejos:*
 • Las aventuras tienen cooldown de 5 minutos
 • Puedes encontrar jefes (5% chance) con mejores recompensas
 • Al subir de nivel aumentan tus estadísticas

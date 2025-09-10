@@ -59,21 +59,21 @@ let handler = async (m, { conn, usedPrefix, command, text }) => {
   
   
   if (!text) {
-    let shopMessage = `🏪 **TIENDA RPG** 🏪\n\n`
-    shopMessage += `💰 **Tus monedas:** ${coins}\n\n`
-    shopMessage += `📋 **Artículos disponibles:**\n\n`
+    let shopMessage = `🏪 *TIENDA RPG* 🏪\n\n`
+    shopMessage += `💰 *Tus monedas:* ${coins}\n\n`
+    shopMessage += `📋 *Artículos disponibles:*\n\n`
     
     Object.entries(SHOP_ITEMS).forEach(([key, item]) => {
-      shopMessage += `**${item.name}**\n`
+      shopMessage += `*${item.name}*\n`
       shopMessage += `💭 ${item.description}\n`
       shopMessage += `💰 Precio: ${item.price} monedas\n`
       shopMessage += `📝 Comando: \`${usedPrefix}tiendarpg ${key}\`\n\n`
     })
     
-    shopMessage += `💡 **Cómo usar:**\n`
+    shopMessage += `💡 *Cómo usar:*\n`
     shopMessage += `• Escribe \`${usedPrefix}tiendarpg [item]\` para comprar\n`
     shopMessage += `• Ejemplo: \`${usedPrefix}tiendarpg potion\`\n\n`
-    shopMessage += `🎮 **Otros comandos:**\n`
+    shopMessage += `🎮 *Otros comandos:*\n`
     shopMessage += `• \`${usedPrefix}aventura\` - Ir de aventura\n`
     shopMessage += `• \`${usedPrefix}rpgstats\` - Ver tu perfil`
     
@@ -90,54 +90,54 @@ let handler = async (m, { conn, usedPrefix, command, text }) => {
   
   
   if (coins < item.price) {
-    return m.reply(`💸 No tienes suficientes monedas.\n\n💰 **Necesitas:** ${item.price} monedas\n💳 **Tienes:** ${coins} monedas\n📊 **Te faltan:** ${item.price - coins} monedas`)
+    return m.reply(`💸 No tienes suficientes monedas.\n\n💰 *Necesitas:* ${item.price} monedas\n💳 *Tienes:* ${coins} monedas\n📊 *Te faltan:* ${item.price - coins} monedas`)
   }
   
   
   user.coin -= item.price
-  let resultMessage = `✅ **¡Compra exitosa!** ✅\n\n`
-  resultMessage += `🛍️ **Artículo:** ${item.name}\n`
-  resultMessage += `💰 **Precio:** ${item.price} monedas\n`
-  resultMessage += `💳 **Saldo restante:** ${user.coin} monedas\n\n`
+  let resultMessage = `✅ *¡Compra exitosa!* ✅\n\n`
+  resultMessage += `🛍️ *Artículo:* ${item.name}\n`
+  resultMessage += `💰 *Precio:* ${item.price} monedas\n`
+  resultMessage += `💳 *Saldo restante:* ${user.coin} monedas\n\n`
   
   
   switch (item.effect) {
     case 'heal':
       const healAmount = Math.min(50, user.rpgData.maxHp - user.rpgData.hp)
       user.rpgData.hp += healAmount
-      resultMessage += `❤️ **Efecto:** Recuperaste ${healAmount} HP\n`
-      resultMessage += `🩺 **HP actual:** ${user.rpgData.hp}/${user.rpgData.maxHp}`
+      resultMessage += `❤️ *Efecto:* Recuperaste ${healAmount} HP\n`
+      resultMessage += `🩺 *HP actual:* ${user.rpgData.hp}/${user.rpgData.maxHp}`
       break
       
     case 'fullheal':
       const fullHealAmount = user.rpgData.maxHp - user.rpgData.hp
       user.rpgData.hp = user.rpgData.maxHp
-      resultMessage += `💚 **Efecto:** Recuperaste ${fullHealAmount} HP (Salud completa)\n`
-      resultMessage += `🩺 **HP actual:** ${user.rpgData.hp}/${user.rpgData.maxHp}`
+      resultMessage += `💚 *Efecto:* Recuperaste ${fullHealAmount} HP (Salud completa)\n`
+      resultMessage += `🩺 *HP actual:* ${user.rpgData.hp}/${user.rpgData.maxHp}`
       break
       
     case 'attack':
       user.rpgData.attack += 3
-      resultMessage += `⚔️ **Efecto:** Ataque aumentado permanentemente +3\n`
-      resultMessage += `💪 **Ataque actual:** ${user.rpgData.attack}`
+      resultMessage += `⚔️ *Efecto:* Ataque aumentado permanentemente +3\n`
+      resultMessage += `💪 *Ataque actual:* ${user.rpgData.attack}`
       break
       
     case 'defense':
       user.rpgData.defense += 2
-      resultMessage += `🛡️ **Efecto:** Defensa aumentada permanentemente +2\n`
-      resultMessage += `🔰 **Defensa actual:** ${user.rpgData.defense}`
+      resultMessage += `🛡️ *Efecto:* Defensa aumentada permanentemente +2\n`
+      resultMessage += `🔰 *Defensa actual:* ${user.rpgData.defense}`
       break
       
     case 'hp':
       user.rpgData.maxHp += 15
       user.rpgData.hp += 15 
-      resultMessage += `❤️ **Efecto:** HP máximo aumentado permanentemente +15\n`
-      resultMessage += `💓 **HP máximo actual:** ${user.rpgData.maxHp}`
+      resultMessage += `❤️ *Efecto:* HP máximo aumentado permanentemente +15\n`
+      resultMessage += `💓 *HP máximo actual:* ${user.rpgData.maxHp}`
       break
       
     case 'exp':
       user.rpgData.exp += 75
-      resultMessage += `⭐ **Efecto:** Ganaste 75 puntos de experiencia\n`
+      resultMessage += `⭐ *Efecto:* Ganaste 75 puntos de experiencia\n`
       
       
       const expNeeded = user.rpgData.level * 100
@@ -149,13 +149,13 @@ let handler = async (m, { conn, usedPrefix, command, text }) => {
         user.rpgData.attack += 5
         user.rpgData.defense += 3
         
-        resultMessage += `\n🎉 **¡SUBISTE DE NIVEL!** 🎉\n`
-        resultMessage += `📊 **Nuevo nivel:** ${user.rpgData.level}\n`
-        resultMessage += `❤️ **HP máximo:** ${user.rpgData.maxHp}\n`
-        resultMessage += `⚔️ **Ataque:** ${user.rpgData.attack}\n`
-        resultMessage += `🛡️ **Defensa:** ${user.rpgData.defense}`
+        resultMessage += `\n🎉 *¡SUBISTE DE NIVEL!** 🎉\n`
+        resultMessage += `📊 *Nuevo nivel:* ${user.rpgData.level}\n`
+        resultMessage += `❤️ *HP máximo:* ${user.rpgData.maxHp}\n`
+        resultMessage += `⚔️ *Ataque:* ${user.rpgData.attack}\n`
+        resultMessage += `🛡️ *Defensa:* ${user.rpgData.defense}`
       } else {
-        resultMessage += `📈 **EXP actual:** ${user.rpgData.exp}/${user.rpgData.level * 100}`
+        resultMessage += `📈 *EXP actual:* ${user.rpgData.exp}/${user.rpgData.level * 100}`
       }
       break
   }

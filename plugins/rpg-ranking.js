@@ -21,7 +21,7 @@ let handler = async (m, { conn, usedPrefix }) => {
   
   if (rpgUsers.length === 0) {
     return m.reply(`
-🎲 **RANKING RPG** 🎲
+🎲 *RANKING RPG* 🎲
 
 No hay aventureros registrados aún.
 
@@ -29,7 +29,7 @@ No hay aventureros registrados aún.
     `.trim())
   }
   
-  let ranking = `🎲 **RANKING DE AVENTUREROS** 🎲\n\n`
+  let ranking = `🎲 *RANKING DE AVENTUREROS* 🎲\n\n`
   
   rpgUsers.forEach((user, index) => {
     const position = index + 1
@@ -45,12 +45,12 @@ No hay aventureros registrados aún.
   
   const currentUserIndex = rpgUsers.findIndex(user => user.jid === m.sender)
   if (currentUserIndex !== -1) {
-    ranking += `📍 **Tu posición:** #${currentUserIndex + 1}\n\n`
+    ranking += `📍 *Tu posición:* #${currentUserIndex + 1}\n\n`
   } else {
-    ranking += `📍 **Tu posición:** No clasificado\n\n`
+    ranking += `📍 *Tu posición:* No clasificado\n\n`
   }
   
-  ranking += `🎮 **Comandos:**\n`
+  ranking += `🎮 *Comandos:*\n`
   ranking += `• \`${usedPrefix}aventura\` - Ir de aventura\n`
   ranking += `• \`${usedPrefix}rpgstats\` - Tu perfil RPG\n`
   ranking += `• \`${usedPrefix}toparpg\` - Este ranking`
