@@ -413,7 +413,7 @@ async function promocionarCancion(m, conn, args, studio, user) {
 
 handler.help = ['miku']
 handler.tags = ['miku', 'music']
-handler.command = /^(mikucomponer|mikustudio|estudiomiku)$/i
+handler.command = /^(miku|mikustudio|estudiomiku)$/i
 handler.register = true
 
 export default handler
