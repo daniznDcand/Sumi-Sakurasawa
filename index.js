@@ -323,6 +323,26 @@ async function connectionUpdate(update) {
     const userName = conn.user.name || conn.user.verifiedName || "Desconocido"
     await joinChannels(conn)
     console.log(mikuSecondary.bold(`${brandTag}  Conectado como: ${userName} (${BRAND_NAME})`))
+    
+    
+    setTimeout(async () => {
+      try {
+        const subBotManager = await import('./lib/subbot-manager.js')
+        
+        
+        await subBotManager.autoReconnectSubBots()
+        
+        
+        subBotManager.startSubBotCleanupScheduler()
+        
+        
+        subBotManager.startSubBotHealthMonitor()
+        
+        console.log(chalk.bold.green(`${brandTag}  Sistema de Sub-Bots mejorado iniciado ✅`))
+      } catch (error) {
+        console.error(chalk.bold.red(`${brandTag}  Error iniciando sistema de Sub-Bots: ${error.message}`))
+      }
+    }, 5000) 
   }
   let reason = new Boom(lastDisconnect?.error)?.output?.statusCode
   if (connection === 'close') {

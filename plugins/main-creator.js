@@ -19,8 +19,8 @@ let handler = async (m, { conn, usedPrefix, text, args, command }) => {
     const global = { yt: 'https://youtube.com' } 
 
     await sendContactArray(conn, m.chat, [
-        [`${nomorown}`, `💙 Propietario`, `(ㅎㅊDEPOOLㅊㅎ)`, dev, correo, `BVH3`, `${global.yt}`, bio],
-        [`${conn.user.jid.split('@')[0]}`, `Es Una Bot 💙`, `${packname}`, `📵 No Hacer Spam`, correo, `BVH3`, md, biobot]
+        [`${nomorown}`, `💙 Propietario`, `(ㅎㅊDEPOOLㅊㅎ)`, dev, correo, `BVH3 INDUSTRIES`, `${global.yt}`, bio],
+        [`${conn.user.jid.split('@')[0]}`, `Es Una Bot 💙`, `${packname}`, `📵 No Hacer Spam`, correo, `BVH3 INDUSTRIES`, md, biobot]
     ], m)
 }
 

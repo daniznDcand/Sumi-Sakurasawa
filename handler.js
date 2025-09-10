@@ -107,6 +107,16 @@ if (!isNumber(user.bank))
 user.bank = 0
 if (!isNumber(user.warn))
 user.warn = 0
+if (!isNumber(user.Subs))
+user.Subs = 0
+if (!('subBotToken' in user))
+user.subBotToken = null
+if (!('subBotConnected' in user))
+user.subBotConnected = false
+if (!isNumber(user.subBotLastConnect))
+user.subBotLastConnect = 0
+if (!isNumber(user.subBotReconnects))
+user.subBotReconnects = 0
 } else
 global.db.data.users[m.sender] = {
 exp: 0,
@@ -141,7 +151,12 @@ bank: 0,
 level: 0,
 role: 'Nuv',
 premium: false,
-premiumTime: 0,                 
+premiumTime: 0,
+Subs: 0,
+subBotToken: null,
+subBotConnected: false,
+subBotLastConnect: 0,
+subBotReconnects: 0,                 
 }
 let chat = global.db.data.chats[m.chat]
 if (typeof chat !== 'object')

@@ -33,8 +33,18 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   if (!globalThis.db?.data?.settings?.[conn.user.jid]?.jadibotmd) {
     return m.reply(`💙 El Comando ${command} está desactivado temporalmente.`)
   }
-  let time = global.db.data.users[m.sender].Subs + 120000
-  if (new Date - global.db.data.users[m.sender].Subs < 120000) return conn.reply(m.chat, `⏱️ Debes esperar ${msToTime(time - new Date())} para volver a vincular un Sub-Bot.`, m)
+  
+  
+  let user = global.db.data.users[m.sender]
+  if (!user.Subs) user.Subs = 0
+  if (!user.subBotToken) user.subBotToken = null
+  if (!user.subBotConnected) user.subBotConnected = false
+  if (!user.subBotLastConnect) user.subBotLastConnect = 0
+  if (!user.subBotReconnects) user.subBotReconnects = 0
+  
+  
+  let time = user.Subs + 30000
+  if (new Date - user.Subs < 30000) return conn.reply(m.chat, `⏱️ Debes esperar ${msToTime(time - new Date())} para volver a vincular un Sub-Bot.`, m)
 
   const subBots = [...new Set([...global.conns.filter((conn) => conn.user && conn.ws.socket && conn.ws.socket.readyState !== ws.CLOSED).map((conn) => conn)])]
   const subBotsCount = subBots.length
@@ -50,6 +60,11 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
     fs.mkdirSync(pathMikuJadiBot, { recursive: true })
   }
 
+  
+  if (!user.subBotToken) {
+    user.subBotToken = generateSubBotToken(id)
+  }
+
   mikuJBOptions.pathMikuJadiBot = pathMikuJadiBot
   mikuJBOptions.m = m
   mikuJBOptions.conn = conn
@@ -57,10 +72,11 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   mikuJBOptions.usedPrefix = usedPrefix
   mikuJBOptions.command = command
   mikuJBOptions.fromCommand = true
+  mikuJBOptions.userToken = user.subBotToken
 
   await mikuJadiBot(mikuJBOptions)
 
-  global.db.data.users[m.sender].Subs = new Date * 1
+  user.Subs = new Date * 1
 }
 
 handler.help = ['qr', 'code']
@@ -70,7 +86,7 @@ export default handler
 
 export async function mikuJadiBot(options) {
   
-  let { pathMikuJadiBot, m, conn, args, usedPrefix, command } = options || {}
+  let { pathMikuJadiBot, m, conn, args, usedPrefix, command, userToken } = options || {}
 
   if (command === 'code') {
     command = 'qr';
@@ -80,6 +96,7 @@ export async function mikuJadiBot(options) {
   const mcode = args && (args[0] && /(--code|code)/.test(args[0].trim()) ? true : args[1] && /(--code|code)/.test(args[1].trim()) ? true : false)
 
   let txtCode, codeBot, txtQR
+  let isReconnecting = false
 
   if (mcode) {
     args[0] = args[0]?.replace(/^--code$|^code$/, "").trim()
@@ -88,8 +105,33 @@ export async function mikuJadiBot(options) {
   }
 
   const pathCreds = path.join(pathMikuJadiBot, "creds.json")
+  const pathToken = path.join(pathMikuJadiBot, "token.json")
+  
   if (!fs.existsSync(pathMikuJadiBot)){
     fs.mkdirSync(pathMikuJadiBot, { recursive: true })
+  }
+
+
+  if (userToken) {
+    fs.writeFileSync(pathToken, JSON.stringify({ 
+      token: userToken, 
+      created: Date.now(),
+      userId: m.sender,
+      reconnects: 0
+    }), 'utf8')
+  }
+
+  
+  if (fs.existsSync(pathCreds)) {
+    try {
+      const credsData = JSON.parse(fs.readFileSync(pathCreds, 'utf8'))
+      if (credsData && credsData.me) {
+        isReconnecting = true
+        console.log(`🔄 Detectada sesión existente para +${path.basename(pathMikuJadiBot)}, intentando reconectar...`)
+      }
+    } catch (error) {
+      console.log(`⚠️ Error leyendo credenciales existentes: ${error.message}`)
+    }
   }
 
   try {
@@ -116,18 +158,54 @@ export async function mikuJadiBot(options) {
       msgRetryCache,
       browser: mcode ? Browsers.macOS("Chrome") : Browsers.macOS("Desktop"),
       version: version,
-      generateHighQualityLinkPreview: true
+      generateHighQualityLinkPreview: true,
+     
+      keepAliveIntervalMs: 60000, 
+      markOnlineOnConnect: false,
+      syncFullHistory: false,
+      fireInitQueries: true,
+      shouldSyncHistoryMessage: () => false
     };
 
     let sock = makeWASocket(connectionOptions)
     sock.isInit = false
+    sock.userToken = userToken
+    sock.isReconnecting = isReconnecting
+    sock.reconnectAttempts = 0
+    sock.maxReconnectAttempts = 5
+    sock.reconnectInterval = 5000 
     let isInit = true
 
     async function connectionUpdate(update) {
       const { connection, lastDisconnect, isNewLogin, qr } = update
       if (isNewLogin) sock.isInit = false
 
-      if (qr && !mcode) {
+      
+      const attemptReconnect = async () => {
+        if (sock.reconnectAttempts < sock.maxReconnectAttempts) {
+          sock.reconnectAttempts++
+          console.log(chalk.yellow(`🔄 Intento de reconexión ${sock.reconnectAttempts}/${sock.maxReconnectAttempts} para +${path.basename(pathMikuJadiBot)}`))
+          
+          setTimeout(async () => {
+            try {
+              await creloadHandler(true)
+            } catch (error) {
+              console.error(`❌ Error en reconexión: ${error.message}`)
+              if (sock.reconnectAttempts >= sock.maxReconnectAttempts) {
+                console.log(chalk.red(`❌ Máximo de intentos alcanzado para +${path.basename(pathMikuJadiBot)}`))
+                await endSesion(false)
+              } else {
+                attemptReconnect()
+              }
+            }
+          }, sock.reconnectInterval * sock.reconnectAttempts) 
+        } else {
+          console.log(chalk.red(`❌ Demasiados intentos de reconexión para +${path.basename(pathMikuJadiBot)}, cerrando sesión`))
+          await endSesion(false)
+        }
+      }
+
+      if (qr && !mcode && !sock.isReconnecting) {
         if (m?.chat) {
           txtQR = await conn.sendMessage(m.chat, { image: await qrcode.toBuffer(qr, { scale: 8 }), caption: rtx.trim()}, { quoted: m})
         } else {
@@ -138,8 +216,7 @@ export async function mikuJadiBot(options) {
         }
         return
       }
-      if (qr && mcode) {
-        // ARREGLO: Remplazar uso de optional chaining con tagged template
+      if (qr && mcode && !sock.isReconnecting) {
         let phoneNumber = (m && m.sender) ? m.sender.split('@')[0] : '';
         let secret = await sock.requestPairingCode(phoneNumber)
         secret = secret?.match(/.{1,4}/g)?.join("-")
@@ -166,48 +243,55 @@ export async function mikuJadiBot(options) {
           if (i < 0) return
           delete global.conns[i]
           global.conns.splice(i, 1)
+          
+          
+          if (m?.sender && global.db?.data?.users?.[m.sender]) {
+            global.db.data.users[m.sender].subBotConnected = false
+          }
         }
       }
 
       const reason = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode
       if (connection === 'close') {
         if (reason === 428) {
-          console.log(chalk.bold.cyanBright(`\n[ 🌱💙 ] La conexión (+${path.basename(pathMikuJadiBot)}) fue cerrada inesperadamente. Intentando reconectar...\n`))
-          await creloadHandler(true).catch(console.error)
+          console.log(chalk.bold.cyanBright(`\n[💙] La conexión (+${path.basename(pathMikuJadiBot)}) fue cerrada inesperadamente. Intentando reconectar...\n`))
+          await attemptReconnect()
         }
-        if (reason === 408) {
-          console.log(chalk.bold.cyanBright(`\n[ 🌱💙 ] La conexión (+${path.basename(pathMikuJadiBot)}) se perdió o expiró. Razón: ${reason}. Intentando reconectar...\n`))
-          await creloadHandler(true).catch(console.error)
+        else if (reason === 408) {
+          console.log(chalk.bold.cyanBright(`\n[💙] La conexión (+${path.basename(pathMikuJadiBot)}) se perdió o expiró. Razón: ${reason}. Intentando reconectar...\n`))
+          await attemptReconnect()
         }
-        if (reason === 440) {
-          console.log(chalk.bold.cyanBright(`\n[ 🌱💙 ] La conexión (+${path.basename(pathMikuJadiBot)}) fue reemplazada por otra sesión activa.\n`))
+        else if (reason === 440) {
+          console.log(chalk.bold.cyanBright(`\n[💙] La conexión (+${path.basename(pathMikuJadiBot)}) fue reemplazada por otra sesión activa.\n`))
           try {
-            if (options.fromCommand) m?.chat ? await conn.sendMessage(`${path.basename(pathMikuJadiBot)}@s.whatsapp.net`, {text : '*HEMOS DETECTADO UNA NUEVA SESIÓN, BORRE LA NUEVA SESIÓN PARA CONTINUAR*'}, { quoted: m }) : null
+            if (options.fromCommand) m?.chat ? await conn.sendMessage(`${path.basename(pathMikuJadiBot)}@s.whatsapp.net`, {text : '*🔄 SESIÓN REEMPLAZADA*\n\n> *Se detectó una nueva sesión activa. Cierre la sesión duplicada para continuar.*'}, { quoted: m }) : null
           } catch (error) {
             console.error(chalk.bold.yellow(`Error 440 no se pudo enviar mensaje a: +${path.basename(pathMikuJadiBot)}`))
           }
+          await endSesion(false)
         }
-        if (reason == 405 || reason == 401) {
-          console.log(chalk.bold.cyanBright(`\n[ 🌱💙 ] La sesión (+${path.basename(pathMikuJadiBot)}) fue cerrada. Credenciales no válidas o dispositivo desconectado manualmente.\n`))
+        else if (reason == 405 || reason == 401) {
+          console.log(chalk.bold.cyanBright(`\n[💙] La sesión (+${path.basename(pathMikuJadiBot)}) fue cerrada. Credenciales no válidas o dispositivo desconectado manualmente.\n`))
           try {
-            if (options.fromCommand) m?.chat ? await conn.sendMessage(`${path.basename(pathMikuJadiBot)}@s.whatsapp.net`, {text : '*SESIÓN PENDIENTE*\n\n> *INTENTE NUEVAMENTE VOLVER A SER SUB-BOT*'}, { quoted: m }) : null
+            if (options.fromCommand) m?.chat ? await conn.sendMessage(`${path.basename(pathMikuJadiBot)}@s.whatsapp.net`, {text : '*⚠️ SESIÓN EXPIRADA*\n\n> *Sus credenciales han expirado. Use su token para reconectar:*\n> `' + (sock.userToken || 'Token no disponible') + '`'}, { quoted: m }) : null
           } catch (error) {
             console.error(chalk.bold.yellow(`Error 405 no se pudo enviar mensaje a: +${path.basename(pathMikuJadiBot)}`))
           }
+          
+          await endSesion(false)
+        }
+        else if (reason === 500) {
+          console.log(chalk.bold.cyanBright(`\n[💙] Conexión perdida en la sesión (+${path.basename(pathMikuJadiBot)}). Intentando reconectar...\n`))
+          await attemptReconnect()
+        }
+        else if (reason === 515) {
+          console.log(chalk.bold.cyanBright(`\n[💙] Reinicio automático para la sesión (+${path.basename(pathMikuJadiBot)}).\n`))
+          await attemptReconnect()
+        }
+        else if (reason === 403) {
+          console.log(chalk.bold.cyanBright(`\n[💙] Sesión cerrada o cuenta en soporte para la sesión (+${path.basename(pathMikuJadiBot)}).\n`))
           fs.rmdirSync(pathMikuJadiBot, { recursive: true })
-        }
-        if (reason === 500) {
-          console.log(chalk.bold.cyanBright(`\n[ 🌱💙 ] Conexión perdida en la sesión (+${path.basename(pathMikuJadiBot)}). Borrando datos...\n`))
-          if (options.fromCommand) m?.chat ? await conn.sendMessage(`${path.basename(pathMikuJadiBot)}@s.whatsapp.net`, {text : '*CONEXIÓN PÉRDIDA*\n\n> *INTENTE MANUALMENTE VOLVER A SER SUB-BOT*'}, { quoted: m }) : null
-          return creloadHandler(true).catch(console.error)
-        }
-        if (reason === 515) {
-          console.log(chalk.bold.cyanBright(`\n[ 🌱💙 ] Reinicio automático para la sesión (+${path.basename(pathMikuJadiBot)}).\n`))
-          await creloadHandler(true).catch(console.error)
-        }
-        if (reason === 403) {
-          console.log(chalk.bold.cyanBright(`\n[ 🌱💙 ] Sesión cerrada o cuenta en soporte para la sesión (+${path.basename(pathMikuJadiBot)}).\n`))
-          fs.rmdirSync(pathMikuJadiBot, { recursive: true })
+          await endSesion(false)
         }
       }
 
@@ -220,27 +304,59 @@ export async function mikuJadiBot(options) {
         userJid = sock.authState.creds.me?.jid || `${path.basename(pathMikuJadiBot)}@s.whatsapp.net`
         console.log(chalk.bold.cyanBright(`\n❒⸺⸺⸺⸺【• SUB-BOT •】⸺⸺⸺⸺❒\n│\n│ 🟢 ${userName} (+${path.basename(pathMikuJadiBot)}) conectado exitosamente. [Hatsune Miku Bot]\n│\n❒⸺⸺⸺⸺⸺⸺⸺⸺⸺⸺⸺⸺⸺⸺⸺❒`))
         sock.isInit = true
+        sock.reconnectAttempts = 0 
         global.conns.push(sock)
-        if (m?.chat && conn) {
+        
+        
+        if (m?.sender && global.db?.data?.users?.[m.sender]) {
+          global.db.data.users[m.sender].subBotConnected = true
+          global.db.data.users[m.sender].subBotLastConnect = Date.now()
+        }
+        
+       
+        if (m?.chat && conn && (!sock.isReconnecting || sock.reconnectAttempts === 0)) {
+          const welcomeMessage = args?.[0] ? 
+            `@${m.sender.split('@')[0]}, ya estás conectado, leyendo mensajes entrantes...` : 
+            sock.isReconnecting ? 
+              `@${m.sender.split('@')[0]}, reconectado exitosamente 🔄` :
+              `@${m.sender.split('@')[0]}, bienvenido al sistema de Sub-Bots 💙\n\n*Token de reconexión:* \`${sock.userToken || 'No disponible'}\`\n\n> _Guarda este token para reconectar automáticamente en el futuro._`
+          
           await conn.sendMessage(
             m.chat,
-            { text: args?.[0] ? `@${m.sender.split('@')[0]}, ya estás conectado, leyendo mensajes entrantes...` : `@${m.sender.split('@')[0]}, genial ya eres parte de nuestra familia de Sub-Bots 🌱💙` },
+            { text: welcomeMessage },
             { quoted: m }
           )
         }
       }
     }
 
+    
     setInterval(async () => {
       if (!sock.user) {
+        console.log(chalk.yellow(`⚠️ Usuario no encontrado para +${path.basename(pathMikuJadiBot)}, limpiando conexión...`))
         try { sock.ws.close() } catch (e) { }
         sock.ev.removeAllListeners()
         let i = global.conns.indexOf(sock)
         if (i < 0) return
         delete global.conns[i]
         global.conns.splice(i, 1)
+        
+       
+        if (m?.sender && global.db?.data?.users?.[m.sender]) {
+          global.db.data.users[m.sender].subBotConnected = false
+        }
+      } else {
+        
+        try {
+          if (sock.ws.socket && sock.ws.socket.readyState === ws.CLOSED) {
+            console.log(chalk.yellow(`💓 Heartbeat detectó conexión cerrada para +${path.basename(pathMikuJadiBot)}, intentando reconectar...`))
+            await creloadHandler(true).catch(console.error)
+          }
+        } catch (error) {
+          console.error(`❌ Error en heartbeat: ${error.message}`)
+        }
       }
-    }, 60000)
+    }, 30000) 
 
     let handler = await import('../handler.js')
     let creloadHandler = async function (restatConn) {
@@ -255,6 +371,11 @@ export async function mikuJadiBot(options) {
         try { sock.ws.close() } catch { }
         sock.ev.removeAllListeners()
         sock = makeWASocket(connectionOptions, { chats: oldChats })
+        sock.userToken = userToken
+        sock.isReconnecting = true
+        sock.reconnectAttempts = (sock.reconnectAttempts || 0)
+        sock.maxReconnectAttempts = 5
+        sock.reconnectInterval = 5000
         isInit = true
       }
       if (!isInit) {
@@ -275,6 +396,69 @@ export async function mikuJadiBot(options) {
     creloadHandler(false)
   })
 }
+
+
+function generateSubBotToken(userId) {
+  const timestamp = Date.now()
+  const random = Math.random().toString(36).substr(2, 9)
+  const hash = Buffer.from(`${userId}-${timestamp}-${random}`).toString('base64')
+  return `SUBBOT_${hash.replace(/[+/=]/g, '').substring(0, 20)}`
+}
+
+
+function validateSubBotToken(token, userId) {
+  if (!token || !token.startsWith('SUBBOT_')) return false
+  
+  try {
+    const pathMikuJadiBot = path.join(`./${'jadi'}/`, userId)
+    const pathToken = path.join(pathMikuJadiBot, "token.json")
+    
+    if (fs.existsSync(pathToken)) {
+      const tokenData = JSON.parse(fs.readFileSync(pathToken, 'utf8'))
+      return tokenData.token === token && tokenData.userId === `${userId}@s.whatsapp.net`
+    }
+  } catch (error) {
+    console.error(`Error validando token: ${error.message}`)
+  }
+  
+  return false
+}
+
+
+async function cleanupInactiveSessions() {
+  try {
+    const jadiDir = `./${'jadi'}/`
+    if (!fs.existsSync(jadiDir)) return
+    
+    const sessions = fs.readdirSync(jadiDir)
+    const currentTime = Date.now()
+    const maxInactiveTime = 24 * 60 * 60 * 1000 
+    
+    for (const session of sessions) {
+      const sessionPath = path.join(jadiDir, session)
+      const tokenPath = path.join(sessionPath, "token.json")
+      
+      if (fs.existsSync(tokenPath)) {
+        try {
+          const tokenData = JSON.parse(fs.readFileSync(tokenPath, 'utf8'))
+          const lastActivity = tokenData.lastActivity || tokenData.created
+          
+          if (currentTime - lastActivity > maxInactiveTime) {
+            console.log(chalk.yellow(`🧹 Limpiando sesión inactiva: ${session}`))
+            fs.rmSync(sessionPath, { recursive: true, force: true })
+          }
+        } catch (error) {
+          console.error(`Error procesando sesión ${session}: ${error.message}`)
+        }
+      }
+    }
+  } catch (error) {
+    console.error(`Error en limpieza de sesiones: ${error.message}`)
+  }
+}
+
+
+setInterval(cleanupInactiveSessions, 60 * 60 * 1000)
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 function sleep(ms) {
