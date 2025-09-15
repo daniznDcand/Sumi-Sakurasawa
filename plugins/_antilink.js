@@ -1,8 +1,9 @@
-const genericLinkRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)|([^\s]+\.[a-z]{2,})/i 
-const whatsappGroupRegex = /chat\.whatsapp\.com\/(?:invite\/)?([0-9A-Za-z]{20,24})/i
-const whatsappChannelRegex = /whatsapp\.com\/channel\/([0-9A-Za-z]+)/i
+const genericLinkRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)|([^\s]+\.[a-z]{2,})/i
+const groupLinkRegex = /chat\.whatsapp\.com\/(?:invite\/)?([0-9A-Za-z]{20,24})/i
+const channelLinkRegex = /whatsapp\.com\/channel\/([0-9A-Za-z]+)/i
 const customLinks = [
-  /carmecita\.by/i, 
+  /carmecita\.by/i,
+  
 ]
 
 export async function before(m, { conn, isAdmin, isBotAdmin }) {
@@ -15,9 +16,9 @@ export async function before(m, { conn, isAdmin, isBotAdmin }) {
   if (!chat || !chat.antiLink) return !0
 
   
-  const foundGenericLink = m.text.match(genericLinkRegex)
-  const foundGroupLink = m.text.match(whatsappGroupRegex)
-  const foundChannelLink = m.text.match(whatsappChannelRegex)
+  const foundGenericLink = genericLinkRegex.test(m.text)
+  const foundGroupLink = groupLinkRegex.test(m.text)
+  const foundChannelLink = channelLinkRegex.test(m.text)
   const foundCustomLink = customLinks.some((regex) => regex.test(m.text))
 
   
@@ -31,13 +32,13 @@ export async function before(m, { conn, isAdmin, isBotAdmin }) {
         console.error("[ERROR] No se pudo obtener el código del grupo:", error)
       }
     }
-
     
-    await conn.reply(m.chat,
+    await conn.reply(
+      m.chat,
       `💙 ¡Ara ara! @${m.sender.split`@`[0]} ha sido expulsado del escenario virtual por enviar enlaces prohibidos! 💙🎤\n\n🎵 ¡En el mundo de Miku no permitimos enlaces de ningún tipo!`,
-      m, { mentions: [m.sender] }
+      m,
+      { mentions: [m.sender] }
     )
-
     
     if (isBotAdmin) {
       try {
