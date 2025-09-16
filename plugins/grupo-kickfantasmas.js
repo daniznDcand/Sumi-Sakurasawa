@@ -28,9 +28,19 @@ var handler = async (m, { conn, text, participants, args, command }) => {
   try {
     let users = sider.filter(u => !areJidsSameUser(u, conn.user.id))
     for (let user of users) {
-      if (user.endsWith('@s.whatsapp.net') && !(participants.find(v => areJidsSameUser(v.id, user)) || { admin: true }).admin) {
-        await conn.groupParticipantsUpdate(m.chat, [user], 'remove')
-        await delay(10000)
+      
+      let participant = participants.find(v => areJidsSameUser(v.id, user) || v.id === user);
+      const isAdmin = participant && (participant.admin === 'admin' || participant.admin === 'superadmin');
+      if (!isAdmin) {
+        try {
+          await conn.groupParticipantsUpdate(m.chat, [user], 'remove');
+          await delay(10000);
+        } catch (e) {
+          console.log(`Error eliminando a ${user}:`, e);
+          await conn.reply(m.chat, `❌ No se pudo eliminar a @${user.split('@')[0]}: ${e?.message || e}`, m, { mentions: [user] });
+        }
+      } else {
+        await conn.reply(m.chat, `⚠️ No se puede eliminar a @${user.split('@')[0]} (es admin)`, m, { mentions: [user] });
       }
     }
   } finally {
