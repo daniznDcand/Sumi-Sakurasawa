@@ -1,4 +1,4 @@
-const { useMultiFileAuthState, DisconnectReason, makeCacheableSignalKeyStore, fetchLatestBaileysVersion, Browsers, jidDecode, areJidsSameUser } = (await import("@whiskeysockets/baileys"))
+const { useMultiFileAuthState, DisconnectReason, makeCacheableSignalKeyStore, fetchLatestBaileysVersion, Browsers } = (await import("@whiskeysockets/baileys"))
 import qrcode from "qrcode"
 import NodeCache from "node-cache"
 import fs from "fs"
@@ -10,8 +10,6 @@ const { child, spawn, exec } = await import('child_process')
 const { CONNECTING } = ws
 import { makeWASocket } from '../lib/simple.js'
 import { fileURLToPath } from 'url'
-import PhoneNumber from 'awesome-phonenumber'
-import store from '../lib/store.js'
 
 let rtx = "*🌱💙 Hatsune – Miku – Bot 🌱💙 *\\n\\n💙 Conexión Sub-Bot Modo QR\\n\\n💙 Con otro celular o en la PC escanea este QR para convertirte en un Sub-Bot PERSISTENTE.\\n\\n`1` » Haga clic en los tres puntos, luego en 'Vincular un dispositivo'.\\n\\n`2` » Escanee el código QR que aparece aquí.\\n\\n🌱 *MEJORADO:* Sesión persistente con reconexión automática hasta 10 intentos."
 let rtx2 = "*🌱💙 Hatsune – Miku – Bot 🌱💙 *\\n\\n💙 Conexión Sub-Bot Modo Código\\n\\n💙 Usa este Código para convertirte en un Sub-Bot PERSISTENTE.\\n\\n`1` » Haga clic en los tres puntos, luego en 'Vincular un dispositivo'.\\n\\n`2` » Presione 'Vincular con código', ingrese el código que aparecerá abajo.\\n\\n🌱 *MEJORADO:* Sesión persistente con reconexión automática hasta 10 intentos."
@@ -149,6 +147,10 @@ const mikuJadiBot = async (pathMikuJadiBot, m, conn, args, usedPrefix, command) 
     sock.reconnectAttempts = 0
     sock.maxReconnectAttempts = maxReconnectAttempts
     sock.lastActivity = Date.now()
+    
+    
+    sock.subreloadHandler = (reload) => creloadHandler(reload)
+    
     let isInit = true
 
     
@@ -161,11 +163,12 @@ const mikuJadiBot = async (pathMikuJadiBot, m, conn, args, usedPrefix, command) 
         await new Promise(resolve => setTimeout(resolve, 5000 * sock.reconnectAttempts))
         
         try {
-         
+          
           sock = makeWASocket(connectionOptions)
           sock.reconnectAttempts = reconnectAttempts
           sock.maxReconnectAttempts = maxReconnectAttempts
           sock.lastActivity = Date.now()
+          sock.subreloadHandler = (reload) => creloadHandler(reload)
           
           
           await creloadHandler(false)
@@ -308,36 +311,17 @@ const mikuJadiBot = async (pathMikuJadiBot, m, conn, args, usedPrefix, command) 
         sock.lastActivity = Date.now()
         
         
-        sock.prefix = global.prefix
-        sock.user.jid = sock.authState.creds.me?.jid || sock.user.jid
-        sock.user.name = sock.authState.creds.me?.name || sock.user.name || 'SubBot'
-        
-        
-        sock.decodeJid = (jid) => {
-          if (!jid) return jid
-          if (/:\d+@/gi.test(jid)) {
-            let decode = jidDecode(jid) || {}
-            return decode.user && decode.server && decode.user + '@' + decode.server || jid
-          } else return jid
+        try {
+          if (!sock.prefix) sock.prefix = global.prefix
+          if (sock.user && sock.authState?.creds?.me) {
+            sock.user.jid = sock.authState.creds.me.jid || sock.user.jid
+            sock.user.name = sock.authState.creds.me.name || sock.user.name || 'SubBot'
+          }
+        } catch (error) {
+          console.log('Configurando propiedades básicas:', error.message)
         }
         
-        sock.getName = (jid, withoutContact = false) => {
-          jid = sock.decodeJid(jid)
-          withoutContact = sock.withoutContact || withoutContact 
-          let v
-          if (jid.endsWith('@g.us')) return new Promise(async (resolve) => {
-            v = store.contacts[jid] || {}
-            if (!(v.name || v.subject)) v = sock.groupMetadata(jid) || {}
-            resolve(v.name || v.subject || PhoneNumber('+' + jid.replace('@s.whatsapp.net', '')).getNumber('international'))
-          })
-          else v = jid === '0@s.whatsapp.net' ? {
-            jid,
-            vname: 'WhatsApp'
-          } : areJidsSameUser(jid, sock.user.jid) ? sock.user : (store.contacts[jid] || {})
-          return (withoutContact ? '' : v.name) || v.subject || v.vname || v.notify || v.verifiedName || PhoneNumber('+' + jid.replace('@s.whatsapp.net', '')).getNumber('international')
-        }
-        
-        
+       
         if (!global.conns.find(c => c.user?.jid === sock.user?.jid)) {
           global.conns.push(sock)
         }
@@ -372,14 +356,20 @@ const mikuJadiBot = async (pathMikuJadiBot, m, conn, args, usedPrefix, command) 
 
     const creloadHandler = async (print) => {
       try {
-        const Handler = await import(`../handler.js?update=${Date.now()}`).catch(console.error)
-        if (Object.keys(Handler || {}).length) handler = Handler.default
-        if (print) console.log(chalk.redBright('🔄 Actualizando handler.js'))
+        const Handler = await import(`../handler.js?update=${Date.now()}`)
+        if (Handler && Handler.default && typeof Handler.default.handler === 'function') {
+          handler = Handler.default
+          if (print) console.log(chalk.redBright('🔄 Handler cargado correctamente'))
+        } else {
+          console.error('Handler no tiene la estructura correcta')
+          return false
+        }
       } catch (e) {
         console.error('Error cargando handler:', e)
+        return false
       }
       
-     
+      
       if (!isInit) {
         try {
           sock.ev.off("messages.upsert", sock.handler)
@@ -390,30 +380,22 @@ const mikuJadiBot = async (pathMikuJadiBot, m, conn, args, usedPrefix, command) 
         }
       }
       
-      
-      if (handler && handler.handler && typeof handler.handler === 'function') {
-        
+     
+      if (handler && typeof handler.handler === 'function') {
         sock.handler = async function(chatUpdate) {
           try {
             
-            if (!sock.user) return
-            
-            
-            sock.decodeJid = (jid) => jid?.replace(/@.+/, '')?.replace(/\+/g, '')
-            sock.getName = (jid) => jid ? sock.user.name || 'SubBot' : ''
-            
-            
-            return await handler.handler.call(sock, chatUpdate)
+            return await handler.handler.call(this, chatUpdate)
           } catch (error) {
             console.error('Error en handler del subbot:', error)
           }
         }
+        if (print) console.log(chalk.green('✅ Handler configurado para subbot'))
       } else {
-        console.error('Handler no válido, usando función vacía')
+        console.error('Handler no válido, subbot no podrá procesar comandos')
         sock.handler = () => {}
-      }
-      
-      sock.connectionUpdate = connectionUpdate.bind(sock)
+        return false
+      }      sock.connectionUpdate = connectionUpdate.bind(sock)
       sock.credsUpdate = saveCreds
       
       sock.ev.on("messages.upsert", sock.handler)
