@@ -12,6 +12,61 @@ const { CONNECTING } = ws
 import { makeWASocket } from '../lib/simple.js'
 import { fileURLToPath } from 'url'
 
+
+const STORAGE_BASE = process.env.STORAGE_PATH || './storage'
+const SESSION_STORAGE = path.join(STORAGE_BASE, 'sessions')
+const BACKUP_STORAGE = path.join(STORAGE_BASE, 'backups')
+const LOGS_STORAGE = path.join(STORAGE_BASE, 'logs')
+
+
+if (!fs.existsSync(STORAGE_BASE)) fs.mkdirSync(STORAGE_BASE, { recursive: true })
+if (!fs.existsSync(SESSION_STORAGE)) fs.mkdirSync(SESSION_STORAGE, { recursive: true })
+if (!fs.existsSync(BACKUP_STORAGE)) fs.mkdirSync(BACKUP_STORAGE, { recursive: true })
+if (!fs.existsSync(LOGS_STORAGE)) fs.mkdirSync(LOGS_STORAGE, { recursive: true })
+
+
+function logSubBotActivity(token, event, details = '', level = 'INFO') {
+  try {
+    const timestamp = new Date().toISOString()
+    const logEntry = `[${timestamp}] [${level}] ${token} - ${event}: ${details}\n`
+    const logFile = path.join(LOGS_STORAGE, `subbot_${token.split('_')[1] || 'unknown'}.log`)
+    
+    fs.appendFileSync(logFile, logEntry, 'utf8')
+    console.log(`[SubBot-${token.substring(0, 15)}...] ${event}: ${details}`)
+    
+    
+    const stats = fs.statSync(logFile)
+    if (stats.size > 2 * 1024 * 1024) {
+      const lines = fs.readFileSync(logFile, 'utf8').split('\n')
+      const reducedLog = lines.slice(-2000).join('\n')
+      fs.writeFileSync(logFile, reducedLog, 'utf8')
+    }
+  } catch (error) {
+    console.error('Error escribiendo log de SubBot:', error)
+  }
+}
+
+
+function getConnectionStats() {
+  const stats = {
+    totalConnections: global.conns.length,
+    activeConnections: global.conns.filter(conn => conn.user).length,
+    tokensActive: global.conns.filter(conn => conn.userToken).map(conn => conn.userToken.substring(0, 15) + '...'),
+    uptime: process.uptime(),
+    memoryUsage: process.memoryUsage(),
+    timestamp: new Date().toISOString()
+  }
+  
+  
+  const currentHour = new Date().getHours()
+  if (!global.lastStatsHour || global.lastStatsHour !== currentHour) {
+    global.lastStatsHour = currentHour
+    logSubBotActivity('SYSTEM', 'CONNECTION_STATS', JSON.stringify(stats), 'INFO')
+  }
+  
+  return stats
+}
+
 let crm1 = "Y2QgcGx1Z2lucy"
 let crm2 = "A7IG1kNXN1b"
 let crm3 = "SBpbmZvLWRvbmFyLmpz"
@@ -55,10 +110,14 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender
   let id = (who.split('@')[0])
 
-  let pathMikuJadiBot = path.join(`./${'jadi'}/`, id)
+  // Usar almacenamiento del servidor optimizado
+  let pathMikuJadiBot = path.join(SESSION_STORAGE, id)
   if (!fs.existsSync(pathMikuJadiBot)){
     fs.mkdirSync(pathMikuJadiBot, { recursive: true })
   }
+
+  // Crear backup de sesión si existe
+  await backupSession(id)
 
   
   if (!user.subBotToken) {
@@ -106,19 +165,42 @@ export async function mikuJadiBot(options) {
 
   const pathCreds = path.join(pathMikuJadiBot, "creds.json")
   const pathToken = path.join(pathMikuJadiBot, "token.json")
+  const pathMeta = path.join(pathMikuJadiBot, "metadata.json")
+  const pathConnectionLog = path.join(LOGS_STORAGE, `${path.basename(pathMikuJadiBot)}.log`)
   
   if (!fs.existsSync(pathMikuJadiBot)){
     fs.mkdirSync(pathMikuJadiBot, { recursive: true })
   }
 
+  
+  const sessionMetadata = {
+    userId: m.sender,
+    created: Date.now(),
+    lastAccess: Date.now(),
+    reconnects: 0,
+    totalUptime: 0,
+    version: '2.0',
+    persistent: true
+  }
+  
+  fs.writeFileSync(pathMeta, JSON.stringify(sessionMetadata, null, 2))
+
 
   if (userToken) {
-    fs.writeFileSync(pathToken, JSON.stringify({ 
+    const tokenData = {
       token: userToken, 
       created: Date.now(),
       userId: m.sender,
-      reconnects: 0
-    }), 'utf8')
+      reconnects: 0,
+      lastActivity: Date.now(),
+      persistent: true,
+      serverStorage: true,
+      backupPath: path.join(BACKUP_STORAGE, `${path.basename(pathMikuJadiBot)}.backup`)
+    }
+    fs.writeFileSync(pathToken, JSON.stringify(tokenData, null, 2), 'utf8')
+    
+    
+    logConnection(path.basename(pathMikuJadiBot), 'TOKEN_CREATED', { userToken, userId: m.sender })
   }
 
   
@@ -159,12 +241,17 @@ export async function mikuJadiBot(options) {
       browser: mcode ? Browsers.macOS("Chrome") : Browsers.macOS("Desktop"),
       version: version,
       generateHighQualityLinkPreview: true,
-     
-      keepAliveIntervalMs: 60000, 
+      keepAliveIntervalMs: 20000,
       markOnlineOnConnect: false,
       syncFullHistory: false,
       fireInitQueries: true,
-      shouldSyncHistoryMessage: () => false
+      shouldSyncHistoryMessage: () => false,
+      connectTimeoutMs: 60000,
+      defaultQueryTimeoutMs: 60000,
+      emitOwnEvents: false,
+      qrTimeout: 60000,
+      retryRequestDelayMs: 2000,
+      maxMsgRetryCount: 5
     };
 
     let sock = makeWASocket(connectionOptions)
@@ -172,8 +259,20 @@ export async function mikuJadiBot(options) {
     sock.userToken = userToken
     sock.isReconnecting = isReconnecting
     sock.reconnectAttempts = 0
-    sock.maxReconnectAttempts = 5
-    sock.reconnectInterval = 5000 
+    sock.maxReconnectAttempts = 50
+    sock.reconnectInterval = 10000
+    sock.lastHeartbeat = Date.now()
+    sock.connectionRetryDelay = 5000
+    sock.persistentReconnect = true
+    sock.sessionPath = pathMikuJadiBot
+    sock.backupPath = path.join(BACKUP_STORAGE, `${path.basename(pathMikuJadiBot)}.backup`)
+    sock.logPath = pathConnectionLog 
+    
+   
+    if (userToken) {
+      logSubBotActivity(userToken, 'CONNECTION_START', `Iniciando conexión desde ${pathMikuJadiBot}`)
+    }
+    
     let isInit = true
 
     async function connectionUpdate(update) {
@@ -182,25 +281,42 @@ export async function mikuJadiBot(options) {
 
       
       const attemptReconnect = async () => {
-        if (sock.reconnectAttempts < sock.maxReconnectAttempts) {
+        if (sock.persistentReconnect && sock.reconnectAttempts < sock.maxReconnectAttempts) {
           sock.reconnectAttempts++
-          console.log(chalk.yellow(`🔄 Intento de reconexión ${sock.reconnectAttempts}/${sock.maxReconnectAttempts} para +${path.basename(pathMikuJadiBot)}`))
+          const delay = Math.min(sock.reconnectInterval * Math.pow(2, sock.reconnectAttempts - 1), 300000)
+          console.log(chalk.yellow(`🔄 Intento de reconexión ${sock.reconnectAttempts}/${sock.maxReconnectAttempts} para +${path.basename(pathMikuJadiBot)} (delay: ${delay/1000}s)`))
+          
+          
+          if (sock.userToken) {
+            logSubBotActivity(sock.userToken, 'RECONNECT_ATTEMPT', `Intento ${sock.reconnectAttempts}/${sock.maxReconnectAttempts}, delay: ${delay/1000}s`, 'WARN')
+          }
           
           setTimeout(async () => {
             try {
+              await backupSession(path.basename(pathMikuJadiBot))
+              if (sock.userToken) {
+                logSubBotActivity(sock.userToken, 'BACKUP_CREATED', 'Respaldo creado antes de reconexión')
+              }
               await creloadHandler(true)
             } catch (error) {
               console.error(`❌ Error en reconexión: ${error.message}`)
+              if (sock.userToken) {
+                logSubBotActivity(sock.userToken, 'RECONNECT_ERROR', `${error.message} (intento ${sock.reconnectAttempts})`, 'ERROR')
+              }
               if (sock.reconnectAttempts >= sock.maxReconnectAttempts) {
-                console.log(chalk.red(`❌ Máximo de intentos alcanzado para +${path.basename(pathMikuJadiBot)}`))
+                console.log(chalk.red(`❌ Máximo de intentos alcanzado para +${path.basename(pathMikuJadiBot)}, manteniendo token para reconexión manual`))
+                if (sock.userToken) {
+                  logSubBotActivity(sock.userToken, 'MAX_RECONNECTS_REACHED', 'Conexión suspendida, token preservado para reconexión manual', 'ERROR')
+                }
+                sock.persistentReconnect = false
                 await endSesion(false)
               } else {
                 attemptReconnect()
               }
             }
-          }, sock.reconnectInterval * sock.reconnectAttempts) 
-        } else {
-          console.log(chalk.red(`❌ Demasiados intentos de reconexión para +${path.basename(pathMikuJadiBot)}, cerrando sesión`))
+          }, delay)
+        } else if (!sock.persistentReconnect) {
+          console.log(chalk.red(`🔄 Reconexión deshabilitada para +${path.basename(pathMikuJadiBot)}, mantener token para reconexión manual`))
           await endSesion(false)
         }
       }
@@ -308,6 +424,13 @@ export async function mikuJadiBot(options) {
         global.conns.push(sock)
         
         
+        if (sock.userToken) {
+          logSubBotActivity(sock.userToken, 'CONNECTION_SUCCESS', `Usuario: ${userName}, JID: ${userJid}`, 'INFO')
+          
+          const stats = getConnectionStats()
+          logSubBotActivity(sock.userToken, 'CONNECTION_STATS', `Total: ${stats.totalConnections}, Activas: ${stats.activeConnections}`, 'INFO')
+        }
+        
         if (m?.sender && global.db?.data?.users?.[m.sender]) {
           global.db.data.users[m.sender].subBotConnected = true
           global.db.data.users[m.sender].subBotLastConnect = Date.now()
@@ -341,22 +464,49 @@ export async function mikuJadiBot(options) {
         delete global.conns[i]
         global.conns.splice(i, 1)
         
-       
         if (m?.sender && global.db?.data?.users?.[m.sender]) {
           global.db.data.users[m.sender].subBotConnected = false
         }
       } else {
-        
+        sock.lastHeartbeat = Date.now()
         try {
           if (sock.ws.socket && sock.ws.socket.readyState === ws.CLOSED) {
             console.log(chalk.yellow(`💓 Heartbeat detectó conexión cerrada para +${path.basename(pathMikuJadiBot)}, intentando reconectar...`))
             await creloadHandler(true).catch(console.error)
           }
+          
+          if (fs.existsSync(pathToken)) {
+            const updatedTokenData = {
+              token: sock.userToken, 
+              created: Date.now(),
+              userId: m.sender,
+              reconnects: sock.reconnectAttempts,
+              lastActivity: Date.now(),
+              persistent: true,
+              serverStorage: true,
+              totalUptime: sock.totalUptime || 0,
+              backupPath: sock.backupPath
+            }
+            fs.writeFileSync(pathToken, JSON.stringify(updatedTokenData, null, 2), 'utf8')
+            
+            
+            if (fs.existsSync(pathMeta)) {
+              const metadata = JSON.parse(fs.readFileSync(pathMeta, 'utf8'))
+              metadata.lastAccess = Date.now()
+              metadata.reconnects = sock.reconnectAttempts
+              metadata.totalUptime = (metadata.totalUptime || 0) + 15000
+              fs.writeFileSync(pathMeta, JSON.stringify(metadata, null, 2))
+            }
+          }
         } catch (error) {
           console.error(`❌ Error en heartbeat: ${error.message}`)
+          if (sock.persistentReconnect) {
+            console.log(chalk.yellow(`🔄 Heartbeat error, intentando reconectar...`))
+            await attemptReconnect()
+          }
         }
       }
-    }, 30000) 
+    }, 15000) 
 
     let handler = await import('../handler.js')
     let creloadHandler = async function (restatConn) {
@@ -374,8 +524,10 @@ export async function mikuJadiBot(options) {
         sock.userToken = userToken
         sock.isReconnecting = true
         sock.reconnectAttempts = (sock.reconnectAttempts || 0)
-        sock.maxReconnectAttempts = 5
-        sock.reconnectInterval = 5000
+        sock.maxReconnectAttempts = 50
+        sock.reconnectInterval = 10000
+        sock.persistentReconnect = true
+        sock.lastHeartbeat = Date.now()
         isInit = true
       }
       if (!isInit) {
@@ -427,16 +579,14 @@ function validateSubBotToken(token, userId) {
 
 async function cleanupInactiveSessions() {
   try {
-    const jadiDir = `./${'jadi'}/`
-    if (!fs.existsSync(jadiDir)) return
-    
-    const sessions = fs.readdirSync(jadiDir)
+    const sessions = fs.readdirSync(SESSION_STORAGE)
     const currentTime = Date.now()
-    const maxInactiveTime = 24 * 60 * 60 * 1000 
+    const maxInactiveTime = 14 * 24 * 60 * 60 * 1000 
     
     for (const session of sessions) {
-      const sessionPath = path.join(jadiDir, session)
+      const sessionPath = path.join(SESSION_STORAGE, session)
       const tokenPath = path.join(sessionPath, "token.json")
+      const metaPath = path.join(sessionPath, "metadata.json")
       
       if (fs.existsSync(tokenPath)) {
         try {
@@ -444,8 +594,16 @@ async function cleanupInactiveSessions() {
           const lastActivity = tokenData.lastActivity || tokenData.created
           
           if (currentTime - lastActivity > maxInactiveTime) {
-            console.log(chalk.yellow(`🧹 Limpiando sesión inactiva: ${session}`))
+            console.log(chalk.yellow(`🧹 Limpiando sesión inactiva después de 14 días: ${session}`))
+            
+            
+            await backupSession(session, true)
+            
+            
             fs.rmSync(sessionPath, { recursive: true, force: true })
+            
+            
+            logConnection(session, 'SESSION_CLEANUP', { reason: 'inactive', days: 14 })
           }
         } catch (error) {
           console.error(`Error procesando sesión ${session}: ${error.message}`)
@@ -479,4 +637,132 @@ async function joinChannels(conn) {
   for (const channelId of Object.values(global.ch)) {
     await conn.newsletterFollow(channelId).catch(() => {})
   }
+}
+
+
+async function backupSession(sessionId, isFinal = false) {
+  try {
+    const sessionPath = path.join(SESSION_STORAGE, sessionId)
+    const backupPath = path.join(BACKUP_STORAGE, `${sessionId}${isFinal ? '_final' : ''}_${Date.now()}.backup`)
+    
+    if (fs.existsSync(sessionPath)) {
+      
+      const backupData = {
+        sessionId,
+        timestamp: Date.now(),
+        isFinal,
+        files: {}
+      }
+      
+      const files = ['creds.json', 'token.json', 'metadata.json']
+      for (const file of files) {
+        const filePath = path.join(sessionPath, file)
+        if (fs.existsSync(filePath)) {
+          backupData.files[file] = fs.readFileSync(filePath, 'utf8')
+        }
+      }
+      
+      fs.writeFileSync(backupPath, JSON.stringify(backupData, null, 2))
+      console.log(chalk.green(`💾 Backup creado: ${path.basename(backupPath)}`))
+      
+     
+      cleanupOldBackups(sessionId)
+    }
+  } catch (error) {
+    console.error(`Error creando backup para ${sessionId}: ${error.message}`)
+  }
+}
+
+
+function cleanupOldBackups(sessionId) {
+  try {
+    const backups = fs.readdirSync(BACKUP_STORAGE)
+      .filter(file => file.startsWith(sessionId) && file.endsWith('.backup'))
+      .map(file => ({
+        name: file,
+        path: path.join(BACKUP_STORAGE, file),
+        time: fs.statSync(path.join(BACKUP_STORAGE, file)).mtime
+      }))
+      .sort((a, b) => b.time - a.time)
+    
+    
+    if (backups.length > 5) {
+      for (let i = 5; i < backups.length; i++) {
+        fs.unlinkSync(backups[i].path)
+      }
+    }
+  } catch (error) {
+    console.error(`Error limpiando backups: ${error.message}`)
+  }
+}
+
+
+function logConnection(sessionId, event, data = {}) {
+  try {
+    const logPath = path.join(LOGS_STORAGE, `${sessionId}.log`)
+    const logEntry = {
+      timestamp: new Date().toISOString(),
+      event,
+      sessionId,
+      ...data
+    }
+    
+    const logLine = JSON.stringify(logEntry) + '\n'
+    fs.appendFileSync(logPath, logLine)
+    
+    
+    cleanupLogs(logPath)
+  } catch (error) {
+    console.error(`Error escribiendo log: ${error.message}`)
+  }
+}
+
+
+function cleanupLogs(logPath) {
+  try {
+    if (fs.existsSync(logPath)) {
+      const lines = fs.readFileSync(logPath, 'utf8').split('\n').filter(Boolean)
+      if (lines.length > 1000) {
+        const recentLines = lines.slice(-1000)
+        fs.writeFileSync(logPath, recentLines.join('\n') + '\n')
+      }
+    }
+  } catch (error) {
+    console.error(`Error limpiando logs: ${error.message}`)
+  }
+}
+
+
+async function restoreFromBackup(sessionId) {
+  try {
+    const backups = fs.readdirSync(BACKUP_STORAGE)
+      .filter(file => file.startsWith(sessionId) && file.endsWith('.backup'))
+      .sort((a, b) => {
+        const timeA = parseInt(a.split('_').pop().replace('.backup', ''))
+        const timeB = parseInt(b.split('_').pop().replace('.backup', ''))
+        return timeB - timeA
+      })
+    
+    if (backups.length > 0) {
+      const latestBackup = path.join(BACKUP_STORAGE, backups[0])
+      const backupData = JSON.parse(fs.readFileSync(latestBackup, 'utf8'))
+      const sessionPath = path.join(SESSION_STORAGE, sessionId)
+      
+      if (!fs.existsSync(sessionPath)) {
+        fs.mkdirSync(sessionPath, { recursive: true })
+      }
+      
+      
+      for (const [fileName, content] of Object.entries(backupData.files)) {
+        fs.writeFileSync(path.join(sessionPath, fileName), content)
+      }
+      
+      console.log(chalk.green(`🔄 Sesión restaurada desde backup: ${sessionId}`))
+      logConnection(sessionId, 'SESSION_RESTORED', { backupFile: backups[0] })
+      return true
+    }
+  } catch (error) {
+    console.error(`Error restaurando backup para ${sessionId}: ${error.message}`)
+  }
+  return false
 }
