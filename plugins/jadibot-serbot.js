@@ -391,3 +391,4 @@ handler.tags = ['serbot']
 handler.command = ['qr', 'code', 'deletebot', 'deletesesion', 'deletesession']
 
 export default handler
+export { mikuJadiBot }
