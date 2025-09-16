@@ -110,13 +110,13 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender
   let id = (who.split('@')[0])
 
-  // Usar almacenamiento del servidor optimizado
+  
   let pathMikuJadiBot = path.join(SESSION_STORAGE, id)
   if (!fs.existsSync(pathMikuJadiBot)){
     fs.mkdirSync(pathMikuJadiBot, { recursive: true })
   }
 
-  // Crear backup de sesión si existe
+  
   await backupSession(id)
 
   
@@ -218,7 +218,7 @@ export async function mikuJadiBot(options) {
 
   try {
     args?.[0] && args[0] != undefined ? fs.writeFileSync(pathCreds, JSON.stringify(JSON.parse(Buffer.from(args[0], "base64").toString("utf-8")), null, '\t')) : ""
-  } catch {
+  } catch (error) {
     if (m && conn) conn.reply(m.chat, `⛔ Use correctamente el comando » ${usedPrefix + command} code`, m)
     return
   }
@@ -249,9 +249,17 @@ export async function mikuJadiBot(options) {
       connectTimeoutMs: 60000,
       defaultQueryTimeoutMs: 60000,
       emitOwnEvents: false,
-      qrTimeout: 60000,
+      qrTimeout: 180000, 
       retryRequestDelayMs: 2000,
-      maxMsgRetryCount: 5
+      maxMsgRetryCount: 5,
+      pairingCodeTimeout: 180000, 
+      transactionOpts: {
+        maxCommitRetries: 10,
+        delayBetweenTriesMs: 3000
+      },
+      options: {
+        phoneNumberCountryCode: 'US'
+      }
     };
 
     let sock = makeWASocket(connectionOptions)
@@ -334,26 +342,109 @@ export async function mikuJadiBot(options) {
       }
       if (qr && mcode && !sock.isReconnecting) {
         let phoneNumber = (m && m.sender) ? m.sender.split('@')[0] : '';
-        let secret = await sock.requestPairingCode(phoneNumber)
-        secret = secret?.match(/.{1,4}/g)?.join("-")
-        if (m && conn) {
-          txtCode = await conn.sendMessage(m.chat, {text : rtx2}, { quoted: m })
-          codeBot = await m.reply(secret || '')
+        
+        
+        if (!phoneNumber || phoneNumber.length < 10) {
+          if (m && conn) {
+            await m.reply(`❌ *Número de teléfono inválido*\n\n_No se pudo obtener un número válido de su cuenta._\n\n*Solución:* Use el comando \`.qr\` como alternativa.`)
+          }
+          return
         }
-        console.log(secret)
+        
+        
+        if (!sock || sock.readyState !== 1) {
+          if (m && conn) {
+            await m.reply(`⏳ *Conexión no lista*\n\n_Espere un momento mientras se establece la conexión._\n\n*Reintente en 10 segundos.*`)
+          }
+          return
+        }
+        
+        try {
+          
+          let secret = null
+          let attempts = 0
+          const maxAttempts = 3
+          
+          while (!secret && attempts < maxAttempts) {
+            attempts++
+            try {
+              console.log(`Solicitando código de vinculación (intento ${attempts}/${maxAttempts}) para: ${phoneNumber}`)
+              secret = await sock.requestPairingCode(phoneNumber)
+              
+              if (secret) {
+                secret = secret?.match(/.{1,4}/g)?.join("-")
+                console.log(`✅ Código generado exitosamente: ${secret}`)
+                break
+              }
+              
+              
+              if (attempts < maxAttempts) {
+                await new Promise(resolve => setTimeout(resolve, 2000))
+              }
+            } catch (error) {
+              console.log(`❌ Error generando código (intento ${attempts}): ${error.message}`)
+              if (attempts === maxAttempts) {
+                throw error
+              }
+              await new Promise(resolve => setTimeout(resolve, 3000))
+            }
+          }
+          
+          if (secret) {
+            if (m && conn) {
+              txtCode = await conn.sendMessage(m.chat, {text : rtx2}, { quoted: m })
+              codeBot = await m.reply(`🔑 *Código de vinculación:*\n\n\`${secret}\`\n\n_⏱️ Válido por 60 segundos_\n_🔄 Si no funciona, intente nuevamente_`)
+              
+              
+              if (userToken) {
+                logSubBotActivity(userToken, 'PAIRING_CODE_GENERATED', `Código: ${secret}, Teléfono: ${phoneNumber}`)
+              }
+            }
+          } else {
+            throw new Error('No se pudo generar código después de múltiples intentos')
+          }
+          
+        } catch (error) {
+          console.error(`❌ Error crítico generando código: ${error.message}`)
+          if (m && conn) {
+            await m.reply(`❌ *Error generando código de vinculación*\n\n_${error.message}_\n\n*Soluciones:*\n• Intente nuevamente en unos segundos\n• Use el comando \`.qr\` como alternativa\n• Verifique su conexión a internet`)
+          }
+          
+          if (userToken) {
+            logSubBotActivity(userToken, 'PAIRING_CODE_ERROR', error.message, 'ERROR')
+          }
+        }
       }
+      
       if (txtCode && txtCode.key) {
-        setTimeout(() => { conn.sendMessage(m.sender, { delete: txtCode.key })}, 30000)
+        setTimeout(() => { 
+          conn.sendMessage(m.sender, { delete: txtCode.key })
+          if (userToken) {
+            logSubBotActivity(userToken, 'MESSAGE_CLEANUP', 'Mensaje de código eliminado')
+          }
+        }, 60000) 
       }
       if (codeBot && codeBot.key) {
-        setTimeout(() => { conn.sendMessage(m.sender, { delete: codeBot.key })}, 30000)
+        setTimeout(() => { 
+          conn.sendMessage(m.sender, { delete: codeBot.key })
+        }, 60000) 
+      }
+      if (txtQR && txtQR.key) {
+        setTimeout(() => { 
+          conn.sendMessage(m.sender, { delete: txtQR.key })
+          if (userToken) {
+            logSubBotActivity(userToken, 'MESSAGE_CLEANUP', 'Mensaje de QR eliminado')
+          }
+        }, 45000) 
       }
 
       const endSesion = async (loaded) => {
         if (!loaded) {
           try {
             sock.ws.close()
-          } catch {}
+          } catch (error) {
+            
+          }
           sock.ev.removeAllListeners()
           let i = global.conns.indexOf(sock)
           if (i < 0) return
