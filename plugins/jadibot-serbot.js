@@ -130,11 +130,20 @@ return undefined
 
 let sock = makeWASocket(connectionOptions)
 sock.isInit = false
+sock.well = false  
 sock.reconnectAttempts = 0
 sock.maxReconnectAttempts = maxReconnectAttempts
 sock.lastActivity = Date.now()
 sock.sessionStartTime = sessionStartTime
 sock.subreloadHandler = (reload) => creloadHandler(reload)
+
+
+sock.prefix = global.prefix || '#'
+sock.chats = sock.chats || {}
+sock.contacts = sock.contacts || {}
+sock.blocklist = sock.blocklist || []
+
+console.log('🔧 SubBot socket creado con propiedades básicas')
 let isInit = true
 
 
@@ -162,6 +171,15 @@ sock.maxReconnectAttempts = maxReconnectAttempts
 sock.lastActivity = Date.now()
 sock.sessionStartTime = sessionStartTime
 sock.isInit = false
+sock.well = false  
+
+
+sock.prefix = global.prefix || '#'
+sock.chats = sock.chats || {}
+sock.contacts = sock.contacts || {}
+sock.blocklist = sock.blocklist || []
+
+console.log('🔄 SubBot socket recreado en reconexión con propiedades')
 
 
 sock.connectionUpdate = connectionUpdate.bind(sock)
@@ -327,6 +345,7 @@ await endSesion(false)
 
 if (connection == `open`) {
 sock.isInit = true
+sock.well = false  
 sock.reconnectAttempts = 0 
 sock.lastActivity = Date.now()
 
@@ -337,8 +356,20 @@ if (sock.user && sock.authState?.creds?.me) {
 sock.user.jid = sock.authState.creds.me.jid || sock.user.jid
 sock.user.name = sock.authState.creds.me.name || sock.user.name || 'SubBot'
 }
+
+
+sock.user = sock.user || {}
+sock.chats = sock.chats || {}
+sock.contacts = sock.contacts || {}
+
+
+sock.sendMessage = sock.sendMessage.bind(sock)
+sock.updatePresence = sock.updatePresence.bind(sock) 
+sock.presenceSubscribe = sock.presenceSubscribe.bind(sock)
+
+console.log('🔧 Propiedades básicas del SubBot configuradas')
 } catch (error) {
-console.log('⚙️ Configurando propiedades básicas:', error.message)
+console.log('⚙️ Error configurando propiedades básicas:', error.message)
 }
 
 
@@ -346,10 +377,40 @@ try {
 console.log('🔍 Configurando handler para SubBot recién conectado...')
 const handlerModule = await import('../handler.js')
 if (handlerModule && handlerModule.handler && typeof handlerModule.handler === 'function') {
-sock.handler = handlerModule.handler.bind(sock)
+
+
+const originalHandler = handlerModule.handler.bind(sock)
+sock.handler = async (chatUpdate) => {
+  try {
+    console.log('📨 SubBot procesando mensaje:', {
+      messages: chatUpdate?.messages?.length || 0,
+      messageTypes: chatUpdate?.messages?.map(m => Object.keys(m.message || {})) || [],
+      fromSender: chatUpdate?.messages?.[0]?.key?.fromMe ? 'SubBot' : 'Usuario'
+    })
+    
+ 
+    return await originalHandler(chatUpdate)
+  } catch (error) {
+    console.error('❌ Error en handler de SubBot:', error.message)
+    console.error('Stack:', error.stack)
+  }
+}
+
 sock.ev.on("messages.upsert", sock.handler)
 console.log('✅ Handler configurado exitosamente para SubBot')
 console.log('🤖 SubBot está listo para procesar comandos')
+
+
+setTimeout(() => {
+  console.log('� Verificando estado del SubBot:', {
+    isInit: sock.isInit,
+    hasUser: !!sock.user,
+    hasHandler: !!sock.handler,
+    userId: sock.user?.id,
+    handlerListeners: sock.ev.listenerCount('messages.upsert')
+  })
+}, 2000)
+
 } else {
 console.error('⚠️ Error: Handler no válido para SubBot')
 console.log('Handler module keys:', Object.keys(handlerModule || {}))
@@ -436,6 +497,16 @@ const oldChats = sock.chats
 try { sock.ws.close() } catch { }
 sock.ev.removeAllListeners()
 sock = makeWASocket(connectionOptions, { chats: oldChats })
+
+// 🔧 Reconfigurar propiedades del SubBot después de recrear socket
+sock.isInit = true
+sock.well = false
+sock.prefix = global.prefix || '#'
+sock.chats = oldChats || {}
+sock.contacts = sock.contacts || {}
+sock.blocklist = sock.blocklist || []
+
+console.log('🔄 SubBot socket recreado en creloadHandler con propiedades')
 isInit = true
 }
 
