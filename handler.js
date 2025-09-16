@@ -26,13 +26,12 @@ try {
 	if (!m) return
 	m.exp = 0
 	m.coin = false
-	// --- INICIO: Actualizar lastseen ---
+	
 	let user = global.db.data.users[m.sender]
 	if (typeof user !== 'object') global.db.data.users[m.sender] = {}
 	user = global.db.data.users[m.sender]
 	user.lastseen = +new Date
-	// --- FIN: Actualizar lastseen ---
-	// ...existing code de inicialización de user, chat y settings...
+	
 	if (!isNumber(user.exp)) user.exp = 0
 	if (!isNumber(user.coin)) user.coin = 10
 	if (!isNumber(user.joincount)) user.joincount = 1
@@ -355,30 +354,25 @@ try {
 await plugin.after.call(this, m, extra)
 } catch (e) {
 console.error(e)
-}}
+}
+}
 if (m.coin)
 conn.reply(m.chat, `💙 Utilizaste ${+m.coin} ${moneda}`, m, rcanal)
 }
 break
-}}
-} catch (e) {
-console.error(e)
-} finally {
-if (opts['queque'] && m.text) {
-const quequeIndex = this.msgqueque.indexOf(m.id || m.key.id)
-if (quequeIndex !== -1)
-this.msgqueque.splice(quequeIndex, 1)
 }
-let user, stats = global.db.data.stats
+}
+
+let dbUser, stats = global.db.data.stats
 if (m) { let utente = global.db.data.users[m.sender]
 if (utente.muto == true) {
 let bang = m.key.id
 let cancellazzione = m.key.participant
 await conn.sendMessage(m.chat, { delete: { remoteJid: m.chat, fromMe: false, id: bang, participant: cancellazzione }})
 }
-if (m.sender && (user = global.db.data.users[m.sender])) {
-user.exp += m.exp
-user.coin -= m.coin * 1
+if (m.sender && (dbUser = global.db.data.users[m.sender])) {
+dbUser.exp += m.exp
+dbUser.coin -= m.coin * 1
 }
 
 let stat
