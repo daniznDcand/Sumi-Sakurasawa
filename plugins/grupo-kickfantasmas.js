@@ -1,27 +1,33 @@
 
 import { areJidsSameUser } from '@whiskeysockets/baileys'
 
-
 var handler = async (m, { conn, text, participants, args, command }) => {
-  let member = participants.map(u => u.id)
-  let sum = text ? Number(text) : member.length
-  let total = 0
-  let sider = []
-  for (let i = 0; i < sum; i++) {
-    let users = m.isGroup ? participants.find(u => u.id == member[i]) : {}
-    if ((typeof global.db.data.users[member[i]] == 'undefined' || global.db.data.users[member[i]].chat == 0) && !users.isAdmin && !users.isSuperAdmin) {
-      if (typeof global.db.data.users[member[i]] !== 'undefined') {
-        if (global.db.data.users[member[i]].whitelist == false) {
-          total++
-          sider.push(member[i])
-        }
-      } else {
-        total++
-        sider.push(member[i])
-      }
+const handler = async (m, { conn, participants, groupMetadata, isAdmin, isBotAdmin }) => {
+  if (!isBotAdmin) throw 'El bot no es admin.'
+  
+  let users = []
+  let now = +new Date
+  let threshold = 1000 * 60 * 60 * 24 * 7 
+  for (let user of participants) {
+    if (user.admin) continue 
+    let data = global.db.data.users[user.id] || {}
+    let lastSeen = data.lastseen || data.lastSeen || 0
+    if (now - lastSeen > threshold) {
+      users.push(user.id)
     }
   }
-  
+  if (!users.length) throw 'No se encontraron fantasmas para eliminar.'
+  let failed = []
+  for (let user of users) {
+    try {
+      await conn.groupParticipantsUpdate(m.chat, [user], 'remove')
+    } catch (e) {
+      failed.push(user)
+    }
+  }
+  if (failed.length) m.reply('No se pudo eliminar a: ' + failed.join(', '))
+}
+
   const getValidJid = (input) => {
     if (typeof input !== 'string') return null;
     if (input.endsWith('@s.whatsapp.net') || input.endsWith('@lid')) return input;
@@ -60,8 +66,8 @@ var handler = async (m, { conn, text, participants, args, command }) => {
   await conn.reply(m.chat, `✅ Proceso de eliminación finalizado.`, m)
 }
 
-handler.tags = ['grupo']
-handler.command = ['kickfantasmas', 'eliminarfantasmas']
+handler.tags = ['group']
+handler.command = /^(kickfantasmas|eliminarfantasmas)$/i
 handler.group = true
 handler.botAdmin = true
 handler.admin = true
