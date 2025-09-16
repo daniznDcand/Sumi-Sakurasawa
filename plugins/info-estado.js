@@ -19,17 +19,46 @@ let old = performance.now()
 let neww = performance.now()
 let speed = neww - old
 const used = process.memoryUsage()
-let info = `💙 Estado del Concierto Virtual - ${botname} 💙\n`
-info += `🎵 *◜Diva Principal◞* ⇢ ${etiqueta}\n`
-info += `✨ *◜Comando Musical◞* ⇢ [ ${usedPrefix} ]\n`
-info += `🌟 *◜Versión Virtual◞* ⇢ ${vs}\n`
-info += `💫 *◜Fanáticos Privados◞* ⇢ ${chats.length - groupsIn.length}\n`
-info += `🎶 *◜Total de Escenarios◞* ⇢ ${chats.length}\n`
-info += `💙 *◜Seguidores◞* ⇢ ${totalreg}\n`
-info += `🎤 *◜Salas de Concierto◞* ⇢ ${groupsIn.length}\n`
-info += `⏰ *◜Tiempo en Escenario◞* ⇢ ${uptime}\n`
-info += `🎵 *◜Velocidad Musical◞* ⇢ ${(speed * 1000).toFixed(0) / 1000}ms\n`
-info += `✨ *◜Sub-Divas Activas◞* ⇢ ${totalUsers || '0'}`
+let info = `🌱💙 *HATSUNE MIKU BOT - ESTADO GENERAL* 💙🌱\n\n`
+info += `┌─ 🎵 *Información Principal*\n`
+info += `├ 🤖 *Bot:* ${botname}\n`
+info += `├ 👑 *Owner:* ${etiqueta}\n`
+info += `├ 📋 *Prefijo:* [ ${usedPrefix} ]\n`
+info += `├ 🌟 *Versión:* ${vs}\n`
+info += `└────\n\n`
+info += `┌─ 📊 *Estadísticas de Conexiones*\n`
+info += `├ 🤖 *SubBots Total:* ${users.length}\n`
+info += `├ ✅ *SubBots Activos:* ${users.filter(conn => conn.user && conn.ws?.socket?.readyState !== ws.CLOSED).length}\n`
+info += `├ 💬 *Chats Privados:* ${chats.length - groupsIn.length}\n`
+info += `├ 👥 *Grupos:* ${groupsIn.length}\n`
+info += `├ 📞 *Total Chats:* ${chats.length}\n`
+info += `├ 💙 *Usuarios Registrados:* ${totalreg}\n`
+info += `└────\n\n`
+info += `┌─ ⚡ *Rendimiento del Sistema*\n`
+info += `├ ⏰ *Tiempo Activo:* ${uptime}\n`
+info += `├ 🚀 *Velocidad:* ${(speed * 1000).toFixed(0) / 1000}ms\n`
+info += `├ 💾 *RAM Usada:* ${(used.rss / 1024 / 1024).toFixed(2)} MB\n`
+info += `├ 🔋 *Heap:* ${(used.heapUsed / 1024 / 1024).toFixed(2)} MB\n`
+info += `└────\n\n`
+
+if (users.length > 0) {
+info += `┌─ 🤖 *SubBots Conectados*\n`
+users.slice(0, 5).forEach((bot, index) => {
+  const botName = bot.user?.name || 'Sin nombre'
+  const botNumber = bot.user?.jid?.replace(/[^0-9]/g, '') || 'Desconocido'
+  const status = bot.ws?.socket?.readyState === ws.OPEN ? '🟢' : '🟡'
+  info += `├ ${status} *${index + 1}.* ${botName} (${botNumber.slice(-4)})\n`
+})
+if (users.length > 5) {
+  info += `├ 📝 *Y ${users.length - 5} SubBot(s) más...*\n`
+}
+info += `└────\n\n`
+}
+
+info += `💡 *Comandos para Owner:*\n`
+info += `• \`${usedPrefix}listbots\` - Ver todos los SubBots\n`
+info += `• \`${usedPrefix}reconectar\` - Reconectar SubBots\n\n`
+info += `🌱💙 *Bot funcionando correctamente* 💙🌱`
 await conn.sendFile(m.chat, banner, 'estado.jpg', info, m)
 }
 handler.help = ['estado']

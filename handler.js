@@ -344,7 +344,7 @@ m.error = e
 console.error(e)
 if (e) {
 let text = format(e)
-for (let key of Object.values(global.APIKeys))
+for (let key of Object.values(global.APIKeys || {}))
 text = text.replace(new RegExp(key, 'g'), 'Administrador')
 m.reply(text)
 }

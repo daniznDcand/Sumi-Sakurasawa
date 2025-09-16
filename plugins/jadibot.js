@@ -3,6 +3,14 @@ const fs = { ...fsPromises, existsSync };
 import path, { join } from 'path' 
 import ws from 'ws';
 
+// Variables necesarias
+const emoji = '🌱'
+const emoji2 = '💙'
+const emoji3 = '✅'
+const msm = '❌'
+const jadi = 'MikuJadiBot'
+const botname = 'Hatsune Miku Bot'
+
 let handler = async (m, { conn: _envio, command, usedPrefix, args, text, isOwner}) => {
 const isCommand1 = /^(deletesesion|deletebot|deletesession|deletesesaion)$/i.test(command)  
 const isCommand2 = /^(stop|pausarai|pausarbot)$/i.test(command)  
