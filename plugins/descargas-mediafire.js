@@ -2,6 +2,18 @@ import axios from 'axios';
 import cheerio from 'cheerio';
 import { lookup } from 'mime-types';
 
+const tradutor = {
+  texto2: [
+    '✅ *DESCARGA EXITOSA*',
+    '📄 *Nombre:*',
+    '📊 *Tamaño:*', 
+    '🗂️ *Tipo:*',
+    '⬇️ *Descargando...*'
+  ],
+  texto3: '❌ Error al descargar el archivo de MediaFire.'
+};
+
+let handler = async (m, { conn, args, usedPrefix, command }) => {
   if (!args[0]) throw `_*< DESCARGAS - MEDIAFIRE />*_\n\n*[ ℹ️ ] Ingrese un enlace de MediaFire.*\n\n*[ 💡 ] Ejemplo:* ${usedPrefix + command} http://www.mediafire.com/file/7a28wroqlhtfws7/FgsiRestAPI_1754243494124_fgsi_1754243490723.jpeg`;
   
   try {
@@ -14,7 +26,7 @@ import { lookup } from 'mime-types';
     console.error('Error en MediaFire:', error);
     await m.reply(tradutor.texto3);
   }
-};
+}
 
 handler.command = /^(mediafire|mediafiredl|dlmediafire)$/i;
 export default handler;
