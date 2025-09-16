@@ -28,22 +28,54 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   let user = global.db.data.users[m.sender]
   if (!user.Subs) user.Subs = 0
   
-  let time = user.Subs + 15000
-  if (new Date - user.Subs < 15000) {
-    return conn.reply(m.chat, `⏱️ Espere ${msToTime(time - new Date())} antes de usar el comando.`, m)
-  }
-
   let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender
   let id = (who.split('@')[0])
   let pathMikuJadiBot = path.join(`./${'jadi'}/`, id)
   let pathCreds = path.join(pathMikuJadiBot, "creds.json")
+
+  
+  if (command == "deletebot" || command == "deletesesion" || command == "deletesession") {
+    try {
+      if (!fs.existsSync(pathMikuJadiBot)) {
+        return m.reply(`❌ No tienes una sesión activa para eliminar.`)
+      }
+      
+      
+      const existingConn = global.conns.find(c => c.user?.jid?.includes(id))
+      if (existingConn) {
+        try {
+          existingConn.ws.close()
+          existingConn.ev.removeAllListeners()
+        } catch (error) {
+          
+        }
+        
+        global.conns = global.conns.filter(c => c !== existingConn)
+      }
+      
+      
+      fs.rmSync(pathMikuJadiBot, { recursive: true, force: true })
+      
+      await m.reply(`✅ *Sesión eliminada exitosamente*\n\n📱 Número: +${id}\n🗑️ Archivos de sesión eliminados\n🔄 Ahora puedes crear una nueva sesión`)
+      
+    } catch (error) {
+      console.error('Error eliminando sesión:', error)
+      await m.reply(`❌ Error al eliminar la sesión: ${error.message}`)
+    }
+    return
+  }
+  
+  let time = user.Subs + 15000
+  if (new Date - user.Subs < 15000) {
+    return conn.reply(m.chat, `⏱️ Espere ${msToTime(time - new Date())} antes de usar el comando.`, m)
+  }
 
   if (command == "qr") {
     if (fs.existsSync(pathMikuJadiBot)) {
       fs.rmSync(pathMikuJadiBot, { recursive: true, force: true })
     }
     fs.mkdirSync(pathMikuJadiBot, { recursive: true })
-    args?.[0] && args[0] != undefined ? fs.writeFileSync(pathCreds, JSON.stringify(JSON.parse(Buffer.from(args[0], "base64").toString("utf-8")), null, '\\t')) : ""
+    args?.[0] && args[0] != undefined ? fs.writeFileSync(pathCreds, JSON.stringify(JSON.parse(Buffer.from(args[0], "base64").toString("utf-8")), null, '\t')) : ""
     let args2 = ["--session", `./jadi/${id}`, "--pairing-code", "--phone", "+"]
     await mikuJadiBot(pathMikuJadiBot, m, conn, args2, usedPrefix, command)
   }
@@ -53,7 +85,7 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
       fs.rmSync(pathMikuJadiBot, { recursive: true, force: true })
     }
     fs.mkdirSync(pathMikuJadiBot, { recursive: true })
-    args?.[0] && args[0] != undefined ? fs.writeFileSync(pathCreds, JSON.stringify(JSON.parse(Buffer.from(args[0], "base64").toString("utf-8")), null, '\\t')) : ""
+    args?.[0] && args[0] != undefined ? fs.writeFileSync(pathCreds, JSON.stringify(JSON.parse(Buffer.from(args[0], "base64").toString("utf-8")), null, '\t')) : ""
     let args2 = ["--session", `./jadi/${id}`, "--pairing-code", "--phone", "+"]
     await mikuJadiBot(pathMikuJadiBot, m, conn, args2, usedPrefix, command)
   }
@@ -117,23 +149,23 @@ const mikuJadiBot = async (pathMikuJadiBot, m, conn, args, usedPrefix, command) 
     sock.lastActivity = Date.now()
     let isInit = true
 
-    // Función para reconectar automáticamente
+    
     const attemptReconnect = async () => {
       if (sock.reconnectAttempts < sock.maxReconnectAttempts) {
         sock.reconnectAttempts++
         console.log(chalk.yellow(`🔄 Intento de reconexión ${sock.reconnectAttempts}/${sock.maxReconnectAttempts} para ${path.basename(pathMikuJadiBot)}`))
         
-        // Esperar antes de reconectar
+        
         await new Promise(resolve => setTimeout(resolve, 5000 * sock.reconnectAttempts))
         
         try {
-          // Recrear socket con misma configuración
+          
           sock = makeWASocket(connectionOptions)
           sock.reconnectAttempts = reconnectAttempts
           sock.maxReconnectAttempts = maxReconnectAttempts
           sock.lastActivity = Date.now()
           
-          // Reconfigurar eventos
+          
           await creloadHandler(false)
           return true
         } catch (error) {
@@ -160,7 +192,7 @@ const mikuJadiBot = async (pathMikuJadiBot, m, conn, args, usedPrefix, command) 
         let phoneNumber = (m && m.sender) ? m.sender.split('@')[0] : ''
         
         try {
-          // Mejorar generación de código con reintentos
+          
           let secret
           let attempts = 0
           const maxAttempts = 3
@@ -220,27 +252,27 @@ const mikuJadiBot = async (pathMikuJadiBot, m, conn, args, usedPrefix, command) 
       if (connection === 'close') {
         console.log(chalk.yellow(`🔌 Conexión cerrada para ${path.basename(pathMikuJadiBot)}. Código: ${reason}`))
         
-        // Manejo inteligente de reconexiones según el código de error
+        
         const shouldReconnect = [
-          428, // Connection replaced  
-          408, // Request timeout
-          440, // Connection lost
-          515, // Need restart
-          500, // Internal server error
-          502, // Bad gateway
-          503, // Service unavailable
-          429  // Too many requests
+          428,  
+          408, 
+          440, 
+          515, 
+          500, 
+          502, 
+          503, 
+          429  
         ].includes(reason)
         
         if (shouldReconnect && sock.reconnectAttempts < sock.maxReconnectAttempts) {
-          console.log(chalk.cyan(`� Preparando reconexión automática...`))
+          console.log(chalk.cyan(`📣 Preparando reconexión automática...`))
           const reconnected = await attemptReconnect()
           if (!reconnected) {
             console.log(chalk.red(`❌ Falló la reconexión automática para ${path.basename(pathMikuJadiBot)}`))
             await endSesion(false)
           }
         } else if (reason === 401) {
-          // Sesión inválida - eliminar archivos
+          
           console.log(chalk.red(`🗑️ Sesión inválida, eliminando archivos para ${path.basename(pathMikuJadiBot)}`))
           try { 
             fs.rmSync(pathMikuJadiBot, { recursive: true, force: true })
@@ -256,10 +288,10 @@ const mikuJadiBot = async (pathMikuJadiBot, m, conn, args, usedPrefix, command) 
 
       if (connection == `open`) {
         sock.isInit = true
-        sock.reconnectAttempts = 0 // Reset counter on successful connection
+        sock.reconnectAttempts = 0 
         sock.lastActivity = Date.now()
         
-        // Guardar en global.conns solo si no existe
+        
         if (!global.conns.find(c => c.user?.jid === sock.user?.jid)) {
           global.conns.push(sock)
         }
@@ -283,7 +315,7 @@ const mikuJadiBot = async (pathMikuJadiBot, m, conn, args, usedPrefix, command) 
                 `🔥 *Ahora puede usar comandos desde este dispositivo*`
         }, { quoted: m })
         
-        // Configurar heartbeat para mantener conexión activa
+        
         setInterval(() => {
           if (sock && sock.user) {
             sock.lastActivity = Date.now()
@@ -301,19 +333,25 @@ const mikuJadiBot = async (pathMikuJadiBot, m, conn, args, usedPrefix, command) 
         console.error('Error cargando handler:', e)
       }
       
-      // Limpiar eventos previos
+      
       if (!isInit) {
         try {
           sock.ev.off("messages.upsert", sock.handler)
           sock.ev.off("connection.update", sock.connectionUpdate)
           sock.ev.off("creds.update", sock.credsUpdate)
         } catch (error) {
-          // Ignorar errores de cleanup
+          
         }
       }
       
-      // Configurar nuevos eventos
-      sock.handler = handler.handler.bind(sock)
+      
+      if (handler && handler.handler && typeof handler.handler === 'function') {
+        sock.handler = handler.handler.bind(sock)
+      } else {
+        console.error('Handler no válido, usando función vacía')
+        sock.handler = () => {}
+      }
+      
       sock.connectionUpdate = connectionUpdate.bind(sock)
       sock.credsUpdate = saveCreds
       
@@ -348,8 +386,8 @@ function msToTime(duration) {
   return hours + "h " + minutes + "m " + seconds + "s"
 }
 
-handler.help = ['qr', 'code']
+handler.help = ['qr', 'code', 'deletebot', 'deletesesion']
 handler.tags = ['serbot']
-handler.command = ['qr', 'code']
+handler.command = ['qr', 'code', 'deletebot', 'deletesesion', 'deletesession']
 
 export default handler
