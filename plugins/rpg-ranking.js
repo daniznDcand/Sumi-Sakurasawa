@@ -64,3 +64,4 @@ handler.command = /^(toparpg|rpgranking|rankingprg)$/i
 handler.register = true
 
 export default handler
+

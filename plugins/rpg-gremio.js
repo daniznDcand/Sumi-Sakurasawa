@@ -8,7 +8,7 @@ let handler = async (m, { conn }) => {
 
   if (cooldowns[senderId] && Date.now() - cooldowns[senderId] < tiempoEspera * 1000) {
     let tiempoRestante = segundosAHMS(Math.ceil((cooldowns[senderId] + tiempoEspera * 1000 - Date.now()) / 1000));
-    return conn.reply(m.chat, `⏱️ Ya has cazado en el mundo virtual recientemente. Espera ⏳ *${tiempoRestante}* antes de intentar de nuevo en el concierto virtual. 💙`, m, rcanal);
+    return conn.reply(m.chat, `⏱️ Ya has cazado en el mundo virtual recientemente. Espera ⏳ *${tiempoRestante}* antes de intentar de nuevo en el concierto virtual. 💙`, m, global.rcanal);
   }
 
   cooldowns[senderId] = Date.now();
@@ -80,3 +80,4 @@ function segundosAHMS(segundos) {
   let segundosRestantes = segundos % 60;
   return `${minutos} minutos y ${segundosRestantes} segundos`;
 }
+

@@ -169,3 +169,4 @@ handler.command = /^(tiendarpg|shopprg)$/i
 handler.register = true
 
 export default handler
+

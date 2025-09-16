@@ -48,3 +48,4 @@ handler.command = ['quitarcoin', 'removecoin', 'removecoins'];
 handler.rowner = true;
 
 export default handler;
+

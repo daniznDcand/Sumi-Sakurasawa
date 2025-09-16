@@ -92,3 +92,4 @@ handler.before = async (m, { conn }) => {
         await conn.sendMessage(m.chat, { text: '💙 El juego ha sido cancelado por el retador.' });
     }
 };
+

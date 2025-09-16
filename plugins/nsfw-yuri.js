@@ -52,3 +52,4 @@ handler.command = ['yuri','lesbianas','tijeras'];
 handler.group = true;
 
 export default handler;
+

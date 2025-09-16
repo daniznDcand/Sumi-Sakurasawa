@@ -119,3 +119,4 @@ handler.command = ['verify', 'verificar', 'reg', 'register', 'registrar']
 
 export default handler
 
+

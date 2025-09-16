@@ -26,3 +26,4 @@ handler.command = ['take', 'robar', 'wm'];
 handler.register = true;
 
 export default handler;
+

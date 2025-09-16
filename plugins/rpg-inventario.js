@@ -5,7 +5,7 @@ let handler = async (m, { conn, usedPrefix }) => {
     let who = m.mentionedJid[0] ? m.mentionedJid[0] : m.sender;
 
     if (!(who in global.db.data.users)) {
-        return conn.reply(m.chat, `💙 El usuario no se encuentra en mi base de datos del mundo virtual. ✨🎵`, m, rcanal);
+        return conn.reply(m.chat, `💙 El usuario no se encuentra en mi base de datos del mundo virtual. ✨🎵`, m, global.rcanal);
     }
     
     let img = 'https://i.pinimg.com/736x/09/83/75/098375b9ab1436065d988738f5dbe2c5.jpg';
@@ -43,3 +43,4 @@ handler.group = true;
 handler.register = true;
 
 export default handler;
+

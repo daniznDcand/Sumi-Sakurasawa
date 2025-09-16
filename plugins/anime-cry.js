@@ -39,3 +39,4 @@ handler.command = ['cry', 'llorar', 'lagrimas']
 handler.group = true
 
 export default handler
+

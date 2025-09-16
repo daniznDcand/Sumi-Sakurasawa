@@ -111,3 +111,4 @@ handler.command = /^(collection|coleccion|col|personajes|harem|waifus)$/i
 handler.group = true
 
 export default handler;
+

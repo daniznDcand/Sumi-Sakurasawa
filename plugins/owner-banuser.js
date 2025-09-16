@@ -43,7 +43,7 @@ var handler = async (m, { conn, text, usedPrefix, command }) => {
         usr = m.sender.split('@')[0]
         await conn.reply(m.chat, `💙 Usuario baneado con éxito.`, m, rcanal, { mentions: [user] })
         let nametag = conn.getName(user)
-        await conn.reply(`${suittag}@s.whatsapp.net`, `💙 El usuario *${nametag}* ha sido Baneado por *${nn}*.`, m, rcanal)
+        await conn.reply(`${suittag}@s.whatsapp.net`, `💙 El usuario *${nametag}* ha sido Baneado por *${nn}*.`, m, global.rcanal)
     } catch (e) {
         await conn.reply(m.chat, `⚠︎ Ocurrió un error.`, m)
     }
@@ -55,3 +55,4 @@ handler.tags = ['mods']
 handler.rowner = true
 
 export default handler
+

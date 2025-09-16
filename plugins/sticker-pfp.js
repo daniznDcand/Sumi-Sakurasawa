@@ -10,3 +10,4 @@ handler.tags = ['sticker'];
 handler.command = ['pfp', 'getpic'];
 
 export default handler;
+

@@ -23,10 +23,11 @@ const handler = async (m, {args, usedPrefix, command}) => {
       const result2 = loll.result.translated;
       await conn.reply(m.chat, result2, m);
     } catch {
-      await m.reply(`💙 ¡Gomen nasai! Ocurrió un error al traducir en el escenario virtual... ✨\n\n🎤 Intenta de nuevo con otro idioma o texto 💫`, m, rcanal);
+      await m.reply(`💙 ¡Gomen nasai! Ocurrió un error al traducir en el escenario virtual... ✨\n\n🎤 Intenta de nuevo con otro idioma o texto 💫`, m, global.rcanal);
     }
   }
 };
 handler.command = ['translate','traducir','trad'];
 handler.register = true
 export default handler;
+

@@ -2,7 +2,7 @@ import axios from 'axios';
 let enviando = false;
 
 const handler = async (m, { conn, text, usedPrefix, command, args }) => {
-    if (!args || !args[0]) return conn.reply(m.chat, `${emoji} Te faltó el link de una imagen/video de twitter.`, m, rcanal);
+    if (!args || !args[0]) return conn.reply(m.chat, `${emoji} Te faltó el link de una imagen/video de twitter.`, m, global.rcanal);
     if (enviando) return; 
     enviando = true;
 
@@ -24,7 +24,7 @@ const handler = async (m, { conn, text, usedPrefix, command, args }) => {
     } catch (error) {
         enviando = false;
         console.error(error);         
-        conn.reply(m.chat, `${msm} Error al descargar su archivo`, m, rcanal);
+        conn.reply(m.chat, `${msm} Error al descargar su archivo`, m, global.rcanal);
     }
 };
 
@@ -36,3 +36,4 @@ handler.register = true;
 handler.coin = 2;
 
 export default handler;
+

@@ -51,3 +51,4 @@ handler.tags = ['info'];
 handler.command = ['horario']
 
 export default handler;
+

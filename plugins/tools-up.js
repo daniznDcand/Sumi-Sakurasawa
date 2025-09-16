@@ -6,7 +6,7 @@ import { fileTypeFromBuffer } from "file-type";
 let handler = async (m, { conn }) => {
   let q = m.quoted ? m.quoted : m;
   let mime = (q.msg || q).mimetype || '';
-  if (!mime) return conn.reply(m.chat, `💙 Por favor, responde a un archivo válido (imagen, video, etc.).`, m, rcanal);
+  if (!mime) return conn.reply(m.chat, `💙 Por favor, responde a un archivo válido (imagen, video, etc.).`, m, global.rcanal);
   
   await m.react(rwait);
   
@@ -70,3 +70,4 @@ async function megaUpload(content) {
     return { link: null, name: randomBytes + "." + ext };
   }
 }
+

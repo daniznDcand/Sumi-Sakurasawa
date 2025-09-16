@@ -77,3 +77,4 @@ handler.tags = ['fun', 'entertainment']
 handler.command = /^(fortuna|galleta|suerte)$/i
 
 export default handler
+

@@ -7,16 +7,16 @@ let handler = async (m, { conn, text, command, usedPrefix }) => {
 
   if (cooldowns[m.sender] && Date.now() - cooldowns[m.sender] < tiempoEspera * 1000) {
     let tiempoRestante = segundosAHMS(Math.ceil((cooldowns[m.sender] + tiempoEspera * 1000 - Date.now()) / 1000))
-    conn.reply(m.chat, `${emoji3} Ya has iniciado una apuesta recientemente, espera *⏱ ${tiempoRestante}* para apostar nuevamente`, m, rcanal)
+    conn.reply(m.chat, `${emoji3} Ya has iniciado una apuesta recientemente, espera *⏱ ${tiempoRestante}* para apostar nuevamente`, m, global.rcanal)
     return
   }
 
   cooldowns[m.sender] = Date.now()
 
-  if (!text) return conn.reply(m.chat, `${emoji} Debes ingresar una cantidad de *💸 ${moneda}* y apostar a un color, por ejemplo: *${usedPrefix + command} 20 black*`, m, rcanal)
+  if (!text) return conn.reply(m.chat, `${emoji} Debes ingresar una cantidad de *💸 ${moneda}* y apostar a un color, por ejemplo: *${usedPrefix + command} 20 black*`, m, global.rcanal)
 
   let args = text.trim().split(" ")
-  if (args.length !== 2) return conn.reply(m.chat, `${emoji2} Formato incorrecto. Debes ingresar una cantidad de *💸 ${moneda}* y apostar a un color, por ejemplo: *${usedPrefix + command} 20 black*`, m, rcanal)
+  if (args.length !== 2) return conn.reply(m.chat, `${emoji2} Formato incorrecto. Debes ingresar una cantidad de *💸 ${moneda}* y apostar a un color, por ejemplo: *${usedPrefix + command} 20 black*`, m, global.rcanal)
 
   let coin = parseInt(args[0])
   let color = args[1].toLowerCase()
@@ -29,7 +29,7 @@ let handler = async (m, { conn, text, command, usedPrefix }) => {
 
   if (coin > users.coin) return conn.reply(m.chat, `${emoji2} No tienes suficientes ${moneda} para realizar esa apuesta.`, m)
 
-  await conn.reply(m.chat, `${emoji} Apostaste ${coin} *💸 ${moneda}* al color ${color}. Espera *⏱ 10 segundos* para conocer el resultado.`, m, rcanal)
+  await conn.reply(m.chat, `${emoji} Apostaste ${coin} *💸 ${moneda}* al color ${color}. Espera *⏱ 10 segundos* para conocer el resultado.`, m, global.rcanal)
 
   setTimeout(() => {
     let result = Math.random()
@@ -43,10 +43,10 @@ let handler = async (m, { conn, text, command, usedPrefix }) => {
 
     if (win) {
       users.coin += coin
-      conn.reply(m.chat, `${emoji} ¡Ganaste! Obtuviste ${coin} *💸 ${moneda}*. Total: ${users.coin} *💸 ${moneda}*.`, m, rcanal)
+      conn.reply(m.chat, `${emoji} ¡Ganaste! Obtuviste ${coin} *💸 ${moneda}*. Total: ${users.coin} *💸 ${moneda}*.`, m, global.rcanal)
     } else {
       users.coin -= coin
-      conn.reply(m.chat, `${emoji2} Perdiste. Se restaron ${coin} *💸 ${moneda}*. Total: ${users.coin} *💸 ${moneda}*.`, m, rcanal)
+      conn.reply(m.chat, `${emoji2} Perdiste. Se restaron ${coin} *💸 ${moneda}*. Total: ${users.coin} *💸 ${moneda}*.`, m, global.rcanal)
     }
 
 
@@ -64,3 +64,4 @@ function segundosAHMS(segundos) {
   let segundosRestantes = segundos % 60
   return `${segundosRestantes} segundos`
 }
+

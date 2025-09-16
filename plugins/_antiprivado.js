@@ -12,3 +12,4 @@ if (m.chat === '120363315369913363@newsletter') return !0
   }
   return !1;
 }
+

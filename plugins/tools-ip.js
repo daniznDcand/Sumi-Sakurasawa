@@ -4,7 +4,7 @@ let handler = async (m, { conn, text }) => {
 
 let bot = '💙 Buscando espere un momento....'
 conn.reply(m.chat, bot, m)
-  if (!text) return conn.reply(m.chat, `${emoji} Por favor, ingresa una *IP*.`, m, rcanal)
+  if (!text) return conn.reply(m.chat, `${emoji} Por favor, ingresa una *IP*.`, m, global.rcanal)
 
   axios.get(`http://ip-api.com/json/${text}?fields=status,message,country,countryCode,region,regionName,city,district,zip,lat,lon,timezone,isp,org,as,mobile,hosting,query`).then ((res) => {
     const data = res.data
@@ -40,3 +40,4 @@ handler.tags = ['owner']
 handler.command = ['ip']
 
 export default handler
+

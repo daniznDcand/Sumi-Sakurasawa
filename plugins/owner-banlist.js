@@ -18,3 +18,4 @@ handler.command = ['banlist','listban'];
 handler.rowner = true;
 
 export default handler;
+

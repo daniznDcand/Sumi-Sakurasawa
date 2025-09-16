@@ -72,3 +72,4 @@ return response.data.result
 } catch (error) {
 console.error(`${msm} Error al obtener:`, error)
 throw error }}
+

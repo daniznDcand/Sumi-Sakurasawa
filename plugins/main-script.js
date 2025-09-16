@@ -31,3 +31,4 @@ handler.command = ['script', 'sc']
 handler.register = true
 
 export default handler
+

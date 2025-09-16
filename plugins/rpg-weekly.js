@@ -44,3 +44,4 @@ function msToTime(duration) {
     
     return `${days} días ${hours} horas ${minutes} minutos`;
 }
+

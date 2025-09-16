@@ -68,3 +68,4 @@ handler.command = ['fuck','coger'];
 handler.group = true;
 
 export default handler;
+

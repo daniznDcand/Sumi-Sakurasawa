@@ -310,7 +310,7 @@ ch = await conn.newsletterMetadata("invite", channelUrl).then(data => data.id).c
 try {
 const chtitle = await conn.newsletterMetadata(text.includes("@newsletter") ? "jid" : "invite", text.includes("@newsletter") ? ch : channelUrl).then(data => data.name).catch(e => null)
 await conn.newsletterRemovePicture(ch)
-// await conn.reply(m.chat, `🍦 El bot ha eliminado la imagen del canal *${chtitle}* con éxito.`, m, rcanal) 
+// await conn.reply(m.chat, `🍦 El bot ha eliminado la imagen del canal *${chtitle}* con éxito.`, m, global.rcanal) 
 await conn.sendMessage(ch, { text: `🍬 ${botname} ha eliminado la imagen del canal *${chtitle}* con éxito.`, contextInfo: {
 externalAdReply: {
 title: "【 🔔 𝐍𝐎𝐓𝐈𝐅𝐈𝐂𝐀𝐂𝐈𝐎́𝐍 🔔 】",

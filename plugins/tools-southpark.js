@@ -2,7 +2,7 @@ import fetch from 'node-fetch';
 
 let handler = async(m, { conn, text, usedPrefix, command }) => {
 
-if (!text) return m.reply(m.chat, `${emoji} Por favor, ingresa el nombre de algún pais.`, m, rcanal);
+if (!text) return m.reply(m.chat, `${emoji} Por favor, ingresa el nombre de algún pais.`, m, global.rcanal);
 
 try {
 let api = `https://delirius-apiofc.vercel.app/tools/flaginfo?query=${text}`;
@@ -26,3 +26,4 @@ m.react('✖️');
 handler.command = ['paisinfo', 'flag'];
 
 export default handler;
+

@@ -87,3 +87,4 @@ function msToTime(duration) {
 
   return minutes + ' m ' + seconds + ' s ';
 }
+

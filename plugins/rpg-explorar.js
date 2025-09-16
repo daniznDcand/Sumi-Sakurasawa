@@ -60,3 +60,4 @@ function segundosAHMS(segundos) {
   let segundosRestantes = segundos % 60;
   return `${minutos} minutos y ${segundosRestantes} segundos`;
 }
+

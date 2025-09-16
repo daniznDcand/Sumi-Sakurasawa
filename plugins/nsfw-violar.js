@@ -52,3 +52,4 @@ handler.command = ['violar', 'perra'];
 handler.group = true;
 
 export default handler;
+

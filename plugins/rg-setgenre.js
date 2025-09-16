@@ -40,3 +40,4 @@ handler.help = ['setgenre']
 handler.tags = ['rg']
 handler.command = ['setgenero', 'setgenre']
 export default handler;
+

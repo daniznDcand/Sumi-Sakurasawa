@@ -239,8 +239,8 @@ async function downloadImage(url, index = 0) {
 }
 
 let handler = async (m, { conn, usedPrefix, command, args }) => {
-  if (!args[0]) return conn.reply(m.chat, `💙 Hola! Soy Hatsune Miku! Necesito un link de TikTok con imágenes para ayudarte ✨`, m, rcanal)
-  if (!/tiktok/i.test(args[0])) return conn.reply(m.chat, `💙 ¡Oye! Verifica que el link sea de TikTok, por favor 📱`, m, rcanal)
+  if (!args[0]) return conn.reply(m.chat, `💙 Hola! Soy Hatsune Miku! Necesito un link de TikTok con imágenes para ayudarte ✨`, m, global.rcanal)
+  if (!/tiktok/i.test(args[0])) return conn.reply(m.chat, `💙 ¡Oye! Verifica que el link sea de TikTok, por favor 📱`, m, global.rcanal)
 
   await m.react('⏳')
 
@@ -304,9 +304,9 @@ let handler = async (m, { conn, usedPrefix, command, args }) => {
     }
 
     if (downloadedImages.length > 0) {
-      await conn.sendFile(m.chat, downloadedImages[0].buffer, downloadedImages[0].filename, imageCaption, m, null, rcanal)
+      await conn.sendFile(m.chat, downloadedImages[0].buffer, downloadedImages[0].filename, imageCaption, m, null, global.rcanal)
       for (let i = 1; i < downloadedImages.length; i++) {
-        await conn.sendFile(m.chat, downloadedImages[i].buffer, downloadedImages[i].filename, '', m, null, rcanal)
+        await conn.sendFile(m.chat, downloadedImages[i].buffer, downloadedImages[i].filename, '', m, null, global.rcanal)
       }
       await m.react('💙')
       return
@@ -325,7 +325,7 @@ let handler = async (m, { conn, usedPrefix, command, args }) => {
       `🔄 Intenta con otro enlace\n\n` +
       `*"¡Lo siento mucho!"*`
 
-    conn.reply(m.chat, errorMsg, m, rcanal)
+    conn.reply(m.chat, errorMsg, m, global.rcanal)
   }
 }
 
@@ -335,3 +335,4 @@ handler.command = ['tiktokimg', 'tiktokimgs', 'ttimg', 'ttimgs']
 handler.register = true
 
 export default handler
+

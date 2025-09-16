@@ -2,17 +2,17 @@ import fetch from 'node-fetch'
 
 let handler = async (m, { text, usedPrefix, command }) => {
 
-if (!text) return conn.reply(m.chat, `${emoji} Escribe el nonbre del scraper.\nEjemplo: ${usedPrefix + command} yt-search`, m, rcanal)
+if (!text) return conn.reply(m.chat, `${emoji} Escribe el nonbre del scraper.\nEjemplo: ${usedPrefix + command} yt-search`, m, global.rcanal)
 
 try {
 
 await m.react(rwait)
-conn.reply(m.chat, `${emoji2} Buscando el scraper....`, m, rcanal)
+conn.reply(m.chat, `${emoji2} Buscando el scraper....`, m, global.rcanal)
 
 let res = await fetch(`http://registry.npmjs.com/-/v1/search?text=${text}`)
 let { objects } = await res.json()
 
-if (!objects.length) return conn.reply(m.chat, `${emoji2} No se encontró resultado de: ${text}`, m, rcanal)
+if (!objects.length) return conn.reply(m.chat, `${emoji2} No se encontró resultado de: ${text}`, m, global.rcanal)
 
 let txt = objects.map(({ package: pkg }) => {
 return `《✧》 Scraper  -  Search 《✧》
@@ -27,7 +27,7 @@ return `《✧》 Scraper  -  Search 《✧》
 await conn.reply(m.chat, txt, m, fake)
 await m.react(done)
 } catch {
-await conn.reply(m.chat, `${msm} Ocurrió un error.`, m, rcanal)
+await conn.reply(m.chat, `${msm} Ocurrió un error.`, m, global.rcanal)
 await m.react(error)
 }}
 

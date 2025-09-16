@@ -42,3 +42,4 @@ handler.tags = ['sticker']
 handler.command = ['bratvid', 'bratv']
 
 export default handler
+

@@ -174,3 +174,4 @@ handler.command = ['aimiku', 'mikuconfig', 'aiconfig']
 handler.rowner = true
 
 export default handler
+

@@ -53,3 +53,4 @@ handler.command = ['blowjob','bj','mamada','chuparpene','chupar'];
 handler.group = true;
 
 export default handler;
+

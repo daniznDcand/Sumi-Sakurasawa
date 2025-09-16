@@ -26,3 +26,4 @@ handler.group = true;
 handler.fail = null;
 
 export default handler;
+

@@ -48,3 +48,4 @@ handler.command = ['think', 'pensar']
 handler.group = true
 
 export default handler
+

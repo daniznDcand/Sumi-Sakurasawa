@@ -2,7 +2,7 @@ import fetch from 'node-fetch';
 
 let handler = async (m, { text }) => {
   if (!text) {
-    m.reply(`💙 Por favor, proporciona el término de búsqueda que deseas que busque en el ciberespacio de Google ✨`, m, rcanal);
+    m.reply(`💙 Por favor, proporciona el término de búsqueda que deseas que busque en el ciberespacio de Google ✨`, m, global.rcanal);
     return;
   }
 
@@ -13,7 +13,7 @@ let handler = async (m, { text }) => {
     const result = await response.json();
 
     if (!result.status) {
-      m.reply('🎵 Error al realizar la búsqueda en el mundo virtual 💫', m, rcanal);
+      m.reply('🎵 Error al realizar la búsqueda en el mundo virtual 💫', m, global.rcanal);
       return;
     }
 
@@ -28,11 +28,12 @@ m.react('🎤')
 
     m.reply(replyMessage);
   } catch (error) {
-    console.error(`💙 Error al realizar la solicitud a la API virtual:`, error , m, rcanal);
-    m.reply(`🎤 ¡Gomen! Ocurrió un error al obtener los resultados del ciberespacio ✨`, m, rcanal);
+    console.error(`💙 Error al realizar la solicitud a la API virtual:`, error , m, global.rcanal);
+    m.reply(`🎤 ¡Gomen! Ocurrió un error al obtener los resultados del ciberespacio ✨`, m, global.rcanal);
   }
 };
 
 handler.command = ['google'];
 
 export default handler;
+

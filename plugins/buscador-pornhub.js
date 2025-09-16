@@ -3,11 +3,11 @@ import axios from 'axios';
 
 let handler = async (m, { conn, args, command, usedPrefix }) => {
   if (!db.data.chats[m.chat].nsfw && m.isGroup) {
-    return conn.reply(m.chat, `${emoji} El contenido *NSFW* está desactivado en este grupo.\n> Un administrador puede activarlo con el comando » *#nsfw on*`, m, rcanal);
+    return conn.reply(m.chat, `${emoji} El contenido *NSFW* está desactivado en este grupo.\n> Un administrador puede activarlo con el comando » *#nsfw on*`, m, global.rcanal);
   } 
 
   if (!args[0]) {
-    return conn.reply(m.chat, `${emoji} Por favor, ingresé la búsqueda que desea realizar en Pornhub.\nEjemplo: ${usedPrefix + command} con mi prima`, m, rcanal);
+    return conn.reply(m.chat, `${emoji} Por favor, ingresé la búsqueda que desea realizar en Pornhub.\nEjemplo: ${usedPrefix + command} con mi prima`, m, global.rcanal);
   }
 
   try {
@@ -57,3 +57,4 @@ async function searchPornhub(search) {
     return { result: [] };
   }
 }
+

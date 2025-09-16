@@ -15,7 +15,7 @@ let img = 'https://files.catbox.moe/nd8u8a.jpg';
 let time = user.lastmiming + 600000;
 
 if (new Date() - user.lastmiming < 600000) {
-return conn.reply(m.chat, `💙 Debes esperar ${msToTime(time - new Date())} para volver a minar en el mundo virtual. 🎵`, m, rcanal);
+return conn.reply(m.chat, `💙 Debes esperar ${msToTime(time - new Date())} para volver a minar en el mundo virtual. 🎵`, m, global.rcanal);
 }
 
 let hasil = Math.floor(Math.random() * 1000);
@@ -67,3 +67,4 @@ seconds = (seconds < 10) ? '0' + seconds : seconds;
 
 return minutes + ' m y ' + seconds + ' s ';
 }
+

@@ -47,3 +47,4 @@ handler.tags = ['fun'];
 handler.command = /^(gay)$/i;
 
 export default handler;
+

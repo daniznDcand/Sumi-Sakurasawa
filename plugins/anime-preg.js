@@ -33,3 +33,4 @@ handler.command = ['preg', 'preñar', 'embarazar', 'ireporpan']
 handler.group = true
 
 export default handler
+

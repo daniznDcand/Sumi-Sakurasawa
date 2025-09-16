@@ -55,3 +55,4 @@ handler.tags = ['sticker']
 handler.help = ['brat *<texto>*']
 
 export default handler
+

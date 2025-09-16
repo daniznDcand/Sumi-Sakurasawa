@@ -112,3 +112,4 @@ global.loli = [
   'https://i.pinimg.com/originals/d7/a4/ac/d7a4ac159dfac1fa0ac5b0d9114a025a.jpg',
   'https://i.pinimg.com/originals/cd/ef/fc/cdeffc0bf155fe2c8c63561b437c6864.jpg',
 ];
+

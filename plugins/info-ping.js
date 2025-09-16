@@ -18,3 +18,4 @@ handler.tags = ['info']
 handler.command = ['ping', 'p']
 
 export default handler
+

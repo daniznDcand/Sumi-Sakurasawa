@@ -12,3 +12,4 @@ handler.command = ['link','linkgroup']
 handler.botAdmin = true
 
 export default handler
+

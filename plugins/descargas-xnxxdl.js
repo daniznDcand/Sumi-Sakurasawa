@@ -3,15 +3,15 @@ import cheerio from 'cheerio';
 
 const handler = async (m, {conn, args, command, usedPrefix}) => {
   if (!db.data.chats[m.chat].nsfw && m.isGroup) {
-    return conn.reply(m.chat, `${emoji} El contenido *NSFW* está desactivado en este grupo.\n> Un administrador puede activarlo con el comando » *#nsfw on*`, m, rcanal);
+    return conn.reply(m.chat, `${emoji} El contenido *NSFW* está desactivado en este grupo.\n> Un administrador puede activarlo con el comando » *#nsfw on*`, m, global.rcanal);
   }
   
   if (!args[0]) {
-    return conn.reply(m.chat, `${emoji} Por favor, envía un link de Xnxx para descargar el video.\nUso: ${usedPrefix}${command} <link de Xnxx>`, m, rcanal);
+    return conn.reply(m.chat, `${emoji} Por favor, envía un link de Xnxx para descargar el video.\nUso: ${usedPrefix}${command} <link de Xnxx>`, m, global.rcanal);
   }
   
   try {
-    await conn.reply(m.chat, `${emoji} El vídeo está siendo procesado, espere un momento...\n\n- El tiempo de envío depende del peso y duración del video.`, m, rcanal);
+    await conn.reply(m.chat, `${emoji} El vídeo está siendo procesado, espere un momento...\n\n- El tiempo de envío depende del peso y duración del video.`, m, global.rcanal);
     let xnxxLink = '';
     
     if (args[0].includes('xnxx')) {
@@ -40,7 +40,7 @@ const handler = async (m, {conn, args, command, usedPrefix}) => {
     const json = await res.result.files;
     conn.sendMessage(m.chat, {document: {url: json.high}, mimetype: 'video/mp4', fileName: res.result.title}, {quoted: m});
   } catch (error) {
-    return conn.reply(m.chat, `${msm} Ocurrió un error.\n\n- El enlace debe ser similar a:\n◉ https://www.xnxx.com/video-14lcwbe8/rubia_novia_follada_en_cuarto_de_bano\n\nDetalles del error: ${error}`, m, rcanal);
+    return conn.reply(m.chat, `${msm} Ocurrió un error.\n\n- El enlace debe ser similar a:\n◉ https://www.xnxx.com/video-14lcwbe8/rubia_novia_follada_en_cuarto_de_bano\n\nDetalles del error: ${error}`, m, global.rcanal);
   }
 };
 
@@ -76,3 +76,4 @@ async function xnxxdl(URL) {
     }).catch((err) => reject({code: 503, status: false, result: err}));
   });
 }
+

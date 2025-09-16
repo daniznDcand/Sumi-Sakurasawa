@@ -2,7 +2,7 @@ import axios from 'axios'
 import cheerio from 'cheerio'
 
 let handler = async (m, { text }) => {
-	if (!text) return conn.reply(m.chat, `${emoji} Ingresa lo que quieres buscar en Wikipedia.`, m, rcanal)
+	if (!text) return conn.reply(m.chat, `${emoji} Ingresa lo que quieres buscar en Wikipedia.`, m, global.rcanal)
 	
     try {
 	const link =  await axios.get(`https://es.wikipedia.org/wiki/${text}`)
@@ -23,3 +23,4 @@ handler.tags = ['tools']
 handler.command = ['wiki', 'wikipedia'] 
 
 export default handler
+

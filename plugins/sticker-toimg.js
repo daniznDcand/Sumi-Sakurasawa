@@ -15,3 +15,4 @@ handler.tags = ['sticker']
 handler.command = ['toimg', 'img', 'jpg']
 
 export default handler
+

@@ -52,3 +52,4 @@ handler.command = ['pat','acariciar'];
 handler.group = true;
 
 export default handler;
+

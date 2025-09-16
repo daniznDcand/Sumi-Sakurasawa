@@ -19,3 +19,4 @@ handler.command = ['blocklist', 'listblock'];
 handler.rowner = true;
 
 export default handler;
+

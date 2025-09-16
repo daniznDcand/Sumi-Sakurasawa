@@ -3,7 +3,7 @@ const fs = { ...fsPromises, existsSync };
 import path, { join } from 'path' 
 import ws from 'ws';
 
-// Variables necesarias
+
 const emoji = '🌱'
 const emoji2 = '💙'
 const emoji3 = '✅'
@@ -50,7 +50,7 @@ conn.ws.close()}
 break
 
 case isCommand3:
-//if (global.db.data.settings[conn.user.jid].jadibotmd) return m.reply(`${emoji} Este comando está desactivado por mi creador.`)
+
 const getConnsArray = () => {
 	if (!global.conns) return []
 	if (global.conns instanceof Map) return Array.from(global.conns.values())

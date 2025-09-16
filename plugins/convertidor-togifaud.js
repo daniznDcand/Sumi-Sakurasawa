@@ -1,9 +1,9 @@
 let handler = async (m, { conn, usedPrefix, command }) => {
-if (!m.quoted) return conn.reply(m.chat, `${emoji} Por favor, responde a un *Video.*`, m, rcanal)
-conn.reply(m.chat, global.wait, m, rcanal)
+if (!m.quoted) return conn.reply(m.chat, `${emoji} Por favor, responde a un *Video.*`, m, global.rcanal)
+conn.reply(m.chat, global.wait, m, global.rcanal)
 const q = m.quoted || m
 let mime = (q.msg || q).mimetype || ''
-if (!/(mp4)/.test(mime)) return conn.reply(m.chat, `${emoji} Por favor, responde a un *Video.*`, m, rcanal)
+if (!/(mp4)/.test(mime)) return conn.reply(m.chat, `${emoji} Por favor, responde a un *Video.*`, m, global.rcanal)
 await m.react(rwait)
 let media = await q.download()
 let listo = '🍬 Aqui tienes ฅ^•ﻌ•^ฅ.'

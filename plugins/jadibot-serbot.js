@@ -402,7 +402,7 @@ console.log('🤖 SubBot está listo para procesar comandos')
 
 
 setTimeout(() => {
-  console.log('� Verificando estado del SubBot:', {
+  console.log('📣 Verificando estado del SubBot:', {
     isInit: sock.isInit,
     hasUser: !!sock.user,
     hasHandler: !!sock.handler,
@@ -498,7 +498,7 @@ try { sock.ws.close() } catch { }
 sock.ev.removeAllListeners()
 sock = makeWASocket(connectionOptions, { chats: oldChats })
 
-// 🔧 Reconfigurar propiedades del SubBot después de recrear socket
+
 sock.isInit = true
 sock.well = false
 sock.prefix = global.prefix || '#'

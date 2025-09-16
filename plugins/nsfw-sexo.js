@@ -52,3 +52,4 @@ handler.command = ['sexo','sex'];
 handler.group = true;
 
 export default handler
+

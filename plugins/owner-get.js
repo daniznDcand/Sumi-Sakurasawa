@@ -27,3 +27,4 @@ handler.command = ['fetch', 'get']
 handler.rowner = true
 
 export default handler
+

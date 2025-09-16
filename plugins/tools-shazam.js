@@ -19,7 +19,7 @@ let handler = async (m, { conn, usedPrefix, command }) => {
       txt += `│  ≡◦ *🕜 Fecha de lanzamiento ∙* ${release_date}\n`
       txt += `╰─⬣`
      conn.reply(m.chat, txt, m)
-  } else return conn.reply(m.chat, `${emoji} Etiqueta un audio o video de poca duración con el comando *${usedPrefix + command}* para ver que música contiene.`, m, rcanal)
+  } else return conn.reply(m.chat, `${emoji} Etiqueta un audio o video de poca duración con el comando *${usedPrefix + command}* para ver que música contiene.`, m, global.rcanal)
 }
 handler.help = ['whatmusic <audio/video>']
 handler.tags = ['tools']
@@ -27,3 +27,4 @@ handler.command = ['shazam', 'whatmusic']
 //handler.limit = 1
 handler.register = true 
 export default handler
+

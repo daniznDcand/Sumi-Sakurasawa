@@ -50,3 +50,4 @@ handler.command = ['spank', 'nalgada'];
 handler.group = true;
 
 export default handler;
+

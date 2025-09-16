@@ -51,3 +51,4 @@ handler.command = ['fap', 'paja'];
 handler.group = true;
 
 export default handler;
+

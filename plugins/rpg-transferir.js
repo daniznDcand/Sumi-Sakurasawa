@@ -35,3 +35,4 @@ export default handler;
 function isNumber(x) {
   return !isNaN(x);
 }
+

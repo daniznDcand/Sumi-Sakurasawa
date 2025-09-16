@@ -31,3 +31,4 @@ handler.command = ['restablecerdatos','deletedatauser','resetuser','borrardatos'
 handler.rowner = true;
 
 export default handler;
+

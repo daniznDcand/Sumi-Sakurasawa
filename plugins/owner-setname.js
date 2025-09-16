@@ -17,3 +17,4 @@ handler.command = ['setname'];
 handler.rowner = true;
 
 export default handler;
+

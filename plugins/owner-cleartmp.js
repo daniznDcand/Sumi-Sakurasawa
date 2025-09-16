@@ -26,3 +26,4 @@ handler.command = ['cleartmp', 'borrartmp', 'borrarcarpetatmp', 'vaciartmp']
 handler.rowner = true
 
 export default handler
+

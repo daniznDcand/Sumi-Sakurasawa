@@ -26,14 +26,6 @@ export async function before(m, { conn, participants, groupMetadata }) {
 
   const dev = global.dev || '© 🄿🄾🅆🄴🅁🄴🄳 (ㅎㅊDEPOOLㅊㅎ)'
   const redes = global.redes || 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
-  const rcanal = global.rcanal || { contextInfo: { 
-    isForwarded: true, 
-    forwardedNewsletterMessageInfo: { 
-      newsletterJid: "120363350523130615@newsletter", 
-      serverMessageId: 100, 
-      newsletterName: "💙🌱 Hatsune – Miku – Bot 🌱💙"
-    }
-  }}
   
   let groupSize = participants.length;
   if (m.messageStubType === 27) groupSize++;
@@ -59,7 +51,7 @@ https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o
 
 ¡Que la música te acompañe siempre! 🎶
     `;
-    await conn.sendMini(m.chat, '💙 ¡Nueva estrella se une! 💙', dev, welcomeMsg, img, img, redes, fkontak, m, rcanal);
+    await conn.sendMini(m.chat, '💙 ¡Nueva estrella se une! 💙', dev, welcomeMsg, img, img, redes, fkontak, m, global.rcanal);
   }
 
   if (chat.welcome && (m.messageStubType === 28 || m.messageStubType === 32)) {
@@ -80,6 +72,7 @@ https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o
 
 ¡Cuídate y hasta el próximo concierto! 🎶✨
     `;
-    await conn.sendMini(m.chat, '🎵 ¡Sayonara! 🎵', dev, byeMsg, img, img, redes, fkontak, m, rcanal);
+    await conn.sendMini(m.chat, '🎵 ¡Sayonara! 🎵', dev, byeMsg, img, img, redes, fkontak, m, global.rcanal);
   }
 }
+

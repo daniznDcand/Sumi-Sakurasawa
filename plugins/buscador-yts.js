@@ -2,9 +2,9 @@ import yts from 'yt-search'
 
 var handler = async (m, { text, conn, args, command, usedPrefix }) => {
 
-if (!text) return conn.reply(m.chat, `${emoji} Por favor, ingresa una busqueda de Youtube.`, m, rcanal)
+if (!text) return conn.reply(m.chat, `${emoji} Por favor, ingresa una busqueda de Youtube.`, m, global.rcanal)
 
-conn.reply(m.chat, wait, m, rcanal)
+conn.reply(m.chat, wait, m, global.rcanal)
 
 let results = await yts(text)
 let tes = results.all
@@ -29,3 +29,4 @@ handler.register = true
 handler.coin = 1
 
 export default handler
+

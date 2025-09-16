@@ -67,3 +67,4 @@ handler.tags = ['serbot']
 handler.command = /^(stop|detener)$/i
 
 export default handler
+

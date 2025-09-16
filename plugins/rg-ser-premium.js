@@ -63,3 +63,4 @@ handler.help = ['premium']
 handler.command = ['vip', 'premium', 'prem']
 
 export default handler
+

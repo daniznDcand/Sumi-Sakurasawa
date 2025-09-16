@@ -3,10 +3,10 @@ import fetch from 'node-fetch'
 let regex = /(?:https|git)(?::\/\/|@)github\.com[\/:]([^\/:]+)\/(.+)/i
 let handler = async (m, { args, usedPrefix, command }) => {
   if (!args[0]) {
-    return conn.reply(m.chat, `🎤💙 Por favor, ingresa la URL de un repositorio de GitHub que deseas descargar en el mundo virtual ✨🎵`, m, rcanal)
+    return conn.reply(m.chat, `🎤💙 Por favor, ingresa la URL de un repositorio de GitHub que deseas descargar en el mundo virtual ✨🎵`, m, global.rcanal)
   }
   if (!regex.test(args[0])) {
-    return conn.reply(m.chat, `🎤💙 ¡Gomen! Verifica que la *URL* sea de GitHub válida para el concierto virtual ✨💫`, m, rcanal).then(_ => m.react('💙'))
+    return conn.reply(m.chat, `🎤💙 ¡Gomen! Verifica que la *URL* sea de GitHub válida para el concierto virtual ✨💫`, m, global.rcanal).then(_ => m.react('💙'))
   }
   let [_, user, repo] = args[0].match(regex) || []
   let sanitizedRepo = repo.replace(/.git$/, '')
@@ -14,7 +14,7 @@ let handler = async (m, { args, usedPrefix, command }) => {
   let zipUrl = `https://api.github.com/repos/${user}/${sanitizedRepo}/zipball`
   await m.react('🎤')
   try {
-  conn.reply(m.chat, '🎤💙 Descargando del ciberespacio virtual... ✨🎵', m, rcanal)
+  conn.reply(m.chat, '🎤💙 Descargando del ciberespacio virtual... ✨🎵', m, global.rcanal)
     let [repoResponse, zipResponse] = await Promise.all([
       fetch(repoUrl),
       fetch(zipUrl),
@@ -46,3 +46,4 @@ handler.register = true
 handler.coin = 3
 
 export default handler
+

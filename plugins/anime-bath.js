@@ -42,3 +42,4 @@ handler.command = ['bath', 'bañarse', 'ducha', 'relajarse', 'relajación']
 handler.group = true
 
 export default handler
+

@@ -9,13 +9,13 @@ const acr = new acrcloud({
 let handler = async(m, { conn, text }) => {
    let q = m.quoted ? m.quoted : m
    if (!q.mimetype || !q.mimetype.includes("audio")) {
-      return m.reply("💙 Por favor, responde al audio del cual deseas buscar el título en el mundo virtual. 🎵", m, rcanal)
+      return m.reply("💙 Por favor, responde al audio del cual deseas buscar el título en el mundo virtual. 🎵", m, global.rcanal)
    }
    m.react('🎤')
    let buffer = await q.download()
    try {
       let data = await whatmusic(buffer)
-      if (!data.length) return m.reply("🎵💙 No se encontraron datos de la canción en el concierto virtual ✨", m, rcanal)
+      if (!data.length) return m.reply("🎵💙 No se encontraron datos de la canción en el concierto virtual ✨", m, global.rcanal)
 
       let cap = "💙 H A T S U N E  M I K U - M U S I C  V I R T U A L 🎵\n\n"
       for (let result of data) {
@@ -76,3 +76,4 @@ function toTime(ms) {
    let s = Math.floor(ms / 1000) % 60
    return [m, s].map(v => v.toString().padStart(2, "0")).join(":")
 }
+

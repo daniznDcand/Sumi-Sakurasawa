@@ -97,3 +97,4 @@ handler.command = /^(rpgstats|rpgperfil|perfilrpg)$/i
 handler.register = true
 
 export default handler
+

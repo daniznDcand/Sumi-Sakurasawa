@@ -3,11 +3,11 @@ import cheerio from 'cheerio';
 
 const handler = async (m, {text, usedPrefix, command}) => {
   if (!db.data.chats[m.chat].nsfw && m.isGroup) {
-    return conn.reply(m.chat, `${emoji} El contenido *NSFW* está desactivado en este grupo.\n> Un administrador puede activarlo con el comando » *#nsfw on*`, m, rcanal);
+    return conn.reply(m.chat, `${emoji} El contenido *NSFW* está desactivado en este grupo.\n> Un administrador puede activarlo con el comando » *#nsfw on*`, m, global.rcanal);
   }
   
   if (!text) {
-    return conn.reply(m.chat, `${emoji} Por favor, ingrese la búsqueda.\n> Ejemplo de uso: ${usedPrefix + command} Con mi prima`, m, rcanal);
+    return conn.reply(m.chat, `${emoji} Por favor, ingrese la búsqueda.\n> Ejemplo de uso: ${usedPrefix + command} Con mi prima`, m, global.rcanal);
   }
 
   try {
@@ -89,3 +89,4 @@ async function xnxxsearch(query) {
       .catch((err) => reject({code: 503, status: false, result: err}));
   });
 }
+

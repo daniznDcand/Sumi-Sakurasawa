@@ -3,7 +3,7 @@ import fetch from 'node-fetch'
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
 
-    if (!text) return conn.reply(m.chat, `💙 Por favor, proporciona el nombre de una canción o artista.`, m, rcanal)
+    if (!text) return conn.reply(m.chat, `💙 Por favor, proporciona el nombre de una canción o artista.`, m, global.rcanal)
 
     try {
         let songInfo = await spotifyxv(text)
@@ -114,3 +114,4 @@ async function getTinyURL(text) {
         return text
     }
 }
+

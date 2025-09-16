@@ -65,3 +65,4 @@ let minutos = Math.floor((segundos % 3600) / 60)
 let segundosRestantes = segundos % 60
 return `${minutos} minutos y ${segundosRestantes} segundos`
 }
+

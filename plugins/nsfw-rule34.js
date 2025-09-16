@@ -30,3 +30,4 @@ handler.command = ['r34', 'rule34'];
 handler.tags = ['nsfw'];
 
 export default handler;
+

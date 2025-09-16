@@ -16,7 +16,7 @@ let txt = args.join(' ')
 
 if (/webp|image|video/g.test(mime) && q.download) {
 if (/video/.test(mime) && (q.msg || q).seconds > 16)
-return conn.reply(m.chat, '💙 El video no puede durar más de *15 segundos* para crear un sticker virtual perfecto ✨', m, rcanal)
+return conn.reply(m.chat, '💙 El video no puede durar más de *15 segundos* para crear un sticker virtual perfecto ✨', m, global.rcanal)
 let buffer = await q.download()
 await m.react('🎤')
 
@@ -26,9 +26,9 @@ stiker = await sticker(buffer, false, marca[0], marca[1])
 let buffer = await sticker(false, args[0], texto1, texto2)
 stiker = buffer
 } else {
-return conn.reply(m.chat, '💙 Por favor, envía una *imagen* o *video* para crear un hermoso sticker virtual ✨', m, rcanal)
+return conn.reply(m.chat, '💙 Por favor, envía una *imagen* o *video* para crear un hermoso sticker virtual ✨', m, global.rcanal)
 }} catch (e) {
-await conn.reply(m.chat, '💫 ¡Gomen! Ocurrió un error en el escenario virtual: ' + e.message + ' ✨', m, rcanal)
+await conn.reply(m.chat, '💫 ¡Gomen! Ocurrió un error en el escenario virtual: ' + e.message + ' ✨', m, global.rcanal)
 await m.react('🎵')
 } finally {
 if (stiker) {
@@ -45,3 +45,4 @@ export default handler
 const isUrl = (text) => {
 return text.match(new RegExp(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)(jpe?g|gif|png)/, 'gi'))
 }
+

@@ -39,3 +39,4 @@ handler.command = ['clap', 'aplaudir', 'aplauso', 'aplausos', 'aplaudimiento']
 handler.group = true
 
 export default handler
+

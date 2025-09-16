@@ -39,3 +39,4 @@ handler.command = ['añadirxp', 'addexp'];
 handler.rowner = true;
 
 export default handler;
+

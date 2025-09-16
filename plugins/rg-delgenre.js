@@ -15,3 +15,4 @@ handler.help = ['delgenre']
 handler.tags = ['rg']
 handler.command = ['delgenero', 'delgenre']
 export default handler;
+

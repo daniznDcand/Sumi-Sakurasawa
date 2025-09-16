@@ -2,7 +2,7 @@ import axios from 'axios';
 const { proto, generateWAMessageFromContent, generateWAMessageContent } = (await import('@whiskeysockets/baileys')).default;
 
 let handler = async (m, { conn, text }) => {
-if (!text) { return conn.reply(m.chat, `${emoji} Por favor, ingresa el texto de Lo que quieres buscar en Twitter.`, m, rcanal); }
+if (!text) { return conn.reply(m.chat, `${emoji} Por favor, ingresa el texto de Lo que quieres buscar en Twitter.`, m, global.rcanal); }
 
 await message.react(rwait)
 conn.reply(message.chat, `${emoji} Descargando Su Video, espere un momento...`, message)
@@ -67,3 +67,4 @@ handler.register = true
 handler.coin = 1
 
 export default handler;
+

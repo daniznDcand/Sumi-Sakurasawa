@@ -9,7 +9,7 @@ import fetch from 'node-fetch';
 
 let handler = async(m, { conn, text, usedPrefix, command }) => {
 
-if (!text) return conn.reply(m.chat, `💙 Por favor ingresa el nombre de un repositorio GitHub para buscar en el ciberespacio virtual 🎵`, m, rcanal);
+if (!text) return conn.reply(m.chat, `💙 Por favor ingresa el nombre de un repositorio GitHub para buscar en el ciberespacio virtual 🎵`, m, global.rcanal);
 
 try {
 let api = `https://dark-core-api.vercel.app/api/search/github?key=api&text=${text}`;
@@ -34,3 +34,4 @@ m.react('💙');
 handler.command = ['githubsearch', 'gbsearch'];
 
 export default handler;
+

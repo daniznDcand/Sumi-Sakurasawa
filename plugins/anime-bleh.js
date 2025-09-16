@@ -40,3 +40,4 @@ handler.command = ['bleh', 'lengua', 'hacercara', 'carita', 'carcajada']
 handler.group = true
 
 export default handler
+

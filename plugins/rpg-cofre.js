@@ -62,7 +62,7 @@ const handler = async (m, { isPrems, conn }) => {
     await conn.sendMessage(m.chat, { text: texto }, { quoted: m });
   } catch (error) {
     console.error('💙 Error al enviar el cofre:', error);
-    await conn.reply(m.chat, '💙 Ocurrió un error al enviar el cofre, pero tus recompensas fueron guardadas.', m, rcanal);
+    await conn.reply(m.chat, '💙 Ocurrió un error al enviar el cofre, pero tus recompensas fueron guardadas.', m, global.rcanal);
   }
 };
 
@@ -87,3 +87,4 @@ function msToTime(duration) {
 
   return `${hours} Horas ${minutes} Minutos`;
 }
+

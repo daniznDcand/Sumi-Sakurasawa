@@ -61,3 +61,4 @@ global.frases = [
     "Si no tienes un plan, estás planeando fracasar.",
     "La vida es una aventura, atrévete a vivirla."
 ];
+
