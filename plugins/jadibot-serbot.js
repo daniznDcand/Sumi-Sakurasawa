@@ -170,9 +170,17 @@ sock.ev.on("connection.update", sock.connectionUpdate)
 sock.ev.on("creds.update", sock.credsUpdate)
 
 
-if (handler && handler.handler && typeof handler.handler === 'function') {
-sock.handler = handler.handler.bind(sock)
+
+console.log('🔍 Reconexión - Verificando handler:', {
+  handlerModule: !!handlerModule,
+  hasHandler: !!(handlerModule && handlerModule.handler),
+  handlerType: typeof (handlerModule && handlerModule.handler)
+})
+
+if (handlerModule && handlerModule.handler && typeof handlerModule.handler === 'function') {
+sock.handler = handlerModule.handler.bind(sock)
 sock.ev.on("messages.upsert", sock.handler)
+console.log('✅ Handler reconfigurado en reconexión')
 }
 
 return true
@@ -390,14 +398,16 @@ delete global.conns[i]
 global.conns.splice(i, 1)
 }}, 60000)
 
-let handler = await import('../handler.js')
+let handlerModule = await import('../handler.js')
 let creloadHandler = async function (restatConn) {
 try {
 const Handler = await import(`../handler.js?update=${Date.now()}`).catch(console.error)
-if (Handler && Handler.default && typeof Handler.default.handler === 'function') {
-handler = Handler.default
+if (Handler && Handler.handler && typeof Handler.handler === 'function') {
+handlerModule = Handler
+console.log('✅ Handler cargado correctamente')
 } else {
 console.error('⚠️ Handler no válido o no encontrado')
+console.log('Handler keys:', Object.keys(Handler || {}))
 return false
 }
 } catch (e) {
@@ -424,11 +434,20 @@ sock.ev.off('creds.update', sock.credsUpdate)
 }
 
 
-if (handler && handler.handler && typeof handler.handler === 'function') {
-sock.handler = handler.handler.bind(sock)
+
+console.log('🔍 Verificando handler:', {
+  handlerModule: !!handlerModule,
+  hasHandler: !!(handlerModule && handlerModule.handler),
+  handlerType: typeof (handlerModule && handlerModule.handler)
+})
+
+if (handlerModule && handlerModule.handler && typeof handlerModule.handler === 'function') {
+sock.handler = handlerModule.handler.bind(sock)
 sock.ev.on("messages.upsert", sock.handler)
+console.log('✅ Handler configurado correctamente para SubBot')
 } else {
 console.error('⚠️ Handler no disponible, subbot no procesará comandos')
+console.log('Handler module keys:', Object.keys(handlerModule || {}))
 }
 
 sock.connectionUpdate = connectionUpdate.bind(sock)

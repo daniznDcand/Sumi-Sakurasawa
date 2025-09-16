@@ -20,8 +20,20 @@ export async function before(m, { conn, participants, groupMetadata }) {
   };
 
   let pp = await conn.profilePictureUrl(m.messageStubParameters[0], 'image').catch(() => 'https://files.catbox.moe/wm4w1x.jpg');
-  let img = await (await fetch(pp)).buffer();
+  let img = await (await fetch(pp)).arrayBuffer();
   let chat = global.db.data.chats[m.chat];
+  
+
+  const dev = global.dev || '© 🄿🄾🅆🄴🅁🄴🄳 (ㅎㅊDEPOOLㅊㅎ)'
+  const redes = global.redes || 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
+  const rcanal = global.rcanal || { contextInfo: { 
+    isForwarded: true, 
+    forwardedNewsletterMessageInfo: { 
+      newsletterJid: "120363350523130615@newsletter", 
+      serverMessageId: 100, 
+      newsletterName: "💙🌱 Hatsune – Miku – Bot 🌱💙"
+    }
+  }}
   
   let groupSize = participants.length;
   if (m.messageStubType === 27) groupSize++;
