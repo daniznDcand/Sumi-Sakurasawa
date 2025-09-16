@@ -33,27 +33,27 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   let pathMikuJadiBot = path.join(`./${'jadi'}/`, id)
   let pathCreds = path.join(pathMikuJadiBot, "creds.json")
 
-  
+  // Comando para eliminar sesión
   if (command == "deletebot" || command == "deletesesion" || command == "deletesession") {
     try {
       if (!fs.existsSync(pathMikuJadiBot)) {
         return m.reply(`❌ No tienes una sesión activa para eliminar.`)
       }
       
-      
+      // Cerrar conexión si existe
       const existingConn = global.conns.find(c => c.user?.jid?.includes(id))
       if (existingConn) {
         try {
           existingConn.ws.close()
           existingConn.ev.removeAllListeners()
         } catch (error) {
-          
+          // Ignorar errores al cerrar
         }
-        
+        // Remover de global.conns
         global.conns = global.conns.filter(c => c !== existingConn)
       }
       
-      
+      // Eliminar archivos de sesión
       fs.rmSync(pathMikuJadiBot, { recursive: true, force: true })
       
       await m.reply(`✅ *Sesión eliminada exitosamente*\n\n📱 Número: +${id}\n🗑️ Archivos de sesión eliminados\n🔄 Ahora puedes crear una nueva sesión`)
@@ -149,23 +149,23 @@ const mikuJadiBot = async (pathMikuJadiBot, m, conn, args, usedPrefix, command) 
     sock.lastActivity = Date.now()
     let isInit = true
 
-    
+    // Preparar la reconexión automática
     const attemptReconnect = async () => {
       if (sock.reconnectAttempts < sock.maxReconnectAttempts) {
         sock.reconnectAttempts++
         console.log(chalk.yellow(`🔄 Intento de reconexión ${sock.reconnectAttempts}/${sock.maxReconnectAttempts} para ${path.basename(pathMikuJadiBot)}`))
         
-        
+        // Esperar antes de reconectar (backoff exponencial)
         await new Promise(resolve => setTimeout(resolve, 5000 * sock.reconnectAttempts))
         
         try {
-          
+          // Crear nueva conexión
           sock = makeWASocket(connectionOptions)
           sock.reconnectAttempts = reconnectAttempts
           sock.maxReconnectAttempts = maxReconnectAttempts
           sock.lastActivity = Date.now()
           
-          
+          // Reconfigurar handlers
           await creloadHandler(false)
           return true
         } catch (error) {
@@ -190,9 +190,9 @@ const mikuJadiBot = async (pathMikuJadiBot, m, conn, args, usedPrefix, command) 
       
       if (qr && mcode) {
         let phoneNumber = (m && m.sender) ? m.sender.split('@')[0] : ''
-        
+        // Generar código de vinculación
         try {
-          
+          // Intentar múltiples veces para generar código
           let secret
           let attempts = 0
           const maxAttempts = 3
@@ -238,7 +238,7 @@ const mikuJadiBot = async (pathMikuJadiBot, m, conn, args, usedPrefix, command) 
           try {
             sock.ws.close()
           } catch (error) {
-            // Ignorar error
+            // Ignorar errores al cerrar
           }
           sock.ev.removeAllListeners()
           let i = global.conns.indexOf(sock)
@@ -272,7 +272,7 @@ const mikuJadiBot = async (pathMikuJadiBot, m, conn, args, usedPrefix, command) 
             await endSesion(false)
           }
         } else if (reason === 401) {
-          
+          // Sesión inválida - eliminar archivos
           console.log(chalk.red(`🗑️ Sesión inválida, eliminando archivos para ${path.basename(pathMikuJadiBot)}`))
           try { 
             fs.rmSync(pathMikuJadiBot, { recursive: true, force: true })
@@ -288,10 +288,10 @@ const mikuJadiBot = async (pathMikuJadiBot, m, conn, args, usedPrefix, command) 
 
       if (connection == `open`) {
         sock.isInit = true
-        sock.reconnectAttempts = 0 
+        sock.reconnectAttempts = 0 // Reset counter on successful connection
         sock.lastActivity = Date.now()
         
-        
+        // Guardar en global.conns solo si no existe
         if (!global.conns.find(c => c.user?.jid === sock.user?.jid)) {
           global.conns.push(sock)
         }
@@ -300,7 +300,7 @@ const mikuJadiBot = async (pathMikuJadiBot, m, conn, args, usedPrefix, command) 
         let userJid = sock.authState.creds.me?.jid || `${path.basename(pathMikuJadiBot)}@s.whatsapp.net`
         
         console.log(chalk.bold.green(`✅ SubBot conectado exitosamente:`))
-        console.log(chalk.cyan(`   � Usuario: ${userName}`))
+        console.log(chalk.cyan(`   👤 Usuario: ${userName}`))
         console.log(chalk.cyan(`   📱 Número: +${path.basename(pathMikuJadiBot)}`))
         console.log(chalk.cyan(`   🆔 JID: ${userJid}`))
         console.log(chalk.cyan(`   🕒 Hora: ${new Date().toLocaleString()}`))
@@ -315,7 +315,7 @@ const mikuJadiBot = async (pathMikuJadiBot, m, conn, args, usedPrefix, command) 
                 `🔥 *Ahora puede usar comandos desde este dispositivo*`
         }, { quoted: m })
         
-        
+        // Configurar heartbeat para mantener conexión activa
         setInterval(() => {
           if (sock && sock.user) {
             sock.lastActivity = Date.now()
@@ -333,18 +333,18 @@ const mikuJadiBot = async (pathMikuJadiBot, m, conn, args, usedPrefix, command) 
         console.error('Error cargando handler:', e)
       }
       
-      
+      // Limpiar eventos previos
       if (!isInit) {
         try {
           sock.ev.off("messages.upsert", sock.handler)
           sock.ev.off("connection.update", sock.connectionUpdate)
           sock.ev.off("creds.update", sock.credsUpdate)
         } catch (error) {
-          
+          // Ignorar errores de cleanup
         }
       }
       
-      
+      // Configurar nuevos eventos - Verificar que handler existe
       if (handler && handler.handler && typeof handler.handler === 'function') {
         sock.handler = handler.handler.bind(sock)
       } else {
