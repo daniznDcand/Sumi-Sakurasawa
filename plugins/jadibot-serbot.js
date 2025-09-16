@@ -342,6 +342,22 @@ console.log('⚙️ Configurando propiedades básicas:', error.message)
 }
 
 
+try {
+console.log('🔍 Configurando handler para SubBot recién conectado...')
+const handlerModule = await import('../handler.js')
+if (handlerModule && handlerModule.handler && typeof handlerModule.handler === 'function') {
+sock.handler = handlerModule.handler.bind(sock)
+sock.ev.on("messages.upsert", sock.handler)
+console.log('✅ Handler configurado exitosamente para SubBot')
+console.log('🤖 SubBot está listo para procesar comandos')
+} else {
+console.error('⚠️ Error: Handler no válido para SubBot')
+console.log('Handler module keys:', Object.keys(handlerModule || {}))
+}
+} catch (error) {
+console.error('❌ Error configurando handler para SubBot:', error.message)
+}
+
 if (!global.conns.find(c => c.user?.jid === sock.user?.jid)) {
 global.conns.push(sock)
 }
@@ -441,6 +457,9 @@ console.log('🔍 Verificando handler:', {
   handlerType: typeof (handlerModule && handlerModule.handler)
 })
 
+// ⚠️ Handler ya se configura automáticamente en connection === 'open'
+// No es necesario configurarlo aquí para evitar duplicación
+/*
 if (handlerModule && handlerModule.handler && typeof handlerModule.handler === 'function') {
 sock.handler = handlerModule.handler.bind(sock)
 sock.ev.on("messages.upsert", sock.handler)
@@ -449,6 +468,7 @@ console.log('✅ Handler configurado correctamente para SubBot')
 console.error('⚠️ Handler no disponible, subbot no procesará comandos')
 console.log('Handler module keys:', Object.keys(handlerModule || {}))
 }
+*/
 
 sock.connectionUpdate = connectionUpdate.bind(sock)
 sock.credsUpdate = saveCreds
