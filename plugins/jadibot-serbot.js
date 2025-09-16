@@ -148,15 +148,33 @@ await new Promise(resolve => setTimeout(resolve, 5000 * sock.reconnectAttempts))
 
 try {
 
+try {
+sock.ev.removeAllListeners()
+sock.ws.close()
+} catch (e) {
+
+}
+
+
 sock = makeWASocket(connectionOptions)
 sock.reconnectAttempts = reconnectAttempts
 sock.maxReconnectAttempts = maxReconnectAttempts
 sock.lastActivity = Date.now()
 sock.sessionStartTime = sessionStartTime
-sock.subreloadHandler = (reload) => creloadHandler(reload)
+sock.isInit = false
 
 
-await creloadHandler(false)
+sock.connectionUpdate = connectionUpdate.bind(sock)
+sock.credsUpdate = saveCreds
+sock.ev.on("connection.update", sock.connectionUpdate)
+sock.ev.on("creds.update", sock.credsUpdate)
+
+
+if (handler && handler.handler && typeof handler.handler === 'function') {
+sock.handler = handler.handler.bind(sock)
+sock.ev.on("messages.upsert", sock.handler)
+}
+
 return true
 } catch (error) {
 console.error(`❌ Error en reconexión: ${error.message}`)
@@ -376,11 +394,17 @@ let handler = await import('../handler.js')
 let creloadHandler = async function (restatConn) {
 try {
 const Handler = await import(`../handler.js?update=${Date.now()}`).catch(console.error)
-if (Object.keys(Handler || {}).length) handler = Handler
-
-} catch (e) {
-console.error('⚠️ Nuevo error: ', e)
+if (Handler && Handler.default && typeof Handler.default.handler === 'function') {
+handler = Handler.default
+} else {
+console.error('⚠️ Handler no válido o no encontrado')
+return false
 }
+} catch (e) {
+console.error('⚠️ Error cargando handler: ', e)
+return false
+}
+
 if (restatConn) {
 const oldChats = sock.chats
 try { sock.ws.close() } catch { }
@@ -388,22 +412,35 @@ sock.ev.removeAllListeners()
 sock = makeWASocket(connectionOptions, { chats: oldChats })
 isInit = true
 }
+
 if (!isInit) {
+try {
 sock.ev.off("messages.upsert", sock.handler)
 sock.ev.off("connection.update", sock.connectionUpdate)
 sock.ev.off('creds.update', sock.credsUpdate)
+} catch (e) {
+
+}
 }
 
+
+if (handler && handler.handler && typeof handler.handler === 'function') {
 sock.handler = handler.handler.bind(sock)
-sock.connectionUpdate = connectionUpdate.bind(sock)
-sock.credsUpdate = saveCreds.bind(sock, true)
 sock.ev.on("messages.upsert", sock.handler)
+} else {
+console.error('⚠️ Handler no disponible, subbot no procesará comandos')
+}
+
+sock.connectionUpdate = connectionUpdate.bind(sock)
+sock.credsUpdate = saveCreds
 sock.ev.on("connection.update", sock.connectionUpdate)
 sock.ev.on("creds.update", sock.credsUpdate)
 isInit = false
 return true
 }
-creloadHandler(false)
+
+
+await creloadHandler(false)
 })
 }
 
