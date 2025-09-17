@@ -32,39 +32,13 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       if (!dl) return conn.reply(m.chat, 'No se encontró enlace de audio en la respuesta de la API.', m)
 
       
-      try {
-        const head = await fetch(dl, { method: 'HEAD', timeout: 20000 })
-        const len = head.headers.get('content-length')
-        const size = len ? parseInt(len) : null
-        
-        if (size && size > 14 * 1024 * 1024) {
-         
-          return conn.sendMessage(m.chat, { document: { url: dl }, mimetype: 'audio/mpeg', fileName: 'audio.mp3' }, { quoted: m })
-        }
-      } catch (e) {
-        console.error('HEAD audio falló:', e.message)
-      }
-
-      
-      return conn.sendMessage(m.chat, { audio: { url: dl }, mimetype: 'audio/mpeg', fileName: 'audio.mp3' }, { quoted: m })
+      return conn.sendMessage(m.chat, { document: { url: dl }, mimetype: 'audio/mpeg', fileName: 'audio.mp3' }, { quoted: m })
     } else {
       const dl = videoUrl || result?.link || result?.url || null
       if (!dl) return conn.reply(m.chat, 'No se encontró enlace de video en la respuesta de la API.', m)
 
-      try {
-        const head = await fetch(dl, { method: 'HEAD', timeout: 20000 })
-        const len = head.headers.get('content-length')
-        const size = len ? parseInt(len) : null
-        if (size && size > 14 * 1024 * 1024) {
-          
-          return conn.sendMessage(m.chat, { document: { url: dl }, mimetype: 'video/mp4', fileName: 'video.mp4', caption: 'Video (documento)' }, { quoted: m })
-        }
-      } catch (e) {
-        console.error('HEAD video falló:', e.message)
-      }
-
       
-      return conn.sendMessage(m.chat, { video: { url: dl }, mimetype: 'video/mp4', fileName: 'video.mp4', caption: 'Aquí tienes tu video' }, { quoted: m })
+      return conn.sendMessage(m.chat, { document: { url: dl }, mimetype: 'video/mp4', fileName: 'video.mp4', caption: 'Video (documento)' }, { quoted: m })
     }
 
   } catch (err) {
