@@ -20,7 +20,22 @@ export async function before(m, { conn, participants, groupMetadata }) {
   };
 
   let pp = await conn.profilePictureUrl(m.messageStubParameters[0], 'image').catch(() => 'https://files.catbox.moe/wm4w1x.jpg');
-  let img = await (await fetch(pp)).arrayBuffer();
+  
+  let imgBuffer = null
+  try {
+    const resp = await fetch(pp)
+    const arr = await resp.arrayBuffer()
+    imgBuffer = Buffer.from(arr)
+  } catch (e) {
+    
+    try {
+      const resp = await fetch('https://files.catbox.moe/wm4w1x.jpg')
+      const arr = await resp.arrayBuffer()
+      imgBuffer = Buffer.from(arr)
+    } catch (err) {
+      imgBuffer = null
+    }
+  }
   let chat = global.db.data.chats[m.chat];
   
 
@@ -51,7 +66,7 @@ https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o
 
 ¡Que la música te acompañe siempre! 🎶
     `;
-    await conn.sendMini(m.chat, '💙 ¡Nueva estrella se une! 💙', dev, welcomeMsg, img, img, redes, fkontak, m, global.rcanal);
+    await conn.sendMini(m.chat, '💙 ¡Nueva estrella se une! 💙', dev, welcomeMsg, imgBuffer, imgBuffer, redes, fkontak, m, global.rcanal);
   }
 
   if (chat.welcome && (m.messageStubType === 28 || m.messageStubType === 32)) {
@@ -72,7 +87,7 @@ https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o
 
 ¡Cuídate y hasta el próximo concierto! 🎶✨
     `;
-    await conn.sendMini(m.chat, '🎵 ¡Sayonara! 🎵', dev, byeMsg, img, img, redes, fkontak, m, global.rcanal);
+    await conn.sendMini(m.chat, '🎵 ¡Sayonara! 🎵', dev, byeMsg, imgBuffer, imgBuffer, redes, fkontak, m, global.rcanal);
   }
 }
 
