@@ -247,21 +247,25 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
 
 
     case 'antilink':
-      if (m.isGroup) {
-        if (!(isAdmin || isOwner)) {
-          global.dfail('admin', m, conn)
-          throw false
-        }
+      
+      if (!m.isGroup) {
+        return conn.reply(m.chat, '💙 Este comando debe usarse dentro del grupo que desea configurar. Use el comando en el grupo objetivo.', m)
+      }
+      if (!(isAdmin || isOwner)) {
+        global.dfail('admin', m, conn)
+        throw false
       }
       chat.antiLink = isEnable
       break
 
     case 'antilink2':
-      if (m.isGroup) {
-        if (!(isAdmin || isOwner)) {
-          global.dfail('admin', m, conn)
-          throw false
-        }
+      
+      if (!m.isGroup) {
+        return conn.reply(m.chat, '💙 Este comando debe usarse dentro del grupo que desea configurar. Use el comando en el grupo objetivo.', m)
+      }
+      if (!(isAdmin || isOwner)) {
+        global.dfail('admin', m, conn)
+        throw false
       }
       chat.antiLink2 = isEnable
       break
@@ -307,7 +311,8 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
       break
   }
   
-  chat[type] = isEnable;
+  
+  if (!isAll) chat[type] = isEnable;
 
   conn.reply(m.chat, `💙 La función *${type}* se *${isEnable ? 'activó' : 'desactivó'}* ${isAll ? 'para este Bot' : isUser ? '' : 'para este chat'}`, m, global.rcanal);
 };

@@ -27,6 +27,25 @@ const mikuJBOptions = {}
 if (global.conns instanceof Array) console.log()
 else global.conns = []
 
+
+const NOTIFY_COOLDOWN = 10 * 60 * 1000 
+function shouldNotifyUser(jid) {
+  try {
+    if (!global.db || !global.db.data) return true
+    if (!global.db.data.users) global.db.data.users = {}
+    if (!global.db.data.users[jid]) global.db.data.users[jid] = {}
+    const last = global.db.data.users[jid].subBotLastNotify || 0
+    if (Date.now() - last > NOTIFY_COOLDOWN) {
+      global.db.data.users[jid].subBotLastNotify = Date.now()
+      return true
+    }
+    return false
+  } catch (e) {
+    console.error('Error en shouldNotifyUser:', e)
+    return true
+  }
+}
+
 let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
 if (!globalThis.db.data.settings[conn.user.jid].jadibotmd) {
 return m.reply(`💙 El Comando *${command}* está desactivado temporalmente.`)
@@ -195,10 +214,26 @@ console.log('🔍 Reconexión - Verificando handler:', {
   handlerType: typeof (handlerModule && handlerModule.handler)
 })
 
+
+if (!(handlerModule && handlerModule.handler && typeof handlerModule.handler === 'function')) {
+  for (let i = 0; i < 3; i++) {
+    try {
+      const H = await import(`../handler.js?update=${Date.now()}`)
+      if (H && H.handler && typeof H.handler === 'function') {
+        handlerModule = H
+        break
+      }
+    } catch (e) {
+      await new Promise(r => setTimeout(r, 1000))
+    }
+  }
+}
+
 if (handlerModule && handlerModule.handler && typeof handlerModule.handler === 'function') {
-sock.handler = handlerModule.handler.bind(sock)
-sock.ev.on("messages.upsert", sock.handler)
-console.log('✅ Handler reconfigurado en reconexión')
+  sock.handler = handlerModule.handler.bind(sock)
+  try { sock.ev.removeAllListeners('messages.upsert') } catch (e) {}
+  sock.ev.on("messages.upsert", sock.handler)
+  console.log('✅ Handler reconfigurado en reconexión')
 }
 
 return true
@@ -287,18 +322,24 @@ if (codeBot && codeBot.key) {
 setTimeout(() => { conn.sendMessage(m.sender, { delete: codeBot.key })}, 45000)
 }
 
+let _ending = false
 const endSesion = async (loaded) => {
-if (!loaded) {
-try {
-sock.ws.close()
-} catch {
+  if (_ending) return
+  _ending = true
+  try {
+    if (!loaded) {
+      try { sock.ws.close() } catch {}
+      try { sock.ev.removeAllListeners() } catch {}
+      let i = global.conns.indexOf(sock)
+      if (i >= 0) {
+        delete global.conns[i]
+        global.conns.splice(i, 1)
+      }
+    }
+  } finally {
+    _ending = false
+  }
 }
-sock.ev.removeAllListeners()
-let i = global.conns.indexOf(sock)                
-if (i < 0) return 
-delete global.conns[i]
-global.conns.splice(i, 1)
-}}
 
 const reason = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode
 if (connection === 'close') {
@@ -325,18 +366,20 @@ await endSesion(false)
 }
 } else if (reason === 401 || reason === 405) {
 
-console.log(chalk.red(`🗑️ Sesión inválida, eliminando archivos para +${path.basename(pathMikuJadiBot)}`))
-try { 
-fs.rmSync(pathMikuJadiBot, { recursive: true, force: true })
-if (options.fromCommand) {
-await conn.sendMessage(`${path.basename(pathMikuJadiBot)}@s.whatsapp.net`, {
-text: '*SESIÓN EXPIRADA*\n\n> *Vuelva a conectarse para crear una nueva sesión*'
-}, { quoted: m || null }).catch(() => {})
-}
-} catch (error) { 
-console.error(`Error eliminando sesión: ${error.message}`)
-}
-await endSesion(false)
+  console.log(chalk.red(`🗑️ Sesión inválida, eliminando archivos para +${path.basename(pathMikuJadiBot)}`))
+  try {
+    fs.rmSync(pathMikuJadiBot, { recursive: true, force: true })
+    // Notificar al usuario con throttle para evitar spam
+    const recipient = (m && m.sender) ? m.sender : `${path.basename(pathMikuJadiBot)}@s.whatsapp.net`
+    if (options.fromCommand && shouldNotifyUser(recipient)) {
+      await conn.sendMessage(recipient, {
+        text: '*SESIÓN EXPIRADA*\n\n> *Vuelva a conectarse para crear una nueva sesión*'
+      }, { quoted: m || null }).catch(() => {})
+    }
+  } catch (error) {
+    console.error(`Error eliminando sesión: ${error.message}`)
+  }
+  await endSesion(false)
 } else {
 console.log(chalk.gray(`⚠️ Cerrando sesión sin reconexión. Código: ${reason}`))
 await endSesion(false)
@@ -378,27 +421,26 @@ console.log('🔍 Configurando handler para SubBot recién conectado...')
 const handlerModule = await import('../handler.js')
 if (handlerModule && handlerModule.handler && typeof handlerModule.handler === 'function') {
 
-
-const originalHandler = handlerModule.handler.bind(sock)
-sock.handler = async (chatUpdate) => {
-  try {
-    console.log('📨 SubBot procesando mensaje:', {
-      messages: chatUpdate?.messages?.length || 0,
-      messageTypes: chatUpdate?.messages?.map(m => Object.keys(m.message || {})) || [],
-      fromSender: chatUpdate?.messages?.[0]?.key?.fromMe ? 'SubBot' : 'Usuario'
-    })
-    
- 
-    return await originalHandler(chatUpdate)
-  } catch (error) {
-    console.error('❌ Error en handler de SubBot:', error.message)
-    console.error('Stack:', error.stack)
+  const originalHandler = handlerModule.handler.bind(sock)
+  sock.handler = async (chatUpdate) => {
+    try {
+      console.log('📨 SubBot procesando mensaje:', {
+        messages: chatUpdate?.messages?.length || 0,
+        messageTypes: chatUpdate?.messages?.map(m => Object.keys(m.message || {})) || [],
+        fromSender: chatUpdate?.messages?.[0]?.key?.fromMe ? 'SubBot' : 'Usuario'
+      })
+      return await originalHandler(chatUpdate)
+    } catch (error) {
+      console.error('❌ Error en handler de SubBot:', error.message)
+      console.error('Stack:', error.stack)
+    }
   }
-}
 
-sock.ev.on("messages.upsert", sock.handler)
-console.log('✅ Handler configurado exitosamente para SubBot')
-console.log('🤖 SubBot está listo para procesar comandos')
+ 
+  try { sock.ev.removeAllListeners('messages.upsert') } catch (e) {}
+  sock.ev.on("messages.upsert", sock.handler)
+  console.log('✅ Handler configurado exitosamente para SubBot')
+  console.log('🤖 SubBot está listo para procesar comandos')
 
 
 setTimeout(() => {
@@ -528,18 +570,15 @@ console.log('🔍 Verificando handler:', {
   handlerType: typeof (handlerModule && handlerModule.handler)
 })
 
-// ⚠️ Handler ya se configura automáticamente en connection === 'open'
-// No es necesario configurarlo aquí para evitar duplicación
-/*
+
 if (handlerModule && handlerModule.handler && typeof handlerModule.handler === 'function') {
-sock.handler = handlerModule.handler.bind(sock)
-sock.ev.on("messages.upsert", sock.handler)
-console.log('✅ Handler configurado correctamente para SubBot')
+  try { sock.ev.removeAllListeners('messages.upsert') } catch (e) {}
+  sock.handler = handlerModule.handler.bind(sock)
+  sock.ev.on("messages.upsert", sock.handler)
+  console.log('✅ Handler configurado correctamente para SubBot (creloadHandler)')
 } else {
-console.error('⚠️ Handler no disponible, subbot no procesará comandos')
-console.log('Handler module keys:', Object.keys(handlerModule || {}))
+  console.error('⚠️ Handler no disponible en creloadHandler, continuará sin procesar comandos hasta que se recargue')
 }
-*/
 
 sock.connectionUpdate = connectionUpdate.bind(sock)
 sock.credsUpdate = saveCreds
