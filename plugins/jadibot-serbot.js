@@ -157,6 +157,15 @@ sock.sessionStartTime = sessionStartTime
 sock.subreloadHandler = (reload) => creloadHandler(reload)
 
 
+function isSocketReady(s) {
+  try {
+    return !!(s && s.ws && s.ws.socket && s.ws.socket.readyState === ws.OPEN)
+  } catch (e) {
+    return false
+  }
+}
+
+
 sock.prefix = global.prefix || '#'
 sock.chats = sock.chats || {}
 sock.contacts = sock.contacts || {}
@@ -171,8 +180,26 @@ if (sock.reconnectAttempts < sock.maxReconnectAttempts) {
 sock.reconnectAttempts++
 console.log(chalk.yellow(`🔄 Intento de reconexión ${sock.reconnectAttempts}/${sock.maxReconnectAttempts} para +${path.basename(pathMikuJadiBot)}`))
 
+    
+    try {
+      sock._reconnectNotified = sock._reconnectNotified || false
+      const notifyTo = (m && m.sender) ? m.sender : `${path.basename(pathMikuJadiBot)}@s.whatsapp.net`
+      if (!sock._reconnectNotified && options.fromCommand && shouldNotifyUser(notifyTo) && isSocketReady(conn)) {
+        try {
+          await conn.sendMessage(notifyTo, { text: `🔄 Intento de reconexión en proceso para la sesión +${path.basename(pathMikuJadiBot)}. Se intentará reconectar automáticamente.` }, { quoted: m }).catch(() => {})
+          sock._reconnectNotified = true
+        } catch (e) {
+          
+        }
+      }
+    } catch (e) {
+      console.error('Error intentando notificar reconexión:', e?.message || e)
+    }
 
-await new Promise(resolve => setTimeout(resolve, 5000 * sock.reconnectAttempts))
+
+
+const waitMs = Math.min(5 * 60 * 1000, 5000 * sock.reconnectAttempts)
+await new Promise(resolve => setTimeout(resolve, waitMs))
 
 try {
 
@@ -232,7 +259,6 @@ if (!(handlerModule && handlerModule.handler && typeof handlerModule.handler ===
 if (handlerModule && handlerModule.handler && typeof handlerModule.handler === 'function') {
   sock.handler = handlerModule.handler.bind(sock)
   try { sock.ev.removeAllListeners('messages.upsert') } catch (e) {}
-  sock.ev.on("messages.upsert", sock.handler)
   console.log('✅ Handler reconfigurado en reconexión')
 }
 
@@ -251,14 +277,25 @@ if (isNewLogin) sock.isInit = false
 
 
 if (qr && !mcode) {
-if (m?.chat) {
-txtQR = await conn.sendMessage(m.chat, { image: await qrcode.toBuffer(qr, { scale: 8 }), caption: rtx.trim()}, { quoted: m})
-} else {
-return 
-}
-if (txtQR && txtQR.key) {
-setTimeout(() => { conn.sendMessage(m.sender, { delete: txtQR.key })}, 45000)
-}
+  if (m?.chat) {
+    try {
+      txtQR = await conn.sendMessage(m.chat, { image: await qrcode.toBuffer(qr, { scale: 8 }), caption: rtx.trim()}, { quoted: m})
+    } catch (e) {
+      console.error('Error enviando QR al usuario:', e?.message || e)
+      return
+    }
+  } else {
+    return
+  }
+  if (txtQR && txtQR.key) {
+    setTimeout(async () => {
+      try {
+        await conn.sendMessage(m.sender, { delete: txtQR.key })
+      } catch (e) {
+        
+      }
+    }, 45000)
+  }
 return
 } 
 
@@ -287,25 +324,34 @@ await new Promise(resolve => setTimeout(resolve, 2000))
 }
 }
 
-if (secret && m && conn) {
+  if (secret && m && conn) {
+    try {
+      txtCode = await conn.sendMessage(m.chat, { text: rtx2 }, { quoted: m })
+    } catch (e) {
+      console.error('Error enviando mensaje de código (rtx2):', e?.message || e)
+    }
 
-txtCode = await conn.sendMessage(m.chat, {text : rtx2}, { quoted: m })
+    try {
+      codeBot = await conn.sendMessage(m.chat, { text: secret }, { quoted: m })
+    } catch (e) {
+      console.error('Error enviando secret al chat:', e?.message || e)
+    }
 
+    try {
+      await conn.sendMessage(m.chat, {
+        text: `⏰ *Código válido por 5 minutos*\n\n💡 *Instrucciones:*\n` +
+          `1️⃣ Abre WhatsApp en tu dispositivo\n` +
+          `2️⃣ Ve a *Dispositivos vinculados*\n` +
+          `3️⃣ Toca *Vincular con código*\n` +
+          `4️⃣ Copia y pega: \`${secret}\`\n\n` +
+          `🤖 *Una vez conectado, podrás usar todos los comandos*`
+      }, { quoted: m })
+    } catch (e) {
+      console.error('Error enviando instrucciones de código:', e?.message || e)
+    }
 
-codeBot = await conn.sendMessage(m.chat, {text: secret}, { quoted: m })
-
-
-await conn.sendMessage(m.chat, {
-text: `⏰ *Código válido por 5 minutos*\n\n💡 *Instrucciones:*\n` +
-      `1️⃣ Abre WhatsApp en tu dispositivo\n` +
-      `2️⃣ Ve a *Dispositivos vinculados*\n` +
-      `3️⃣ Toca *Vincular con código*\n` +
-      `4️⃣ Copia y pega: \`${secret}\`\n\n` +
-      `🤖 *Una vez conectado, podrás usar todos los comandos*`
-}, { quoted: m })
-
-console.log(chalk.green(`📱 Código generado para +${phoneNumber}: ${secret}`))
-}
+    console.log(chalk.green(`📱 Código generado para +${phoneNumber}: ${secret}`))
+  }
 } catch (error) {
 console.error('❌ Error generando código:', error)
 if (m && conn) {
@@ -316,10 +362,18 @@ await m.reply(`❌ Error generando código de vinculación. Intente con .qr como
 
 
 if (txtCode && txtCode.key) {
-setTimeout(() => { conn.sendMessage(m.sender, { delete: txtCode.key })}, 45000)
+  setTimeout(async () => {
+    try {
+      await conn.sendMessage(m.sender, { delete: txtCode.key })
+    } catch (e) {}
+  }, 45000)
 }
 if (codeBot && codeBot.key) {
-setTimeout(() => { conn.sendMessage(m.sender, { delete: codeBot.key })}, 45000)
+  setTimeout(async () => {
+    try {
+      await conn.sendMessage(m.sender, { delete: codeBot.key })
+    } catch (e) {}
+  }, 45000)
 }
 
 let _ending = false
@@ -330,6 +384,9 @@ const endSesion = async (loaded) => {
     if (!loaded) {
       try { sock.ws.close() } catch {}
       try { sock.ev.removeAllListeners() } catch {}
+        
+        try { if (sock._saveCredsInterval) { clearInterval(sock._saveCredsInterval); sock._saveCredsInterval = null } } catch (e) {}
+        try { if (sock._presenceInterval) { clearInterval(sock._presenceInterval); sock._presenceInterval = null } } catch (e) {}
       let i = global.conns.indexOf(sock)
       if (i >= 0) {
         delete global.conns[i]
@@ -371,10 +428,17 @@ await endSesion(false)
     fs.rmSync(pathMikuJadiBot, { recursive: true, force: true })
     
     const recipient = (m && m.sender) ? m.sender : `${path.basename(pathMikuJadiBot)}@s.whatsapp.net`
-    if (options.fromCommand && shouldNotifyUser(recipient)) {
-      await conn.sendMessage(recipient, {
-        text: '*SESIÓN EXPIRADA*\n\n> *Vuelva a conectarse para crear una nueva sesión*'
-      }, { quoted: m || null }).catch(() => {})
+    try {
+      
+      sock._notifiedExpired = sock._notifiedExpired || false
+      if (options.fromCommand && !sock._notifiedExpired && shouldNotifyUser(recipient)) {
+        await conn.sendMessage(recipient, {
+          text: '*SESIÓN EXPIRADA*\n\n> *Vuelva a conectarse para crear una nueva sesión*'
+        }, { quoted: m || null }).catch(() => {})
+        sock._notifiedExpired = true
+      }
+    } catch (e) {
+      console.error('Error notificando expiración:', e.message)
     }
   } catch (error) {
     console.error(`Error eliminando sesión: ${error.message}`)
@@ -391,6 +455,20 @@ sock.isInit = true
 sock.well = false  
 sock.reconnectAttempts = 0 
 sock.lastActivity = Date.now()
+
+
+try { sock._reconnectNotified = false } catch (e) {}
+
+
+try {
+  if (typeof saveCreds === 'function') {
+    if (!sock._saveCredsInterval) {
+      sock._saveCredsInterval = setInterval(() => {
+        try { saveCreds() } catch (e) {}
+      }, 1000 * 60 * 10) 
+    }
+  }
+} catch (e) {}
 
 
 try {
@@ -449,7 +527,15 @@ setTimeout(() => {
     hasUser: !!sock.user,
     hasHandler: !!sock.handler,
     userId: sock.user?.id,
-    handlerListeners: sock.ev.listenerCount('messages.upsert')
+    handlerListeners: (() => {
+      try {
+        if (typeof sock.ev.listenerCount === 'function') return sock.ev.listenerCount('messages.upsert')
+        if (typeof sock.ev.listeners === 'function') return sock.ev.listeners('messages.upsert').length
+      } catch (e) {
+        console.error('Error obteniendo listenerCount:', e.message)
+      }
+      return 0
+    })()
   })
 }, 2000)
 
@@ -484,17 +570,32 @@ console.log(chalk.cyan(`   🔄 Reconexiones: ${sock.reconnectAttempts}/${sock.m
 
 await joinChannels(sock)
 
-await conn.sendMessage(m.chat, { 
-text: `✅ *SubBot conectado exitosamente* 🤖\n\n` +
-      `👤 *Usuario:* ${userName}\n` +
-      `📱 *Número:* +${path.basename(pathMikuJadiBot)}\n` +
-      `🕒 *Conectado:* ${new Date().toLocaleString()}\n` +
-      `⏱️ *Duración sesión:* ${durationFormatted}\n` +
-      `🔄 *Reconexiones automáticas:* Activadas (${sock.maxReconnectAttempts} máx)\n` +
-      `⚡ *Estado:* Sesión persistente activada\n` +
-      `🔥 *Total SubBots activos:* ${global.conns.length}\n\n` +
-      `🎯 *Ahora puede usar comandos desde este dispositivo*`
-}, { quoted: m })
+  try {
+    const openRecipient = m?.chat || ((sock.user && sock.user.jid) ? sock.user.jid : null)
+    sock._notifiedOpen = sock._notifiedOpen || false
+    if (options.fromCommand && !sock._notifiedOpen && openRecipient && shouldNotifyUser(openRecipient)) {
+      try {
+        await conn.sendMessage(m.chat, { 
+          text: `✅ *SubBot conectado exitosamente* 🤖\n\n` +
+            `👤 *Usuario:* ${userName}\n` +
+            `📱 *Número:* +${path.basename(pathMikuJadiBot)}\n` +
+            `🕒 *Conectado:* ${new Date().toLocaleString()}\n` +
+            `⏱️ *Duración sesión:* ${durationFormatted}\n` +
+            `🔄 *Reconexiones automáticas:* Activadas (${sock.maxReconnectAttempts} máx)\n` +
+            `⚡ *Estado:* Sesión persistente activada\n` +
+            `🔥 *Total SubBots activos:* ${global.conns.length}\n\n` +
+            `🎯 *Ahora puede usar comandos desde este dispositivo*`
+        }, { quoted: m })
+        sock._notifiedOpen = true
+      } catch (e) {
+        console.error('Error enviando notificación de SubBot abierto:', e?.message || e)
+      }
+    } else {
+      console.log('Notificando apertura omitida para evitar spam o por cooldown')
+    }
+  } catch (e) {
+    console.error('Error preparando notificación de apertura:', e?.message || e)
+  }
 
 
 setInterval(() => {
@@ -564,6 +665,19 @@ sock.ev.off('creds.update', sock.credsUpdate)
 
 
 
+
+  
+  try {
+    if (!sock._presenceInterval) {
+      sock._presenceInterval = setInterval(() => {
+        try {
+          if (isSocketReady(sock) && typeof sock.updatePresence === 'function') {
+            sock.updatePresence('available').catch(() => {})
+          }
+        } catch (e) {}
+      }, 30 * 1000)
+    }
+  } catch (e) {}
 console.log('🔍 Verificando handler:', {
   handlerModule: !!handlerModule,
   hasHandler: !!(handlerModule && handlerModule.handler),
