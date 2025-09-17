@@ -369,7 +369,7 @@ await endSesion(false)
   console.log(chalk.red(`🗑️ Sesión inválida, eliminando archivos para +${path.basename(pathMikuJadiBot)}`))
   try {
     fs.rmSync(pathMikuJadiBot, { recursive: true, force: true })
-    // Notificar al usuario con throttle para evitar spam
+    
     const recipient = (m && m.sender) ? m.sender : `${path.basename(pathMikuJadiBot)}@s.whatsapp.net`
     if (options.fromCommand && shouldNotifyUser(recipient)) {
       await conn.sendMessage(recipient, {
