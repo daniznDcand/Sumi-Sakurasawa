@@ -80,11 +80,7 @@ Para cualquier ayuda, escribe *#help*.
 
     try {
       
-      if (conn.sendHydrated) {
-        
-        await conn.sendHydrated(m.chat, welcomeMsg, null, imgBuffer, canalUrl, '🎵 Ver Canal', null, null, [], { quoted: m, mentions: [m.messageStubParameters[0]] })
-        console.log('✅ Mensaje de bienvenida enviado con botón URL (sendHydrated)')
-      } else {
+      try {
         await conn.sendMessage(m.chat, {
           image: imgBuffer,
           caption: welcomeMsg,
@@ -99,20 +95,27 @@ Para cualquier ayuda, escribe *#help*.
             }
           }
         }, { quoted: m })
-        console.log('✅ Mensaje de bienvenida enviado correctamente (externalAdReply)')
+      } catch (imgErr) {
+        console.log('⚠️ No se pudo enviar la imagen del welcome:', imgErr)
+      }
+
+      
+      if (conn.sendHydrated) {
+        try {
+          await conn.sendHydrated(m.chat, '🎵 Canal Oficial', 'Toca el botón para abrir el canal', null, canalUrl, '🎵 Ver Canal', null, null, [], { quoted: m, mentions: [m.messageStubParameters[0]] })
+          console.log('✅ Mensaje de bienvenida enviado con botón URL (sendHydrated)')
+        } catch (hydErr) {
+          console.log('⚠️ sendHydrated falló en welcome, haciendo fallback a externalAdReply:', hydErr)
+          
+          await conn.sendMessage(m.chat, { text: `${welcomeMsg}\n\n🎵 *Canal Oficial:*\n${canalUrl}`, mentions: [m.messageStubParameters[0]] }, { quoted: m })
+        }
+      } else {
+        
+        await conn.sendMessage(m.chat, { text: `${welcomeMsg}\n\n🎵 *Canal Oficial:*\n${canalUrl}`, mentions: [m.messageStubParameters[0]] }, { quoted: m })
+        console.log('✅ Mensaje de bienvenida enviado como texto fallback')
       }
     } catch (error) {
-      console.log('❌ Error enviando bienvenida:', error)
-      
-      try {
-        await conn.sendMessage(m.chat, {
-          text: `${welcomeMsg}\n\n🎵 *Canal Oficial:*\n${canalUrl}`,
-          mentions: [m.messageStubParameters[0]]
-        }, { quoted: m })
-        console.log('✅ Mensaje de bienvenida enviado como fallback')
-      } catch (fallbackError) {
-        console.log('❌ Error en fallback de bienvenida:', fallbackError)
-      }
+      console.log('❌ Error enviando bienvenida (final):', error)
     }
   }
 
@@ -142,10 +145,8 @@ La música de Miku seguirá sonando fuerte aquí para ti.
     const canalUrl = 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
 
     try {
-      if (conn.sendHydrated) {
-        await conn.sendHydrated(m.chat, byeMsg, null, imgBuffer, canalUrl, '🎵 Seguir Canal', null, null, [], { quoted: m, mentions: [m.messageStubParameters[0]] })
-        console.log('✅ Mensaje de despedida enviado con botón URL (sendHydrated)')
-      } else {
+      
+      try {
         await conn.sendMessage(m.chat, {
           image: imgBuffer,
           caption: byeMsg,
@@ -160,20 +161,24 @@ La música de Miku seguirá sonando fuerte aquí para ti.
             }
           }
         }, { quoted: m })
-        console.log('✅ Mensaje de despedida enviado correctamente (externalAdReply)')
+      } catch (imgErr) {
+        console.log('⚠️ No se pudo enviar la imagen del bye:', imgErr)
+      }
+
+      if (conn.sendHydrated) {
+        try {
+          await conn.sendHydrated(m.chat, '🎵 Canal Oficial', 'Toca el botón para abrir el canal', null, canalUrl, '🎵 Seguir Canal', null, null, [], { quoted: m, mentions: [m.messageStubParameters[0]] })
+          console.log('✅ Mensaje de despedida enviado con botón URL (sendHydrated)')
+        } catch (hydErr) {
+          console.log('⚠️ sendHydrated falló en bye, enviando texto fallback:', hydErr)
+          await conn.sendMessage(m.chat, { text: `${byeMsg}\n\n🎵 *Canal Oficial:*\n${canalUrl}`, mentions: [m.messageStubParameters[0]] }, { quoted: m })
+        }
+      } else {
+        await conn.sendMessage(m.chat, { text: `${byeMsg}\n\n🎵 *Canal Oficial:*\n${canalUrl}`, mentions: [m.messageStubParameters[0]] }, { quoted: m })
+        console.log('✅ Mensaje de despedida enviado como texto fallback')
       }
     } catch (error) {
-      console.log('❌ Error enviando despedida:', error)
-      
-      try {
-        await conn.sendMessage(m.chat, {
-          text: `${byeMsg}\n\n🎵 *Canal Oficial:*\n${canalUrl}`,
-          mentions: [m.messageStubParameters[0]]
-        }, { quoted: m })
-        console.log('✅ Mensaje de despedida enviado como fallback')
-      } catch (fallbackError) {
-        console.log('❌ Error en fallback de despedida:', fallbackError)
-      }
+      console.log('❌ Error enviando despedida (final):', error)
     }
   }
 }

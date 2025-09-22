@@ -280,14 +280,37 @@ _(Solo para administradores)_
   }
 
   // Manejo de navegación por botones
-  if (m.text && (m.text.startsWith('menu_') || m.text === 'menu')) {
-    if (m.text === 'menu') {
-      return await handler(m, { conn, usedPrefix, command: 'menu', args })
+  // Some clients/interactive messages return the pressed id in different fields.
+  const getPressedId = (msg) => {
+    try {
+      if (!msg) return null
+      // common normalized text
+      if (msg.text) return msg.text
+      // template quick reply/button
+      if (msg.selectedButtonId) return msg.selectedButtonId
+      if (msg.selectedId) return msg.selectedId
+      if (msg.selectedDisplayText) return msg.selectedDisplayText
+      // nativeFlowResponse -> paramsJson
+      const native = msg.nativeFlowResponseMessage || msg.interactiveResponseMessage || msg.nativeFlowResponse
+      if (native && native.paramsJson) {
+        try {
+          const p = JSON.parse(native.paramsJson)
+          if (p && p.id) return p.id
+        } catch (e) {}
+      }
+      // older interactiveResponse
+      if (msg.body && typeof msg.body === 'string' && msg.body.startsWith('menu_')) return msg.body
+    } catch (e) {
+      console.error('Error parsing pressed id:', e)
     }
+    return null
+  }
 
-    if (m.text.startsWith('menu_')) {
-      const menuCommand = m.text
-      return await handler(m, { conn, usedPrefix, command: menuCommand, args })
+  const pressedId = getPressedId(m) || getPressedId(m.msg) || getPressedId(m.message) || null
+  if (pressedId) {
+    if (pressedId === 'menu') return await handler(m, { conn, usedPrefix, command: 'menu', args })
+    if (pressedId.startsWith && pressedId.startsWith('menu_')) {
+      return await handler(m, { conn, usedPrefix, command: pressedId, args })
     }
   }
 }
