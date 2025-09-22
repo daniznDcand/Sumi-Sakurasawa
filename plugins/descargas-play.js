@@ -273,7 +273,7 @@ async function processDownload(conn, m, url, title, option) {
       
       if (!downloadUrl) {
         
-        const contentType = (option === 1 || option === 3) ? 'audio' : 'video';
+        const contentType = 'video';
         throw new Error(`❌ No se pudo obtener el enlace de ${contentType}. Las APIs pueden estar temporalmente fuera de servicio. Por favor intenta de nuevo en unos minutos.`);
       }
 
@@ -520,18 +520,20 @@ async function getDirectAudioUrl(url) {
 async function getVideoUrl(url) {
   const apis = [
     
-    { api: 'Google-YT-v3-Video', endpoint: `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${encodeURIComponent(url.split('v=')[1])}&key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY`, extractor: res => `https://www.googleapis.com/youtube/v3/videoStreams/${res?.items?.[0]?.id}` },
-    
+    { api: 'YTDL-Core-Video', endpoint: `https://ytdl-core.herokuapp.com/api/info?url=${encodeURIComponent(url)}`, extractor: res => res?.formats?.find(f => f.hasVideo && f.hasAudio)?.url },
     { api: 'YT1S-Video', endpoint: `https://yt1s.com/api/ajaxSearch/index`, 
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
       method: 'POST', 
       body: `q=${encodeURIComponent(url)}&vt=mp4`, 
       extractor: res => res?.links?.mp4?.mp4720?.url || res?.links?.mp4?.mp4480?.url 
     },
-    { api: 'YT-Simple', endpoint: `https://yt-download.org/api/button/mp4/720/${encodeURIComponent(url)}`, extractor: res => res?.dlink },
-    { api: 'Download-YT', endpoint: `https://api.downloadyt.com/download?url=${encodeURIComponent(url)}&format=mp4&quality=720`, extractor: res => res?.download_url },
+    { api: 'SaveTube-Video', endpoint: `https://savetube.me/api/v1/techtunes?url=${encodeURIComponent(url)}`, extractor: res => res?.data?.video_url },
     { api: 'YT-DLP-Web', endpoint: `https://yt-dlp-web.vercel.app/api/download?url=${encodeURIComponent(url)}&format=mp4`, extractor: res => res?.downloadUrl },
     { api: 'Widipe', endpoint: `https://widipe.com/download/ytdl?url=${encodeURIComponent(url)}`, extractor: res => res?.result?.mp4?.["720"]?.download || res?.result?.mp4?.["480"]?.download || res?.result?.mp4?.["360"]?.download },
+    { api: 'Y2Mate-Video', endpoint: `https://api-y2mate.onrender.com/api/download/video/${encodeURIComponent(url)}`, extractor: res => res?.download_url },
+    { api: 'SaveFrom-Video', endpoint: `https://api.savefrom.net/get-url?url=${encodeURIComponent(url)}&format=mp4`, extractor: res => res?.download_url },
+    { api: 'OnlineConverter-Video', endpoint: `https://www.onlinevideoconverter.pro/api/convert?url=${encodeURIComponent(url)}&format=mp4`, extractor: res => res?.download_url },
+    { api: 'VideoConverter', endpoint: `https://video-converter.org/api/button/${encodeURIComponent(url)}`, extractor: res => res?.download_link },
     { api: 'SaveFrom-Video', endpoint: `https://api.savefrom.net/get-url?url=${encodeURIComponent(url)}&format=mp4`, extractor: res => res?.download_url },
     { api: 'YouTube-Video-API', endpoint: `https://youtube-video-download1.p.rapidapi.com/dl?id=${encodeURIComponent(url.split('v=')[1])}`, extractor: res => res?.download_url },
     { api: 'Y2Mate-Video', endpoint: `https://api-y2mate.onrender.com/api/download/video/${encodeURIComponent(url)}`, extractor: res => res?.download_url },
@@ -702,6 +704,13 @@ handler.before = async (m, { conn }) => {
   
   console.log(`🎵 Processing option ${option} for "${user.lastYTSearch.title}"`);
 
+  
+  if (user.processingDownload) {
+    console.log(`⚠️ Ya está procesando una descarga, ignorando solicitud duplicada`);
+    return false;
+  }
+  
+  user.processingDownload = true;
   user.cebollinesDeducted = false;
 
   try {
@@ -715,10 +724,12 @@ handler.before = async (m, { conn }) => {
     
     
     user.lastYTSearch = null;
+    user.processingDownload = false;
     console.log(`✅ Download processed successfully for option ${option}`);
     
   } catch (error) {
     console.error(`❌ Error processing download:`, error);
+    user.processingDownload = false;
     await conn.reply(m.chat, `💙 Error al procesar la descarga: ${error.message}`, m);
   }
   
