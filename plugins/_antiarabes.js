@@ -1,3 +1,24 @@
+// ✅ Códigos de países latinoamericanos que NO deben ser bloqueados
+const latinAmericaCodes = [
+  /^(\+?51|51)\d*/,        // Perú ✅
+  /^(\+?52|52)\d*/,        // México ✅
+  /^(\+?53|53)\d*/,        // Cuba ✅
+  /^(\+?54|54)\d*/,        // Argentina ✅
+  /^(\+?55|55)\d*/,        // Brasil ✅
+  /^(\+?56|56)\d*/,        // Chile ✅
+  /^(\+?57|57)\d*/,        // Colombia ✅
+  /^(\+?58|58)\d*/,        // Venezuela ✅
+  /^(\+?591|591)\d*/,      // Bolivia ✅
+  /^(\+?592|592)\d*/,      // Guyana ✅
+  /^(\+?593|593)\d*/,      // Ecuador ✅
+  /^(\+?594|594)\d*/,      // Guayana Francesa ✅
+  /^(\+?595|595)\d*/,      // Paraguay ✅
+  /^(\+?596|596)\d*/,      // Martinica ✅
+  /^(\+?597|597)\d*/,      // Surinam ✅
+  /^(\+?598|598)\d*/,      // Uruguay ✅
+  /^(\+?599|599)\d*/,      // Antillas Neerlandesas ✅
+]
+
 const arabicSpamPatterns = [
   
   /^(\+?202|202)\d*/,      // Egipto
@@ -163,9 +184,6 @@ const arabicSpamPatterns = [
   /^(\+?998|998)\d*/,      // Uzbekistán
   
   
-  /^\+\d{1,4}\s?\d{8,15}$/,  
-  /^00\d{10,15}$/,           
-  /^\d{12,20}$/,             
 ]
 
 
@@ -175,11 +193,24 @@ const arabicCharacterPattern = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\
 function isArabicSpamNumber(phoneNumber) {
   if (!phoneNumber) return false
   
-
+  
   const cleanNumber = phoneNumber.replace(/[\s\-\(\)]/g, '')
   
   
-  return arabicSpamPatterns.some(pattern => pattern.test(cleanNumber))
+  const isLatinAmerica = latinAmericaCodes.some(pattern => pattern.test(cleanNumber))
+  if (isLatinAmerica) {
+    console.log(`✅ Número latinoamericano detectado (NO bloqueado): ${cleanNumber}`)
+    return false 
+  }
+  
+ 
+  const isSpam = arabicSpamPatterns.some(pattern => pattern.test(cleanNumber))
+  if (isSpam) {
+    console.log(`🚫 Número de spam detectado: ${cleanNumber}`)
+    return true
+  }
+  
+  return false
 }
 
 
@@ -217,13 +248,14 @@ const handler = async (m, { conn, isAdmin, isBotAdmin, isOwner }) => {
   if (!isBotAdmin) return
   
   try {
-    
     const senderNumber = m.sender.split('@')[0]
     const messageText = m.text || ''
     
+    console.log(`🔍 Anti-Árabes: Verificando número ${senderNumber}`)
+    
     
     if (isArabicSpam(senderNumber, messageText)) {
-      console.log(`🚫 Anti-Árabes: Detectado spam de ${senderNumber}`)
+      console.log(`🚫 Anti-Árabes: ¡SPAM DETECTADO! Número: ${senderNumber}`)
       
       
       await conn.sendMessage(m.chat, { delete: m.key })
@@ -232,13 +264,14 @@ const handler = async (m, { conn, isAdmin, isBotAdmin, isOwner }) => {
       const warningMsg = await conn.sendMessage(m.chat, {
         text: `🚫 *ANTI-ÁRABES ACTIVADO*\n\n` +
               `👤 *Usuario:* @${senderNumber}\n` +
-              `🔍 *Razón:* Número sospechoso de spam\n` +
+              `� *Número:* +${senderNumber}\n` +
+              `�🔍 *Razón:* Número sospechoso de spam\n` +
               `⚡ *Acción:* Usuario expulsado\n\n` +
-              `> *Este grupo está protegido contra spam de números árabes*`,
+              `> *Este grupo está protegido contra spam de números internacionales*`,
         mentions: [m.sender]
       })
       
-      
+     
       await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove')
       
       
@@ -249,6 +282,8 @@ const handler = async (m, { conn, isAdmin, isBotAdmin, isOwner }) => {
       }, 10000)
       
       return true
+    } else {
+      console.log(`✅ Anti-Árabes: Número verificado como legítimo: ${senderNumber}`)
     }
     
   } catch (error) {
