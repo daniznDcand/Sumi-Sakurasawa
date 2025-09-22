@@ -126,6 +126,9 @@ export async function before(m, { conn, participants, groupMetadata }) {
 ✨ Prepárate para disfrutar y compartir momentos geniales aquí con nosotros.
 
 📝 Para cualquier ayuda, escribe *#help*
+sigue canal para actualizaciones:
+
+https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o
 
 🎶 ¡Que la música te acompañe siempre!`
 

@@ -1,9 +1,21 @@
 const handler = async (m, { conn, usedPrefix, command, args }) => {
   console.log('🔍 Handler principal ejecutado con comando:', command)
   
-  let userId = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.sender
+  
+  let userId = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : (m.sender || m.chat)
+  if (!userId) {
+    console.log('❌ No se pudo obtener userId, usando chat:', m.chat)
+    userId = m.chat
+  }
+  
+  
+  if (!global.db) global.db = { data: { users: {} } }
+  if (!global.db.data) global.db.data = { users: {} }
+  if (!global.db.data.users) global.db.data.users = {}
+  if (!global.db.data.users[userId]) global.db.data.users[userId] = {}
+  
   let user = global.db.data.users[userId]
-  let name = conn.getName(userId)
+  let name = userId ? (conn.getName(userId) || 'Usuario') : 'Usuario'
   let _uptime = process.uptime() * 1000
   let uptime = clockString(_uptime)
   let totalreg = Object.keys(global.db.data.users).length
@@ -25,7 +37,7 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
 ┃ 🎤 *HATSUNE MIKU BOT* 🎤 ┃
 ╰━━━━━━━━━━━━━━━━━━━╯
 
-🌸 ¡Konnichiwa, @${userId.split('@')[0]}! 🌸
+🌸 ¡Konnichiwa, @${(userId && userId.split) ? userId.split('@')[0] : 'Usuario'}! 🌸
 
 ┏━━━━━━━━━━━━━━━━┓
 ┃ 💙 *Estado:* ${(conn.user.jid == global.conn.user.jid ? 'Principal ⚡️' : 'Sub-Bot 🔌')}
@@ -379,7 +391,11 @@ handler.before = async function (m, { conn, usedPrefix }) {
       text: buttonId,
       command: buttonId,
       args: [],
-      usedPrefix: '.'
+      usedPrefix: '.',
+      sender: m.sender || m.chat, 
+      mentionedJid: m.mentionedJid || [],
+      isGroup: m.isGroup || false,
+      chat: m.chat
     }
     
     try {
@@ -388,7 +404,7 @@ handler.before = async function (m, { conn, usedPrefix }) {
       return true 
     } catch (error) {
       console.log('❌ Error ejecutando comando de botón:', error)
-      await conn.reply(m.chat, `⚠️ Error procesando el comando: ${buttonId}`, m)
+      await conn.reply(m.chat, `⚠️ Error procesando el comando: ${buttonId}\n\nDetalles: ${error.message}`, m)
     }
   }
   
