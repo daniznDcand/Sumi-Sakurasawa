@@ -122,21 +122,21 @@ msgRetryCache,
 browser: mcode ? Browsers.macOS("Safari") : Browsers.ubuntu("Chrome"),
 version: version,
 generateHighQualityLinkPreview: true,
-keepAliveIntervalMs: 15000,
+keepAliveIntervalMs: 10000,
 markOnlineOnConnect: true,
 syncFullHistory: false,
 fireInitQueries: false,
 shouldSyncHistoryMessage: () => false,
-connectTimeoutMs: 120000,
-defaultQueryTimeoutMs: 120000,
+connectTimeoutMs: 180000,
+defaultQueryTimeoutMs: 180000,
 emitOwnEvents: false,
-qrTimeout: 300000,
-retryRequestDelayMs: 3000,
-maxMsgRetryCount: 8,
-pairingCodeTimeout: 300000,
+qrTimeout: 600000,
+retryRequestDelayMs: 2000,
+maxMsgRetryCount: 12,
+pairingCodeTimeout: 600000,
 transactionOpts: {
-maxCommitRetries: 15,
-delayBetweenTriesMs: 5000
+maxCommitRetries: 20,
+delayBetweenTriesMs: 3000
 },
 getMessage: async (key) => {
 if (store) {
@@ -144,6 +144,11 @@ const msg = await store.loadMessage(key.remoteJid, key.id)
 return msg?.message || undefined
 }
 return undefined
+},
+options: {
+chatsCache: true,
+reconnectMode: 'on-connection-lost',
+reconnectDelay: 5000
 }
 };
 
@@ -186,7 +191,7 @@ console.log(chalk.yellow(`🔄 Intento de reconexión ${sock.reconnectAttempts}/
       const notifyTo = (m && m.sender) ? m.sender : `${path.basename(pathMikuJadiBot)}@s.whatsapp.net`
       if (!sock._reconnectNotified && options.fromCommand && shouldNotifyUser(notifyTo) && isSocketReady(conn)) {
         try {
-          await conn.sendMessage(notifyTo, { text: `🔄 Intento de reconexión en proceso para la sesión +${path.basename(pathMikuJadiBot)}. Se intentará reconectar automáticamente.` }, { quoted: m }).catch(() => {})
+          await conn.sendMessage(notifyTo, { text: `🔄 Reconectando SubBot +${path.basename(pathMikuJadiBot)}... Intento ${sock.reconnectAttempts}/${sock.maxReconnectAttempts}` }, { quoted: m }).catch(() => {})
           sock._reconnectNotified = true
         } catch (e) {
           
@@ -197,21 +202,36 @@ console.log(chalk.yellow(`🔄 Intento de reconexión ${sock.reconnectAttempts}/
     }
 
 
-
-const waitMs = Math.min(5 * 60 * 1000, 5000 * sock.reconnectAttempts)
-await new Promise(resolve => setTimeout(resolve, waitMs))
+const baseWait = 10000 
+const exponentialBackoff = Math.min(5 * 60 * 1000, baseWait * Math.pow(2, sock.reconnectAttempts - 1))
+console.log(chalk.blue(`⏳ Esperando ${exponentialBackoff/1000}s antes de reconectar...`))
+await new Promise(resolve => setTimeout(resolve, exponentialBackoff))
 
 try {
 
 try {
 sock.ev.removeAllListeners()
-sock.ws.close()
+if (sock.ws && typeof sock.ws.close === 'function') {
+  sock.ws.close()
+}
 } catch (e) {
-
+  console.log('Error cerrando conexión anterior:', e.message)
 }
 
 
-sock = makeWASocket(connectionOptions)
+await new Promise(resolve => setTimeout(resolve, 2000))
+
+
+const reconnectOptions = {
+  ...connectionOptions,
+  connectTimeoutMs: 240000, 
+  defaultQueryTimeoutMs: 240000,
+  keepAliveIntervalMs: 8000, 
+  retryRequestDelayMs: 1500,
+  maxMsgRetryCount: 15
+}
+
+sock = makeWASocket(reconnectOptions)
 sock.reconnectAttempts = reconnectAttempts
 sock.maxReconnectAttempts = maxReconnectAttempts
 sock.lastActivity = Date.now()
@@ -225,7 +245,7 @@ sock.chats = sock.chats || {}
 sock.contacts = sock.contacts || {}
 sock.blocklist = sock.blocklist || []
 
-console.log('🔄 SubBot socket recreado en reconexión con propiedades')
+console.log(chalk.cyan('🔄 SubBot socket recreado con configuración optimizada'))
 
 
 sock.connectionUpdate = connectionUpdate.bind(sock)
@@ -243,15 +263,17 @@ console.log('🔍 Reconexión - Verificando handler:', {
 
 
 if (!(handlerModule && handlerModule.handler && typeof handlerModule.handler === 'function')) {
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 5; i++) {
     try {
       const H = await import(`../handler.js?update=${Date.now()}`)
       if (H && H.handler && typeof H.handler === 'function') {
         handlerModule = H
+        console.log(chalk.green('✅ Handler recargado exitosamente'))
         break
       }
     } catch (e) {
-      await new Promise(r => setTimeout(r, 1000))
+      console.log(`Intento ${i+1}/5 de recargar handler falló`)
+      await new Promise(r => setTimeout(r, 2000))
     }
   }
 }
@@ -259,15 +281,20 @@ if (!(handlerModule && handlerModule.handler && typeof handlerModule.handler ===
 if (handlerModule && handlerModule.handler && typeof handlerModule.handler === 'function') {
   sock.handler = handlerModule.handler.bind(sock)
   try { sock.ev.removeAllListeners('messages.upsert') } catch (e) {}
-  console.log('✅ Handler reconfigurado en reconexión')
+  sock.ev.on('messages.upsert', sock.handler)
+  console.log(chalk.green('✅ Handler reconfigurado en reconexión'))
 }
 
+console.log(chalk.green(`✅ Reconexión ${sock.reconnectAttempts} completada exitosamente`))
 return true
 } catch (error) {
-console.error(`❌ Error en reconexión: ${error.message}`)
+console.error(chalk.red(`❌ Error en reconexión ${sock.reconnectAttempts}: ${error.message}`))
+
+await new Promise(resolve => setTimeout(resolve, 5000))
 return false
 }
 }
+console.log(chalk.red(`❌ Máximo de reconexiones alcanzado (${sock.maxReconnectAttempts})`))
 return false
 }
 
@@ -306,22 +333,41 @@ let phoneNumber = (m && m.sender) ? m.sender.split('@')[0] : ''
 try {
 let secret
 let attempts = 0
-const maxAttempts = 3
+const maxAttempts = 5
+
+
+phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
+if (!phoneNumber || phoneNumber.length < 10) {
+  await m.reply(`❌ Error: Número de teléfono inválido. Use el comando desde su número de WhatsApp registrado.`)
+  return
+}
 
 while (!secret && attempts < maxAttempts) {
 try {
+
+if (attempts > 0) {
+  await new Promise(resolve => setTimeout(resolve, 3000))
+}
+
+console.log(chalk.cyan(`🔄 Intento ${attempts + 1}/${maxAttempts} de generar código para +${phoneNumber}`))
 secret = await sock.requestPairingCode(phoneNumber)
-if (secret) {
+
+if (secret && secret.length >= 6) {
 secret = secret?.match(/.{1,4}/g)?.join("-") || secret
+console.log(chalk.green(`✅ Código generado exitosamente: ${secret}`))
 break
+} else {
+console.log(chalk.yellow(`⚠️ Código inválido recibido: ${secret}`))
+secret = null
 }
 } catch (err) {
 attempts++
-console.log(`🔄 Intento ${attempts} de generar código...`)
+console.log(chalk.red(`❌ Error en intento ${attempts}: ${err.message}`))
 if (attempts < maxAttempts) {
-await new Promise(resolve => setTimeout(resolve, 2000))
+console.log(`🔄 Reintentando en 3 segundos...`)
 }
 }
+attempts++
 }
 
   if (secret && m && conn) {
@@ -381,18 +427,80 @@ const endSesion = async (loaded) => {
   if (_ending) return
   _ending = true
   try {
+    console.log(chalk.yellow(`🔚 Finalizando sesión para +${path.basename(pathMikuJadiBot)}, loaded: ${loaded}`))
+    
     if (!loaded) {
-      try { sock.ws.close() } catch {}
-      try { sock.ev.removeAllListeners() } catch {}
-        
-        try { if (sock._saveCredsInterval) { clearInterval(sock._saveCredsInterval); sock._saveCredsInterval = null } } catch (e) {}
-        try { if (sock._presenceInterval) { clearInterval(sock._presenceInterval); sock._presenceInterval = null } } catch (e) {}
-      let i = global.conns.indexOf(sock)
-      if (i >= 0) {
-        delete global.conns[i]
-        global.conns.splice(i, 1)
+      
+      try { 
+        if (sock._saveCredsInterval) { 
+          clearInterval(sock._saveCredsInterval); 
+          sock._saveCredsInterval = null 
+        } 
+      } catch (e) {}
+      
+      try { 
+        if (sock._keepAliveInterval) { 
+          clearInterval(sock._keepAliveInterval); 
+          sock._keepAliveInterval = null 
+        } 
+      } catch (e) {}
+      
+      try { 
+        if (sock._inactivityMonitor) { 
+          clearInterval(sock._inactivityMonitor); 
+          sock._inactivityMonitor = null 
+        } 
+      } catch (e) {}
+      
+      try { 
+        if (sock._presenceInterval) { 
+          clearInterval(sock._presenceInterval); 
+          sock._presenceInterval = null 
+        } 
+      } catch (e) {}
+      
+      
+      try { 
+        if (sock.ws && typeof sock.ws.close === 'function') {
+          sock.ws.close()
+        }
+      } catch (e) {
+        console.log('Error cerrando WebSocket:', e.message)
       }
+      
+      
+      try { 
+        sock.ev.removeAllListeners() 
+      } catch (e) {
+        console.log('Error removiendo listeners:', e.message)
+      }
+      
+      
+      try {
+        let i = global.conns.findIndex(c => c.user?.jid === sock.user?.jid)
+        if (i >= 0) {
+          delete global.conns[i]
+          global.conns.splice(i, 1)
+          console.log(chalk.blue(`🗑️ SubBot removido de global.conns (posición ${i})`))
+        }
+      } catch (e) {
+        console.log('Error removiendo de global.conns:', e.message)
+      }
+      
+      
+      try {
+        sock.chats = null
+        sock.contacts = null
+        sock.blocklist = null
+        sock.handler = null
+        sock.connectionUpdate = null
+        sock.credsUpdate = null
+      } catch (e) {}
+      
+      console.log(chalk.green(`✅ Sesión +${path.basename(pathMikuJadiBot)} finalizada correctamente`))
     }
+  } catch (error) {
+    console.error(`❌ Error durante finalización de sesión: ${error.message}`)
   } finally {
     _ending = false
   }
@@ -411,29 +519,40 @@ const shouldReconnect = [
 500,  
 502,  
 503,  
-429   
+429,  
+404,  
+422,  
+403,  
+425,  
+426,  
 ].includes(reason)
 
+
+const criticalReconnect = [428, 440, 515].includes(reason)
+if (criticalReconnect && sock.maxReconnectAttempts < 15) {
+  sock.maxReconnectAttempts = 15
+  console.log(chalk.cyan(`🔄 Aumentando intentos de reconexión a ${sock.maxReconnectAttempts} por código crítico ${reason}`))
+}
+
 if (shouldReconnect && sock.reconnectAttempts < sock.maxReconnectAttempts) {
-console.log(chalk.cyan(`📣 Preparando reconexión automática...`))
+console.log(chalk.cyan(`📣 Preparando reconexión automática para código ${reason}...`))
 const reconnected = await attemptReconnect()
 if (!reconnected) {
 console.log(chalk.red(`❌ Falló la reconexión automática para +${path.basename(pathMikuJadiBot)}`))
 await endSesion(false)
 }
-} else if (reason === 401 || reason === 405) {
-
-  console.log(chalk.red(`🗑️ Sesión inválida, eliminando archivos para +${path.basename(pathMikuJadiBot)}`))
+} else if (reason === 401) {
+  
+  console.log(chalk.red(`🗑️ Sesión expirada (401), eliminando archivos para +${path.basename(pathMikuJadiBot)}`))
   try {
     fs.rmSync(pathMikuJadiBot, { recursive: true, force: true })
     
     const recipient = (m && m.sender) ? m.sender : `${path.basename(pathMikuJadiBot)}@s.whatsapp.net`
     try {
-      
       sock._notifiedExpired = sock._notifiedExpired || false
       if (options.fromCommand && !sock._notifiedExpired && shouldNotifyUser(recipient)) {
         await conn.sendMessage(recipient, {
-          text: '*SESIÓN EXPIRADA*\n\n> *Vuelva a conectarse para crear una nueva sesión*'
+          text: '*🔄 SESIÓN EXPIRADA*\n\n> La sesión del SubBot ha expirado y debe ser revinculada.\n> Use .qr o .code para crear una nueva sesión.\n> *Sus datos están seguros y se mantendrán.*'
         }, { quoted: m || null }).catch(() => {})
         sock._notifiedExpired = true
       }
@@ -444,8 +563,20 @@ await endSesion(false)
     console.error(`Error eliminando sesión: ${error.message}`)
   }
   await endSesion(false)
+} else if (reason === 405) {
+  
+  console.log(chalk.orange(`🔄 Método no permitido (405), reintentando con configuración conservadora...`))
+  if (sock.reconnectAttempts < 5) {
+    await new Promise(resolve => setTimeout(resolve, 30000)) // Esperar 30s
+    const reconnected = await attemptReconnect()
+    if (!reconnected) await endSesion(false)
+  } else {
+    console.log(chalk.red(`❌ Demasiados intentos 405, eliminando sesión`))
+    try { fs.rmSync(pathMikuJadiBot, { recursive: true, force: true }) } catch (e) {}
+    await endSesion(false)
+  }
 } else {
-console.log(chalk.gray(`⚠️ Cerrando sesión sin reconexión. Código: ${reason}`))
+console.log(chalk.gray(`⚠️ Cerrando sesión sin reconexión. Código: ${reason}, Intentos: ${sock.reconnectAttempts}/${sock.maxReconnectAttempts}`))
 await endSesion(false)
 }
 }
@@ -465,10 +596,77 @@ try {
     if (!sock._saveCredsInterval) {
       sock._saveCredsInterval = setInterval(() => {
         try { saveCreds() } catch (e) {}
-      }, 1000 * 60 * 10) 
+      }, 1000 * 60 * 5) 
     }
   }
 } catch (e) {}
+
+
+try {
+  if (!sock._keepAliveInterval) {
+    sock._keepAliveInterval = setInterval(async () => {
+      try {
+        if (isSocketReady(sock)) {
+          
+          if (typeof sock.updatePresence === 'function') {
+            await sock.updatePresence('available').catch(() => {})
+          }
+          
+          
+          if (typeof sock.ws?.ping === 'function') {
+            sock.ws.ping().catch(() => {})
+          }
+          
+          
+          sock.lastActivity = Date.now()
+          
+          
+          const now = Date.now()
+          if (!sock._lastHealthLog || (now - sock._lastHealthLog) > 5 * 60 * 1000) {
+            const uptime = msToTime(now - sock.sessionStartTime)
+            console.log(chalk.green(`💚 SubBot +${path.basename(pathMikuJadiBot)} - Uptime: ${uptime}, Reconexiones: ${sock.reconnectAttempts}`))
+            sock._lastHealthLog = now
+          }
+        } else {
+          console.log(chalk.yellow(`⚠️ Socket no listo para +${path.basename(pathMikuJadiBot)}, estado: ${sock?.ws?.socket?.readyState}`))
+        }
+      } catch (e) {
+        console.error(`Error en keep-alive para +${path.basename(pathMikuJadiBot)}:`, e.message)
+      }
+    }, 15000) 
+  }
+} catch (e) {
+  console.error('Error configurando keep-alive:', e.message)
+}
+
+
+try {
+  if (!sock._inactivityMonitor) {
+    sock._inactivityMonitor = setInterval(() => {
+      try {
+        const now = Date.now()
+        const inactiveTime = now - (sock.lastActivity || now)
+        
+        
+        if (inactiveTime > 30 * 60 * 1000) {
+          console.log(chalk.yellow(`⏰ SubBot +${path.basename(pathMikuJadiBot)} inactivo por ${msToTime(inactiveTime)}, reactivando...`))
+          
+          if (isSocketReady(sock)) {
+           
+            sock.updatePresence('available').catch(() => {})
+            sock.lastActivity = now
+          } else {
+            console.log(chalk.red(`❌ Socket no responde después de inactividad, podría necesitar reconexión`))
+          }
+        }
+      } catch (e) {
+        console.error('Error en monitor de inactividad:', e.message)
+      }
+    }, 5 * 60 * 1000) 
+  }
+} catch (e) {
+  console.error('Error configurando monitor de inactividad:', e.message)
+}
 
 
 try {
@@ -607,16 +805,54 @@ sock.lastActivity = Date.now()
 }
 
 
+
 setInterval(async () => {
-if (!sock.user) {
-try { sock.ws.close() } catch (e) {      
+const currentTime = Date.now()
+const cleanupThreshold = 5 * 60 * 1000 
+
+try {
+ 
+  const isValidSocket = sock && 
+                       sock.user && 
+                       sock.user.jid && 
+                       isSocketReady(sock) &&
+                       (currentTime - (sock.lastActivity || 0)) < cleanupThreshold
+
+  if (!isValidSocket) {
+    const inactiveTime = sock?.lastActivity ? currentTime - sock.lastActivity : 'desconocido'
+    console.log(chalk.red(`🧹 Limpiando SubBot inválido +${path.basename(pathMikuJadiBot)} - Inactivo: ${typeof inactiveTime === 'number' ? msToTime(inactiveTime) : inactiveTime}`))
+    
+    
+    try { 
+      if (sock?.ws && typeof sock.ws.close === 'function') {
+        sock.ws.close()
+      }
+    } catch (e) {}
+    
+    try { sock.ev.removeAllListeners() } catch (e) {}
+    
+   
+    const indices = []
+    global.conns.forEach((conn, index) => {
+      if (!conn || !conn.user || !isSocketReady(conn) || 
+          (sock.user && conn.user.jid === sock.user.jid)) {
+        indices.push(index)
+      }
+    })
+    
+    
+    indices.reverse().forEach(i => {
+      if (global.conns[i]) {
+        console.log(chalk.blue(`🗑️ Removiendo conexión inválida en índice ${i}`))
+        delete global.conns[i]
+        global.conns.splice(i, 1)
+      }
+    })
+  }
+} catch (error) {
+  console.error(`Error en monitor de limpieza: ${error.message}`)
 }
-sock.ev.removeAllListeners()
-let i = global.conns.indexOf(sock)                
-if (i < 0) return
-delete global.conns[i]
-global.conns.splice(i, 1)
-}}, 60000)
+}, 2 * 60 * 1000) 
 
 let handlerModule = await import('../handler.js')
 let creloadHandler = async function (restatConn) {
