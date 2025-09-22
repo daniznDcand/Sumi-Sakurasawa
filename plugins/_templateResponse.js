@@ -8,6 +8,12 @@ return
 if (!m.message) {
 return
 }
+
+
+if (m.isMenu) {
+return
+}
+
 if (!(m.message.buttonsResponseMessage || m.message.templateButtonReplyMessage || m.message.listResponseMessage || m.message.interactiveResponseMessage)) {
 return
 }
@@ -21,6 +27,12 @@ id = m.message.listResponseMessage.singleSelectReply?.selectedRowId;
 } else if (m.message.interactiveResponseMessage) {
 id = JSON.parse(m.message.interactiveResponseMessage.nativeFlowResponseMessage.paramsJson).id
 }
+
+
+if (id && (id.startsWith('menu') || id === 'menu')) {
+return
+}
+
 const text = m.message.buttonsResponseMessage?.selectedDisplayText || m.message.templateButtonReplyMessage?.selectedDisplayText || m.message.listResponseMessage?.title
 let isIdMessage = false
 let usedPrefix
