@@ -146,7 +146,9 @@ async function processDownload(conn, m, url, title, option) {
       mimeType = 'audio/mpeg';
       
       if (!downloadUrl) {
-        throw new Error("No se pudo obtener el enlace de audio desde ninguna API.");
+        
+        const contentType = (option === 1 || option === 3) ? 'audio' : 'video';
+        throw new Error(`❌ No se pudo obtener el enlace de ${contentType}. Las APIs pueden estar temporalmente fuera de servicio. Por favor intenta de nuevo en unos minutos.`);
       }
 
       console.log(`Audio URL obtenida: ${downloadUrl}`);
@@ -173,7 +175,9 @@ async function processDownload(conn, m, url, title, option) {
       mimeType = 'video/mp4';
       
       if (!downloadUrl) {
-        throw new Error("No se pudo obtener el enlace de video desde ninguna API.");
+        
+        const contentType = (option === 1 || option === 3) ? 'audio' : 'video';
+        throw new Error(`❌ No se pudo obtener el enlace de ${contentType}. Las APIs pueden estar temporalmente fuera de servicio. Por favor intenta de nuevo en unos minutos.`);
       }
 
       console.log(`Video URL obtenida: ${downloadUrl}`);
@@ -218,13 +222,22 @@ async function fetchFromApis(apis) {
     try {
       console.log(`Probando ${apis[i].api}: ${apis[i].endpoint}`);
       
-      const response = await fetch(apis[i].endpoint, {
-        method: 'GET',
+      
+      const fetchOptions = {
+        method: apis[i].method || 'GET',
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          ...apis[i].headers
         },
-        timeout: 15000
-      });
+        timeout: 20000 
+      };
+      
+      
+      if (apis[i].body) {
+        fetchOptions.body = apis[i].body;
+      }
+      
+      const response = await fetch(apis[i].endpoint, fetchOptions);
       
       if (!response.ok) {
         console.log(`${apis[i].api} responded with status: ${response.status}`);
@@ -234,13 +247,21 @@ async function fetchFromApis(apis) {
       const apiJson = await response.json();
       console.log(`${apis[i].api} response:`, JSON.stringify(apiJson, null, 2));
       
-      const downloadUrl = apis[i].extractor(apiJson);
       
-      if (downloadUrl && isValidUrl(downloadUrl)) {
-        console.log(`✓ ${apis[i].api} devolvió URL válida: ${downloadUrl}`);
-        return downloadUrl;
+      if (apis[i].api === 'API.Video' || apis[i].api === 'API.Video-Audio') {
+        const downloadUrl = await handleApiVideoResponse(apiJson, apis[i].api);
+        if (downloadUrl && isValidUrl(downloadUrl)) {
+          console.log(`✓ ${apis[i].api} devolvió URL válida: ${downloadUrl}`);
+          return downloadUrl;
+        }
       } else {
-        console.log(`✗ ${apis[i].api} no devolvió URL válida:`, downloadUrl);
+        const downloadUrl = apis[i].extractor(apiJson);
+        if (downloadUrl && isValidUrl(downloadUrl)) {
+          console.log(`✓ ${apis[i].api} devolvió URL válida: ${downloadUrl}`);
+          return downloadUrl;
+        } else {
+          console.log(`✗ ${apis[i].api} no devolvió URL válida:`, downloadUrl);
+        }
       }
       
     } catch (error) {
@@ -252,26 +273,162 @@ async function fetchFromApis(apis) {
   return null;
 }
 
+
+async function handleApiVideoResponse(response, apiType) {
+  try {
+    
+    if (response.videoId) {
+      console.log(`📹 ${apiType} videoId: ${response.videoId}`);
+      
+      
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      
+      const videoDetailResponse = await fetch(`https://sandbox.api.video/videos/${response.videoId}`, {
+        headers: {
+          'Authorization': 'Bearer h92qspHJpE3iiOgKH6A5MknP6ylbP44ODKfLAr9VqV1',
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (videoDetailResponse.ok) {
+        const videoDetails = await videoDetailResponse.json();
+        console.log(`📹 ${apiType} details:`, JSON.stringify(videoDetails, null, 2));
+        
+        
+        if (apiType === 'API.Video-Audio') {
+          return videoDetails.assets?.hls || 
+                 videoDetails.assets?.mp4 || 
+                 videoDetails.source?.uri ||
+                 `https://sandbox.api.video/videos/${response.videoId}/source`;
+        }
+        
+       
+        return videoDetails.assets?.mp4 || 
+               videoDetails.source?.uri || 
+               videoDetails.player?.src ||
+               `https://sandbox.api.video/videos/${response.videoId}/source`;
+      }
+    }
+    
+    
+    if (apiType === 'API.Video-Audio') {
+      return response.assets?.hls || response.assets?.mp4 || response.source?.uri;
+    }
+    
+    return response.assets?.mp4 || response.source?.uri || response.player?.src;
+    
+  } catch (error) {
+    console.error(`❌ Error procesando respuesta de ${apiType}:`, error.message);
+    return null;
+  }
+}
+
 async function getAudioUrl(url) {
   const apis = [
-    { api: 'StellarWA', endpoint: `https://api.stellarwa.xyz/dow/ytmp3?url=${encodeURIComponent(url)}&apikey=Diamond`, extractor: res => res?.data?.dl },
-    { api: 'Lolhuman', endpoint: `https://api.lolhuman.xyz/api/ytaudio?apikey=GataDios&url=${encodeURIComponent(url)}`, extractor: res => res?.result?.link },
+    
+    { api: 'YT-DLP-Web', endpoint: `https://yt-dlp-web.vercel.app/api/download?url=${encodeURIComponent(url)}&format=mp3`, extractor: res => res?.downloadUrl },
     { api: 'Widipe', endpoint: `https://widipe.com/download/ytdl?url=${encodeURIComponent(url)}`, extractor: res => res?.result?.mp3?.["128"]?.download },
-    { api: 'ApiFlash', endpoint: `https://api.apiflash.com/ytdl?url=${encodeURIComponent(url)}&format=mp3`, extractor: res => res?.download },
-    { api: 'NeoxrAPI', endpoint: `https://api.neoxr.my.id/api/youtube?url=${encodeURIComponent(url)}&type=audio`, extractor: res => res?.data?.url }
+    { api: 'SaveFrom-API', endpoint: `https://api.savefrom.net/get-url?url=${encodeURIComponent(url)}&format=mp3`, extractor: res => res?.download_url },
+    { api: 'Y2Mate-Alternative', endpoint: `https://yt-api.p.rapidapi.com/dl?id=${encodeURIComponent(url.split('v=')[1])}&geo=US&x-cg-partnerid=api-savefrom-net`, extractor: res => res?.audio?.['128']?.url },
+    { api: 'YouTube-API', endpoint: `https://youtube-mp36.p.rapidapi.com/dl?id=${encodeURIComponent(url.split('v=')[1])}`, extractor: res => res?.link },
+    
+    { api: 'API.Video-Audio', endpoint: `https://sandbox.api.video/videos`, extractor: res => res?.assets?.hls, 
+      headers: { 
+        'Authorization': 'Bearer h92qspHJpE3iiOgKH6A5MknP6ylbP44ODKfLAr9VqV1',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }, 
+      method: 'POST', 
+      body: JSON.stringify({ 
+        title: `YouTube Audio Download - ${url.split('v=')[1]}`,
+        source: url,
+        public: false
+      }) 
+    },
+    
+    { api: 'Y2Mate', endpoint: `https://api-y2mate.onrender.com/api/download/audio/${encodeURIComponent(url)}`, extractor: res => res?.download_url },
+    { api: 'Cobalt', endpoint: `https://co.wuk.sh/api/json`, extractor: res => res?.url, 
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, 
+      method: 'POST', 
+      body: JSON.stringify({ url, vQuality: 'max', aFormat: 'mp3' }) 
+    },
+    
+    { api: 'StellarWA', endpoint: `https://api.stellarwa.xyz/dow/ytmp3?url=${encodeURIComponent(url)}&apikey=Diamond`, extractor: res => res?.data?.dl },
+    { api: 'Lolhuman', endpoint: `https://api.lolhuman.xyz/api/ytaudio?apikey=GataDios&url=${encodeURIComponent(url)}`, extractor: res => res?.result?.link }
   ];
-  return await fetchFromApis(apis);
+  
+  
+  const result = await fetchFromApis(apis);
+  if (result) return result;
+  
+  
+  try {
+    console.log('🔄 Intentando método directo para audio como último recurso...');
+    return await getDirectAudioUrl(url);
+  } catch (error) {
+    console.error('❌ Método directo para audio también falló:', error.message);
+    return null;
+  }
 }
 
 
+async function getDirectAudioUrl(url) {
+  
+  throw new Error('Método directo de audio no disponible - todas las APIs fallaron');
+}
+
 async function getVideoUrl(url) {
   const apis = [
-    { api: 'Lolhuman', endpoint: `https://api.lolhuman.xyz/api/ytvideo?apikey=GataDios&url=${encodeURIComponent(url)}`, extractor: res => res?.result?.link },
-    { api: 'Widipe', endpoint: `https://widipe.com/download/ytdl?url=${encodeURIComponent(url)}`, extractor: res => res?.result?.mp4?.["720"]?.download || res?.result?.mp4?.["480"]?.download },
-    { api: 'ApiFlash', endpoint: `https://api.apiflash.com/ytdl?url=${encodeURIComponent(url)}&format=mp4`, extractor: res => res?.download },
-    { api: 'NeoxrAPI', endpoint: `https://api.neoxr.my.id/api/youtube?url=${encodeURIComponent(url)}&type=video`, extractor: res => res?.data?.url }
+    
+    { api: 'YT-DLP-Web', endpoint: `https://yt-dlp-web.vercel.app/api/download?url=${encodeURIComponent(url)}&format=mp4`, extractor: res => res?.downloadUrl },
+    { api: 'Widipe', endpoint: `https://widipe.com/download/ytdl?url=${encodeURIComponent(url)}`, extractor: res => res?.result?.mp4?.["720"]?.download || res?.result?.mp4?.["480"]?.download || res?.result?.mp4?.["360"]?.download },
+    { api: 'SaveFrom-Video', endpoint: `https://api.savefrom.net/get-url?url=${encodeURIComponent(url)}&format=mp4`, extractor: res => res?.download_url },
+    { api: 'YouTube-Video-API', endpoint: `https://youtube-video-download1.p.rapidapi.com/dl?id=${encodeURIComponent(url.split('v=')[1])}`, extractor: res => res?.download_url },
+    { api: 'Y2Mate-Video', endpoint: `https://api-y2mate.onrender.com/api/download/video/${encodeURIComponent(url)}`, extractor: res => res?.download_url },
+    
+    { api: 'API.Video', endpoint: `https://sandbox.api.video/videos`, extractor: res => res?.assets?.mp4, 
+      headers: { 
+        'Authorization': 'Bearer h92qspHJpE3iiOgKH6A5MknP6ylbP44ODKfLAr9VqV1',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }, 
+      method: 'POST', 
+      body: JSON.stringify({ 
+        title: `YouTube Download - ${url.split('v=')[1]}`,
+        source: url,
+        public: false
+      }) 
+    },
+    
+    { api: 'Cobalt', endpoint: `https://co.wuk.sh/api/json`, extractor: res => res?.url, 
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, 
+      method: 'POST', 
+      body: JSON.stringify({ url, vQuality: '720', vCodec: 'h264', aFormat: 'mp3' }) 
+    },
+    { api: 'SaveTube', endpoint: `https://savetube.me/api/v1/techtunes?url=${encodeURIComponent(url)}`, extractor: res => res?.data?.video_url },
+    
+    { api: 'Lolhuman', endpoint: `https://api.lolhuman.xyz/api/ytvideo?apikey=GataDios&url=${encodeURIComponent(url)}`, extractor: res => res?.result?.link }
   ];
-  return await fetchFromApis(apis);
+  
+  
+  const result = await fetchFromApis(apis);
+  if (result) return result;
+  
+  
+  try {
+    console.log('🔄 Intentando método directo como último recurso...');
+    return await getDirectVideoUrl(url);
+  } catch (error) {
+    console.error('❌ Método directo también falló:', error.message);
+    return null;
+  }
+}
+
+
+async function getDirectVideoUrl(url) {
+  
+  throw new Error('Método directo no disponible - todas las APIs fallaron');
 }
 
 handler.before = async (m, { conn }) => {
