@@ -42,25 +42,7 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
     const footer = '🌱 Powered by (ㅎㅊDEPOOLㅊㅎ)'
     const menuGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
-    
-    await conn.sendMessage(m.chat, {
-      video: { url: menuGif },
-      caption: text,
-      gifPlayback: true,
-      contextInfo: {
-        externalAdReply: {
-          title: footer,
-          body: '🎤 Hatsune Miku Bot 🎤',
-          thumbnailUrl: menuGif,
-          sourceUrl: 'https://github.com/Brauliovh3/HATSUNE-MIKU',
-          mediaType: 1,
-          renderLargerThumbnail: true
-        }
-      }
-    }, { quoted: m })
-
-    
-    return conn.sendNCarousel(m.chat, 'Selecciona una opción:', footer, null, buttons, null, null, null, m)
+    return conn.sendNCarousel(m.chat, text, footer, menuGif, buttons, null, null, null, m)
   }
 
   if (command === 'menu_descargas' || m.text === 'menu_descargas') {
