@@ -216,6 +216,24 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
                       '🕒 Uptime: 24h 30m')
     }
   }
+
+  // EJEMPLO DE USO DE LAS FUNCIONES AUXILIARES
+  if (command === 'ejemplo_dinamico') {
+    const dynamicButtons = [
+      { id: 'dynamic_1', text: '🚀 Acción 1' },
+      { id: 'dynamic_2', text: '⚡ Acción 2' },
+      { id: 'dynamic_3', text: '🎯 Acción 3' }
+    ]
+
+    const buttonMsg = createInteractiveButtons(
+      '🔥 BOTONES DINÁMICOS',
+      'Estos botones se crearon usando una función auxiliar reutilizable.',
+      dynamicButtons,
+      '💙 Footer personalizado'
+    )
+
+    return conn.sendMessage(m.chat, buttonMsg, { quoted: m })
+  }
 }
 
 // EJEMPLO AVANZADO: FUNCIÓN PARA CREAR BOTONES DINÁMICOS
@@ -241,24 +259,6 @@ export const createInteractiveList = (title, description, sections, buttonText =
     buttonText: buttonText,
     sections: sections
   }
-}
-
-// EJEMPLO DE USO DE LAS FUNCIONES AUXILIARES
-if (command === 'ejemplo_dinamico') {
-  const dynamicButtons = [
-    { id: 'dynamic_1', text: '🚀 Acción 1' },
-    { id: 'dynamic_2', text: '⚡ Acción 2' },
-    { id: 'dynamic_3', text: '🎯 Acción 3' }
-  ]
-
-  const buttonMsg = createInteractiveButtons(
-    '🔥 BOTONES DINÁMICOS',
-    'Estos botones se crearon usando una función auxiliar reutilizable.',
-    dynamicButtons,
-    '💙 Footer personalizado'
-  )
-
-  return conn.sendMessage(m.chat, buttonMsg, { quoted: m })
 }
 
 handler.help = ['botones1', 'botones2', 'lista', 'menuprincipal', 'ejemplo_dinamico']
