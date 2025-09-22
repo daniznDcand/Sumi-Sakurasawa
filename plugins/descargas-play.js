@@ -215,6 +215,10 @@ async function processDownload(conn, m, url, title, option) {
 async function getAudioUrl(videoUrl) {
   const apis = [
     {
+      url: `https://api.stellarwa.xyz/dow/ytmp3?url=${encodeURIComponent(videoUrl)}&apikey=Diamond`,
+      parser: (data) => data?.download || data?.result?.download || data?.url
+    },
+    {
       url: `https://api.agatz.xyz/api/ytmp3?url=${encodeURIComponent(videoUrl)}`,
       parser: (data) => data?.data?.download
     },
