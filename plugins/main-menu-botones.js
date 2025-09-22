@@ -82,7 +82,7 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
 
 💙 *Escribe cualquier comando para usarlo*`
 
-    const footer = '🎵 Módulo de Descargas - Hatsune Miku Bot'
+    const footer = '🎵 Módulo de Descargas'
     
     const descargasGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
