@@ -3,6 +3,31 @@ import fetch from 'node-fetch'
 export async function before(m, { conn, participants, groupMetadata }) {
   try {
     
+    if (m.message?.interactiveResponseMessage || m.message?.templateButtonReplyMessage || m.message?.buttonsResponseMessage) {
+      let buttonId = null
+      
+      if (m.message.templateButtonReplyMessage) {
+        buttonId = m.message.templateButtonReplyMessage.selectedId
+      } else if (m.message.buttonsResponseMessage) {
+        buttonId = m.message.buttonsResponseMessage.selectedButtonId
+      } else if (m.message.interactiveResponseMessage) {
+        try {
+          const paramsJson = m.message.interactiveResponseMessage.nativeFlowResponseMessage?.paramsJson
+          if (paramsJson) {
+            const params = JSON.parse(paramsJson)
+            buttonId = params.id
+          }
+        } catch (e) {}
+      }
+      
+      if (buttonId === 'ver_canal_button') {
+        console.log('🎵 Botón de canal detectado en welcome')
+        const canalUrl = 'https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
+        await conn.reply(m.chat, `🎵 *¡Únete a nuestro canal oficial!*\n\n${canalUrl}\n\n💙 ¡Te esperamos para más contenido de Miku!`, m)
+        return true
+      }
+    }
+    
     if (!m.messageStubType || !m.isGroup) return true
     
     
@@ -51,12 +76,12 @@ export async function before(m, { conn, participants, groupMetadata }) {
         }
 
         
-        const canalContext = {
+        const cleanRcanal = {
           contextInfo: {
             externalAdReply: {
               showAdAttribution: true,
-              title: 'ver canal',
-              body: 'ver canal',
+              title: '🎵 Canal Oficial Hatsune Miku',
+              body: 'Toca aquí para seguir nuestro canal',
               mediaUrl: null,
               description: null,
               previewType: "PHOTO",
@@ -68,18 +93,19 @@ export async function before(m, { conn, participants, groupMetadata }) {
           }
         }
 
-        
+       
+        console.log('📤 Enviando welcome con rcanal limpio (sin newsletter)...')
         return await conn.sendMessage(jid, {
           image: ppBuffer,
           caption: text,
           mentions: [user],
-          ...canalContext
+          ...cleanRcanal
         }, { quoted })
 
       } catch (err) {
         console.log('sendSingleWelcome error:', err)
         
-        return await conn.reply(jid, text, quoted, { mentions: [user], ...global.rcanal })
+        return await conn.reply(jid, `${text}\n\n🎵 *Ver Canal:* ${canalUrl}`, quoted, { mentions: [user] })
       }
     }
 
