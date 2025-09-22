@@ -38,16 +38,10 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
 
 💙 ¡Disfruta de la experiencia Miku! ✨`
     
-    const footer = '🌱 Powered by Hatsune Miku Bot | Presiona un botón para continuar'
-    
-    
-    await conn.sendMessage(m.chat, {
-      video: { url: 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4' },
-      gifPlayback: true,
-      caption: '🎵 *¡HATSUNE MIKU BOT!* 🎵\n💙 Preparando menú...'
-    }, { quoted: m })
+    const footer = '🌱 Powered by (ㅎㅊDEPOOLㅊㅎ)'
+    const menuGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
-    return conn.sendNCarousel(m.chat, text, footer, null, buttons, null, null, null, m)
+    return conn.sendNCarousel(m.chat, text, footer, menuGif, buttons, null, null, null, m)
   }
 
   if (command === 'menu_descargas' || m.text === 'menu_descargas') {
@@ -62,24 +56,18 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
 
     const text = `📥 *MENÚ DE DESCARGAS*
 
-┏━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ 🎵 *MÚSICA Y VIDEOS* 🎵 ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+🎵 ═══ *MÚSICA Y VIDEOS* ═══ 🎵
 🎼 \`.play [nombre]\` - YouTube Music
 🎥 \`.ytmp3 [url]\` - YouTube a MP3
 📹 \`.ytmp4 [url]\` - YouTube a MP4
 
-┏━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ 📱 *REDES SOCIALES* 📱 ┃ 
-┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+📱 ═══ *REDES SOCIALES* ═══ 📱
 🎬 \`.tiktok [url]\` - Videos TikTok
 📸 \`.instagram [url]\` - Posts IG
 💙 \`.facebook [url]\` - Videos FB
 🐦 \`.twitter [url]\` - Videos Twitter
 
-┏━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ 📁 *ARCHIVOS* 📁 ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+📁 ═══ *ARCHIVOS* ═══ 📁
 💾 \`.mediafire [url]\` - MediaFire
 ☁️ \`.mega [url]\` - MEGA
 📱 \`.apk [nombre]\` - APKs
@@ -88,14 +76,9 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
 
     const footer = '🎵 Módulo de Descargas - Hatsune Miku Bot'
     
-    
-    await conn.sendMessage(m.chat, {
-      video: { url: 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4' },
-      gifPlayback: true,
-      caption: '📥 *MENÚ DE DESCARGAS* 📥\n💙 Cargando opciones...'
-    }, { quoted: m })
+    const descargasGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
-    return conn.sendNCarousel(m.chat, text, footer, null, buttons, null, null, null, m)
+    return conn.sendNCarousel(m.chat, text, footer, descargasGif, buttons, null, null, null, m)
   }
 
   if (command === 'menu_herramientas' || m.text === 'menu_herramientas') {
@@ -110,23 +93,17 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
 
     const text = `🛠️ *HERRAMIENTAS ÚTILES*
 
-┏━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ 🌐 *UTILIDADES WEB* 🌐 ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+🌸 ═══ 🌐 *UTILIDADES WEB* 🌐 ═══ 🌸
 🌤️ \`.clima [ciudad]\` - Ver clima
 🈵 \`.translate [texto]\` - Traductor  
 📷 \`.ss [url]\` - Screenshot
 
-┏━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ 🎨 *EDICIÓN* 🎨 ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+💙 ═══ 🎨 *EDICIÓN* 🎨 ═══ 💙
 ✨ \`.enhance\` - Mejorar imagen
 🌟 \`.s\` - Crear sticker
 🖼️ \`.toimg\` - Sticker a imagen
 
-┏━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ 🔧 *CONVERSORES* 🔧 ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+🎵 ═══ 🔧 *CONVERSORES* 🔧 ═══ 🎵
 🎵 \`.tomp3\` - Audio a MP3
 🎬 \`.tovideo\` - Audio a video
 🎞️ \`.togif\` - Video a GIF
@@ -135,14 +112,9 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
 
     const footer = '🔧 Módulo de Herramientas - Hatsune Miku Bot'
     
-    
-    await conn.sendMessage(m.chat, {
-      video: { url: 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4' },
-      gifPlayback: true,
-      caption: '🛠️ *HERRAMIENTAS* 🛠️\n💙 Cargando utilidades...'
-    }, { quoted: m })
+    const herramientasGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
-    return conn.sendNCarousel(m.chat, text, footer, null, buttons, null, null, null, m)
+    return conn.sendNCarousel(m.chat, text, footer, herramientasGif, buttons, null, null, null, m)
   }
 
   if (command === 'menu_juegos' || m.text === 'menu_juegos') {
@@ -157,25 +129,19 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
 
     const text = `🎮 *CENTRO DE JUEGOS*
 
-┏━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ 🕹️ *JUEGOS CLÁSICOS* 🕹️ ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+🕹️ ═══ *JUEGOS CLÁSICOS* ═══ 🕹️
 ⭕ \`.ttt\` - Tres en raya
 ✂️ \`.ppt\` - Piedra/Papel/Tijera
 🎪 \`.ahorcado\` - Juego del ahorcado
 🔤 \`.sopa\` - Sopa de letras
 
-┏━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ 🎰 *CASINO & APUESTAS* 🎰 ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+🎰 ═══ *CASINO & APUESTAS* ═══ 🎰
 🎲 \`.casino [cantidad]\` - Apostar
 🎰 \`.slot [cantidad]\` - Tragamonedas
 🪙 \`.cf [cantidad]\` - Cara o cruz
 🔫 \`.ruleta\` - Ruleta rusa
 
-┏━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ ⚔️ *COMPETITIVO* ⚔️ ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+⚔️ ═══ *COMPETITIVO* ═══ ⚔️
 🥊 \`.pvp [@usuario]\` - Pelear
 🧠 \`.matematicas\` - Quiz matemático
 
@@ -183,14 +149,9 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
 
     const footer = '🎮 Módulo de Juegos - Hatsune Miku Bot'
     
-    
-    await conn.sendMessage(m.chat, {
-      video: { url: 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4' },
-      gifPlayback: true,
-      caption: '🎮 *CENTRO DE JUEGOS* 🎮\n💙 Cargando diversión...'
-    }, { quoted: m })
+    const juegosGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
-    return conn.sendNCarousel(m.chat, text, footer, null, buttons, null, null, null, m)
+    return conn.sendNCarousel(m.chat, text, footer, juegosGif, buttons, null, null, null, m)
   }
 
   if (command === 'menu_anime' || m.text === 'menu_anime') {
@@ -205,25 +166,19 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
 
     const text = `🎌 *ANIME & REACCIONES*
 
-┏━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ 😊 *REACCIONES POSITIVAS* 😊 ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+😊 ═══ *REACCIONES POSITIVAS* ═══ 😊
 🤗 \`.hug [@usuario]\` - Dar abrazo
 😘 \`.kiss [@usuario]\` - Dar beso  
 🤲 \`.pat [@usuario]\` - Acariciar
 😊 \`.happy\` - Estar feliz
 
-┏━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ 💃 *ACCIONES* 💃 ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+💃 ═══ *ACCIONES* ═══ 💃
 💃 \`.dance\` - Bailar
 🍽️ \`.eat\` - Comer
 😴 \`.sleep\` - Dormir
 🤔 \`.think\` - Pensar
 
-┏━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ 😔 *EMOCIONES* 😔 ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+😔 ═══ *EMOCIONES* ═══ 😔
 😢 \`.cry\` - Llorar
 😞 \`.sad\` - Estar triste
 😠 \`.angry\` - Estar enojado
@@ -232,14 +187,9 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
 
     const footer = '🎌 Módulo Anime - Hatsune Miku Bot'
     
-    
-    await conn.sendMessage(m.chat, {
-      video: { url: 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4' },
-      gifPlayback: true,
-      caption: '🎌 *ANIME & REACCIONES* 🎌\n💙 Cargando kawaii...'
-    }, { quoted: m })
+    const animeGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
-    return conn.sendNCarousel(m.chat, text, footer, null, buttons, null, null, null, m)
+    return conn.sendNCarousel(m.chat, text, footer, animeGif, buttons, null, null, null, m)
   }
 
   if (command === 'menu_grupos' || m.text === 'menu_grupos') {
@@ -255,34 +205,29 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
     const text = `👥 *GESTIÓN DE GRUPOS*
 _(Solo para administradores)_
 
-👑 *Administración:*
-• \`${usedPrefix}kick [@usuario]\` - Eliminar
-• \`${usedPrefix}add [número]\` - Invitar
-• \`${usedPrefix}promote [@usuario]\` - Dar admin
-• \`${usedPrefix}demote [@usuario]\` - Quitar admin
+👑 ═══ *ADMINISTRACIÓN* ═══ 👑
+🦵 \`.kick [@usuario]\` - Eliminar
+➕ \`.add [número]\` - Invitar
+👑 \`.promote [@usuario]\` - Dar admin
+👤 \`.demote [@usuario]\` - Quitar admin
 
-📢 *Comunicación:*
-• \`${usedPrefix}hidetag [texto]\` - Mencionar todos
-• \`${usedPrefix}admins\` - Llamar admins
-• \`${usedPrefix}invocar\` - Mencionar todos
+📢 ═══ *COMUNICACIÓN* ═══ 📢
+👻 \`.hidetag [texto]\` - Mencionar todos
+📣 \`.admins\` - Llamar admins
+📢 \`.invocar\` - Mencionar todos
 
-⚙️ *Configuración:*
-• \`${usedPrefix}group open/close\` - Abrir/cerrar
-• \`${usedPrefix}link\` - Ver enlace
-• \`${usedPrefix}revoke\` - Cambiar enlace
+⚙️ ═══ *CONFIGURACIÓN* ═══ ⚙️
+🔓 \`.group open/close\` - Abrir/cerrar
+🔗 \`.link\` - Ver enlace
+🔄 \`.revoke\` - Cambiar enlace
 
-🔧 Presiona un botón para usar las herramientas:`
+🔧 *Presiona un botón para usar las herramientas:*`
 
     const footer = '👥 Módulo de Grupos - Hatsune Miku Bot'
     
-    
-    await conn.sendMessage(m.chat, {
-      video: { url: 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4' },
-      gifPlayback: true,
-      caption: '👥 *GESTIÓN DE GRUPOS* 👥\n💙 Cargando administración...'
-    }, { quoted: m })
+    const gruposGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
-    return conn.sendNCarousel(m.chat, text, footer, null, buttons, null, null, null, m)
+    return conn.sendNCarousel(m.chat, text, footer, gruposGif, buttons, null, null, null, m)
   }
 
   if (command === 'menu_info' || m.text === 'menu_info') {
@@ -297,34 +242,29 @@ _(Solo para administradores)_
 
     const text = `ℹ️ *INFORMACIÓN DEL BOT*
 
-🤖 *Datos del Bot:*
-• \`${usedPrefix}ping\` - Velocidad de respuesta
-• \`${usedPrefix}uptime\` - Tiempo activo
-• \`${usedPrefix}status\` - Estado completo
-• \`${usedPrefix}infobot\` - Info detallada
+🤖 ═══ *DATOS DEL BOT* ═══ 🤖
+📡 \`.ping\` - Velocidad de respuesta
+⏱️ \`.uptime\` - Tiempo activo
+📊 \`.status\` - Estado completo
+ℹ️ \`.infobot\` - Info detallada
 
-🔗 *Enlaces & Comunidad:*
-• \`${usedPrefix}script\` - Código fuente
-• \`${usedPrefix}links\` - Enlaces oficiales
-• \`${usedPrefix}staff\` - Desarrolladores
+🔗 ═══ *ENLACES & COMUNIDAD* ═══ 🔗
+💻 \`.script\` - Código fuente
+🔗 \`.links\` - Enlaces oficiales
+👥 \`.staff\` - Desarrolladores
 
-🤖 *SubBots:*
-• \`${usedPrefix}serbot\` - Crear SubBot
-• \`${usedPrefix}qr\` - Código QR
-• \`${usedPrefix}bots\` - Lista SubBots
+🤖 ═══ *SUBBOTS* ═══ 🤖
+🤖 \`.serbot\` - Crear SubBot
+📱 \`.qr\` - Código QR
+🤖 \`.bots\` - Lista SubBots
 
-💙 Presiona un botón para ejecutar:`
+💙 *Presiona un botón para ejecutar:*`
 
     const footer = 'ℹ️ Información del Bot - Hatsune Miku Bot'
     
-    
-    await conn.sendMessage(m.chat, {
-      video: { url: 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4' },
-      gifPlayback: true,
-      caption: 'ℹ️ *INFORMACIÓN DEL BOT* ℹ️\n💙 Cargando datos...'
-    }, { quoted: m })
+    const infoGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
-    return conn.sendNCarousel(m.chat, text, footer, null, buttons, null, null, null, m)
+    return conn.sendNCarousel(m.chat, text, footer, infoGif, buttons, null, null, null, m)
   }
 
   
@@ -346,19 +286,19 @@ _(Solo para administradores)_
       switch (m.text) {
         
         case 'exec_play':
-          return conn.reply(m.chat, `🎵 *Ejemplo de uso:*\n\nEscribe: \`${usedPrefix}play World is Mine\`\n\nO simplemente envía el nombre de una canción que quieras descargar.`, m)
+          return conn.reply(m.chat, `🎵 *Ejemplo de uso:*\n\nEscribe: \`.play World is Mine\`\n\nO simplemente envía el nombre de una canción que quieras descargar.`, m)
         
         case 'exec_tiktok':
-          return conn.reply(m.chat, `📱 *Para descargar de TikTok:*\n\n1. Copia el enlace del video de TikTok\n2. Escribe: \`${usedPrefix}tiktok [enlace]\`\n\nEjemplo:\n\`${usedPrefix}tiktok https://vm.tiktok.com/abc123\``, m)
+          return conn.reply(m.chat, `📱 *Para descargar de TikTok:*\n\n1. Copia el enlace del video de TikTok\n2. Escribe: \`.tiktok [enlace]\`\n\nEjemplo:\n\`.tiktok https://vm.tiktok.com/abc123\``, m)
         
         case 'exec_instagram':
-          return conn.reply(m.chat, `📷 *Para descargar de Instagram:*\n\n1. Copia el enlace del post\n2. Escribe: \`${usedPrefix}instagram [enlace]\`\n\nFunciona con fotos, videos y reels.`, m)
+          return conn.reply(m.chat, `📷 *Para descargar de Instagram:*\n\n1. Copia el enlace del post\n2. Escribe: \`.instagram [enlace]\`\n\nFunciona con fotos, videos y reels.`, m)
         
         case 'exec_facebook':
-          return conn.reply(m.chat, `💙 *Para descargar de Facebook:*\n\n1. Copia el enlace del video\n2. Escribe: \`${usedPrefix}facebook [enlace]\`\n\nSolo funciona con videos públicos.`, m)
+          return conn.reply(m.chat, `💙 *Para descargar de Facebook:*\n\n1. Copia el enlace del video\n2. Escribe: \`.facebook [enlace]\`\n\nSolo funciona con videos públicos.`, m)
         
         case 'exec_mediafire':
-          return conn.reply(m.chat, `📁 *Para descargar de MediaFire:*\n\n1. Copia el enlace de MediaFire\n2. Escribe: \`${usedPrefix}mediafire [enlace]\`\n\nDescarga archivos hasta 100MB.`, m)
+          return conn.reply(m.chat, `📁 *Para descargar de MediaFire:*\n\n1. Copia el enlace de MediaFire\n2. Escribe: \`.mediafire [enlace]\`\n\nDescarga archivos hasta 100MB.`, m)
 
          
         case 'exec_clima':

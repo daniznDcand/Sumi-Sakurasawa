@@ -4,6 +4,22 @@ import fetch from 'node-fetch'
 export async function before(m, { conn, participants, groupMetadata }) {
   if (!m.messageStubType || !m.isGroup) return true;
   
+  
+  if (m.text === 'canal_oficial') {
+    const canalUrl = 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
+    await conn.sendMessage(m.chat, { 
+      text: `🎵 *¡Visitando nuestro canal oficial!* 🎵\n\n${canalUrl}\n\n✨ ¡Gracias por unirte a nuestra comunidad! ✨` 
+    }, { quoted: m })
+    
+    
+    try {
+      await conn.sendMessage(m.chat, { delete: m.key })
+    } catch (e) {
+      console.log('No se pudo eliminar el mensaje:', e)
+    }
+    return false
+  }
+  
   const fkontak = {
     "key": {
       "participants": "0@s.whatsapp.net",
@@ -61,12 +77,15 @@ Prepárate para disfrutar y compartir momentos geniales aquí con nosotros.
 
 Para cualquier ayuda, escribe *#help*.
 
-No olvides visitar nuestro canal:
-https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o
-
 ¡Que la música te acompañe siempre! 🎶
     `;
-    await conn.sendMini(m.chat, '💙 ¡Nueva estrella se une! 💙', dev, welcomeMsg, imgBuffer, imgBuffer, redes, fkontak, m, global.rcanal);
+
+    const buttons = [
+      ['🎵 Ver Canal Oficial', 'canal_oficial'],
+      ['📋 Ver Comandos', '#help']
+    ]
+    
+    await conn.sendNCarousel(m.chat, welcomeMsg, '💙 ¡Nueva estrella se une! 💙', imgBuffer, buttons, null, null, null, m);
   }
 
   if (chat.welcome && (m.messageStubType === 28 || m.messageStubType === 32)) {
@@ -82,12 +101,14 @@ Ahora somos *${groupSize}* y esperamos que regreses pronto.
 
 La música de Miku seguirá sonando fuerte aquí para ti.
 
-No olvides seguir nuestro canal:
-https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o
-
 ¡Cuídate y hasta el próximo concierto! 🎶✨
     `;
-    await conn.sendMini(m.chat, '🎵 ¡Sayonara! 🎵', dev, byeMsg, imgBuffer, imgBuffer, redes, fkontak, m, global.rcanal);
+
+    const byeButtons = [
+      ['🎵 Seguir Canal', 'canal_oficial']
+    ]
+    
+    await conn.sendNCarousel(m.chat, byeMsg, '🎵 ¡Sayonara! 🎵', imgBuffer, byeButtons, null, null, null, m);
   }
 }
 
