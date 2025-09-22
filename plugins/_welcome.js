@@ -1,185 +1,143 @@
-import { WAMessageStubType } from '@whiskeysockets/baileys'
 import fetch from 'node-fetch'
 
 export async function before(m, { conn, participants, groupMetadata }) {
-  if (!m.messageStubType || !m.isGroup) return true;
-  
-  
-  if (!global.db.data.chats) global.db.data.chats = {}
-  if (!global.db.data.chats[m.chat]) global.db.data.chats[m.chat] = {}
-  
-  const fkontak = {
-    "key": {
-      "participants": "0@s.whatsapp.net",
-      "remoteJid": "status@broadcast",
-      "fromMe": false,
-      "id": "Halo"
-    },
-    "message": {
-      "contactMessage": {
-        "vcard": `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:y\nitem1.TEL;waid=${m.sender.split('@')[0]}:${m.sender.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`
-      }
-    },
-    "participant": "0@s.whatsapp.net"
-  };
-
-  let pp = await conn.profilePictureUrl(m.messageStubParameters[0], 'image').catch(() => 'https://files.catbox.moe/wm4w1x.jpg');
-  
-  let imgBuffer = null
   try {
-    const resp = await fetch(pp)
-    const arr = await resp.arrayBuffer()
-    imgBuffer = Buffer.from(arr)
-  } catch (e) {
     
-    try {
-      const resp = await fetch('https://files.catbox.moe/wm4w1x.jpg')
-      const arr = await resp.arrayBuffer()
-      imgBuffer = Buffer.from(arr)
-    } catch (err) {
-      imgBuffer = null
-    }
-  }
-  let chat = global.db.data.chats[m.chat];
-  
-  if (chat.welcome === undefined) chat.welcome = true
+    if (!m.messageStubType || !m.isGroup) return true
 
-  const dev = global.dev || '© 🄿🄾🅆🄴🅁🄴🄳 (ㅎㅊDEPOOLㅊㅎ)'
-  const redes = global.redes || 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
-  
-  let groupSize = participants.length;
-  if (m.messageStubType === 27) groupSize++;
-  else if (m.messageStubType === 28 || m.messageStubType === 32) groupSize--;
-
-  
-  if (m.messageStubType === 27) {
     
+    if (!global.db) global.db = { data: { chats: {} } }
+    if (!global.db.data) global.db.data = { chats: {} }
+    if (!global.db.data.chats) global.db.data.chats = {}
+    if (!global.db.data.chats[m.chat]) global.db.data.chats[m.chat] = {}
+
+    const chat = global.db.data.chats[m.chat]
+    if (chat.welcome === undefined) chat.welcome = true
+    if (!chat.welcome) return true
+
     
-    if (!m.messageStubParameters || !m.messageStubParameters[0]) {
-      console.log('Warning: messageStubParameters no disponible para welcome')
-      return true
-    }
+    const canalUrl = global.redes || 'https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
+    const channelId = global.canalIdM?.[0] || '120363315369913363@newsletter'
+    const channelName = global.canalNombreM?.[0] || '💙HATSUNE MIKU CHANNEL💙'
+
     
-    let welcomeMsg = `
-👋 ¡Hola @${m.messageStubParameters[0].split('@')[0]}!
+    const groupSize = (participants || []).length
 
-Bienvenido a *${groupMetadata.subject}* 🎉
-
-Somos ya *${groupSize}* fanáticos de Miku que te reciben con mucha emoción.
-
-🎤 ${global.welcom1 || 'La música nos une'}
-
-Prepárate para disfrutar y compartir momentos geniales aquí con nosotros.
-
-Para cualquier ayuda, escribe *#help*.
-
-¡Que la música te acompañe siempre! 🎶
-    `;
-
-    const canalUrl = 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
-
-    try {
-      
+    
+    const sendWelcomeAi = async (jid, title, body, text, thumbnailUrl, sourceUrl, quoted) => {
       try {
-        await conn.sendMessage(m.chat, {
-          image: imgBuffer,
-          caption: welcomeMsg,
+        return await conn.sendMessage(jid, {
+          text: text,
           contextInfo: {
+            mentionedJid: await conn.parseMention(text),
+            forwardedNewsletterMessageInfo: {
+              newsletterJid: channelId,
+              newsletterName: channelName,
+              serverMessageId: 100
+            },
             externalAdReply: {
-              title: '🎵 Ver Canal Oficial',
-              body: '💙 Toca aquí para unirte al canal 💙',
-              thumbnailUrl: 'https://files.catbox.moe/wm4w1x.jpg',
-              sourceUrl: canalUrl,
+              title: title,
+              body: body,
               mediaType: 1,
-              renderLargerThumbnail: true
+              previewType: 0,
+              renderLargerThumbnail: true,
+              thumbnailUrl: thumbnailUrl,
+              sourceUrl: sourceUrl,
+              showAdAttribution: true
             }
           }
-        }, { quoted: m })
-      } catch (imgErr) {
-        console.log('⚠️ No se pudo enviar la imagen del welcome:', imgErr)
+        }, { quoted })
+      } catch (err) {
+        console.log('sendWelcomeAi error:', err)
+        
+        return await conn.reply(jid, text, quoted, global.rcanal)
       }
+    }
+
+    
+    if (m.messageStubType === 27) {
+      if (!m.messageStubParameters || !m.messageStubParameters[0]) return true
+      
+      const user = m.messageStubParameters[0]
+      const userName = user.split('@')[0]
+      const welcomeText = `👋 ¡Hola @${userName}!
+
+🎉 Bienvenido a *${groupMetadata?.subject || 'el grupo'}*
+
+🎤 Somos ya *${groupSize}* fanáticos de Miku que te reciben con mucha emoción.
+
+💙 ${global.welcom1 || 'La música nos une'}
+
+✨ Prepárate para disfrutar y compartir momentos geniales aquí con nosotros.
+
+📝 Para cualquier ayuda, escribe *#help*
+
+🎶 ¡Que la música te acompañe siempre!`
 
       
-      if (conn.sendHydrated) {
-        try {
-          await conn.sendHydrated(m.chat, '🎵 Canal Oficial', 'Toca el botón para abrir el canal', null, canalUrl, '🎵 Ver Canal', null, null, [], { quoted: m, mentions: [m.messageStubParameters[0]] })
-          console.log('✅ Mensaje de bienvenida enviado con botón URL (sendHydrated)')
-        } catch (hydErr) {
-          console.log('⚠️ sendHydrated falló en welcome, haciendo fallback a externalAdReply:', hydErr)
-          
-          await conn.sendMessage(m.chat, { text: `${welcomeMsg}\n\n🎵 *Canal Oficial:*\n${canalUrl}`, mentions: [m.messageStubParameters[0]] }, { quoted: m })
-        }
-      } else {
-        
-        await conn.sendMessage(m.chat, { text: `${welcomeMsg}\n\n🎵 *Canal Oficial:*\n${canalUrl}`, mentions: [m.messageStubParameters[0]] }, { quoted: m })
-        console.log('✅ Mensaje de bienvenida enviado como texto fallback')
+      let ppUrl = 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg'
+      try {
+        ppUrl = await conn.profilePictureUrl(user, 'image').catch(() => ppUrl)
+      } catch (e) {
+        console.log('Profile picture fetch failed:', e)
       }
-    } catch (error) {
-      console.log('❌ Error enviando bienvenida (final):', error)
-    }
-  }
 
-  
-  if (m.messageStubType === 28 || m.messageStubType === 32) {
-    
-    
-    if (!m.messageStubParameters || !m.messageStubParameters[0]) {
-      console.log('Warning: messageStubParameters no disponible para despedida')
+      await sendWelcomeAi(
+        m.chat,
+        '🎵 ¡Nuevo miembro en el grupo!',
+        `${userName} se unió al grupo`,
+        welcomeText,
+        ppUrl,
+        canalUrl,
+        m
+      )
+
+      console.log('✅ Welcome message sent with channel button')
       return true
     }
-    
-    let byeMsg = `
-👋 ¡Hasta luego @${m.messageStubParameters[0].split('@')[0]}!
 
-Te extrañaremos en *${groupMetadata.subject}*.
+  // MEMBER LEFT (stub type 28 or 32)
+    if (m.messageStubType === 28 || m.messageStubType === 32) {
+      if (!m.messageStubParameters || !m.messageStubParameters[0]) return true
+      
+      const user = m.messageStubParameters[0]
+      const userName = user.split('@')[0]
+      const byeText = `👋 ¡Hasta luego @${userName}!
+
+😢 Te extrañaremos en *${groupMetadata?.subject || 'el grupo'}*
 
 🎤 ${global.welcom2 || 'Gracias por haber sido parte de nuestra comunidad'}
 
-Ahora somos *${groupSize}* y esperamos que regreses pronto.
+🎵 La música de Miku seguirá sonando fuerte aquí para ti.
 
-La música de Miku seguirá sonando fuerte aquí para ti.
+✨ ¡Cuídate y hasta el próximo concierto!`
 
-¡Cuídate y hasta el próximo concierto! 🎶✨
-    `;
-
-    const canalUrl = 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
-
-    try {
       
+      let ppUrl = 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg'
       try {
-        await conn.sendMessage(m.chat, {
-          image: imgBuffer,
-          caption: byeMsg,
-          contextInfo: {
-            externalAdReply: {
-              title: '🎵 Seguir Canal',
-              body: '💙 Toca aquí para seguir el canal 💙',
-              thumbnailUrl: 'https://files.catbox.moe/wm4w1x.jpg',
-              sourceUrl: canalUrl,
-              mediaType: 1,
-              renderLargerThumbnail: true
-            }
-          }
-        }, { quoted: m })
-      } catch (imgErr) {
-        console.log('⚠️ No se pudo enviar la imagen del bye:', imgErr)
+        ppUrl = await conn.profilePictureUrl(user, 'image').catch(() => ppUrl)
+      } catch (e) {
+        console.log('Profile picture fetch failed:', e)
       }
 
-      if (conn.sendHydrated) {
-        try {
-          await conn.sendHydrated(m.chat, '🎵 Canal Oficial', 'Toca el botón para abrir el canal', null, canalUrl, '🎵 Seguir Canal', null, null, [], { quoted: m, mentions: [m.messageStubParameters[0]] })
-          console.log('✅ Mensaje de despedida enviado con botón URL (sendHydrated)')
-        } catch (hydErr) {
-          console.log('⚠️ sendHydrated falló en bye, enviando texto fallback:', hydErr)
-          await conn.sendMessage(m.chat, { text: `${byeMsg}\n\n🎵 *Canal Oficial:*\n${canalUrl}`, mentions: [m.messageStubParameters[0]] }, { quoted: m })
-        }
-      } else {
-        await conn.sendMessage(m.chat, { text: `${byeMsg}\n\n🎵 *Canal Oficial:*\n${canalUrl}`, mentions: [m.messageStubParameters[0]] }, { quoted: m })
-        console.log('✅ Mensaje de despedida enviado como texto fallback')
-      }
-    } catch (error) {
-      console.log('❌ Error enviando despedida (final):', error)
+      await sendWelcomeAi(
+        m.chat,
+        '👋 Miembro se despide',
+        `${userName} dejó el grupo`,
+        byeText,
+        ppUrl,
+        canalUrl,
+        m
+      )
+
+      console.log('✅ Goodbye message sent with channel button')
+      return true
     }
+
+    return true
+  } catch (e) {
+    console.error('plugins/_welcome error', e)
+    return true
   }
 }
 
