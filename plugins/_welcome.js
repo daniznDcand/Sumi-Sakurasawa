@@ -8,26 +8,6 @@ export async function before(m, { conn, participants, groupMetadata }) {
   if (!global.db.data.chats) global.db.data.chats = {}
   if (!global.db.data.chats[m.chat]) global.db.data.chats[m.chat] = {}
   
-  
-  if (m.text === 'ir_canal') {
-    const canalUrl = 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
-   
-    await conn.sendMessage(m.chat, {
-      text: canalUrl,
-      contextInfo: {
-        externalAdReply: {
-          title: '🎵 Canal Oficial de Hatsune Miku Bot',
-          body: '¡Únete ahora!',
-          thumbnailUrl: 'https://files.catbox.moe/wm4w1x.jpg',
-          sourceUrl: canalUrl,
-          mediaType: 1,
-          renderLargerThumbnail: true
-        }
-      }
-    }, { quoted: m })
-    return false
-  }
-  
   const fkontak = {
     "key": {
       "participants": "0@s.whatsapp.net",
@@ -96,25 +76,22 @@ Para cualquier ayuda, escribe *#help*.
 ¡Que la música te acompañe siempre! 🎶
     `;
 
-    const buttons = [
-      ['🎵 Ver Canal', 'ir_canal'],
-      ['📋 Ver Comandos', '#help']
-    ]
-
-    const templateButtons = buttons.map((btn, index) => ({
-      index: index + 1,
-      quickReplyButton: {
-        displayText: btn[0],
-        id: btn[1]
-      }
-    }))
+    const canalUrl = 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
 
     try {
       await conn.sendMessage(m.chat, {
         image: imgBuffer,
         caption: welcomeMsg,
-        footer: '💙 ¡Nueva estrella se une! 💙',
-        templateButtons: templateButtons
+        contextInfo: {
+          externalAdReply: {
+            title: '🎵 Ver Canal Oficial',
+            body: '💙 Toca aquí para unirte al canal 💙',
+            thumbnailUrl: 'https://files.catbox.moe/wm4w1x.jpg',
+            sourceUrl: canalUrl,
+            mediaType: 1,
+            renderLargerThumbnail: true
+          }
+        }
       }, { quoted: m })
       console.log('✅ Mensaje de bienvenida enviado correctamente')
     } catch (error) {
@@ -122,7 +99,7 @@ Para cualquier ayuda, escribe *#help*.
       
       try {
         await conn.sendMessage(m.chat, {
-          text: welcomeMsg,
+          text: `${welcomeMsg}\n\n🎵 *Canal Oficial:*\n${canalUrl}`,
           mentions: [m.messageStubParameters[0]]
         }, { quoted: m })
         console.log('✅ Mensaje de bienvenida enviado como fallback')
