@@ -4,6 +4,26 @@ import fetch from 'node-fetch'
 export async function before(m, { conn, participants, groupMetadata }) {
   if (!m.messageStubType || !m.isGroup) return true;
   
+  
+  if (m.text === 'ir_canal') {
+    const canalUrl = 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
+   
+    await conn.sendMessage(m.chat, {
+      text: canalUrl,
+      contextInfo: {
+        externalAdReply: {
+          title: '🎵 Canal Oficial de Hatsune Miku Bot',
+          body: '¡Únete ahora!',
+          thumbnailUrl: 'https://files.catbox.moe/wm4w1x.jpg',
+          sourceUrl: canalUrl,
+          mediaType: 1,
+          renderLargerThumbnail: true
+        }
+      }
+    }, { quoted: m })
+    return false
+  }
+  
   const fkontak = {
     "key": {
       "participants": "0@s.whatsapp.net",
@@ -61,26 +81,27 @@ Prepárate para disfrutar y compartir momentos geniales aquí con nosotros.
 
 Para cualquier ayuda, escribe *#help*.
 
-🎵 *¡Únete a nuestro canal oficial!* 💙
-👆 _Toca el enlace de abajo para ir al canal_
-
 ¡Que la música te acompañe siempre! 🎶
     `;
 
-    const canalUrl = 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
-    
-    await conn.sendMessage(m.chat, {
-      text: welcomeMsg,
-      contextInfo: {
-        externalAdReply: {
-          title: 'Ver Canal',
-          body: '💙 Hatsune Miku Bot - Canal Oficial 💙',
-          thumbnailUrl: 'https://files.catbox.moe/wm4w1x.jpg',
-          sourceUrl: canalUrl,
-          mediaType: 1,
-          renderLargerThumbnail: true
-        }
+    const buttons = [
+      ['🎵 Ver Canal', 'ir_canal'],
+      ['📋 Ver Comandos', '#help']
+    ]
+
+    const templateButtons = buttons.map((btn, index) => ({
+      index: index + 1,
+      quickReplyButton: {
+        displayText: btn[0],
+        id: btn[1]
       }
+    }))
+
+    await conn.sendMessage(m.chat, {
+      image: imgBuffer,
+      caption: welcomeMsg,
+      footer: '💙 ¡Nueva estrella se une! 💙',
+      templateButtons: templateButtons
     }, { quoted: m })
   }
 
@@ -97,26 +118,26 @@ Ahora somos *${groupSize}* y esperamos que regreses pronto.
 
 La música de Miku seguirá sonando fuerte aquí para ti.
 
-🎵 *¡Síguenos en nuestro canal!* 🎵
-👆 _Toca el enlace de abajo_
-
 ¡Cuídate y hasta el próximo concierto! 🎶✨
     `;
 
-    const canalUrl = 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
-    
-    await conn.sendMessage(m.chat, {
-      text: byeMsg,
-      contextInfo: {
-        externalAdReply: {
-          title: 'Ver Canal',
-          body: '🌸 Hatsune Miku Bot - Te esperamos 🌸',
-          thumbnailUrl: 'https://files.catbox.moe/wm4w1x.jpg',
-          sourceUrl: canalUrl,
-          mediaType: 1,
-          renderLargerThumbnail: true
-        }
+    const byeButtons = [
+      ['🎵 Ver Canal', 'ir_canal']
+    ]
+
+    const templateButtons = byeButtons.map((btn, index) => ({
+      index: index + 1,
+      quickReplyButton: {
+        displayText: btn[0],
+        id: btn[1]
       }
+    }))
+
+    await conn.sendMessage(m.chat, {
+      image: imgBuffer,
+      caption: byeMsg,
+      footer: '🎵 ¡Sayonara! 🎵',
+      templateButtons: templateButtons
     }, { quoted: m })
   }
 }

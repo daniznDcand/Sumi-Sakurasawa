@@ -42,7 +42,22 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
     const footer = '🌱 Powered by (ㅎㅊDEPOOLㅊㅎ)'
     const menuGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
-    return conn.sendNCarousel(m.chat, text, footer, menuGif, buttons, null, null, null, m)
+    
+    const templateButtons = buttons.map((btn, index) => ({
+      index: index + 1,
+      quickReplyButton: {
+        displayText: btn[0],
+        id: btn[1]
+      }
+    }))
+
+    return conn.sendMessage(m.chat, {
+      video: { url: menuGif },
+      caption: text,
+      footer: footer,
+      gifPlayback: true,
+      templateButtons: templateButtons
+    }, { quoted: m })
   }
 
   if (command === 'menu_descargas' || m.text === 'menu_descargas') {
@@ -320,12 +335,18 @@ _(Solo para administradores)_
         
         case 'exec_ttt':
           
-          const fakeMsgTtt = { 
+          const tttMsg = { 
             ...m, 
             text: `${usedPrefix}ttt`,
             body: `${usedPrefix}ttt`
           }
-          return global.plugins['game-ttt'].default.call(this, fakeMsgTtt, { conn, usedPrefix, command: 'ttt', args: [] })
+          
+          return conn.reply(m.chat, `⭕ *Tres en Raya iniciado!*\n\nEscribe \`${usedPrefix}ttt\` para comenzar una nueva partida.`, m).then(() => {
+            
+            setTimeout(() => {
+              conn.handler && conn.handler.call(conn, { ...tttMsg, sender: m.sender, chat: m.chat })
+            }, 500)
+          })
         
         case 'exec_ppt':
           return conn.reply(m.chat, `✂️ *Piedra, Papel o Tijera:*\n\nEscribe: \`${usedPrefix}ppt [opción]\`\n\nOpciones:\n• \`${usedPrefix}ppt piedra\`\n• \`${usedPrefix}ppt papel\`\n• \`${usedPrefix}ppt tijera\`\n\n¡Reta al bot!`, m)
