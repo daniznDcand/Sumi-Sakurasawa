@@ -29,48 +29,57 @@ export async function before(m, { conn, participants, groupMetadata }) {
     const sendSingleWelcome = async (jid, text, user, quoted) => {
       try {
         
-        let ppUrl = 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg'
+        let ppBuffer = null
         try {
-          ppUrl = await conn.profilePictureUrl(user, 'image').catch(() => ppUrl)
-        } catch (e) {}
-
-        
-        if (conn.sendHydrated) {
-          return await conn.sendHydrated(
-            jid, 
-            text, 
-            '🎵 Canal Oficial - Hatsune Miku', 
-            ppUrl, 
-            canalUrl, 
-            '🎵 Ver Canal', 
-            null, 
-            null, 
-            [], 
-            { quoted, mentions: [user] }
-          )
+          const ppUrl = await conn.profilePictureUrl(user, 'image').catch(() => null)
+          if (ppUrl) {
+            const response = await fetch(ppUrl)
+            ppBuffer = await response.buffer()
+          }
+        } catch (e) {
+          console.log('Error obteniendo foto de perfil:', e)
         }
 
         
-        const templateButtons = [{
-          index: 1,
-          urlButton: {
-            displayText: '🎵 Ver Canal',
-            url: canalUrl
+        if (!ppBuffer) {
+          try {
+            const defaultResponse = await fetch('https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg')
+            ppBuffer = await defaultResponse.buffer()
+          } catch (e) {
+            ppBuffer = null
           }
-        }]
+        }
 
+        
+        const canalContext = {
+          contextInfo: {
+            externalAdReply: {
+              showAdAttribution: true,
+              title: 'ver canal',
+              body: 'ver canal',
+              mediaUrl: null,
+              description: null,
+              previewType: "PHOTO",
+              thumbnailUrl: global.icono || 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg',
+              sourceUrl: canalUrl,
+              mediaType: 1,
+              renderLargerThumbnail: true
+            }
+          }
+        }
+
+        
         return await conn.sendMessage(jid, {
-          image: { url: ppUrl },
+          image: ppBuffer,
           caption: text,
-          footer: '🎵 Canal Oficial - Hatsune Miku',
-          templateButtons: templateButtons,
-          mentions: [user]
+          mentions: [user],
+          ...canalContext
         }, { quoted })
 
       } catch (err) {
         console.log('sendSingleWelcome error:', err)
         
-        return await conn.reply(jid, `${text}\n\n🎵 *Ver Canal:* ${canalUrl}`, quoted, { mentions: [user] })
+        return await conn.reply(jid, text, quoted, { mentions: [user], ...global.rcanal })
       }
     }
 

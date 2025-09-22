@@ -279,40 +279,7 @@ _(Solo para administradores)_
     }
   }
 
-  // Manejo de navegación por botones
-  // Some clients/interactive messages return the pressed id in different fields.
-  const getPressedId = (msg) => {
-    try {
-      if (!msg) return null
-      // common normalized text
-      if (msg.text) return msg.text
-      // template quick reply/button
-      if (msg.selectedButtonId) return msg.selectedButtonId
-      if (msg.selectedId) return msg.selectedId
-      if (msg.selectedDisplayText) return msg.selectedDisplayText
-      // nativeFlowResponse -> paramsJson
-      const native = msg.nativeFlowResponseMessage || msg.interactiveResponseMessage || msg.nativeFlowResponse
-      if (native && native.paramsJson) {
-        try {
-          const p = JSON.parse(native.paramsJson)
-          if (p && p.id) return p.id
-        } catch (e) {}
-      }
-      // older interactiveResponse
-      if (msg.body && typeof msg.body === 'string' && msg.body.startsWith('menu_')) return msg.body
-    } catch (e) {
-      console.error('Error parsing pressed id:', e)
-    }
-    return null
-  }
-
-  const pressedId = getPressedId(m) || getPressedId(m.msg) || getPressedId(m.message) || null
-  if (pressedId) {
-    if (pressedId === 'menu') return await handler(m, { conn, usedPrefix, command: 'menu', args })
-    if (pressedId.startsWith && pressedId.startsWith('menu_')) {
-      return await handler(m, { conn, usedPrefix, command: pressedId, args })
-    }
-  }
+  console.log('🔍 Verificando mensaje para botones...', m.text)
 }
 
 function clockString(ms) {
@@ -320,6 +287,68 @@ function clockString(ms) {
   let minutes = Math.floor((ms / (1000 * 60)) % 60)
   let hours = Math.floor((ms / (1000 * 60 * 60)) % 24)
   return `${hours}h ${minutes}m ${seconds}s`
+}
+
+
+handler.before = async function (m, { conn, usedPrefix }) {
+  if (!m.message) return
+  
+  
+  let buttonId = null
+  let buttonText = null
+  
+  
+  if (m.message.templateButtonReplyMessage) {
+    buttonId = m.message.templateButtonReplyMessage.selectedId
+    buttonText = m.message.templateButtonReplyMessage.selectedDisplayText
+  }
+  
+  
+  if (m.message.buttonsResponseMessage) {
+    buttonId = m.message.buttonsResponseMessage.selectedButtonId
+    buttonText = m.message.buttonsResponseMessage.selectedDisplayText
+  }
+  
+  
+  if (m.message.interactiveResponseMessage) {
+    try {
+      const paramsJson = m.message.interactiveResponseMessage.nativeFlowResponseMessage?.paramsJson
+      if (paramsJson) {
+        const params = JSON.parse(paramsJson)
+        buttonId = params.id
+      }
+    } catch (e) {
+      console.log('Error parsing interactive response:', e)
+    }
+  }
+  
+  
+  if (m.message.listResponseMessage) {
+    buttonId = m.message.listResponseMessage.singleSelectReply?.selectedRowId
+    buttonText = m.message.listResponseMessage.title
+  }
+  
+  
+  if (buttonId && (buttonId.startsWith('menu') || buttonId === 'menu')) {
+    console.log(`📥 Botón detectado: ${buttonId}`)
+    
+    
+    const fakeM = {
+      ...m,
+      text: buttonId,
+      command: buttonId
+    }
+    
+    
+    try {
+      await handler(fakeM, { conn, usedPrefix: '.', command: buttonId, args: [] })
+      return true 
+    } catch (error) {
+      console.log('Error ejecutando comando de botón:', error)
+    }
+  }
+  
+  return false
 }
 
 handler.help = ['menu', 'menú', 'help']
