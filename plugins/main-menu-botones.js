@@ -6,6 +6,11 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
   let uptime = clockString(_uptime)
   let totalreg = Object.keys(global.db.data.users).length
   let totalCommands = Object.values(global.plugins).filter((v) => v.help && v.tags).length
+  
+  
+  if (!usedPrefix) {
+    usedPrefix = global.prefix || '.'
+  }
 
   if (command === 'menu' || command === 'menú' || command === 'help') {
     const buttons = [
@@ -37,7 +42,7 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
     
     const footer = '🌱 Powered by Hatsune Miku Bot | Presiona un botón para continuar'
     
-    const menuGif = 'https://i.imgur.com/Z8vN2mP.gif'
+    const menuGif = 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcDZ5ZmZ4aWZkOGZwNGJyNWRsbHVsOGNwNm45NmgyMnppZjNpZGZiNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/kqVtWIVjZT8PbZJPQA/giphy.gif'
 
     return conn.sendNCarousel(m.chat, text, footer, menuGif, buttons, null, null, null, m)
   }
@@ -74,7 +79,7 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
 
     const footer = '🎵 Módulo de Descargas - Hatsune Miku Bot'
     
-    const descargasGif = 'https://i.imgur.com/X7vQ9mP.gif'
+    const descargasGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
     return conn.sendNCarousel(m.chat, text, footer, descargasGif, buttons, null, null, null, m)
   }
@@ -110,7 +115,7 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
 
     const footer = '🔧 Módulo de Herramientas - Hatsune Miku Bot'
     
-    const herramientasGif = 'https://i.imgur.com/K8vN2mP.gif'
+    const herramientasGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
     return conn.sendNCarousel(m.chat, text, footer, herramientasGif, buttons, null, null, null, m)
   }
@@ -147,7 +152,7 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
 
     const footer = '🎮 Módulo de Juegos - Hatsune Miku Bot'
     
-    const juegosGif = 'https://i.imgur.com/RbX5tKl.gif'
+    const juegosGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
     return conn.sendNCarousel(m.chat, text, footer, juegosGif, buttons, null, null, null, m)
   }
@@ -185,7 +190,7 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
 
     const footer = '🎌 Módulo Anime - Hatsune Miku Bot'
     
-    const animeGif = 'https://i.imgur.com/V3mQ8Lr.gif'
+    const animeGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
     return conn.sendNCarousel(m.chat, text, footer, animeGif, buttons, null, null, null, m)
   }
@@ -223,7 +228,7 @@ _(Solo para administradores)_
 
     const footer = '👥 Módulo de Grupos - Hatsune Miku Bot'
     
-    const gruposGif = 'https://i.imgur.com/T4nRb2M.gif'
+    const gruposGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
     return conn.sendNCarousel(m.chat, text, footer, gruposGif, buttons, null, null, null, m)
   }
@@ -260,7 +265,7 @@ _(Solo para administradores)_
 
     const footer = 'ℹ️ Información del Bot - Hatsune Miku Bot'
     
-    const infoGif = 'https://i.imgur.com/P7kNm4Q.gif'
+    const infoGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
     return conn.sendNCarousel(m.chat, text, footer, infoGif, buttons, null, null, null, m)
   }
@@ -456,15 +461,16 @@ handler.tags = ['main', 'menu']
 handler.command = /^(menu|menú|help|menu_descargas|menu_herramientas|menu_juegos|menu_anime|menu_grupos|menu_info)$/i
 handler.before = async function (m, { conn, usedPrefix }) {
   
+  if (!usedPrefix) {
+    usedPrefix = global.prefix || '.'
+  }
+  
+  
   if (m.text && (m.text.startsWith('menu_') || m.text === 'volver_menu' || m.text.startsWith('exec_'))) {
     
     if (m.text === 'volver_menu' || m.text.startsWith('menu_')) {
       const command = m.text === 'volver_menu' ? 'menu' : m.text
       return handler.call(this, m, { conn, usedPrefix, command, args: [] })
-    }
-    
-    if (m.text.startsWith('exec_')) {
-      return handler.call(this, m, { conn, usedPrefix, command: 'menu', args: [] })
     }
   }
 }
