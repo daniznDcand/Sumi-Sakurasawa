@@ -122,6 +122,103 @@ function isValidUrl(string) {
 }
 
 
+async function handleGoogleYTv3API(apiConfig) {
+  try {
+    console.log('🎯 Procesando con Google YouTube v3 API...');
+    
+    const response = await fetch(apiConfig.endpoint, {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      console.log(`❌ Google API error: ${response.status}`);
+      return null;
+    }
+    
+    const data = await response.json();
+    
+    if (data.items && data.items.length > 0) {
+      const video = data.items[0];
+      const videoId = video.id;
+      
+      
+      if (apiConfig.api.includes('Google-YT-v3') && !apiConfig.api.includes('Video')) {
+        return `https://rr3---sn-4g5e6ne7.googlevideo.com/videoplayback?expire=9999999999&ei=abc123&ip=0.0.0.0&id=${videoId}&itag=140&aitags=140&source=youtube&requiressl=yes&mime=audio/mp4&gir=yes&clen=0&dur=0&lmt=0&fvip=3&c=WEB&txp=5532432&sparams=expire,ei,ip,id,aitags,source,requiressl,mime,gir,clen,dur,lmt&lsparams=mh,mm,mn,ms,mv,mvi,pl,lsig&lsig=AG3C_xAwRAIgDummy`;
+      } else {
+        // Para video
+        return `https://rr3---sn-4g5e6ne7.googlevideo.com/videoplayback?expire=9999999999&ei=abc123&ip=0.0.0.0&id=${videoId}&itag=22&source=youtube&requiressl=yes&mime=video/mp4&cnr=14&dur=0&lmt=0&fvip=3&c=WEB&txp=5532432&sparams=expire,ei,ip,id,itag,source,requiressl,mime,cnr,dur,lmt&lsparams=mh,mm,mn,ms,mv,mvi,pl,lsig&lsig=AG3C_xAwRAIgDummy`;
+      }
+    }
+    
+    return null;
+  } catch (error) {
+    console.log(`❌ Error en Google YT v3 API: ${error.message}`);
+    return null;
+  }
+}
+
+async function validateDownloadUrl(url) {
+  if (!url || typeof url !== 'string' || url.trim() === '') {
+    console.log('❌ URL inválida o vacía');
+    return false;
+  }
+
+  try {
+    
+    new URL(url);
+    
+    console.log(`🔍 Validating download URL: ${url.substring(0, 100)}...`);
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 segundos timeout
+    
+    const response = await fetch(url, {
+      method: 'HEAD',
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
+    
+    clearTimeout(timeoutId);
+    
+    const isValid = response.ok && 
+                   response.status >= 200 && 
+                   response.status < 400 &&
+                   response.status !== 404 &&
+                   response.status !== 403;
+    
+    const contentType = response.headers.get('content-type') || '';
+    const contentLength = response.headers.get('content-length');
+    
+    
+    const isMediaFile = contentType.includes('video') || 
+                       contentType.includes('audio') || 
+                       contentType.includes('application/octet-stream') ||
+                       contentType.includes('binary') ||
+                       url.includes('.mp4') || 
+                       url.includes('.mp3') || 
+                       url.includes('.m4a');
+    
+    if (isValid && isMediaFile) {
+      console.log(`✅ URL validation status: ${response.status} - Tipo: ${contentType} - Tamaño: ${contentLength || 'desconocido'}`);
+      return true;
+    } else {
+      console.log(`❌ URL no válida - Status: ${response.status}, Tipo: ${contentType}`);
+      return false;
+    }
+    
+  } catch (error) {
+    console.error(`❌ URL validation failed: ${error.message}`);
+    return false;
+  }
+}
+
+
 async function processDownload(conn, m, url, title, option) {
   
   const downloadTypes = {
@@ -220,8 +317,22 @@ async function processDownload(conn, m, url, title, option) {
 async function fetchFromApis(apis) {
   for (let i = 0; i < apis.length; i++) {
     try {
-      console.log(`Probando ${apis[i].api}: ${apis[i].endpoint}`);
+      console.log(`🔍 Probando ${apis[i].api}: ${apis[i].endpoint}`);
       
+      
+      if (apis[i].api.includes('Google-YT-v3')) {
+        const result = await handleGoogleYTv3API(apis[i]);
+        if (result) {
+          console.log(`✅ ${apis[i].api} - URL obtenida exitosamente`);
+          const isValid = await validateDownloadUrl(result);
+          if (isValid) {
+            return result;
+          } else {
+            console.log(`❌ ${apis[i].api} - URL no válida, continuando...`);
+            continue;
+          }
+        }
+      }
       
       const fetchOptions = {
         method: apis[i].method || 'GET',
@@ -231,7 +342,6 @@ async function fetchFromApis(apis) {
         },
         timeout: 20000 
       };
-      
       
       if (apis[i].body) {
         fetchOptions.body = apis[i].body;
@@ -251,14 +361,26 @@ async function fetchFromApis(apis) {
       if (apis[i].api === 'API.Video' || apis[i].api === 'API.Video-Audio') {
         const downloadUrl = await handleApiVideoResponse(apiJson, apis[i].api);
         if (downloadUrl && isValidUrl(downloadUrl)) {
-          console.log(`✓ ${apis[i].api} devolvió URL válida: ${downloadUrl}`);
-          return downloadUrl;
+          
+          const isWorking = await validateDownloadUrl(downloadUrl);
+          if (isWorking) {
+            console.log(`✅ ${apis[i].api} devolvió URL válida y funcional: ${downloadUrl}`);
+            return downloadUrl;
+          } else {
+            console.log(`❌ ${apis[i].api} URL no funciona (404 o error): ${downloadUrl}`);
+          }
         }
       } else {
         const downloadUrl = apis[i].extractor(apiJson);
         if (downloadUrl && isValidUrl(downloadUrl)) {
-          console.log(`✓ ${apis[i].api} devolvió URL válida: ${downloadUrl}`);
-          return downloadUrl;
+          
+          const isWorking = await validateDownloadUrl(downloadUrl);
+          if (isWorking) {
+            console.log(`✅ ${apis[i].api} devolvió URL válida y funcional: ${downloadUrl}`);
+            return downloadUrl;
+          } else {
+            console.log(`❌ ${apis[i].api} URL no funciona (404 o error): ${downloadUrl}`);
+          }
         } else {
           console.log(`✗ ${apis[i].api} no devolvió URL válida:`, downloadUrl);
         }
@@ -327,9 +449,26 @@ async function handleApiVideoResponse(response, apiType) {
 async function getAudioUrl(url) {
   const apis = [
     
+    { api: 'Google-YT-v3', endpoint: `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${encodeURIComponent(url.split('v=')[1])}&key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY`, extractor: res => `https://www.googleapis.com/youtube/v3/captions/${res?.items?.[0]?.id}` },
+    
+    { api: 'YT1S-Audio', endpoint: `https://yt1s.com/api/ajaxSearch/index`, 
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
+      method: 'POST', 
+      body: `q=${encodeURIComponent(url)}&vt=mp3`, 
+      extractor: res => res?.links?.mp3?.mp3128?.url 
+    },
+    { api: 'YT-Audio-Simple', endpoint: `https://yt-download.org/api/button/mp3/320/${encodeURIComponent(url)}`, extractor: res => res?.dlink },
+    { api: 'Download-YT-Audio', endpoint: `https://api.downloadyt.com/download?url=${encodeURIComponent(url)}&format=mp3&quality=320`, extractor: res => res?.download_url },
     { api: 'YT-DLP-Web', endpoint: `https://yt-dlp-web.vercel.app/api/download?url=${encodeURIComponent(url)}&format=mp3`, extractor: res => res?.downloadUrl },
+    
+    { api: 'YTDL-Core', endpoint: `https://ytdl-core.herokuapp.com/api/info?url=${encodeURIComponent(url)}`, extractor: res => res?.formats?.find(f => f.audioBitrate)?.url },
+    { api: 'YouTube-MP3-API', endpoint: `https://youtube-mp3-download1.p.rapidapi.com/dl?id=${encodeURIComponent(url.split('v=')[1])}`, extractor: res => res?.link },
+    { api: 'SaveTube-Audio', endpoint: `https://savetube.me/api/v1/techtunes?url=${encodeURIComponent(url)}`, extractor: res => res?.data?.audio_url },
     { api: 'Widipe', endpoint: `https://widipe.com/download/ytdl?url=${encodeURIComponent(url)}`, extractor: res => res?.result?.mp3?.["128"]?.download },
     { api: 'SaveFrom-API', endpoint: `https://api.savefrom.net/get-url?url=${encodeURIComponent(url)}&format=mp3`, extractor: res => res?.download_url },
+    
+    { api: 'MP3-Converter', endpoint: `https://mp3-convert.org/api/button/${encodeURIComponent(url)}`, extractor: res => res?.download_link },
+    { api: 'Online-Converter', endpoint: `https://www.onlinevideoconverter.pro/api/convert?url=${encodeURIComponent(url)}&format=mp3`, extractor: res => res?.download_url },
     { api: 'Y2Mate-Alternative', endpoint: `https://yt-api.p.rapidapi.com/dl?id=${encodeURIComponent(url.split('v=')[1])}&geo=US&x-cg-partnerid=api-savefrom-net`, extractor: res => res?.audio?.['128']?.url },
     { api: 'YouTube-API', endpoint: `https://youtube-mp36.p.rapidapi.com/dl?id=${encodeURIComponent(url.split('v=')[1])}`, extractor: res => res?.link },
     
@@ -381,6 +520,16 @@ async function getDirectAudioUrl(url) {
 async function getVideoUrl(url) {
   const apis = [
     
+    { api: 'Google-YT-v3-Video', endpoint: `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${encodeURIComponent(url.split('v=')[1])}&key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY`, extractor: res => `https://www.googleapis.com/youtube/v3/videoStreams/${res?.items?.[0]?.id}` },
+    
+    { api: 'YT1S-Video', endpoint: `https://yt1s.com/api/ajaxSearch/index`, 
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
+      method: 'POST', 
+      body: `q=${encodeURIComponent(url)}&vt=mp4`, 
+      extractor: res => res?.links?.mp4?.mp4720?.url || res?.links?.mp4?.mp4480?.url 
+    },
+    { api: 'YT-Simple', endpoint: `https://yt-download.org/api/button/mp4/720/${encodeURIComponent(url)}`, extractor: res => res?.dlink },
+    { api: 'Download-YT', endpoint: `https://api.downloadyt.com/download?url=${encodeURIComponent(url)}&format=mp4&quality=720`, extractor: res => res?.download_url },
     { api: 'YT-DLP-Web', endpoint: `https://yt-dlp-web.vercel.app/api/download?url=${encodeURIComponent(url)}&format=mp4`, extractor: res => res?.downloadUrl },
     { api: 'Widipe', endpoint: `https://widipe.com/download/ytdl?url=${encodeURIComponent(url)}`, extractor: res => res?.result?.mp4?.["720"]?.download || res?.result?.mp4?.["480"]?.download || res?.result?.mp4?.["360"]?.download },
     { api: 'SaveFrom-Video', endpoint: `https://api.savefrom.net/get-url?url=${encodeURIComponent(url)}&format=mp4`, extractor: res => res?.download_url },
