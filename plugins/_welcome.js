@@ -132,24 +132,22 @@ La música de Miku seguirá sonando fuerte aquí para ti.
 ¡Cuídate y hasta el próximo concierto! 🎶✨
     `;
 
-    const byeButtons = [
-      ['🎵 Ver Canal', 'ir_canal']
-    ]
-
-    const templateButtons = byeButtons.map((btn, index) => ({
-      index: index + 1,
-      quickReplyButton: {
-        displayText: btn[0],
-        id: btn[1]
-      }
-    }))
+    const canalUrl = 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
 
     try {
       await conn.sendMessage(m.chat, {
         image: imgBuffer,
         caption: byeMsg,
-        footer: '🎵 ¡Sayonara! 🎵',
-        templateButtons: templateButtons
+        contextInfo: {
+          externalAdReply: {
+            title: '🎵 Seguir Canal',
+            body: '💙 Toca aquí para seguir el canal 💙',
+            thumbnailUrl: 'https://files.catbox.moe/wm4w1x.jpg',
+            sourceUrl: canalUrl,
+            mediaType: 1,
+            renderLargerThumbnail: true
+          }
+        }
       }, { quoted: m })
       console.log('✅ Mensaje de despedida enviado correctamente')
     } catch (error) {
@@ -157,7 +155,7 @@ La música de Miku seguirá sonando fuerte aquí para ti.
       
       try {
         await conn.sendMessage(m.chat, {
-          text: byeMsg,
+          text: `${byeMsg}\n\n🎵 *Canal Oficial:*\n${canalUrl}`,
           mentions: [m.messageStubParameters[0]]
         }, { quoted: m })
         console.log('✅ Mensaje de despedida enviado como fallback')
