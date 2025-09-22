@@ -76,30 +76,37 @@ Para cualquier ayuda, escribe *#help*.
 ¡Que la música te acompañe siempre! 🎶
     `;
 
-    const canalButtons = [
-      ['🎵 Ver Canal', 'ir_canal_directo']
-    ]
+    const canalUrl = 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
 
     try {
-      await conn.sendMessage(m.chat, {
-        image: imgBuffer,
-        caption: welcomeMsg,
-        footer: '💙 ¡Nueva estrella se une! 💙',
-        templateButtons: canalButtons.map((btn, index) => ({
-          index: index + 1,
-          quickReplyButton: {
-            displayText: btn[0],
-            id: btn[1]
+      
+      if (conn.sendHydrated) {
+        
+        await conn.sendHydrated(m.chat, welcomeMsg, null, imgBuffer, canalUrl, '🎵 Ver Canal', null, null, [], { quoted: m, mentions: [m.messageStubParameters[0]] })
+        console.log('✅ Mensaje de bienvenida enviado con botón URL (sendHydrated)')
+      } else {
+        await conn.sendMessage(m.chat, {
+          image: imgBuffer,
+          caption: welcomeMsg,
+          contextInfo: {
+            externalAdReply: {
+              title: '🎵 Ver Canal Oficial',
+              body: '💙 Toca aquí para unirte al canal 💙',
+              thumbnailUrl: 'https://files.catbox.moe/wm4w1x.jpg',
+              sourceUrl: canalUrl,
+              mediaType: 1,
+              renderLargerThumbnail: true
+            }
           }
-        }))
-      }, { quoted: m })
-      console.log('✅ Mensaje de bienvenida enviado correctamente')
+        }, { quoted: m })
+        console.log('✅ Mensaje de bienvenida enviado correctamente (externalAdReply)')
+      }
     } catch (error) {
       console.log('❌ Error enviando bienvenida:', error)
       
       try {
         await conn.sendMessage(m.chat, {
-          text: `${welcomeMsg}\n\n🎵 *Escribe .rcanal para ver el canal oficial*`,
+          text: `${welcomeMsg}\n\n🎵 *Canal Oficial:*\n${canalUrl}`,
           mentions: [m.messageStubParameters[0]]
         }, { quoted: m })
         console.log('✅ Mensaje de bienvenida enviado como fallback')
@@ -132,30 +139,35 @@ La música de Miku seguirá sonando fuerte aquí para ti.
 ¡Cuídate y hasta el próximo concierto! 🎶✨
     `;
 
-    const byeButtons = [
-      ['🎵 Ver Canal', 'ir_canal_directo']
-    ]
+    const canalUrl = 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
 
     try {
-      await conn.sendMessage(m.chat, {
-        image: imgBuffer,
-        caption: byeMsg,
-        footer: '🎵 ¡Sayonara! 🎵',
-        templateButtons: byeButtons.map((btn, index) => ({
-          index: index + 1,
-          quickReplyButton: {
-            displayText: btn[0],
-            id: btn[1]
+      if (conn.sendHydrated) {
+        await conn.sendHydrated(m.chat, byeMsg, null, imgBuffer, canalUrl, '🎵 Seguir Canal', null, null, [], { quoted: m, mentions: [m.messageStubParameters[0]] })
+        console.log('✅ Mensaje de despedida enviado con botón URL (sendHydrated)')
+      } else {
+        await conn.sendMessage(m.chat, {
+          image: imgBuffer,
+          caption: byeMsg,
+          contextInfo: {
+            externalAdReply: {
+              title: '🎵 Seguir Canal',
+              body: '💙 Toca aquí para seguir el canal 💙',
+              thumbnailUrl: 'https://files.catbox.moe/wm4w1x.jpg',
+              sourceUrl: canalUrl,
+              mediaType: 1,
+              renderLargerThumbnail: true
+            }
           }
-        }))
-      }, { quoted: m })
-      console.log('✅ Mensaje de despedida enviado correctamente')
+        }, { quoted: m })
+        console.log('✅ Mensaje de despedida enviado correctamente (externalAdReply)')
+      }
     } catch (error) {
       console.log('❌ Error enviando despedida:', error)
       
       try {
         await conn.sendMessage(m.chat, {
-          text: `${byeMsg}\n\n🎵 *Escribe .rcanal para ver el canal oficial*`,
+          text: `${byeMsg}\n\n🎵 *Canal Oficial:*\n${canalUrl}`,
           mentions: [m.messageStubParameters[0]]
         }, { quoted: m })
         console.log('✅ Mensaje de despedida enviado como fallback')

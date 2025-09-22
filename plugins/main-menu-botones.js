@@ -38,28 +38,10 @@ Usa los botones de abajo o escribe el comando directamente.
 
 💙 ¡Disfruta de la experiencia Miku! ✨`
     
+    const footer = '🌱 Powered by (ㅎㅊDEPOOLㅊㅎ)'
     const menuGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
-    try {
-      return await conn.sendMessage(m.chat, {
-        video: { url: menuGif },
-        caption: text,
-        footer: '🌱 Powered by (ㅎㅊDEPOOLㅊㅎ)',
-        gifPlayback: true,
-        templateButtons: buttons.map((btn, index) => ({
-          index: index + 1,
-          quickReplyButton: {
-            displayText: btn[0],
-            id: btn[1]
-          }
-        }))
-      }, { quoted: m })
-    } catch (error) {
-      console.log('Error enviando video-gif, enviando solo texto:', error)
-      return await conn.sendMessage(m.chat, {
-        text: text
-      }, { quoted: m })
-    }
+    return conn.sendNCarousel(m.chat, text, footer, menuGif, buttons, null, null, null, m)
   }
 
   if (command === 'menu_descargas' || m.text === 'menu_descargas') {
@@ -88,28 +70,10 @@ Usa los botones de abajo o escribe el comando directamente.
 💙 *Escribe cualquier comando para usarlo*
 ⬅️ *O toca el botón para volver al menú principal*`
     
+    const footer = '🎵 Módulo de Descargas - Hatsune Miku Bot'
     const descargasGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
-    try {
-      return await conn.sendMessage(m.chat, {
-        video: { url: descargasGif },
-        caption: text,
-        footer: '🎵 Módulo de Descargas - Hatsune Miku Bot',
-        gifPlayback: true,
-        templateButtons: buttons.map((btn, index) => ({
-          index: index + 1,
-          quickReplyButton: {
-            displayText: btn[0],
-            id: btn[1]
-          }
-        }))
-      }, { quoted: m })
-    } catch (error) {
-      console.log('Error enviando video-gif, enviando solo texto:', error)
-      return await conn.sendMessage(m.chat, {
-        text: text
-      }, { quoted: m })
-    }
+    return conn.sendNCarousel(m.chat, text, footer, descargasGif, buttons, null, null, null, m)
   }
 
   if (command === 'menu_herramientas' || m.text === 'menu_herramientas') {
