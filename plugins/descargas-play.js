@@ -43,8 +43,16 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     const vistas = formatViews(views);
     const canal = author.name || 'Desconocido';
     
-    const infoMessage = `
-*𖹭.╭╭ִ╼࣪━ִﮩ٨ـﮩ💙𝗠𝗶𝗸𝘂𝗺𝗶𝗻🌱ﮩ٨ـﮩ━ִ╾࣪╮╮.𖹭*
+    
+    const buttons = [
+      ['🎵 MP3 (Audio)', 'ytdl_audio_mp3'],
+      ['🎬 MP4 (Video)', 'ytdl_video_mp4'],
+      ['📁 MP3 Documento', 'ytdl_audio_doc'],
+      ['📁 MP4 Documento', 'ytdl_video_doc']
+    ];
+    
+    const infoText = `*𖹭.╭╭ִ╼࣪━ִﮩ٨ـﮩ💙𝗠𝗶𝗸𝘂𝗺𝗶𝗻🌱ﮩ٨ـﮩ━ִ╾࣪╮╮.𖹭*
+
 > 💙 *Título:* ${title}
 *°.⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸.°*
 > 🌱 *Duración:* ${timestamp}
@@ -55,32 +63,16 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 *°.⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸.°*
 > 💙 *Publicado:* ${ago}
 *⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︢︣ۛ۫۫۫۫۫۫ۜ⏝ּׅ︢︣ۛ۫۫۫۫۫۫ۜ⏝ּׅ︢︣ۛ۫۫۫۫۫۫ۜ⏝ּׅ︢︣ۛ۫۫۫۫۫۫ۜ⏝ּׅ︢︣ׄۛ۫۫۫۫۫۫ۜ*
-> 💌 *Elige un formato:*
-> 1️⃣ - MP3 (Audio)
-> 2️⃣ - MP4 (Video)
-> 3️⃣ - MP3 Documento (archivos grandes)
-> 4️⃣ - MP4 Documento (archivos grandes)
-> 🈹 Responde a este mensaje con el número`;
+
+💌 *Selecciona el formato para descargar:*`;
+
+    const footer = '🌱 Hatsune Miku Bot - YouTube';
 
     try {
       const thumb = thumbnail ? (await conn.getFile(thumbnail))?.data : null;
 
-      const JT = {
-        contextInfo: {
-          externalAdReply: {
-            title: botname || 'Miku Bot',
-            body: dev || 'YouTube Downloader',
-            mediaType: 1,
-            previewType: 0,
-            mediaUrl: url,
-            sourceUrl: url,
-            thumbnail: thumb,
-            renderLargerThumbnail: true,
-          },
-        },
-      };
-
-      const sentMsg = await conn.reply(m.chat, infoMessage, m, JT);
+      
+      await conn.sendNCarousel(m.chat, infoText, footer, thumb, buttons, null, null, null, m);
       
       if (!global.db.data.users[m.sender]) {
         global.db.data.users[m.sender] = {};
@@ -96,7 +88,8 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       console.log(`Stored search for user ${m.sender}: ${title} (ID: ${m.key.id})`);
       
     } catch (thumbError) {
-      const sentMsg = await conn.reply(m.chat, infoMessage, m);
+     
+      await conn.sendNCarousel(m.chat, infoText, footer, null, buttons, null, null, null, m);
       
       if (!global.db.data.users[m.sender]) {
         global.db.data.users[m.sender] = {};
@@ -130,7 +123,16 @@ function isValidUrl(string) {
 
 
 async function processDownload(conn, m, url, title, option) {
-  await conn.reply(m.chat, `💙 Procesando ${option === 1 || option === 3 ? 'audio' : 'video'}. Por favor espera...`, m);
+  
+  const downloadTypes = {
+    1: '🎵 audio MP3',
+    2: '🎬 video MP4', 
+    3: '📁 audio MP3 doc',
+    4: '📁 video MP4 doc'
+  };
+  
+  const downloadType = downloadTypes[option] || 'archivo';
+  await conn.reply(m.chat, `💙 Procesando ${downloadType}. Por favor espera...`, m);
   
   try {
     let downloadUrl;
@@ -273,24 +275,35 @@ async function getVideoUrl(url) {
 }
 
 handler.before = async (m, { conn }) => {
-  if (!/^[1-4]$/.test(m.text)) return false;
+  
+  if (!/^ytdl_(audio|video)_(mp3|mp4|doc)$/.test(m.text)) return false;
   
   const user = global.db.data.users[m.sender];
   if (!user || !user.lastYTSearch) return false;
   
-  console.log(`Received option: ${m.text} from user ${m.sender}`);
+  console.log(`Received button: ${m.text} from user ${m.sender}`);
   console.log(`User has active search: ${user.lastYTSearch.title}`);
   
   const currentTime = Date.now();
   const searchTime = user.lastYTSearch.timestamp || 0;
   
+  
   if (currentTime - searchTime > 10 * 60 * 1000) {
     console.log("Search expired");
+    await conn.reply(m.chat, '⏰ La búsqueda ha expirado. Por favor realiza una nueva búsqueda.', m);
     return false; 
   }
   
-  const option = parseInt(m.text);
-  if (isNaN(option) || option < 1 || option > 4) return false;
+  
+  const buttonMap = {
+    'ytdl_audio_mp3': 1,  
+    'ytdl_video_mp4': 2,  
+    'ytdl_audio_doc': 3,  
+    'ytdl_video_doc': 4   
+  };
+  
+  const option = buttonMap[m.text];
+  if (!option) return false;
   
   console.log(`Processing option ${option} for ${user.lastYTSearch.title}`);
 
@@ -304,6 +317,7 @@ handler.before = async (m, { conn }) => {
     option
   );
 
+  
   user.lastYTSearch = null;
   
   return true;

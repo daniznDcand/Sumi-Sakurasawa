@@ -190,8 +190,33 @@ const arabicSpamPatterns = [
 const arabicCharacterPattern = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/
 
 
+function isLID(phoneNumber) {
+  if (!phoneNumber) return false
+  
+  
+  const cleanNumber = phoneNumber.replace(/[\s\-\(\)]/g, '')
+  
+  
+  if (cleanNumber.length > 15) {
+    return true
+  }
+  
+  
+  if (/^\d{13,}$/.test(cleanNumber)) {
+    return true
+  }
+  
+  return false
+}
+
 function isArabicSpamNumber(phoneNumber) {
   if (!phoneNumber) return false
+  
+  
+  if (isLID(phoneNumber)) {
+    console.log(`🔧 LID detectado (ignorado): ${phoneNumber}`)
+    return false 
+  }
   
   
   const cleanNumber = phoneNumber.replace(/[\s\-\(\)]/g, '')
