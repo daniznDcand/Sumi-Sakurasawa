@@ -8,9 +8,7 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
   let totalCommands = Object.values(global.plugins).filter((v) => v.help && v.tags).length
   
   
-  if (!usedPrefix) {
-    usedPrefix = global.prefix || '.'
-  }
+  usedPrefix = '.'
 
   if (command === 'menu' || command === 'menú' || command === 'help') {
     const buttons = [
@@ -42,9 +40,14 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
     
     const footer = '🌱 Powered by Hatsune Miku Bot | Presiona un botón para continuar'
     
-    const menuGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+    
+    await conn.sendMessage(m.chat, {
+      video: { url: 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4' },
+      gifPlayback: true,
+      caption: '🎵 *¡HATSUNE MIKU BOT!* 🎵\n💙 Preparando menú...'
+    }, { quoted: m })
 
-    return conn.sendNCarousel(m.chat, text, footer, menuGif, buttons, null, null, null, m)
+    return conn.sendNCarousel(m.chat, text, footer, null, buttons, null, null, null, m)
   }
 
   if (command === 'menu_descargas' || m.text === 'menu_descargas') {
@@ -59,29 +62,40 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
 
     const text = `📥 *MENÚ DE DESCARGAS*
 
-🎵 *Música y Videos:*
-• \`${usedPrefix}play [nombre]\` - YouTube
-• \`${usedPrefix}ytmp3 [url]\` - YouTube MP3
-• \`${usedPrefix}ytmp4 [url]\` - YouTube MP4
+┏━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ 🎵 *MÚSICA Y VIDEOS* 🎵 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+🎼 \`.play [nombre]\` - YouTube Music
+🎥 \`.ytmp3 [url]\` - YouTube a MP3
+📹 \`.ytmp4 [url]\` - YouTube a MP4
 
-📱 *Redes Sociales:*
-• \`${usedPrefix}tiktok [url]\` - Videos TikTok
-• \`${usedPrefix}instagram [url]\` - Posts IG
-• \`${usedPrefix}facebook [url]\` - Videos FB
-• \`${usedPrefix}twitter [url]\` - Videos Twitter
+┏━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ 📱 *REDES SOCIALES* 📱 ┃ 
+┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+🎬 \`.tiktok [url]\` - Videos TikTok
+📸 \`.instagram [url]\` - Posts IG
+💙 \`.facebook [url]\` - Videos FB
+🐦 \`.twitter [url]\` - Videos Twitter
 
-📁 *Archivos:*
-• \`${usedPrefix}mediafire [url]\` - MediaFire
-• \`${usedPrefix}mega [url]\` - MEGA
-• \`${usedPrefix}apk [nombre]\` - APKs
+┏━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ 📁 *ARCHIVOS* 📁 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+💾 \`.mediafire [url]\` - MediaFire
+☁️ \`.mega [url]\` - MEGA
+📱 \`.apk [nombre]\` - APKs
 
-🌸 Presiona un botón para probar los comandos:`
+🌸 *Presiona un botón para probar:*`
 
     const footer = '🎵 Módulo de Descargas - Hatsune Miku Bot'
     
-    const descargasGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+    
+    await conn.sendMessage(m.chat, {
+      video: { url: 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4' },
+      gifPlayback: true,
+      caption: '📥 *MENÚ DE DESCARGAS* 📥\n💙 Cargando opciones...'
+    }, { quoted: m })
 
-    return conn.sendNCarousel(m.chat, text, footer, descargasGif, buttons, null, null, null, m)
+    return conn.sendNCarousel(m.chat, text, footer, null, buttons, null, null, null, m)
   }
 
   if (command === 'menu_herramientas' || m.text === 'menu_herramientas') {
@@ -96,28 +110,39 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
 
     const text = `🛠️ *HERRAMIENTAS ÚTILES*
 
-🌐 *Utilidades Web:*
-• \`${usedPrefix}clima [ciudad]\` - Ver clima
-• \`${usedPrefix}translate [texto]\` - Traductor
-• \`${usedPrefix}ss [url]\` - Screenshot
+┏━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ 🌐 *UTILIDADES WEB* 🌐 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+🌤️ \`.clima [ciudad]\` - Ver clima
+🈵 \`.translate [texto]\` - Traductor  
+📷 \`.ss [url]\` - Screenshot
 
-🎨 *Edición:*
-• \`${usedPrefix}enhance\` - Mejorar imagen
-• \`${usedPrefix}s\` - Crear sticker
-• \`${usedPrefix}toimg\` - Sticker a imagen
+┏━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ 🎨 *EDICIÓN* 🎨 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+✨ \`.enhance\` - Mejorar imagen
+🌟 \`.s\` - Crear sticker
+🖼️ \`.toimg\` - Sticker a imagen
 
-🔧 *Conversores:*
-• \`${usedPrefix}tomp3\` - Audio a MP3
-• \`${usedPrefix}tovideo\` - Audio a video
-• \`${usedPrefix}togif\` - Video a GIF
+┏━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ 🔧 *CONVERSORES* 🔧 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+🎵 \`.tomp3\` - Audio a MP3
+🎬 \`.tovideo\` - Audio a video
+🎞️ \`.togif\` - Video a GIF
 
-💫 Presiona un botón para usar las herramientas:`
+💫 *Presiona un botón para usar:*`
 
     const footer = '🔧 Módulo de Herramientas - Hatsune Miku Bot'
     
-    const herramientasGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+    
+    await conn.sendMessage(m.chat, {
+      video: { url: 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4' },
+      gifPlayback: true,
+      caption: '🛠️ *HERRAMIENTAS* 🛠️\n💙 Cargando utilidades...'
+    }, { quoted: m })
 
-    return conn.sendNCarousel(m.chat, text, footer, herramientasGif, buttons, null, null, null, m)
+    return conn.sendNCarousel(m.chat, text, footer, null, buttons, null, null, null, m)
   }
 
   if (command === 'menu_juegos' || m.text === 'menu_juegos') {
@@ -132,29 +157,40 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
 
     const text = `🎮 *CENTRO DE JUEGOS*
 
-🕹️ *Juegos Clásicos:*
-• \`${usedPrefix}ttt\` - Tres en raya
-• \`${usedPrefix}ppt\` - Piedra/Papel/Tijera
-• \`${usedPrefix}ahorcado\` - Juego del ahorcado
-• \`${usedPrefix}sopa\` - Sopa de letras
+┏━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ 🕹️ *JUEGOS CLÁSICOS* 🕹️ ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+⭕ \`.ttt\` - Tres en raya
+✂️ \`.ppt\` - Piedra/Papel/Tijera
+🎪 \`.ahorcado\` - Juego del ahorcado
+🔤 \`.sopa\` - Sopa de letras
 
-🎰 *Casino & Apuestas:*
-• \`${usedPrefix}casino [cantidad]\` - Apostar
-• \`${usedPrefix}slot [cantidad]\` - Tragamonedas
-• \`${usedPrefix}cf [cantidad]\` - Cara o cruz
-• \`${usedPrefix}ruleta\` - Ruleta rusa
+┏━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ 🎰 *CASINO & APUESTAS* 🎰 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+🎲 \`.casino [cantidad]\` - Apostar
+🎰 \`.slot [cantidad]\` - Tragamonedas
+🪙 \`.cf [cantidad]\` - Cara o cruz
+🔫 \`.ruleta\` - Ruleta rusa
 
-⚔️ *Competitivo:*
-• \`${usedPrefix}pvp [@usuario]\` - Pelear
-• \`${usedPrefix}matematicas\` - Quiz matemático
+┏━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ ⚔️ *COMPETITIVO* ⚔️ ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+🥊 \`.pvp [@usuario]\` - Pelear
+🧠 \`.matematicas\` - Quiz matemático
 
-🎊 Presiona un botón para empezar a jugar:`
+🎊 *Presiona un botón para jugar:*`
 
     const footer = '🎮 Módulo de Juegos - Hatsune Miku Bot'
     
-    const juegosGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+    
+    await conn.sendMessage(m.chat, {
+      video: { url: 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4' },
+      gifPlayback: true,
+      caption: '🎮 *CENTRO DE JUEGOS* 🎮\n💙 Cargando diversión...'
+    }, { quoted: m })
 
-    return conn.sendNCarousel(m.chat, text, footer, juegosGif, buttons, null, null, null, m)
+    return conn.sendNCarousel(m.chat, text, footer, null, buttons, null, null, null, m)
   }
 
   if (command === 'menu_anime' || m.text === 'menu_anime') {
@@ -169,30 +205,41 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
 
     const text = `🎌 *ANIME & REACCIONES*
 
-😊 *Reacciones Positivas:*
-• \`${usedPrefix}hug [@usuario]\` - Dar abrazo
-• \`${usedPrefix}kiss [@usuario]\` - Dar beso
-• \`${usedPrefix}pat [@usuario]\` - Acariciar
-• \`${usedPrefix}happy\` - Estar feliz
+┏━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ 😊 *REACCIONES POSITIVAS* 😊 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+🤗 \`.hug [@usuario]\` - Dar abrazo
+😘 \`.kiss [@usuario]\` - Dar beso  
+🤲 \`.pat [@usuario]\` - Acariciar
+😊 \`.happy\` - Estar feliz
 
-💃 *Acciones:*
-• \`${usedPrefix}dance\` - Bailar
-• \`${usedPrefix}eat\` - Comer
-• \`${usedPrefix}sleep\` - Dormir
-• \`${usedPrefix}think\` - Pensar
+┏━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ 💃 *ACCIONES* 💃 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+💃 \`.dance\` - Bailar
+🍽️ \`.eat\` - Comer
+😴 \`.sleep\` - Dormir
+🤔 \`.think\` - Pensar
 
-😔 *Emociones:*
-• \`${usedPrefix}cry\` - Llorar
-• \`${usedPrefix}sad\` - Estar triste
-• \`${usedPrefix}angry\` - Estar enojado
+┏━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ 😔 *EMOCIONES* 😔 ┃
+┗━━━━━━━━━━━━━━━━━━━━━━━━┛
+😢 \`.cry\` - Llorar
+😞 \`.sad\` - Estar triste
+😠 \`.angry\` - Estar enojado
 
-🌸 Presiona un botón para usar reacciones:`
+🌸 *Presiona un botón para reaccionar:*`
 
     const footer = '🎌 Módulo Anime - Hatsune Miku Bot'
     
-    const animeGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+    
+    await conn.sendMessage(m.chat, {
+      video: { url: 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4' },
+      gifPlayback: true,
+      caption: '🎌 *ANIME & REACCIONES* 🎌\n💙 Cargando kawaii...'
+    }, { quoted: m })
 
-    return conn.sendNCarousel(m.chat, text, footer, animeGif, buttons, null, null, null, m)
+    return conn.sendNCarousel(m.chat, text, footer, null, buttons, null, null, null, m)
   }
 
   if (command === 'menu_grupos' || m.text === 'menu_grupos') {
@@ -228,9 +275,14 @@ _(Solo para administradores)_
 
     const footer = '👥 Módulo de Grupos - Hatsune Miku Bot'
     
-    const gruposGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+    
+    await conn.sendMessage(m.chat, {
+      video: { url: 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4' },
+      gifPlayback: true,
+      caption: '👥 *GESTIÓN DE GRUPOS* 👥\n💙 Cargando administración...'
+    }, { quoted: m })
 
-    return conn.sendNCarousel(m.chat, text, footer, gruposGif, buttons, null, null, null, m)
+    return conn.sendNCarousel(m.chat, text, footer, null, buttons, null, null, null, m)
   }
 
   if (command === 'menu_info' || m.text === 'menu_info') {
@@ -265,9 +317,14 @@ _(Solo para administradores)_
 
     const footer = 'ℹ️ Información del Bot - Hatsune Miku Bot'
     
-    const infoGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+    
+    await conn.sendMessage(m.chat, {
+      video: { url: 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4' },
+      gifPlayback: true,
+      caption: 'ℹ️ *INFORMACIÓN DEL BOT* ℹ️\n💙 Cargando datos...'
+    }, { quoted: m })
 
-    return conn.sendNCarousel(m.chat, text, footer, infoGif, buttons, null, null, null, m)
+    return conn.sendNCarousel(m.chat, text, footer, null, buttons, null, null, null, m)
   }
 
   
