@@ -9,10 +9,43 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
   let isAll = false, isUser = false
   let isEnable = chat[type] || false
 
- 
+  // Lista de funciones válidas
+  const validFunctions = [
+    'welcome', 'bienvenida',
+    'antibot', 'antibots', 
+    'autoaceptar', 'aceptarauto',
+    'autorechazar', 'rechazarauto',
+    'autoresponder', 'autorespond',
+    'antisubbots', 'antibot2',
+    'modoadmin', 'soladmin',
+    'reaction', 'reaccion',
+    'nsfw', 'modohorny',
+    'detect', 'avisos',
+    'antilink', 'antilink2',
+    'antifake',
+    'antiarabes', 'antiarab',
+    'autolevelup', 'autonivel',
+    'antispam',
+    'antiprivado', 'antiprivate',
+    'restrict', 'restringir',
+    'jadibotmd', 'modejadibot',
+    'subbots'
+  ]
+
+  
+  const isValidFunction = (funcName) => {
+    return validFunctions.includes(funcName.toLowerCase())
+  }
+
   if (command === 'enable') {
     if (args[0]) {
       type = args[0].toLowerCase()
+      
+      
+      if (!isValidFunction(type)) {
+        return conn.reply(m.chat, `❌ *Error:* La función "*${type}*" no existe.\n\n> Use *${usedPrefix}enable* sin parámetros para ver las funciones disponibles.`, m)
+      }
+      
       isEnable = true
     } else {
       const funcionesDisponibles = [
@@ -49,6 +82,12 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
   } else if (command === 'disable') {
     if (args[0]) {
       type = args[0].toLowerCase()
+      
+      
+      if (!isValidFunction(type)) {
+        return conn.reply(m.chat, `❌ *Error:* La función "*${type}*" no existe.\n\n> Use *${usedPrefix}disable* sin parámetros para ver las funciones disponibles.`, m)
+      }
+      
       isEnable = false
     } else {
       const funcionesDisponibles = [
@@ -83,10 +122,22 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
       return conn.reply(m.chat, funcionesDisponibles, m)
     }
   } else if (args[0] === 'on' || args[0] === 'enable') {
+    
+    if (!isValidFunction(type)) {
+      return conn.reply(m.chat, `❌ *Error:* La función "*${type}*" no existe.\n\n> Funciones disponibles: ${validFunctions.filter((f, i, arr) => arr.indexOf(f) === i).slice(0, 10).join(', ')}...`, m)
+    }
     isEnable = true;
   } else if (args[0] === 'off' || args[0] === 'disable') {
+    
+    if (!isValidFunction(type)) {
+      return conn.reply(m.chat, `❌ *Error:* La función "*${type}*" no existe.\n\n> Funciones disponibles: ${validFunctions.filter((f, i, arr) => arr.indexOf(f) === i).slice(0, 10).join(', ')}...`, m)
+    }
     isEnable = false
   } else {
+    
+    if (!isValidFunction(type)) {
+      return conn.reply(m.chat, `❌ *Error:* La función "*${type}*" no existe.\n\n> Use *${usedPrefix}enable* para ver las funciones disponibles.`, m)
+    }
     const estado = isEnable ? '✓ Activado' : '✗ Desactivado'
     return conn.reply(m.chat, `💙 Un administrador puede activar o desactivar el *${command}* utilizando:\n\n> ✐ *${usedPrefix}${command} on* para activar.\n> ✐ *${usedPrefix}${command} off* para desactivar.\n> ✐ *${usedPrefix}enable ${command}* para activar.\n> ✐ *${usedPrefix}disable ${command}* para desactivar.\n\n✧ Estado actual » *${estado}*`, m, global.rcanal)
   }
