@@ -277,44 +277,63 @@ async function getVideoUrl(url) {
 handler.before = async (m, { conn }) => {
   
   if (m.sender && global.db.data.users[m.sender]?.lastYTSearch) {
-    console.log('🔍 [DEBUG] Message received from user with active search:');
-    console.log(`   Type: ${m.mtype}`);
-    console.log(`   Text: "${m.text}"`);
-    console.log(`   Sender: ${m.sender}`);
-    console.log(`   Message obj:`, JSON.stringify(m.msg, null, 2));
+    console.log('\n🔍 [FULL DEBUG] Message received from user with active search:');
+    console.log(`   📱 Sender: ${m.sender}`);
+    console.log(`   📝 Type (mtype): ${m.mtype}`);
+    console.log(`   💬 Text: "${m.text}"`);
+    console.log(`   🗂️ Full message object:`, JSON.stringify(m, null, 2));
+    console.log(`   📊 Message structure:`, {
+      key: m.key,
+      message: m.message,
+      msg: m.msg
+    });
+    console.log('─'.repeat(80));
   }
   
   
-  if (!/^ytdl_(audio|video)_(mp3|mp4|doc)$/.test(m.text)) {
-    
-    const alternativePatterns = [
-      /ytdl_audio_mp3/,
-      /ytdl_video_mp4/,
-      /ytdl_audio_doc/,
-      /ytdl_video_doc/
-    ];
-    
-    let isButtonResponse = false;
-    for (const pattern of alternativePatterns) {
-      if (pattern.test(m.text)) {
-        isButtonResponse = true;
-        break;
-      }
+  const buttonPatterns = [
+    /^ytdl_(audio|video)_(mp3|mp4|doc)$/,
+    /ytdl_audio_mp3/,
+    /ytdl_video_mp4/,
+    /ytdl_audio_doc/,
+    /ytdl_video_doc/
+  ];
+  
+  let isButtonResponse = false;
+  let matchedPattern = null;
+  
+  for (const pattern of buttonPatterns) {
+    if (pattern.test(m.text)) {
+      isButtonResponse = true;
+      matchedPattern = pattern;
+      break;
     }
+  }
+  
+  
+  const textContainsButton = m.text.includes('ytdl_') || 
+                            m.text.includes('audio_mp3') || 
+                            m.text.includes('video_mp4') ||
+                            m.text.includes('audio_doc') ||
+                            m.text.includes('video_doc');
+  
+  if (!isButtonResponse && !textContainsButton) {
     
-    if (!isButtonResponse) {
-      return false;
+    if (m.sender && global.db.data.users[m.sender]?.lastYTSearch) {
+      console.log(`❌ [DEBUG] Message "${m.text}" doesn't match any button pattern`);
     }
+    return false;
   }
   
   const user = global.db.data.users[m.sender];
   if (!user || !user.lastYTSearch) {
-    console.log(`[DEBUG] No user or no active search for ${m.sender}`);
+    console.log(`❌ [DEBUG] No user or no active search for ${m.sender}`);
     return false;
   }
   
-  console.log(`✅ Received button: ${m.text} from user ${m.sender}`);
-  console.log(`📱 User has active search: ${user.lastYTSearch.title}`);
+  console.log(`✅ [BUTTON DETECTED] Pattern: ${matchedPattern || 'keyword match'}`);
+  console.log(`📱 User: ${m.sender}`);
+  console.log(`🎵 Active search: ${user.lastYTSearch.title}`);
   
   const currentTime = Date.now();
   const searchTime = user.lastYTSearch.timestamp || 0;
@@ -326,34 +345,45 @@ handler.before = async (m, { conn }) => {
     return false; 
   }
   
-  // Map button IDs to options
-  const buttonMap = {
-    'ytdl_audio_mp3': 1, 
-    'ytdl_video_mp4': 2,  
-    'ytdl_audio_doc': 3,  
-    'ytdl_video_doc': 4   
-  };
   
-  const option = buttonMap[m.text];
+  let option = null;
+  
+  if (m.text.includes('audio_mp3') || m.text === 'ytdl_audio_mp3') {
+    option = 1; 
+  } else if (m.text.includes('video_mp4') || m.text === 'ytdl_video_mp4') {
+    option = 2; 
+  } else if (m.text.includes('audio_doc') || m.text === 'ytdl_audio_doc') {
+    option = 3; 
+  } else if (m.text.includes('video_doc') || m.text === 'ytdl_video_doc') {
+    option = 4; 
+  }
+  
   if (!option) {
-    console.log(`[DEBUG] No option found for button ${m.text}`);
+    console.log(`❌ [DEBUG] No option found for button text: "${m.text}"`);
     return false;
   }
   
-  console.log(`🎵 Processing option ${option} for ${user.lastYTSearch.title}`);
+  console.log(`🎵 Processing option ${option} for "${user.lastYTSearch.title}"`);
 
   user.cebollinesDeducted = false;
 
-  await processDownload(
-    conn, 
-    m, 
-    user.lastYTSearch.url, 
-    user.lastYTSearch.title, 
-    option
-  );
-
-  
-  user.lastYTSearch = null;
+  try {
+    await processDownload(
+      conn, 
+      m, 
+      user.lastYTSearch.url, 
+      user.lastYTSearch.title, 
+      option
+    );
+    
+    
+    user.lastYTSearch = null;
+    console.log(`✅ Download processed successfully for option ${option}`);
+    
+  } catch (error) {
+    console.error(`❌ Error processing download:`, error);
+    await conn.reply(m.chat, `💙 Error al procesar la descarga: ${error.message}`, m);
+  }
   
   return true;
 };
