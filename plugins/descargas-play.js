@@ -211,40 +211,12 @@ async function processDownload(conn, m, url, title, option) {
   }
 }
 
-
-async function getAudioUrl(videoUrl) {
-  const apis = [
-    {
-      url: `https://api.stellarwa.xyz/dow/ytmp3?url=${encodeURIComponent(videoUrl)}&apikey=Diamond`,
-      parser: (data) => data?.download || data?.result?.download || data?.url
-    },
-    {
-      url: `https://api.agatz.xyz/api/ytmp3?url=${encodeURIComponent(videoUrl)}`,
-      parser: (data) => data?.data?.download
-    },
-    {
-      url: `https://api.vreden.my.id/api/ytmp3?url=${encodeURIComponent(videoUrl)}`,
-      parser: (data) => data?.result?.download?.url
-    },
-    {
-      url: `https://api.botcahx.biz.id/api/dowloader/yt?url=${encodeURIComponent(videoUrl)}&apikey=Admin`,
-      parser: (data) => data?.result?.mp3
-    },
-    {
-      url: `https://api.lolhuman.xyz/api/ytaudio?apikey=GataDios&url=${encodeURIComponent(videoUrl)}`,
-      parser: (data) => data?.result?.link || data?.result?.audio?.link
-    },
-    {
-      url: `https://api.ryzendesu.vip/api/downloader/ytmp3?url=${encodeURIComponent(videoUrl)}`,
-      parser: (data) => data?.url
-    }
-  ];
-  
+async function fetchFromApis(apis) {
   for (let i = 0; i < apis.length; i++) {
     try {
-      console.log(`Probando API de audio ${i + 1}: ${apis[i].url}`);
+      console.log(`Probando ${apis[i].api}: ${apis[i].endpoint}`);
       
-      const response = await fetch(apis[i].url, {
+      const response = await fetch(apis[i].endpoint, {
         method: 'GET',
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
@@ -253,92 +225,51 @@ async function getAudioUrl(videoUrl) {
       });
       
       if (!response.ok) {
-        console.log(`API ${i + 1} responded with status: ${response.status}`);
+        console.log(`${apis[i].api} responded with status: ${response.status}`);
         continue;
       }
       
       const apiJson = await response.json();
-      console.log(`API ${i + 1} response:`, JSON.stringify(apiJson, null, 2));
+      console.log(`${apis[i].api} response:`, JSON.stringify(apiJson, null, 2));
       
-      const audioUrl = apis[i].parser(apiJson);
+      const downloadUrl = apis[i].extractor(apiJson);
       
-      if (audioUrl && isValidUrl(audioUrl)) {
-        console.log(`✓ API ${i + 1} devolvió URL válida: ${audioUrl}`);
-        return audioUrl;
+      if (downloadUrl && isValidUrl(downloadUrl)) {
+        console.log(`✓ ${apis[i].api} devolvió URL válida: ${downloadUrl}`);
+        return downloadUrl;
       } else {
-        console.log(`✗ API ${i + 1} no devolvió URL válida:`, audioUrl);
+        console.log(`✗ ${apis[i].api} no devolvió URL válida:`, downloadUrl);
       }
       
     } catch (error) {
-      console.error(`✗ API ${i + 1} falló:`, error.message);
+      console.error(`✗ ${apis[i].api} falló:`, error.message);
     }
   }
   
-  console.log("Todas las APIs de audio fallaron");
+  console.log("Todas las APIs fallaron");
   return null;
 }
 
-
-async function getVideoUrl(videoUrl) {
+async function getAudioUrl(url) {
   const apis = [
-    {
-      url: `https://api.agatz.xyz/api/ytmp4?url=${encodeURIComponent(videoUrl)}`,
-      parser: (data) => data?.data?.download
-    },
-    {
-      url: `https://api.vreden.my.id/api/ytmp4?url=${encodeURIComponent(videoUrl)}`,
-      parser: (data) => data?.result?.download?.url
-    },
-    {
-      url: `https://api.botcahx.biz.id/api/dowloader/yt?url=${encodeURIComponent(videoUrl)}&apikey=Admin`,
-      parser: (data) => data?.result?.mp4
-    },
-    {
-      url: `https://api.lolhuman.xyz/api/ytvideo?apikey=GataDios&url=${encodeURIComponent(videoUrl)}`,
-      parser: (data) => data?.result?.link
-    },
-    {
-      url: `https://api.ryzendesu.vip/api/downloader/ytmp4?url=${encodeURIComponent(videoUrl)}`,
-      parser: (data) => data?.url
-    }
+    { api: 'StellarWA', endpoint: `https://api.stellarwa.xyz/dow/ytmp3?url=${encodeURIComponent(url)}&apikey=Diamond`, extractor: res => res?.download || res?.result?.download || res?.url },
+    { api: 'ZenzzXD', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
+    { api: 'ZenzzXD v2', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp3v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url }, 
+    { api: 'Vreden', endpoint: `${global.APIs.vreden.url}/api/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url },
+    { api: 'Delirius', endpoint: `${global.APIs.delirius.url}/download/ymp3?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url }
   ];
-  
-  for (let i = 0; i < apis.length; i++) {
-    try {
-      console.log(`Probando API de video ${i + 1}: ${apis[i].url}`);
-      
-      const response = await fetch(apis[i].url, {
-        method: 'GET',
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        },
-        timeout: 15000
-      });
-      
-      if (!response.ok) {
-        console.log(`API ${i + 1} responded with status: ${response.status}`);
-        continue;
-      }
-      
-      const apiJson = await response.json();
-      console.log(`API ${i + 1} response:`, JSON.stringify(apiJson, null, 2));
-      
-      const videoUrlResult = apis[i].parser(apiJson);
-      
-      if (videoUrlResult && isValidUrl(videoUrlResult)) {
-        console.log(`✓ API ${i + 1} devolvió URL válida: ${videoUrlResult}`);
-        return videoUrlResult;
-      } else {
-        console.log(`✗ API ${i + 1} no devolvió URL válida:`, videoUrlResult);
-      }
-      
-    } catch (error) {
-      console.error(`✗ API ${i + 1} falló:`, error.message);
-    }
-  }
-  
-  console.log("Todas las APIs de video fallaron");
-  return null;
+  return await fetchFromApis(apis);
+}
+
+
+async function getVideoUrl(url) {
+  const apis = [
+    { api: 'ZenzzXD', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
+    { api: 'ZenzzXD v2', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp4v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
+    { api: 'Vreden', endpoint: `${global.APIs.vreden.url}/api/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url },
+    { api: 'Delirius', endpoint: `${global.APIs.delirius.url}/download/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url }
+  ];
+  return await fetchFromApis(apis);
 }
 
 handler.before = async (m, { conn }) => {
