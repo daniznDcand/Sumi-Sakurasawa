@@ -253,10 +253,10 @@ async function fetchFromApis(apis) {
 async function getAudioUrl(url) {
   const apis = [
     { api: 'StellarWA', endpoint: `https://api.stellarwa.xyz/dow/ytmp3?url=${encodeURIComponent(url)}&apikey=Diamond`, extractor: res => res?.download || res?.result?.download || res?.url },
-    { api: 'ZenzzXD', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-    { api: 'ZenzzXD v2', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp3v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url }, 
-    { api: 'Vreden', endpoint: `${global.APIs.vreden.url}/api/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url },
-    { api: 'Delirius', endpoint: `${global.APIs.delirius.url}/download/ymp3?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url }
+    { api: 'Agatz', endpoint: `https://api.agatz.xyz/api/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res?.data?.download },
+    { api: 'Vreden', endpoint: `https://api.vreden.my.id/api/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url },
+    { api: 'BotCahx', endpoint: `https://api.botcahx.biz.id/api/dowloader/yt?url=${encodeURIComponent(url)}&apikey=Admin`, extractor: res => res?.result?.mp3 },
+    { api: 'Ryzen', endpoint: `https://api.ryzendesu.vip/api/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res?.url }
   ];
   return await fetchFromApis(apis);
 }
@@ -264,10 +264,10 @@ async function getAudioUrl(url) {
 
 async function getVideoUrl(url) {
   const apis = [
-    { api: 'ZenzzXD', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-    { api: 'ZenzzXD v2', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp4v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-    { api: 'Vreden', endpoint: `${global.APIs.vreden.url}/api/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url },
-    { api: 'Delirius', endpoint: `${global.APIs.delirius.url}/download/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url }
+    { api: 'Agatz', endpoint: `https://api.agatz.xyz/api/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res?.data?.download },
+    { api: 'Vreden', endpoint: `https://api.vreden.my.id/api/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url },
+    { api: 'BotCahx', endpoint: `https://api.botcahx.biz.id/api/dowloader/yt?url=${encodeURIComponent(url)}&apikey=Admin`, extractor: res => res?.result?.mp4 },
+    { api: 'Ryzen', endpoint: `https://api.ryzendesu.vip/api/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res?.url }
   ];
   return await fetchFromApis(apis);
 }
