@@ -10,6 +10,15 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
   usedPrefix = '.'
 
   if (command === 'menu' || command === 'menú' || command === 'help') {
+    const buttons = [
+      ['📥 Descargas', 'menu_descargas'],
+      ['🛠️ Herramientas', 'menu_herramientas'],
+      ['🎮 Juegos', 'menu_juegos'],
+      ['🎌 Anime & Reacciones', 'menu_anime'],
+      ['👥 Grupos', 'menu_grupos'],
+      ['ℹ️ Info Bot', 'menu_info']
+    ]
+
     const text = `╭━━━━━━━━━━━━━━━━━━━╮
 ┃ 🎤 *HATSUNE MIKU BOT* 🎤 ┃
 ╰━━━━━━━━━━━━━━━━━━━╯
@@ -23,15 +32,8 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
 ┃ 📊 *Comandos:* ${totalCommands}
 ┗━━━━━━━━━━━━━━━━┛
 
-🎵 *Selecciona una categoría escribiendo:*
-
-📥 \`menu_descargas\` - Descargas
-🛠️ \`menu_herramientas\` - Herramientas  
-🎮 \`menu_juegos\` - Juegos
-🎌 \`menu_anime\` - Anime & Reacciones
-👥 \`menu_grupos\` - Gestión de Grupos
-ℹ️ \`menu_info\` - Información del Bot
-
+🎵 *Selecciona una categoría:*
+Usa los botones de abajo o escribe el comando directamente.
 📣 También puedes usar \`.menucompleto\` para ver todos los comandos
 
 💙 ¡Disfruta de la experiencia Miku! ✨`
@@ -42,7 +44,15 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
       return await conn.sendMessage(m.chat, {
         video: { url: menuGif },
         caption: text,
-        gifPlayback: true
+        footer: '🌱 Powered by (ㅎㅊDEPOOLㅊㅎ)',
+        gifPlayback: true,
+        templateButtons: buttons.map((btn, index) => ({
+          index: index + 1,
+          quickReplyButton: {
+            displayText: btn[0],
+            id: btn[1]
+          }
+        }))
       }, { quoted: m })
     } catch (error) {
       console.log('Error enviando video-gif, enviando solo texto:', error)
@@ -53,6 +63,10 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
   }
 
   if (command === 'menu_descargas' || m.text === 'menu_descargas') {
+    const buttons = [
+      ['⬅️ Volver al Menú', 'menu']
+    ]
+
     const text = `📥 *MENÚ DE DESCARGAS*
 
 🎵 ═══ *MÚSICA Y VIDEOS* ═══ 🎵
@@ -72,7 +86,7 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
 📱 \`.apk [nombre]\` - APKs
 
 💙 *Escribe cualquier comando para usarlo*
-⬅️ *Escribe* \`menu\` *para volver al menú principal*`
+⬅️ *O toca el botón para volver al menú principal*`
     
     const descargasGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
@@ -80,7 +94,15 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
       return await conn.sendMessage(m.chat, {
         video: { url: descargasGif },
         caption: text,
-        gifPlayback: true
+        footer: '🎵 Módulo de Descargas - Hatsune Miku Bot',
+        gifPlayback: true,
+        templateButtons: buttons.map((btn, index) => ({
+          index: index + 1,
+          quickReplyButton: {
+            displayText: btn[0],
+            id: btn[1]
+          }
+        }))
       }, { quoted: m })
     } catch (error) {
       console.log('Error enviando video-gif, enviando solo texto:', error)
@@ -91,6 +113,10 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
   }
 
   if (command === 'menu_herramientas' || m.text === 'menu_herramientas') {
+    const buttons = [
+      ['⬅️ Volver al Menú', 'menu']
+    ]
+
     const text = `🛠️ *HERRAMIENTAS ÚTILES*
 
 🌸 ═══ 🌐 *UTILIDADES WEB* 🌐 ═══ 🌸
@@ -109,7 +135,7 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
 🎞️ \`.togif\` - Video a GIF
 
 💙 *Escribe cualquier comando para usarlo*
-⬅️ *Escribe* \`menu\` *para volver al menú principal*`
+⬅️ *O toca el botón para volver al menú principal*`
     
     const herramientasGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
@@ -117,7 +143,15 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
       return await conn.sendMessage(m.chat, {
         video: { url: herramientasGif },
         caption: text,
-        gifPlayback: true
+        footer: '🔧 Módulo de Herramientas - Hatsune Miku Bot',
+        gifPlayback: true,
+        templateButtons: buttons.map((btn, index) => ({
+          index: index + 1,
+          quickReplyButton: {
+            displayText: btn[0],
+            id: btn[1]
+          }
+        }))
       }, { quoted: m })
     } catch (error) {
       console.log('Error enviando video-gif, enviando solo texto:', error)
@@ -278,6 +312,18 @@ _(Solo para administradores)_
       return await conn.sendMessage(m.chat, {
         text: text
       }, { quoted: m })
+    }
+  }
+
+  // Manejo de navegación por botones
+  if (m.text && (m.text.startsWith('menu_') || m.text === 'menu')) {
+    if (m.text === 'menu') {
+      return await handler(m, { conn, usedPrefix, command: 'menu', args })
+    }
+
+    if (m.text.startsWith('menu_')) {
+      const menuCommand = m.text
+      return await handler(m, { conn, usedPrefix, command: menuCommand, args })
     }
   }
 }
