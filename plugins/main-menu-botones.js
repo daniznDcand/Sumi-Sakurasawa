@@ -42,7 +42,7 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
     
     const footer = '🌱 Powered by Hatsune Miku Bot | Presiona un botón para continuar'
     
-    const menuGif = 'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcDZ5ZmZ4aWZkOGZwNGJyNWRsbHVsOGNwNm45NmgyMnppZjNpZGZiNSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/kqVtWIVjZT8PbZJPQA/giphy.gif'
+    const menuGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
     return conn.sendNCarousel(m.chat, text, footer, menuGif, buttons, null, null, null, m)
   }
