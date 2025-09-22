@@ -16,7 +16,7 @@ global.botNumber = ''
 
 global.owner = [
 // <-- Número @s.whatsapp.net -->
-  ['51988514570', '🎵 Brauliovh3 - Hatsune Miku Dev 🎵', true],
+  ['51988514570', '(ㅎㅊDEPOOLㅊㅎ)', true],
   ['51988514570', '(ㅎㅊDEPOOLㅊㅎ)', true],
   
 // <-- Número @lid -->
@@ -38,7 +38,7 @@ global.nameqr = '🎵 Hatsune-Miku-MD 🎵'
 global.namebot = '💙 Ｈａｔｓｕｎｅ Ｍｉｋｕ Ｂｏｔ 💙'
 global.sessions = 'Sessions'
 global.jadi = 'JadiBots' 
-//global.mikuJadibts = true
+
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
@@ -69,7 +69,7 @@ global.correo = 'brauliovh3@gmail.com'
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
-// Variable global para el contexto de canal
+
 global.rcanal = { 
   contextInfo: { 
     isForwarded: true, 
@@ -81,11 +81,10 @@ global.rcanal = {
   }
 }
 
-// Variable global para redes sociales
+
 global.redes = 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
 global.dev = '© 🄿🄾🅆🄴🅁🄴🄳 (ㅎㅊDEPOOLㅊㅎ)'
 
-// Variables globales para emoji
 global.emoji = '🌟'
 global.emoji2 = '🎵'
 global.emoji3 = '💖'

@@ -12,14 +12,20 @@ const fkontak = { "key": { "participants":"0@s.whatsapp.net", "remoteJid": "stat
 let chat = global.db.data.chats[m.chat]
 let usuario = `@${m.sender.split`@`[0]}`
 let pp = await conn.profilePictureUrl(m.chat, 'image').catch(_ => null) || 'https://files.catbox.moe/92bez6.jpeg'
+
+
+if (!m.messageStubParameters || !Array.isArray(m.messageStubParameters)) {
+  return
+}
+
 let nombre, foto, edit, newlink, status, admingp, noadmingp
-nombre = `💙 ${usuario} Ha cambiado el nombre del grupo.\n\n> 🎮 Ahora el grupo se llama:\n> *${m.messageStubParameters[0]}*.`
+nombre = `💙 ${usuario} Ha cambiado el nombre del grupo.\n\n> 🎮 Ahora el grupo se llama:\n> *${m.messageStubParameters[0] || 'Sin nombre'}*.`
 foto = `💙 Se ha cambiado la imagen del grupo.\n\n> 🎮 Acción hecha por:\n> » ${usuario}`
 edit = `💙 ${usuario} Ha permitido que ${m.messageStubParameters[0] == 'on' ? 'solo admins' : 'todos'} puedan configurar el grupo.`
 newlink = `💙 El enlace del grupo ha sido restablecido.\n\n> ✦ Acción hecha por:\n> » ${usuario}`
 status = `💙 El grupo ha sido ${m.messageStubParameters[0] == 'on' ? '*cerrado*' : '*abierto*'} Por ${usuario}\n\n> 🧨 Ahora ${m.messageStubParameters[0] == 'on' ? '*solo admins*' : '*todos*'} pueden enviar mensaje.`
-admingp = `💙 @${m.messageStubParameters[0].split`@`[0]} Ahora es admin del grupo.\n\n> 🎮 Acción hecha por:\n> » ${usuario}`
-noadmingp = `💙 @${m.messageStubParameters[0].split`@`[0]} Deja de ser admin del grupo.\n\n> 🎮 Acción hecha por:\n> » ${usuario}`
+admingp = `💙 @${m.messageStubParameters[0] && m.messageStubParameters[0].split ? m.messageStubParameters[0].split`@`[0] : 'usuario'} Ahora es admin del grupo.\n\n> 🎮 Acción hecha por:\n> » ${usuario}`
+noadmingp = `💙 @${m.messageStubParameters[0] && m.messageStubParameters[0].split ? m.messageStubParameters[0].split`@`[0] : 'usuario'} Deja de ser admin del grupo.\n\n> 🎮 Acción hecha por:\n> » ${usuario}`
 
 if (chat.detect && m.messageStubType == 2) {
 const uniqid = (m.isGroup ? m.chat : m.sender)
@@ -42,9 +48,13 @@ await this.sendMessage(m.chat, { text: edit, mentions: [m.sender] }, { quoted: f
 } else if (chat.detect && m.messageStubType == 26) {
 await this.sendMessage(m.chat, { text: status, mentions: [m.sender] }, { quoted: fkontak })  
 } else if (chat.detect && m.messageStubType == 29) {
+if (m.messageStubParameters[0]) {
 await this.sendMessage(m.chat, { text: admingp, mentions: [`${m.sender}`,`${m.messageStubParameters[0]}`] }, { quoted: fkontak })
+}
 } else if (chat.detect && m.messageStubType == 30) {
+if (m.messageStubParameters[0]) {
 await this.sendMessage(m.chat, { text: noadmingp, mentions: [`${m.sender}`,`${m.messageStubParameters[0]}`] }, { quoted: fkontak })
+}
 } else {
 if (m.messageStubType == 2) return
 console.log({messageStubType: m.messageStubType,

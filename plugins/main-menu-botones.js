@@ -42,22 +42,7 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
     const footer = '🌱 Powered by (ㅎㅊDEPOOLㅊㅎ)'
     const menuGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
-    
-    const templateButtons = buttons.map((btn, index) => ({
-      index: index + 1,
-      quickReplyButton: {
-        displayText: btn[0],
-        id: btn[1]
-      }
-    }))
-
-    return conn.sendMessage(m.chat, {
-      video: { url: menuGif },
-      caption: text,
-      footer: footer,
-      gifPlayback: true,
-      templateButtons: templateButtons
-    }, { quoted: m })
+    return conn.sendNCarousel(m.chat, text, footer, menuGif, buttons, null, null, null, m)
   }
 
   if (command === 'menu_descargas' || m.text === 'menu_descargas') {
@@ -478,20 +463,5 @@ function clockString(ms) {
 handler.help = ['menu', 'menú', 'help']
 handler.tags = ['main', 'menu']
 handler.command = /^(menu|menú|help|menu_descargas|menu_herramientas|menu_juegos|menu_anime|menu_grupos|menu_info)$/i
-handler.before = async function (m, { conn, usedPrefix }) {
-  
-  if (!usedPrefix) {
-    usedPrefix = global.prefix || '.'
-  }
-  
-  
-  if (m.text && (m.text.startsWith('menu_') || m.text === 'volver_menu' || m.text.startsWith('exec_'))) {
-    
-    if (m.text === 'volver_menu' || m.text.startsWith('menu_')) {
-      const command = m.text === 'volver_menu' ? 'menu' : m.text
-      return handler.call(this, m, { conn, usedPrefix, command, args: [] })
-    }
-  }
-}
 
 export default handler

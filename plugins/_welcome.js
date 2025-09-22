@@ -5,6 +5,10 @@ export async function before(m, { conn, participants, groupMetadata }) {
   if (!m.messageStubType || !m.isGroup) return true;
   
   
+  if (!global.db.data.chats) global.db.data.chats = {}
+  if (!global.db.data.chats[m.chat]) global.db.data.chats[m.chat] = {}
+  
+  
   if (m.text === 'ir_canal') {
     const canalUrl = 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
    
@@ -58,6 +62,7 @@ export async function before(m, { conn, participants, groupMetadata }) {
   }
   let chat = global.db.data.chats[m.chat];
   
+  if (chat.welcome === undefined) chat.welcome = true
 
   const dev = global.dev || '© 🄿🄾🅆🄴🅁🄴🄳 (ㅎㅊDEPOOLㅊㅎ)'
   const redes = global.redes || 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
@@ -66,7 +71,14 @@ export async function before(m, { conn, participants, groupMetadata }) {
   if (m.messageStubType === 27) groupSize++;
   else if (m.messageStubType === 28 || m.messageStubType === 32) groupSize--;
 
-  if (chat.welcome && m.messageStubType === 27) {
+  
+  if (m.messageStubType === 27) {
+    
+    
+    if (!m.messageStubParameters || !m.messageStubParameters[0]) {
+      console.log('Warning: messageStubParameters no disponible para welcome')
+      return true
+    }
     
     let welcomeMsg = `
 👋 ¡Hola @${m.messageStubParameters[0].split('@')[0]}!
@@ -75,7 +87,7 @@ Bienvenido a *${groupMetadata.subject}* 🎉
 
 Somos ya *${groupSize}* fanáticos de Miku que te reciben con mucha emoción.
 
-🎤 ${global.welcom1}
+🎤 ${global.welcom1 || 'La música nos une'}
 
 Prepárate para disfrutar y compartir momentos geniales aquí con nosotros.
 
@@ -97,22 +109,44 @@ Para cualquier ayuda, escribe *#help*.
       }
     }))
 
-    await conn.sendMessage(m.chat, {
-      image: imgBuffer,
-      caption: welcomeMsg,
-      footer: '💙 ¡Nueva estrella se une! 💙',
-      templateButtons: templateButtons
-    }, { quoted: m })
+    try {
+      await conn.sendMessage(m.chat, {
+        image: imgBuffer,
+        caption: welcomeMsg,
+        footer: '💙 ¡Nueva estrella se une! 💙',
+        templateButtons: templateButtons
+      }, { quoted: m })
+      console.log('✅ Mensaje de bienvenida enviado correctamente')
+    } catch (error) {
+      console.log('❌ Error enviando bienvenida:', error)
+      
+      try {
+        await conn.sendMessage(m.chat, {
+          text: welcomeMsg,
+          mentions: [m.messageStubParameters[0]]
+        }, { quoted: m })
+        console.log('✅ Mensaje de bienvenida enviado como fallback')
+      } catch (fallbackError) {
+        console.log('❌ Error en fallback de bienvenida:', fallbackError)
+      }
+    }
   }
 
-  if (chat.welcome && (m.messageStubType === 28 || m.messageStubType === 32)) {
+  
+  if (m.messageStubType === 28 || m.messageStubType === 32) {
+    
+    
+    if (!m.messageStubParameters || !m.messageStubParameters[0]) {
+      console.log('Warning: messageStubParameters no disponible para despedida')
+      return true
+    }
     
     let byeMsg = `
 👋 ¡Hasta luego @${m.messageStubParameters[0].split('@')[0]}!
 
 Te extrañaremos en *${groupMetadata.subject}*.
 
-🎤 ${global.welcom2}
+🎤 ${global.welcom2 || 'Gracias por haber sido parte de nuestra comunidad'}
 
 Ahora somos *${groupSize}* y esperamos que regreses pronto.
 
@@ -133,12 +167,27 @@ La música de Miku seguirá sonando fuerte aquí para ti.
       }
     }))
 
-    await conn.sendMessage(m.chat, {
-      image: imgBuffer,
-      caption: byeMsg,
-      footer: '🎵 ¡Sayonara! 🎵',
-      templateButtons: templateButtons
-    }, { quoted: m })
+    try {
+      await conn.sendMessage(m.chat, {
+        image: imgBuffer,
+        caption: byeMsg,
+        footer: '🎵 ¡Sayonara! 🎵',
+        templateButtons: templateButtons
+      }, { quoted: m })
+      console.log('✅ Mensaje de despedida enviado correctamente')
+    } catch (error) {
+      console.log('❌ Error enviando despedida:', error)
+      
+      try {
+        await conn.sendMessage(m.chat, {
+          text: byeMsg,
+          mentions: [m.messageStubParameters[0]]
+        }, { quoted: m })
+        console.log('✅ Mensaje de despedida enviado como fallback')
+      } catch (fallbackError) {
+        console.log('❌ Error en fallback de despedida:', fallbackError)
+      }
+    }
   }
 }
 
