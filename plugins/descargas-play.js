@@ -317,7 +317,24 @@ handler.before = async (m, { conn }) => {
                             m.text.includes('audio_doc') ||
                             m.text.includes('video_doc');
   
-  if (!isButtonResponse && !textContainsButton) {
+  
+  const buttonTextPatterns = [
+    /🎵.*MP3.*Audio/i,
+    /🎬.*MP4.*Video/i,
+    /📁.*MP3.*Documento/i,
+    /📁.*MP4.*Documento/i
+  ];
+  
+  let isButtonTextResponse = false;
+  for (const pattern of buttonTextPatterns) {
+    if (pattern.test(m.text)) {
+      isButtonTextResponse = true;
+      matchedPattern = `text: ${pattern}`;
+      break;
+    }
+  }
+  
+  if (!isButtonResponse && !textContainsButton && !isButtonTextResponse) {
     
     if (m.sender && global.db.data.users[m.sender]?.lastYTSearch) {
       console.log(`❌ [DEBUG] Message "${m.text}" doesn't match any button pattern`);
@@ -356,6 +373,20 @@ handler.before = async (m, { conn }) => {
     option = 3; 
   } else if (m.text.includes('video_doc') || m.text === 'ytdl_video_doc') {
     option = 4; 
+  }
+  
+  else if (/🎵.*MP3.*Audio/i.test(m.text)) {
+    option = 1; 
+    console.log(`✅ [DETECTED] Button text matched: MP3 Audio`);
+  } else if (/🎬.*MP4.*Video/i.test(m.text)) {
+    option = 2; 
+    console.log(`✅ [DETECTED] Button text matched: MP4 Video`);
+  } else if (/📁.*MP3.*Documento/i.test(m.text)) {
+    option = 3; 
+    console.log(`✅ [DETECTED] Button text matched: MP3 Document`);
+  } else if (/📁.*MP4.*Documento/i.test(m.text)) {
+    option = 4; 
+    console.log(`✅ [DETECTED] Button text matched: MP4 Document`);
   }
   
   if (!option) {
