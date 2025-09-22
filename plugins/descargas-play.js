@@ -276,36 +276,71 @@ async function getVideoUrl(url) {
 
 handler.before = async (m, { conn }) => {
   
-  if (!/^ytdl_(audio|video)_(mp3|mp4|doc)$/.test(m.text)) return false;
+  if (m.sender && global.db.data.users[m.sender]?.lastYTSearch) {
+    console.log('🔍 [DEBUG] Message received from user with active search:');
+    console.log(`   Type: ${m.mtype}`);
+    console.log(`   Text: "${m.text}"`);
+    console.log(`   Sender: ${m.sender}`);
+    console.log(`   Message obj:`, JSON.stringify(m.msg, null, 2));
+  }
+  
+  
+  if (!/^ytdl_(audio|video)_(mp3|mp4|doc)$/.test(m.text)) {
+    
+    const alternativePatterns = [
+      /ytdl_audio_mp3/,
+      /ytdl_video_mp4/,
+      /ytdl_audio_doc/,
+      /ytdl_video_doc/
+    ];
+    
+    let isButtonResponse = false;
+    for (const pattern of alternativePatterns) {
+      if (pattern.test(m.text)) {
+        isButtonResponse = true;
+        break;
+      }
+    }
+    
+    if (!isButtonResponse) {
+      return false;
+    }
+  }
   
   const user = global.db.data.users[m.sender];
-  if (!user || !user.lastYTSearch) return false;
+  if (!user || !user.lastYTSearch) {
+    console.log(`[DEBUG] No user or no active search for ${m.sender}`);
+    return false;
+  }
   
-  console.log(`Received button: ${m.text} from user ${m.sender}`);
-  console.log(`User has active search: ${user.lastYTSearch.title}`);
+  console.log(`✅ Received button: ${m.text} from user ${m.sender}`);
+  console.log(`📱 User has active search: ${user.lastYTSearch.title}`);
   
   const currentTime = Date.now();
   const searchTime = user.lastYTSearch.timestamp || 0;
   
   
   if (currentTime - searchTime > 10 * 60 * 1000) {
-    console.log("Search expired");
+    console.log("⏰ Search expired");
     await conn.reply(m.chat, '⏰ La búsqueda ha expirado. Por favor realiza una nueva búsqueda.', m);
     return false; 
   }
   
-  
+  // Map button IDs to options
   const buttonMap = {
-    'ytdl_audio_mp3': 1,  
+    'ytdl_audio_mp3': 1, 
     'ytdl_video_mp4': 2,  
     'ytdl_audio_doc': 3,  
     'ytdl_video_doc': 4   
   };
   
   const option = buttonMap[m.text];
-  if (!option) return false;
+  if (!option) {
+    console.log(`[DEBUG] No option found for button ${m.text}`);
+    return false;
+  }
   
-  console.log(`Processing option ${option} for ${user.lastYTSearch.title}`);
+  console.log(`🎵 Processing option ${option} for ${user.lastYTSearch.title}`);
 
   user.cebollinesDeducted = false;
 
