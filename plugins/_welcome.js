@@ -4,6 +4,10 @@ export async function before(m, { conn, participants, groupMetadata }) {
   try {
     
     if (!m.messageStubType || !m.isGroup) return true
+    
+    
+    if (m._welcProcessed) return true
+    m._welcProcessed = true
 
     
     if (!global.db) global.db = { data: { chats: {} } }
@@ -16,41 +20,57 @@ export async function before(m, { conn, participants, groupMetadata }) {
     if (!chat.welcome) return true
 
     
-    const canalUrl = global.redes || 'https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
+    const canalUrl = 'https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
     const channelId = global.canalIdM?.[0] || '120363315369913363@newsletter'
     const channelName = global.canalNombreM?.[0] || '💙HATSUNE MIKU CHANNEL💙'
-
-    
     const groupSize = (participants || []).length
 
     
-    const sendWelcomeAi = async (jid, title, body, text, thumbnailUrl, sourceUrl, quoted) => {
+    const sendSingleWelcome = async (jid, text, user, quoted) => {
       try {
-        return await conn.sendMessage(jid, {
-          text: text,
-          contextInfo: {
-            mentionedJid: await conn.parseMention(text),
-            forwardedNewsletterMessageInfo: {
-              newsletterJid: channelId,
-              newsletterName: channelName,
-              serverMessageId: 100
-            },
-            externalAdReply: {
-              title: title,
-              body: body,
-              mediaType: 1,
-              previewType: 0,
-              renderLargerThumbnail: true,
-              thumbnailUrl: thumbnailUrl,
-              sourceUrl: sourceUrl,
-              showAdAttribution: true
-            }
-          }
-        }, { quoted })
-      } catch (err) {
-        console.log('sendWelcomeAi error:', err)
         
-        return await conn.reply(jid, text, quoted, global.rcanal)
+        let ppUrl = 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg'
+        try {
+          ppUrl = await conn.profilePictureUrl(user, 'image').catch(() => ppUrl)
+        } catch (e) {}
+
+        
+        if (conn.sendHydrated) {
+          return await conn.sendHydrated(
+            jid, 
+            text, 
+            '🎵 Canal Oficial - Hatsune Miku', 
+            ppUrl, 
+            canalUrl, 
+            '🎵 Ver Canal', 
+            null, 
+            null, 
+            [], 
+            { quoted, mentions: [user] }
+          )
+        }
+
+        
+        const templateButtons = [{
+          index: 1,
+          urlButton: {
+            displayText: '🎵 Ver Canal',
+            url: canalUrl
+          }
+        }]
+
+        return await conn.sendMessage(jid, {
+          image: { url: ppUrl },
+          caption: text,
+          footer: '🎵 Canal Oficial - Hatsune Miku',
+          templateButtons: templateButtons,
+          mentions: [user]
+        }, { quoted })
+
+      } catch (err) {
+        console.log('sendSingleWelcome error:', err)
+        
+        return await conn.reply(jid, `${text}\n\n🎵 *Ver Canal:* ${canalUrl}`, quoted, { mentions: [user] })
       }
     }
 
@@ -74,29 +94,12 @@ export async function before(m, { conn, participants, groupMetadata }) {
 
 🎶 ¡Que la música te acompañe siempre!`
 
-      
-      let ppUrl = 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg'
-      try {
-        ppUrl = await conn.profilePictureUrl(user, 'image').catch(() => ppUrl)
-      } catch (e) {
-        console.log('Profile picture fetch failed:', e)
-      }
-
-      await sendWelcomeAi(
-        m.chat,
-        '🎵 ¡Nuevo miembro en el grupo!',
-        `${userName} se unió al grupo`,
-        welcomeText,
-        ppUrl,
-        canalUrl,
-        m
-      )
-
-      console.log('✅ Welcome message sent with channel button')
+      await sendSingleWelcome(m.chat, welcomeText, user, m)
+      console.log('✅ Single welcome message sent with Ver Canal button')
       return true
     }
 
-  // MEMBER LEFT (stub type 28 or 32)
+    
     if (m.messageStubType === 28 || m.messageStubType === 32) {
       if (!m.messageStubParameters || !m.messageStubParameters[0]) return true
       
@@ -112,25 +115,8 @@ export async function before(m, { conn, participants, groupMetadata }) {
 
 ✨ ¡Cuídate y hasta el próximo concierto!`
 
-      
-      let ppUrl = 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg'
-      try {
-        ppUrl = await conn.profilePictureUrl(user, 'image').catch(() => ppUrl)
-      } catch (e) {
-        console.log('Profile picture fetch failed:', e)
-      }
-
-      await sendWelcomeAi(
-        m.chat,
-        '👋 Miembro se despide',
-        `${userName} dejó el grupo`,
-        byeText,
-        ppUrl,
-        canalUrl,
-        m
-      )
-
-      console.log('✅ Goodbye message sent with channel button')
+      await sendSingleWelcome(m.chat, byeText, user, m)
+      console.log('✅ Single goodbye message sent with Ver Canal button')
       return true
     }
 
