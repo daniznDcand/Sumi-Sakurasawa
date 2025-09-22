@@ -8,14 +8,6 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
   let totalCommands = Object.values(global.plugins).filter((v) => v.help && v.tags).length
 
   if (command === 'menu' || command === 'menú' || command === 'help') {
-    
-    const mikuGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4' 
-    await conn.sendMessage(m.chat, { 
-      video: { url: mikuGif }, 
-      gifPlayback: true, 
-      caption: '🎵 *¡HATSUNE MIKU BOT!* 🎵\n💙 Cargando menú principal...' 
-    }, { quoted: m })
-
     const buttons = [
       ['📥 Descargas', 'menu_descargas'],
       ['🛠️ Herramientas', 'menu_herramientas'],
@@ -45,7 +37,7 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
     
     const footer = '🌱 Powered by Hatsune Miku Bot | Presiona un botón para continuar'
     
-    const menuGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+    const menuGif = 'https://i.imgur.com/Z8vN2mP.gif'
 
     return conn.sendNCarousel(m.chat, text, footer, menuGif, buttons, null, null, null, m)
   }
@@ -82,7 +74,7 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
 
     const footer = '🎵 Módulo de Descargas - Hatsune Miku Bot'
     
-    const descargasGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+    const descargasGif = 'https://i.imgur.com/X7vQ9mP.gif'
 
     return conn.sendNCarousel(m.chat, text, footer, descargasGif, buttons, null, null, null, m)
   }
@@ -118,7 +110,7 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
 
     const footer = '🔧 Módulo de Herramientas - Hatsune Miku Bot'
     
-    const herramientasGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+    const herramientasGif = 'https://i.imgur.com/K8vN2mP.gif'
 
     return conn.sendNCarousel(m.chat, text, footer, herramientasGif, buttons, null, null, null, m)
   }
@@ -155,7 +147,7 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
 
     const footer = '🎮 Módulo de Juegos - Hatsune Miku Bot'
     
-    const juegosGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+    const juegosGif = 'https://i.imgur.com/RbX5tKl.gif'
 
     return conn.sendNCarousel(m.chat, text, footer, juegosGif, buttons, null, null, null, m)
   }
@@ -193,7 +185,7 @@ Usa los botones de abajo para navegar por las diferentes funciones del bot.
 
     const footer = '🎌 Módulo Anime - Hatsune Miku Bot'
     
-    const animeGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+    const animeGif = 'https://i.imgur.com/V3mQ8Lr.gif'
 
     return conn.sendNCarousel(m.chat, text, footer, animeGif, buttons, null, null, null, m)
   }
@@ -231,7 +223,7 @@ _(Solo para administradores)_
 
     const footer = '👥 Módulo de Grupos - Hatsune Miku Bot'
     
-    const gruposGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+    const gruposGif = 'https://i.imgur.com/T4nRb2M.gif'
 
     return conn.sendNCarousel(m.chat, text, footer, gruposGif, buttons, null, null, null, m)
   }
@@ -268,7 +260,7 @@ _(Solo para administradores)_
 
     const footer = 'ℹ️ Información del Bot - Hatsune Miku Bot'
     
-    const infoGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+    const infoGif = 'https://i.imgur.com/P7kNm4Q.gif'
 
     return conn.sendNCarousel(m.chat, text, footer, infoGif, buttons, null, null, null, m)
   }
@@ -278,25 +270,13 @@ _(Solo para administradores)_
     
     
     if (m.text === 'volver_menu') {
-      return handler(m, { conn, usedPrefix, command: 'menu', args })
+      return await handler(m, { conn, usedPrefix, command: 'menu', args })
     }
 
    
     if (m.text.startsWith('menu_')) {
-      switch (m.text) {
-        case 'menu_descargas':
-          return handler(m, { conn, usedPrefix, command: 'menu_descargas', args })
-        case 'menu_herramientas':
-          return handler(m, { conn, usedPrefix, command: 'menu_herramientas', args })
-        case 'menu_juegos':
-          return handler(m, { conn, usedPrefix, command: 'menu_juegos', args })
-        case 'menu_anime':
-          return handler(m, { conn, usedPrefix, command: 'menu_anime', args })
-        case 'menu_grupos':
-          return handler(m, { conn, usedPrefix, command: 'menu_grupos', args })
-        case 'menu_info':
-          return handler(m, { conn, usedPrefix, command: 'menu_info', args })
-      }
+      const menuCommand = m.text
+      return await handler(m, { conn, usedPrefix, command: menuCommand, args })
     }
 
     
@@ -318,7 +298,7 @@ _(Solo para administradores)_
         case 'exec_mediafire':
           return conn.reply(m.chat, `📁 *Para descargar de MediaFire:*\n\n1. Copia el enlace de MediaFire\n2. Escribe: \`${usedPrefix}mediafire [enlace]\`\n\nDescarga archivos hasta 100MB.`, m)
 
-        // HERRAMIENTAS  
+         
         case 'exec_clima':
           return conn.reply(m.chat, `🌤️ *Consultar el clima:*\n\nEscribe: \`${usedPrefix}clima [ciudad]\`\n\nEjemplos:\n• \`${usedPrefix}clima Lima\`\n• \`${usedPrefix}clima Tokyo\`\n• \`${usedPrefix}clima Buenos Aires\``, m)
         
@@ -474,5 +454,19 @@ function clockString(ms) {
 handler.help = ['menu', 'menú', 'help']
 handler.tags = ['main', 'menu']
 handler.command = /^(menu|menú|help|menu_descargas|menu_herramientas|menu_juegos|menu_anime|menu_grupos|menu_info)$/i
+handler.before = async function (m, { conn, usedPrefix }) {
+  
+  if (m.text && (m.text.startsWith('menu_') || m.text === 'volver_menu' || m.text.startsWith('exec_'))) {
+    
+    if (m.text === 'volver_menu' || m.text.startsWith('menu_')) {
+      const command = m.text === 'volver_menu' ? 'menu' : m.text
+      return handler.call(this, m, { conn, usedPrefix, command, args: [] })
+    }
+    
+    if (m.text.startsWith('exec_')) {
+      return handler.call(this, m, { conn, usedPrefix, command: 'menu', args: [] })
+    }
+  }
+}
 
 export default handler
