@@ -5,6 +5,14 @@ import axios from "axios";
 console.log('🔍 Plugin descargas-play.js cargado correctamente');
 
 const handler = async (m, { conn, text, usedPrefix, command }) => {
+  
+  console.log('🔥 HANDLER EJECUTADO:', {
+    messageText: m.text,
+    command: command,
+    usedPrefix: usedPrefix,
+    text: text
+  });
+
   let user = global.db.data.users[m.sender];
   
   
@@ -399,10 +407,32 @@ async function fetchFromApis(apis) {
   return null
 }
 
+
+handler.before = async function (m, { conn }) {
+  if (m.text && m.text.startsWith('.play ')) {
+    console.log('🎯 MENSAJE .play DETECTADO:', m.text);
+  }
+};
+
+
+handler.all = async function (m) {
+  if (m.text && m.text.includes('play')) {
+    console.log('🔍 MENSAJE CON "play":', m.text);
+  }
+};
+
 handler.command = handler.help = ['play'];
 handler.tags = ['downloader'];
+handler.register = true;
+handler.disabled = false;
 
 console.log('🔍 Plugin .play registrado con comando:', handler.command);
+console.log('🔍 Handler configurado:', {
+  command: handler.command,
+  tags: handler.tags,
+  register: handler.register,
+  disabled: handler.disabled
+});
 
 export default handler;
 
