@@ -17,7 +17,7 @@ const toxicWords = {
     'hijo de puta', 'hijueputa', 'la concha de tu madre',
     'vete a la mierda', 'chupa pija', 'come mierda',
     'malparido', 'malparida', 'gonorrea', 'hp',
-    'hdp', 'hdspm', 'ptm', 'ctm'
+    'hdp', 'hdspm', 'ptm', 'ctm','zarnoso','sarnoso','sarnosa'
   ],
   
   
