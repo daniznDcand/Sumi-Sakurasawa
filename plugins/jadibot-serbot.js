@@ -385,7 +385,7 @@ attempts++
 
     try {
       await conn.sendMessage(m.chat, {
-        text: `⏰ *Código válido por 5 minutos*\n\n💡 *Instrucciones:*\n` +
+        text: `⏰ *Código válido por 30 segundos*\n\n💡 *Instrucciones:*\n` +
           `1️⃣ Abre WhatsApp en tu dispositivo\n` +
           `2️⃣ Ve a *Dispositivos vinculados*\n` +
           `3️⃣ Toca *Vincular con código*\n` +
