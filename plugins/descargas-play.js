@@ -3,6 +3,44 @@ import yts from 'yt-search';
 import ytdl from 'ytdl-core';
 import axios from 'axios';
 
+
+try {
+  var { youtubedl } = await import('@bochilteam/scraper');
+} catch (e) {
+ 
+  var youtubedl = async (url) => ({ audio: null, video: null });
+}
+
+
+const ogmp3 = {
+  download: async (url, quality, type) => {
+    try {
+      const info = await youtubedl(url);
+      return { result: { download: info.audio || info.video } };
+    } catch (e) {
+      throw new Error('ogmp3 failed');
+    }
+  }
+};
+
+const ytmp3 = async (url) => {
+  try {
+    const info = await youtubedl(url);
+    return info.audio;
+  } catch (e) {
+    throw new Error('ytmp3 failed');
+  }
+};
+
+const ytmp4 = async (url) => {
+  try {
+    const info = await youtubedl(url);
+    return info.video;
+  } catch (e) {
+    throw new Error('ytmp4 failed');
+  }
+};
+
 const handler = async (m, { conn, text, usedPrefix, command }) => {
   if (!text) {
     return m.reply(`❌ Por favor proporciona un término de búsqueda.\n\n*Ejemplo:* ${usedPrefix + command} despacito`);
@@ -127,21 +165,87 @@ function formatViews(views) {
 }
 
 
+async function getFileSize(url) {
+  try {
+    if (!url) return 0;
+    
+    const response = await fetch(url, { method: 'HEAD' });
+    const contentLength = response.headers.get('content-length');
+    
+    if (contentLength) {
+      return parseInt(contentLength) / (1024 * 1024); // Convertir a MB
+    }
+    
+    
+    return 10; 
+  } catch (error) {
+    console.log('Error obteniendo tamaño:', error.message);
+    return 10; 
+  }
+}
+
+
+const download = async (apis) => {
+  let mediaData = null;
+  let isDirect = false;
+  
+  for (const api of apis) {
+    try {
+      console.log('🔍 Probando API:', api.url.toString().substring(0, 50) + '...');
+      const data = await api.url();
+      const {data: extractedData, isDirect: direct} = api.extract(data);
+      
+      if (extractedData) {
+        const size = await getFileSize(extractedData);
+        console.log(`📁 Tamaño detectado: ${size.toFixed(2)} MB`);
+        
+        if (size >= 1) { 
+          mediaData = extractedData;
+          isDirect = direct;
+          console.log('✅ API exitosa, archivo válido');
+          break;
+        } else {
+          console.log('⚠️ Archivo muy pequeño, probando siguiente API...');
+        }
+      } else {
+        console.log('❌ No se obtuvo URL de esta API');
+      }
+    } catch (e) {
+      console.log(`❌ Error con API: ${e.message}`);
+      continue;
+    }
+  }
+  
+  return {mediaData, isDirect};
+};
+
+
 async function getAudioUrl(url) {
   console.log('🔍 Buscando URL de audio para:', url);
   
   const userVideoData = { url };
   const selectedQuality = '128kbps';
-  const apis = 'https://api.example.com'; // Variable de APIs
+  const apis = global.APIs?.exonity?.url || 'https://exonity.tech'; // Variable de APIs
   
   const audioApis = [
+    {url: () => ogmp3.download(userVideoData.url, selectedQuality, 'audio'), extract: (data) => ({data: data.result.download, isDirect: false})},
+    {url: () => ytmp3(userVideoData.url), extract: (data) => ({data, isDirect: true})},
     {
-      url: () => fetch(`https://api.neoxr.eu/api/youtube?url=${userVideoData.url}&type=audio&quality=128kbps&apikey=GataDios`).then((res) => res.json()),
+      url: () =>
+        fetch(`https://api.neoxr.eu/api/youtube?url=${userVideoData.url}&type=audio&quality=128kbps&apikey=GataDios`).then((res) => res.json()),
       extract: (data) => ({data: data.data.url, isDirect: false})
+    },
+    {
+      url: () => fetch(`${global.APIs?.stellar?.url || 'https://api.stellar.com'}/dow/ytmp3?url=${userVideoData.url}`).then((res) => res.json()),
+      extract: (data) => ({data: data?.data?.dl, isDirect: false})
     },
     {
       url: () => fetch(`https://api.siputzx.my.id/api/d/ytmp4?url=${userVideoData.url}`).then((res) => res.json()),
       extract: (data) => ({data: data.dl, isDirect: false})
+    },
+    {
+      url: () => fetch(`${apis}/download/ytmp3?url=${userVideoData.url}`).then((res) => res.json()),
+      extract: (data) => ({data: data.status ? data.data.download.url : null, isDirect: false})
     },
     {
       url: () => fetch(`https://api.zenkey.my.id/api/download/ytmp3?apikey=zenkey&url=${userVideoData.url}`).then((res) => res.json()),
@@ -149,23 +253,8 @@ async function getAudioUrl(url) {
     }
   ];
   
-  for (let i = 0; i < audioApis.length; i++) {
-    try {
-      console.log(`🔍 Probando API de audio ${i + 1}/${audioApis.length}...`);
-      const apiResponse = await audioApis[i].url();
-      const extracted = audioApis[i].extract(apiResponse);
-      
-      if (extracted.data) {
-        console.log(`✅ API de audio ${i + 1} - Éxito`);
-        return extracted.data;
-      }
-    } catch (error) {
-      console.log(`❌ API de audio ${i + 1} error:`, error.message);
-    }
-  }
-  
-  console.log('❌ Todas las APIs de audio fallaron');
-  return null;
+  const result = await download(audioApis);
+  return result.mediaData;
 }
 
 
@@ -174,9 +263,11 @@ async function getVideoUrl(url) {
   
   const userVideoData = { url };
   const selectedQuality = '720p';
-  const apis = 'https://api.example.com'; // Variable de APIs
+  const apis = global.APIs?.exonity?.url || 'https://exonity.tech'; // Variable de APIs
   
   const videoApis = [
+    {url: () => ogmp3.download(userVideoData.url, selectedQuality, 'video'), extract: (data) => ({data: data.result.download, isDirect: false})},
+    {url: () => ytmp4(userVideoData.url), extract: (data) => ({data, isDirect: false})},
     {
       url: () => fetch(`https://api.siputzx.my.id/api/d/ytmp4?url=${userVideoData.url}`).then((res) => res.json()),
       extract: (data) => ({data: data.dl, isDirect: false})
@@ -186,28 +277,21 @@ async function getVideoUrl(url) {
       extract: (data) => ({data: data.data.url, isDirect: false})
     },
     {
+      url: () => fetch(`${global.APIs?.stellar?.url || 'https://api.stellar.com'}/dow/ytmp4?url=${userVideoData.url}`).then((res) => res.json()),
+      extract: (data) => ({data: data?.data?.dl, isDirect: false})
+    },
+    {
+      url: () => fetch(`${apis}/download/ytmp4?url=${userVideoData.url}`).then((res) => res.json()),
+      extract: (data) => ({data: data.status ? data.data.download.url : null, isDirect: false})
+    },
+    {
       url: () => fetch(`https://exonity.tech/api/ytdlp2-faster?apikey=adminsepuh&url=${userVideoData.url}`).then((res) => res.json()),
       extract: (data) => ({data: data.result.media.mp4, isDirect: false})
     }
   ];
   
-  for (let i = 0; i < videoApis.length; i++) {
-    try {
-      console.log(`🔍 Probando API de video ${i + 1}/${videoApis.length}...`);
-      const apiResponse = await videoApis[i].url();
-      const extracted = videoApis[i].extract(apiResponse);
-      
-      if (extracted.data) {
-        console.log(`✅ API de video ${i + 1} - Éxito`);
-        return extracted.data;
-      }
-    } catch (error) {
-      console.log(`❌ API de video ${i + 1} error:`, error.message);
-    }
-  }
-  
-  console.log('❌ Todas las APIs de video fallaron');
-  return null;
+  const result = await download(videoApis);
+  return result.mediaData;
 }
 
 
