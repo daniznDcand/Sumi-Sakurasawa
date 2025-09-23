@@ -1,69 +1,57 @@
 import fetch from "node-fetch";
 import yts from 'yt-search';
 import axios from "axios";
+import fs from 'fs';
+import path from 'path';
+import stream from 'stream';
+import { promisify } from 'util';
 
-console.log('🔍 Plugin descargas-play.js cargado correctamente');
+const pipeline = promisify(stream.pipeline);
 
 const handler = async (m, { conn, text, usedPrefix, command }) => {
-  
-  console.log('🔥 HANDLER EJECUTADO:', {
-    messageText: m.text,
-    command: command,
-    usedPrefix: usedPrefix,
-    text: text
-  });
-
   let user = global.db.data.users[m.sender];
-  
-  
-  console.log('🔍 Debug .play comando:', {
-    sender: m.sender,
-    text: text,
-    command: command,
-    userExists: !!user,
-    moneda: user?.moneda || 'undefined'
-  });
-
-  if (!user) {
-    user = global.db.data.users[m.sender] = {
-      moneda: 10, 
-      
-    };
-  }
-
-  if (user.moneda < 2) {
-    return conn.reply(m.chat, `💙 No tienes suficientes *Cebollines 🌱* Necesitas 2 más para usar este comando. Tienes: ${user.moneda}`, m);
-  }
 
   try {
     if (!text.trim()) {
-      return conn.reply(m.chat, `💙 Ingresa el nombre de la música a descargar.`, m);
+      return conn.reply(m.chat, `💙 Ingresa el nombre de la música a descargar.\n\nEjemplo: ${usedPrefix}${command} Coldplay Viva la Vida`, m, fake);
     }
 
-    console.log('🔍 Buscando:', text);
     const search = await yts(text);
-    console.log('🔍 Resultados encontrados:', search.all?.length || 0);
-    
     if (!search.all || search.all.length === 0) {
       return m.reply('No se encontraron resultados para tu búsqueda.');
     }
 
     const videoInfo = search.all[0];
-    console.log('🔍 Video info:', videoInfo?.title || 'Sin título');
-    
     if (!videoInfo) {
       return m.reply('No se pudo obtener información del video.');
     }
 
-    const { title, thumbnail, timestamp, views, ago, url, author } = videoInfo;
+    const { 
+      title = 'Desconocido', 
+      thumbnail = '', 
+      timestamp = 'Desconocido', 
+      views = 0, 
+      ago = 'Desconocido', 
+      url = '', 
+      author = { name: 'Desconocido' } 
+    } = videoInfo;
 
-    if (!title || !thumbnail || !timestamp || !views || !ago || !url || !author) {
-      return m.reply('Información incompleta del video.');
+    if (!url) {
+      return m.reply('No se pudo obtener la URL del video.');
     }
 
     const vistas = formatViews(views);
-    const canal = author.name ? author.name : 'Desconocido';
-    const infoMessage = `*𖹭.╭╭ִ╼࣪━ִﮩ٨ـﮩ💙𝗠𝗶𝗸𝘂𝗺𝗶𝗻🌱ﮩ٨ـﮩ━ִ╾࣪╮╮.𖹭*
+    const canal = author.name || 'Desconocido';
+    
+    
+    const buttons = [
+      ['🎵 MP3 (Audio)', 'ytdl_audio_mp3'],
+      ['🎬 MP4 (Video)', 'ytdl_video_mp4'],
+      ['📁 MP3 Documento', 'ytdl_audio_doc'],
+      ['📁 MP4 Documento', 'ytdl_video_doc']
+    ];
+    
+    const infoText = `*𖹭.╭╭ִ╼࣪━ִﮩ٨ـﮩ💙𝗠𝗶𝗸𝘂𝗺𝗶𝗻🌱ﮩ٨ـﮩ━ִ╾࣪╮╮.𖹭*
 
 > 💙 *Título:* ${title}
 *°.⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸.°*
@@ -78,375 +66,697 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 
 💌 *Selecciona el formato para descargar:*`;
 
-    const buttons = [
-      ['🎵 MP3 (Audio)', 'ytdl_audio_mp3'],
-      ['🎬 MP4 (Video)', 'ytdl_video_mp4'],
-      ['📁 MP3 Documento', 'ytdl_audio_doc'],
-      ['📁 MP4 Documento', 'ytdl_video_doc']
-    ];
-
     const footer = '🌱 Hatsune Miku Bot - YouTube';
 
-    
-    global.videoInfoCache = global.videoInfoCache || {};
-    global.videoInfoCache[m.chat] = {
-      url,
-      title,
-      thumbnail,
-      timestamp,
-      views: vistas,
-      channel: canal,
-      publishedTime: ago
-    };
-
-    console.log('🔍 Intentando enviar botones...');
     try {
-      await conn.sendButton(
-        m.chat,
-        infoMessage,
-        footer,
-        thumbnail || null,
-        buttons,
-        m
-      );
-      console.log('✅ Botones enviados correctamente');
-    } catch (buttonError) {
-      console.log('❌ Error enviando botones:', buttonError.message);
-      console.log('🔍 Usando mensaje alternativo...');
+      const thumb = thumbnail ? (await conn.getFile(thumbnail))?.data : null;
+
       
-      const thumb = (await conn.getFile(thumbnail))?.data;
-      const JT = {
-        contextInfo: {
-          externalAdReply: {
-            title: botname,
-            body: dev,
-            mediaType: 1,
-            previewType: 0,
-            mediaUrl: url,
-            sourceUrl: url,
-            thumbnail: thumb,
-            renderLargerThumbnail: true,
-          },
-        },
+      await conn.sendNCarousel(m.chat, infoText, footer, thumb, buttons, null, null, null, m);
+      
+      if (!global.db.data.users[m.sender]) {
+        global.db.data.users[m.sender] = {};
+      }
+      
+      global.db.data.users[m.sender].lastYTSearch = {
+        url,
+        title,
+        messageId: m.key.id,  
+        timestamp: Date.now() 
       };
-      await conn.reply(m.chat, infoMessage + '\n\n*Para descargar responde con:*\n• *audio* - Para MP3\n• *video* - Para MP4\n• *doc* - Para documento', m, JT);
+      
+      console.log(`Stored search for user ${m.sender}: ${title} (ID: ${m.key.id})`);
+      
+    } catch (thumbError) {
+     
+      await conn.sendNCarousel(m.chat, infoText, footer, null, buttons, null, null, null, m);
+      
+      if (!global.db.data.users[m.sender]) {
+        global.db.data.users[m.sender] = {};
+      }
+      
+      global.db.data.users[m.sender].lastYTSearch = {
+        url,
+        title,
+        messageId: m.key.id,  
+        timestamp: Date.now() 
+      };
+      
+      console.log("Error al obtener la miniatura:", thumbError);
     }
 
-    user.moneda -= 2;
-    conn.reply(m.chat, `💙 Has utilizado 2 *Cebollines 🌱*`, m);
-
   } catch (error) {
-    console.log('❌ Error general en .play:', error);
-    return m.reply(`⚠︎ Ocurrió un error: ${error.message}`);
+    console.error("Error completo:", error);
+    return m.reply(`💙 Ocurrió un error: ${error.message || 'Desconocido'}`);
   }
 };
 
 
-handler.before = async (m, { conn }) => {
-  
-  const buttonId = m.selectedButtonId || m.butt || m.selectedId || 
-                   (m.message?.buttonsResponseMessage?.selectedButtonId) ||
-                   (m.message?.templateButtonReplyMessage?.selectedId);
-  
-  if (buttonId && global.videoInfoCache?.[m.chat]) {
-    const chatInfo = global.videoInfoCache[m.chat];
-    const { url, title } = chatInfo;
-    
-    if (buttonId === 'ytdl_audio_mp3') {
-      try {
-        await m.reply('⬇️ Descargando audio...');
-        const audioUrl = await getAudioUrl(url);
-        
-        if (audioUrl) {
-          await conn.sendMessage(m.chat, {
-            audio: { url: audioUrl },
-            mimetype: 'audio/mpeg',
-            fileName: `${title}.mp3`
-          }, { quoted: m });
-        } else {
-          m.reply(`❌ No se pudo descargar el audio de: *${title}*\n\n🔗 *URL:* ${url}\n\n💌 Puedes intentar más tarde o usar esta URL en tu descargador favorito.`);
-        }
-      } catch (error) {
-        console.error('Error descargando audio:', error);
-        m.reply('❌ Error al descargar el audio.');
-      }
-      return false;
-    }
-    
-    if (buttonId === 'ytdl_video_mp4') {
-      try {
-        await m.reply('⬇️ Descargando video...');
-        const videoUrl = await getVideoUrl(url);
-        
-        if (videoUrl) {
-          await conn.sendMessage(m.chat, {
-            video: { url: videoUrl },
-            mimetype: 'video/mp4',
-            fileName: `${title}.mp4`,
-            caption: `🎬 *${title}*`
-          }, { quoted: m });
-        } else {
-          m.reply(`❌ No se pudo descargar el video de: *${title}*\n\n🔗 *URL:* ${url}\n\n💌 Puedes intentar más tarde o usar esta URL en tu descargador favorito.`);
-        }
-      } catch (error) {
-        console.error('Error descargando video:', error);
-        m.reply('❌ Error al descargar el video.');
-      }
-      return false;
-    }
-    
-    if (buttonId === 'ytdl_audio_doc') {
-      try {
-        await m.reply('⬇️ Descargando audio como documento...');
-        const audioUrl = await getAudioUrl(url);
-        
-        if (audioUrl) {
-          await conn.sendMessage(m.chat, {
-            document: { url: audioUrl },
-            mimetype: 'audio/mpeg',
-            fileName: `${title}.mp3`
-          }, { quoted: m });
-        } else {
-          m.reply(`❌ No se pudo descargar el audio de: *${title}*\n\n🔗 *URL:* ${url}\n\n💌 Puedes intentar más tarde o usar esta URL en tu descargador favorito.`);
-        }
-      } catch (error) {
-        console.error('Error descargando audio como documento:', error);
-        m.reply('❌ Error al descargar el audio como documento.');
-      }
-      return false;
-    }
-    
-    if (buttonId === 'ytdl_video_doc') {
-      try {
-        await m.reply('⬇️ Descargando video como documento...');
-        const videoUrl = await getVideoUrl(url);
-        
-        if (videoUrl) {
-          await conn.sendMessage(m.chat, {
-            document: { url: videoUrl },
-            mimetype: 'video/mp4',
-            fileName: `${title}.mp4`
-          }, { quoted: m });
-        } else {
-          m.reply(`❌ No se pudo descargar el video de: *${title}*\n\n🔗 *URL:* ${url}\n\n💌 Puedes intentar más tarde o usar esta URL en tu descargador favorito.`);
-        }
-      } catch (error) {
-        console.error('Error descargando video como documento:', error);
-        m.reply('❌ Error al descargar el video como documento.');
-      }
-      return false;
-    }
-  }
-  
-  
-  if (m.text && global.videoInfoCache?.[m.chat]) {
-    const chatInfo = global.videoInfoCache[m.chat];
-    const { url, title } = chatInfo;
-    const userResponse = m.text.toLowerCase().trim();
-    
-    if (userResponse === 'audio' || userResponse === 'mp3') {
-      try {
-        await m.reply('⬇️ Descargando audio...');
-        const audioUrl = await getAudioUrl(url);
-        
-        if (audioUrl) {
-          await conn.sendMessage(m.chat, {
-            audio: { url: audioUrl },
-            mimetype: 'audio/mpeg',
-            fileName: `${title}.mp3`
-          }, { quoted: m });
-        } else {
-          await m.reply('❌ No se pudo descargar el audio');
-        }
-      } catch (error) {
-        console.error('Error descargando audio:', error);
-        await m.reply('❌ Error al descargar el audio.');
-      }
-      return false;
-    }
-    
-    if (userResponse === 'video' || userResponse === 'mp4') {
-      try {
-        await m.reply('⬇️ Descargando video...');
-        const videoUrl = await getVideoUrl(url);
-        
-        if (videoUrl) {
-          await conn.sendMessage(m.chat, {
-            video: { url: videoUrl },
-            mimetype: 'video/mp4',
-            fileName: `${title}.mp4`,
-            caption: `🎬 *${title}*`
-          }, { quoted: m });
-        } else {
-          await m.reply('❌ No se pudo descargar el video');
-        }
-      } catch (error) {
-        console.error('Error descargando video:', error);
-        await m.reply('❌ Error al descargar el video.');
-      }
-      return false;
-    }
-    
-    if (userResponse === 'doc' || userResponse === 'documento') {
-      try {
-        await m.reply('⬇️ Descargando como documento...');
-        const audioUrl = await getAudioUrl(url);
-        
-        if (audioUrl) {
-          await conn.sendMessage(m.chat, {
-            document: { url: audioUrl },
-            mimetype: 'audio/mpeg',
-            fileName: `${title}.mp3`
-          }, { quoted: m });
-        } else {
-          await m.reply('❌ No se pudo descargar el documento');
-        }
-      } catch (error) {
-        console.error('Error descargando documento:', error);
-        await m.reply('❌ Error al descargar el documento.');
-      }
-      return false;
-    }
-  }
-  
-  return true; 
-};
-
-
-async function getAudioUrl(url) {
-  console.log('🔍 Buscando URL de audio para:', url);
-  
-  
+function isValidUrl(string) {
   try {
-    const response = await fetch(`https://api.stellarwa.xyz/dow/ytmp3?url=${encodeURIComponent(url)}&apikey=Diamond`);
+    new URL(string);
+    return string.startsWith('http://') || string.startsWith('https://');
+  } catch (_) {
+    return false;
+  }
+}
+
+
+async function handleGoogleYTv3API(apiConfig) {
+  try {
+    console.log('🎯 Procesando con Google YouTube v3 API...');
+    
+    const response = await fetch(apiConfig.endpoint, {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      console.log(`❌ Google API error: ${response.status}`);
+      return null;
+    }
+    
     const data = await response.json();
     
-    if (data && data.data && data.data.dl) {
-      console.log('✅ Audio obtenido con stellarwa.xyz');
-      return data.data.dl;
+    if (data.items && data.items.length > 0) {
+      const video = data.items[0];
+      const videoId = video.id;
+      
+      
+      if (apiConfig.api.includes('Google-YT-v3') && !apiConfig.api.includes('Video')) {
+        return `https://rr3---sn-4g5e6ne7.googlevideo.com/videoplayback?expire=9999999999&ei=abc123&ip=0.0.0.0&id=${videoId}&itag=140&aitags=140&source=youtube&requiressl=yes&mime=audio/mp4&gir=yes&clen=0&dur=0&lmt=0&fvip=3&c=WEB&txp=5532432&sparams=expire,ei,ip,id,aitags,source,requiressl,mime,gir,clen,dur,lmt&lsparams=mh,mm,mn,ms,mv,mvi,pl,lsig&lsig=AG3C_xAwRAIgDummy`;
+      } else {
+        // Para video
+        return `https://rr3---sn-4g5e6ne7.googlevideo.com/videoplayback?expire=9999999999&ei=abc123&ip=0.0.0.0&id=${videoId}&itag=22&source=youtube&requiressl=yes&mime=video/mp4&cnr=14&dur=0&lmt=0&fvip=3&c=WEB&txp=5532432&sparams=expire,ei,ip,id,itag,source,requiressl,mime,cnr,dur,lmt&lsparams=mh,mm,mn,ms,mv,mvi,pl,lsig&lsig=AG3C_xAwRAIgDummy`;
+      }
     }
+    
+    return null;
   } catch (error) {
-    console.log('❌ Error con stellarwa.xyz:', error.message);
+    console.log(`❌ Error en Google YT v3 API: ${error.message}`);
+    return null;
   }
-  
-  
-  const result = await getAud(url);
-  if (result && result.url) {
-    console.log(`✅ Audio obtenido con ${result.api}`);
-    return result.url;
+}
+
+async function validateDownloadUrl(url) {
+  if (!url || typeof url !== 'string' || url.trim() === '') {
+    console.log('❌ URL inválida o vacía');
+    return false;
   }
 
-  
-  console.log('❌ Todas las APIs de audio fallaron');
-  return null;
+  try {
+    
+    new URL(url);
+    
+    console.log(`🔍 Validating download URL: ${url.substring(0, 100)}...`);
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 segundos timeout
+    
+    const response = await fetch(url, {
+      method: 'HEAD',
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
+    
+    clearTimeout(timeoutId);
+    
+    const isValid = response.ok && 
+                   response.status >= 200 && 
+                   response.status < 400 &&
+                   response.status !== 404 &&
+                   response.status !== 403;
+    
+    const contentType = response.headers.get('content-type') || '';
+    const contentLength = response.headers.get('content-length');
+    
+    
+    const isMediaFile = contentType.includes('video') || 
+                       contentType.includes('audio') || 
+                       contentType.includes('application/octet-stream') ||
+                       contentType.includes('binary') ||
+                       url.includes('.mp4') || 
+                       url.includes('.mp3') || 
+                       url.includes('.m4a');
+    
+    if (isValid && isMediaFile) {
+      console.log(`✅ URL validation status: ${response.status} - Tipo: ${contentType} - Tamaño: ${contentLength || 'desconocido'}`);
+      return true;
+    } else {
+      console.log(`❌ URL no válida - Status: ${response.status}, Tipo: ${contentType}`);
+      return false;
+    }
+    
+  } catch (error) {
+    console.error(`❌ URL validation failed: ${error.message}`);
+    return false;
+  }
 }
 
 
-async function getVideoUrl(url) {
-  console.log('🔍 Buscando URL de video para:', url);
+async function processDownload(conn, m, url, title, option) {
   
+  const downloadTypes = {
+    1: '🎵 audio MP3',
+    2: '🎬 video MP4', 
+    3: '📁 audio MP3 doc',
+    4: '📁 video MP4 doc'
+  };
+  
+  const downloadType = downloadTypes[option] || 'archivo';
+  await conn.reply(m.chat, `💙 Procesando ${downloadType}. Por favor espera...`, m);
   
   try {
-    const response = await fetch(`https://api.stellarwa.xyz/dow/ytmp4?url=${encodeURIComponent(url)}&apikey=Diamond`);
-    const data = await response.json();
-    
-    if (data && data.data && data.data.dl) {
-      console.log('✅ Video obtenido con stellarwa.xyz');
-      return data.data.dl;
+    let downloadUrl;
+    let fileName;
+    let mimeType;
+
+    if (option === 1 || option === 3) {
+     
+      downloadUrl = await getAudioUrl(url);
+      fileName = `${title.replace(/[^\w\s]/gi, '')}.mp3`;
+      mimeType = 'audio/mpeg';
+      
+      if (!downloadUrl) {
+        
+        const contentType = (option === 1 || option === 3) ? 'audio' : 'video';
+        throw new Error(`❌ No se pudo obtener el enlace de ${contentType}. Las APIs pueden estar temporalmente fuera de servicio. Por favor intenta de nuevo en unos minutos.`);
+      }
+
+      console.log(`Audio URL obtenida: ${downloadUrl}`);
+
+      if (option === 1) {
+       
+        await conn.sendMessage(m.chat, { 
+          audio: { url: downloadUrl }, 
+          fileName: fileName, 
+          mimetype: mimeType 
+        }, { quoted: m });
+      } else {
+        
+        await conn.sendMessage(m.chat, { 
+          document: { url: downloadUrl },
+          mimetype: mimeType,
+          fileName: fileName
+        }, { quoted: m });
+      }
+    } else {
+      
+      downloadUrl = await getVideoUrl(url);
+      fileName = `${title.replace(/[^\w\s]/gi, '')}.mp4`;
+      mimeType = 'video/mp4';
+      
+      if (!downloadUrl) {
+        
+        const contentType = 'video';
+        throw new Error(`❌ No se pudo obtener el enlace de ${contentType}. Las APIs pueden estar temporalmente fuera de servicio. Por favor intenta de nuevo en unos minutos.`);
+      }
+
+      console.log(`Video URL obtenida: ${downloadUrl}`);
+
+      if (option === 2) {
+        
+        await conn.sendMessage(m.chat, { 
+          video: { url: downloadUrl }, 
+          fileName: fileName, 
+          mimetype: mimeType, 
+          caption: title
+        }, { quoted: m });
+      } else {
+       
+        await conn.sendMessage(m.chat, { 
+          document: { url: downloadUrl },
+          mimetype: mimeType,
+          fileName: fileName,
+          caption: title
+        }, { quoted: m });
+      }
     }
+    
+    
+    const user = global.db.data.users[m.sender];
+    if (!user.cebollinesDeducted) {
+      user.chocolates -= 2;
+      user.cebollinesDeducted = true;
+      conn.reply(m.chat, `💙 Has utilizado 2 *Cebollines 🌱*`, m);
+    }
+    
+    return true;
   } catch (error) {
-    console.log('❌ Error con stellarwa.xyz:', error.message);
+    console.error("Error al procesar descarga:", error);
+    conn.reply(m.chat, `💙 Error: ${error.message}`, m);
+    return false;
   }
-  
-  
-  const result = await getVid(url);
-  if (result && result.url) {
-    console.log(`✅ Video obtenido con ${result.api}`);
-    return result.url;
-  }
-  
-
-  
-  console.log('❌ Todas las APIs de video fallaron');
-  return null;
-}
-
-
-async function getAud(url) {
-  const apis = [
-    { api: 'ZenzzXD', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-    { api: 'ZenzzXD v2', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp3v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url }, 
-    { api: 'Vreden', endpoint: `${global.APIs.vreden.url}/api/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url },
-    { api: 'Delirius', endpoint: `${global.APIs.delirius.url}/download/ymp3?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url }
-  ]
-  return await fetchFromApis(apis)
-}
-
-async function getVid(url) {
-  const apis = [
-    { api: 'ZenzzXD', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-    { api: 'ZenzzXD v2', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp4v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-    { api: 'Vreden', endpoint: `${global.APIs.vreden.url}/api/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url },
-    { api: 'Delirius', endpoint: `${global.APIs.delirius.url}/download/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url }
-  ]
-  return await fetchFromApis(apis)
 }
 
 async function fetchFromApis(apis) {
-  for (const { api, endpoint, extractor } of apis) {
+  for (let i = 0; i < apis.length; i++) {
     try {
-      const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 10000)
-      const res = await fetch(endpoint, { signal: controller.signal }).then(r => r.json())
-      clearTimeout(timeout)
-      const link = extractor(res)
-      if (link) return { url: link, api }
-    } catch (e) {}
-    await new Promise(resolve => setTimeout(resolve, 500))
+      console.log(`🔍 Probando ${apis[i].api}: ${apis[i].endpoint}`);
+      
+      
+      if (apis[i].api.includes('Google-YT-v3')) {
+        const result = await handleGoogleYTv3API(apis[i]);
+        if (result) {
+          console.log(`✅ ${apis[i].api} - URL obtenida exitosamente`);
+          const isValid = await validateDownloadUrl(result);
+          if (isValid) {
+            return result;
+          } else {
+            console.log(`❌ ${apis[i].api} - URL no válida, continuando...`);
+            continue;
+          }
+        }
+      }
+      
+      const fetchOptions = {
+        method: apis[i].method || 'GET',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          ...apis[i].headers
+        },
+        timeout: 20000 
+      };
+      
+      if (apis[i].body) {
+        fetchOptions.body = apis[i].body;
+      }
+      
+      const response = await fetch(apis[i].endpoint, fetchOptions);
+      
+      if (!response.ok) {
+        console.log(`${apis[i].api} responded with status: ${response.status}`);
+        continue;
+      }
+      
+      const apiJson = await response.json();
+      console.log(`${apis[i].api} response:`, JSON.stringify(apiJson, null, 2));
+      
+      
+      if (apis[i].api === 'API.Video' || apis[i].api === 'API.Video-Audio') {
+        const downloadUrl = await handleApiVideoResponse(apiJson, apis[i].api);
+        if (downloadUrl && isValidUrl(downloadUrl)) {
+          
+          const isWorking = await validateDownloadUrl(downloadUrl);
+          if (isWorking) {
+            console.log(`✅ ${apis[i].api} devolvió URL válida y funcional: ${downloadUrl}`);
+            return downloadUrl;
+          } else {
+            console.log(`❌ ${apis[i].api} URL no funciona (404 o error): ${downloadUrl}`);
+          }
+        }
+      } else {
+        const downloadUrl = apis[i].extractor(apiJson);
+        if (downloadUrl && isValidUrl(downloadUrl)) {
+          
+          const isWorking = await validateDownloadUrl(downloadUrl);
+          if (isWorking) {
+            console.log(`✅ ${apis[i].api} devolvió URL válida y funcional: ${downloadUrl}`);
+            return downloadUrl;
+          } else {
+            console.log(`❌ ${apis[i].api} URL no funciona (404 o error): ${downloadUrl}`);
+          }
+        } else {
+          console.log(`✗ ${apis[i].api} no devolvió URL válida:`, downloadUrl);
+        }
+      }
+      
+    } catch (error) {
+      console.error(`✗ ${apis[i].api} falló:`, error.message);
+    }
   }
-  return null
+  
+  console.log("Todas las APIs fallaron");
+  return null;
 }
 
 
-handler.before = async function (m, { conn }) {
-  if (m.text && m.text.startsWith('.play ')) {
-    console.log('🎯 MENSAJE .play DETECTADO:', m.text);
+async function handleApiVideoResponse(response, apiType) {
+  try {
+    
+    if (response.videoId) {
+      console.log(`📹 ${apiType} videoId: ${response.videoId}`);
+      
+      
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      
+      const videoDetailResponse = await fetch(`https://sandbox.api.video/videos/${response.videoId}`, {
+        headers: {
+          'Authorization': 'Bearer h92qspHJpE3iiOgKH6A5MknP6ylbP44ODKfLAr9VqV1',
+          'Accept': 'application/json'
+        }
+      });
+      
+      if (videoDetailResponse.ok) {
+        const videoDetails = await videoDetailResponse.json();
+        console.log(`📹 ${apiType} details:`, JSON.stringify(videoDetails, null, 2));
+        
+        
+        if (apiType === 'API.Video-Audio') {
+          return videoDetails.assets?.hls || 
+                 videoDetails.assets?.mp4 || 
+                 videoDetails.source?.uri ||
+                 `https://sandbox.api.video/videos/${response.videoId}/source`;
+        }
+        
+       
+        return videoDetails.assets?.mp4 || 
+               videoDetails.source?.uri || 
+               videoDetails.player?.src ||
+               `https://sandbox.api.video/videos/${response.videoId}/source`;
+      }
+    }
+    
+    
+    if (apiType === 'API.Video-Audio') {
+      return response.assets?.hls || response.assets?.mp4 || response.source?.uri;
+    }
+    
+    return response.assets?.mp4 || response.source?.uri || response.player?.src;
+    
+  } catch (error) {
+    console.error(`❌ Error procesando respuesta de ${apiType}:`, error.message);
+    return null;
   }
-};
+}
 
-
-handler.all = async function (m) {
-  if (m.text && m.text.includes('play')) {
-    console.log('🔍 MENSAJE CON "play":', m.text);
+async function getAudioUrl(url) {
+  const apis = [
+    
+    { api: 'Google-YT-v3', endpoint: `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${encodeURIComponent(url.split('v=')[1])}&key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY`, extractor: res => `https://www.googleapis.com/youtube/v3/captions/${res?.items?.[0]?.id}` },
+    
+    { api: 'YT1S-Audio', endpoint: `https://yt1s.com/api/ajaxSearch/index`, 
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
+      method: 'POST', 
+      body: `q=${encodeURIComponent(url)}&vt=mp3`, 
+      extractor: res => res?.links?.mp3?.mp3128?.url 
+    },
+    { api: 'YT-Audio-Simple', endpoint: `https://yt-download.org/api/button/mp3/320/${encodeURIComponent(url)}`, extractor: res => res?.dlink },
+    { api: 'Download-YT-Audio', endpoint: `https://api.downloadyt.com/download?url=${encodeURIComponent(url)}&format=mp3&quality=320`, extractor: res => res?.download_url },
+    { api: 'YT-DLP-Web', endpoint: `https://yt-dlp-web.vercel.app/api/download?url=${encodeURIComponent(url)}&format=mp3`, extractor: res => res?.downloadUrl },
+    
+    { api: 'YTDL-Core', endpoint: `https://ytdl-core.herokuapp.com/api/info?url=${encodeURIComponent(url)}`, extractor: res => res?.formats?.find(f => f.audioBitrate)?.url },
+    { api: 'YouTube-MP3-API', endpoint: `https://youtube-mp3-download1.p.rapidapi.com/dl?id=${encodeURIComponent(url.split('v=')[1])}`, extractor: res => res?.link },
+    { api: 'SaveTube-Audio', endpoint: `https://savetube.me/api/v1/techtunes?url=${encodeURIComponent(url)}`, extractor: res => res?.data?.audio_url },
+    { api: 'Widipe', endpoint: `https://widipe.com/download/ytdl?url=${encodeURIComponent(url)}`, extractor: res => res?.result?.mp3?.["128"]?.download },
+    { api: 'SaveFrom-API', endpoint: `https://api.savefrom.net/get-url?url=${encodeURIComponent(url)}&format=mp3`, extractor: res => res?.download_url },
+    
+    { api: 'MP3-Converter', endpoint: `https://mp3-convert.org/api/button/${encodeURIComponent(url)}`, extractor: res => res?.download_link },
+    { api: 'Online-Converter', endpoint: `https://www.onlinevideoconverter.pro/api/convert?url=${encodeURIComponent(url)}&format=mp3`, extractor: res => res?.download_url },
+    { api: 'Y2Mate-Alternative', endpoint: `https://yt-api.p.rapidapi.com/dl?id=${encodeURIComponent(url.split('v=')[1])}&geo=US&x-cg-partnerid=api-savefrom-net`, extractor: res => res?.audio?.['128']?.url },
+    { api: 'YouTube-API', endpoint: `https://youtube-mp36.p.rapidapi.com/dl?id=${encodeURIComponent(url.split('v=')[1])}`, extractor: res => res?.link },
+    
+    { api: 'API.Video-Audio', endpoint: `https://sandbox.api.video/videos`, extractor: res => res?.assets?.hls, 
+      headers: { 
+        'Authorization': 'Bearer h92qspHJpE3iiOgKH6A5MknP6ylbP44ODKfLAr9VqV1',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }, 
+      method: 'POST', 
+      body: JSON.stringify({ 
+        title: `YouTube Audio Download - ${url.split('v=')[1]}`,
+        source: url,
+        public: false
+      }) 
+    },
+    
+    { api: 'Y2Mate', endpoint: `https://api-y2mate.onrender.com/api/download/audio/${encodeURIComponent(url)}`, extractor: res => res?.download_url },
+    { api: 'Cobalt', endpoint: `https://co.wuk.sh/api/json`, extractor: res => res?.url, 
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, 
+      method: 'POST', 
+      body: JSON.stringify({ url, vQuality: 'max', aFormat: 'mp3' }) 
+    },
+    
+    { api: 'StellarWA', endpoint: `https://api.stellarwa.xyz/dow/ytmp3?url=${encodeURIComponent(url)}&apikey=Diamond`, extractor: res => res?.data?.dl },
+    { api: 'Lolhuman', endpoint: `https://api.lolhuman.xyz/api/ytaudio?apikey=GataDios&url=${encodeURIComponent(url)}`, extractor: res => res?.result?.link }
+  ];
+  
+  
+  const result = await fetchFromApis(apis);
+  if (result) return result;
+  
+  
+  try {
+    console.log('🔄 Intentando método directo para audio como último recurso...');
+    return await getDirectAudioUrl(url);
+  } catch (error) {
+    console.error('❌ Método directo para audio también falló:', error.message);
+    return null;
   }
+}
+
+
+async function getDirectAudioUrl(url) {
+  
+  throw new Error('Método directo de audio no disponible - todas las APIs fallaron');
+}
+
+async function getVideoUrl(url) {
+  const apis = [
+    
+    { api: 'YTDL-Core-Video', endpoint: `https://ytdl-core.herokuapp.com/api/info?url=${encodeURIComponent(url)}`, extractor: res => res?.formats?.find(f => f.hasVideo && f.hasAudio)?.url },
+    { api: 'YT1S-Video', endpoint: `https://yt1s.com/api/ajaxSearch/index`, 
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
+      method: 'POST', 
+      body: `q=${encodeURIComponent(url)}&vt=mp4`, 
+      extractor: res => res?.links?.mp4?.mp4720?.url || res?.links?.mp4?.mp4480?.url 
+    },
+    { api: 'SaveTube-Video', endpoint: `https://savetube.me/api/v1/techtunes?url=${encodeURIComponent(url)}`, extractor: res => res?.data?.video_url },
+    { api: 'YT-DLP-Web', endpoint: `https://yt-dlp-web.vercel.app/api/download?url=${encodeURIComponent(url)}&format=mp4`, extractor: res => res?.downloadUrl },
+    { api: 'Widipe', endpoint: `https://widipe.com/download/ytdl?url=${encodeURIComponent(url)}`, extractor: res => res?.result?.mp4?.["720"]?.download || res?.result?.mp4?.["480"]?.download || res?.result?.mp4?.["360"]?.download },
+    { api: 'Y2Mate-Video', endpoint: `https://api-y2mate.onrender.com/api/download/video/${encodeURIComponent(url)}`, extractor: res => res?.download_url },
+    { api: 'SaveFrom-Video', endpoint: `https://api.savefrom.net/get-url?url=${encodeURIComponent(url)}&format=mp4`, extractor: res => res?.download_url },
+    { api: 'OnlineConverter-Video', endpoint: `https://www.onlinevideoconverter.pro/api/convert?url=${encodeURIComponent(url)}&format=mp4`, extractor: res => res?.download_url },
+    { api: 'VideoConverter', endpoint: `https://video-converter.org/api/button/${encodeURIComponent(url)}`, extractor: res => res?.download_link },
+    { api: 'SaveFrom-Video', endpoint: `https://api.savefrom.net/get-url?url=${encodeURIComponent(url)}&format=mp4`, extractor: res => res?.download_url },
+    { api: 'YouTube-Video-API', endpoint: `https://youtube-video-download1.p.rapidapi.com/dl?id=${encodeURIComponent(url.split('v=')[1])}`, extractor: res => res?.download_url },
+    { api: 'Y2Mate-Video', endpoint: `https://api-y2mate.onrender.com/api/download/video/${encodeURIComponent(url)}`, extractor: res => res?.download_url },
+    
+    { api: 'API.Video', endpoint: `https://sandbox.api.video/videos`, extractor: res => res?.assets?.mp4, 
+      headers: { 
+        'Authorization': 'Bearer h92qspHJpE3iiOgKH6A5MknP6ylbP44ODKfLAr9VqV1',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }, 
+      method: 'POST', 
+      body: JSON.stringify({ 
+        title: `YouTube Download - ${url.split('v=')[1]}`,
+        source: url,
+        public: false
+      }) 
+    },
+    
+    { api: 'Cobalt', endpoint: `https://co.wuk.sh/api/json`, extractor: res => res?.url, 
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, 
+      method: 'POST', 
+      body: JSON.stringify({ url, vQuality: '720', vCodec: 'h264', aFormat: 'mp3' }) 
+    },
+    { api: 'SaveTube', endpoint: `https://savetube.me/api/v1/techtunes?url=${encodeURIComponent(url)}`, extractor: res => res?.data?.video_url },
+    
+    { api: 'Lolhuman', endpoint: `https://api.lolhuman.xyz/api/ytvideo?apikey=GataDios&url=${encodeURIComponent(url)}`, extractor: res => res?.result?.link }
+  ];
+  
+  
+  const result = await fetchFromApis(apis);
+  if (result) return result;
+  
+  
+  try {
+    console.log('🔄 Intentando método directo como último recurso...');
+    return await getDirectVideoUrl(url);
+  } catch (error) {
+    console.error('❌ Método directo también falló:', error.message);
+    return null;
+  }
+}
+
+
+async function getDirectVideoUrl(url) {
+  
+  throw new Error('Método directo no disponible - todas las APIs fallaron');
+}
+
+handler.before = async (m, { conn }) => {
+  
+  if (m.sender && global.db.data.users[m.sender]?.lastYTSearch) {
+    console.log('\n🔍 [FULL DEBUG] Message received from user with active search:');
+    console.log(`   📱 Sender: ${m.sender}`);
+    console.log(`   📝 Type (mtype): ${m.mtype}`);
+    console.log(`   💬 Text: "${m.text}"`);
+    console.log(`   🗂️ Full message object:`, JSON.stringify(m, null, 2));
+    console.log(`   📊 Message structure:`, {
+      key: m.key,
+      message: m.message,
+      msg: m.msg
+    });
+    console.log('─'.repeat(80));
+  }
+  
+  
+  const buttonPatterns = [
+    /^ytdl_(audio|video)_(mp3|mp4|doc)$/,
+    /ytdl_audio_mp3/,
+    /ytdl_video_mp4/,
+    /ytdl_audio_doc/,
+    /ytdl_video_doc/
+  ];
+  
+  let isButtonResponse = false;
+  let matchedPattern = null;
+  
+  for (const pattern of buttonPatterns) {
+    if (pattern.test(m.text)) {
+      isButtonResponse = true;
+      matchedPattern = pattern;
+      break;
+    }
+  }
+  
+  
+  const textContainsButton = m.text.includes('ytdl_') || 
+                            m.text.includes('audio_mp3') || 
+                            m.text.includes('video_mp4') ||
+                            m.text.includes('audio_doc') ||
+                            m.text.includes('video_doc');
+  
+  
+  const buttonTextPatterns = [
+    /🎵.*MP3.*Audio/i,
+    /🎬.*MP4.*Video/i,
+    /📁.*MP3.*Documento/i,
+    /📁.*MP4.*Documento/i
+  ];
+  
+  let isButtonTextResponse = false;
+  for (const pattern of buttonTextPatterns) {
+    if (pattern.test(m.text)) {
+      isButtonTextResponse = true;
+      matchedPattern = `text: ${pattern}`;
+      break;
+    }
+  }
+  
+  if (!isButtonResponse && !textContainsButton && !isButtonTextResponse) {
+    
+    if (m.sender && global.db.data.users[m.sender]?.lastYTSearch) {
+      console.log(`❌ [DEBUG] Message "${m.text}" doesn't match any button pattern`);
+    }
+    return false;
+  }
+  
+  const user = global.db.data.users[m.sender];
+  if (!user || !user.lastYTSearch) {
+    console.log(`❌ [DEBUG] No user or no active search for ${m.sender}`);
+    return false;
+  }
+  
+  console.log(`✅ [BUTTON DETECTED] Pattern: ${matchedPattern || 'keyword match'}`);
+  console.log(`📱 User: ${m.sender}`);
+  console.log(`🎵 Active search: ${user.lastYTSearch.title}`);
+  
+  const currentTime = Date.now();
+  const searchTime = user.lastYTSearch.timestamp || 0;
+  
+  
+  if (currentTime - searchTime > 10 * 60 * 1000) {
+    console.log("⏰ Search expired");
+    await conn.reply(m.chat, '⏰ La búsqueda ha expirado. Por favor realiza una nueva búsqueda.', m);
+    return false; 
+  }
+  
+  
+  let option = null;
+  
+  if (m.text.includes('audio_mp3') || m.text === 'ytdl_audio_mp3') {
+    option = 1; 
+  } else if (m.text.includes('video_mp4') || m.text === 'ytdl_video_mp4') {
+    option = 2; 
+  } else if (m.text.includes('audio_doc') || m.text === 'ytdl_audio_doc') {
+    option = 3; 
+  } else if (m.text.includes('video_doc') || m.text === 'ytdl_video_doc') {
+    option = 4; 
+  }
+  
+  else if (/🎵.*MP3.*Audio/i.test(m.text)) {
+    option = 1; 
+    console.log(`✅ [DETECTED] Button text matched: MP3 Audio`);
+  } else if (/🎬.*MP4.*Video/i.test(m.text)) {
+    option = 2; 
+    console.log(`✅ [DETECTED] Button text matched: MP4 Video`);
+  } else if (/📁.*MP3.*Documento/i.test(m.text)) {
+    option = 3; 
+    console.log(`✅ [DETECTED] Button text matched: MP3 Document`);
+  } else if (/📁.*MP4.*Documento/i.test(m.text)) {
+    option = 4; 
+    console.log(`✅ [DETECTED] Button text matched: MP4 Document`);
+  }
+  
+  if (!option) {
+    console.log(`❌ [DEBUG] No option found for button text: "${m.text}"`);
+    return false;
+  }
+  
+  console.log(`🎵 Processing option ${option} for "${user.lastYTSearch.title}"`);
+
+  
+  if (user.processingDownload) {
+    console.log(`⚠️ Ya está procesando una descarga, ignorando solicitud duplicada`);
+    return false;
+  }
+  
+  user.processingDownload = true;
+  user.cebollinesDeducted = false;
+
+  try {
+    await processDownload(
+      conn, 
+      m, 
+      user.lastYTSearch.url, 
+      user.lastYTSearch.title, 
+      option
+    );
+    
+    
+    user.lastYTSearch = null;
+    user.processingDownload = false;
+    console.log(`✅ Download processed successfully for option ${option}`);
+    
+  } catch (error) {
+    console.error(`❌ Error processing download:`, error);
+    user.processingDownload = false;
+    await conn.reply(m.chat, `💙 Error al procesar la descarga: ${error.message}`, m);
+  }
+  
+  return true;
 };
-
-handler.command = handler.help = ['play'];
-handler.tags = ['downloader'];
-handler.register = true;
-handler.disabled = false;
-
-console.log('🔍 Plugin .play registrado con comando:', handler.command);
-console.log('🔍 Handler configurado:', {
-  command: handler.command,
-  tags: handler.tags,
-  register: handler.register,
-  disabled: handler.disabled
-});
-
-export default handler;
 
 function formatViews(views) {
   if (views === undefined) {
     return "No disponible";
   }
 
-  if (views >= 1_000_000_000) {
-    return `${(views / 1_000_000_000).toFixed(1)}B (${views.toLocaleString()})`;
-  } else if (views >= 1_000_000) {
-    return `${(views / 1_000_000).toFixed(1)}M (${views.toLocaleString()})`;
-  } else if (views >= 1_000) {
-    return `${(views / 1_000).toFixed(1)}k (${views.toLocaleString()})`;
+  try {
+    if (views >= 1_000_000_000) {
+      return `${(views / 1_000_000_000).toFixed(1)}B`;
+    } else if (views >= 1_000_000) {
+      return `${(views / 1_000_000).toFixed(1)}M`;
+    } else if (views >= 1_000) {
+      return `${(views / 1_000).toFixed(1)}k`;
+    }
+    return views.toLocaleString();
+  } catch (e) {
+    return String(views);
   }
-  return views.toString();
 }
+
+handler.command = handler.help = ['play'];
+handler.tags = ['downloader'];
+
+export default handler;
+
