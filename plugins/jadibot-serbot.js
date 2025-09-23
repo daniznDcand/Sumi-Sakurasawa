@@ -28,6 +28,29 @@ if (global.conns instanceof Array) console.log()
 else global.conns = []
 
 
+
+function cleanPhoneNumber(phone) {
+  if (!phone) return null
+  
+  
+  let cleaned = phone.replace(/[^0-9]/g, '')
+  
+  
+  if (cleaned.length < 10) return null
+  
+
+  const countryCodes = ['1', '7', '20', '27', '30', '31', '32', '33', '34', '36', '39', '40', '41', '43', '44', '45', '46', '47', '48', '49', '51', '52', '53', '54', '55', '56', '57', '58', '60', '61', '62', '63', '64', '65', '66', '81', '82', '84', '86', '90', '91', '92', '93', '94', '95', '98', '212', '213', '216', '218', '220', '221', '222', '223', '224', '225', '226', '227', '228', '229', '230', '231', '232', '233', '234', '235', '236', '237', '238', '239', '240', '241', '242', '243', '244', '245', '246', '248', '249', '250', '251', '252', '253', '254', '255', '256', '257', '258', '260', '261', '262', '263', '264', '265', '266', '267', '268', '269', '290', '291', '297', '298', '299', '350', '351', '352', '353', '354', '355', '356', '357', '358', '359', '370', '371', '372', '373', '374', '375', '376', '377', '378', '380', '381', '382', '383', '385', '386', '387', '389', '420', '421', '423', '500', '501', '502', '503', '504', '505', '506', '507', '508', '509', '590', '591', '592', '593', '594', '595', '596', '597', '598', '599', '670', '672', '673', '674', '675', '676', '677', '678', '679', '680', '681', '682', '683', '684', '685', '686', '687', '688', '689', '690', '691', '692', '850', '852', '853', '855', '856', '880', '886', '960', '961', '962', '963', '964', '965', '966', '967', '968', '970', '971', '972', '973', '974', '975', '976', '977', '992', '993', '994', '995', '996', '998']
+  
+  
+  if (cleaned.length >= 10 && cleaned.length <= 15) {
+    console.log(`📱 Número limpiado: ${phone} -> ${cleaned}`)
+    return cleaned
+  }
+  
+  return null
+}
+
+
 const NOTIFY_COOLDOWN = 10 * 60 * 1000 
 function shouldNotifyUser(jid) {
   try {
@@ -44,6 +67,30 @@ function shouldNotifyUser(jid) {
     console.error('Error en shouldNotifyUser:', e)
     return true
   }
+}
+
+
+function cleanPhoneNumber(phone) {
+  if (!phone) return null
+  
+  
+  let cleaned = phone.replace(/[^0-9]/g, '')
+  
+  
+  if (cleaned.length < 10) return null
+  
+  
+  
+  
+  const countryCodes = ['1', '7', '20', '27', '30', '31', '32', '33', '34', '36', '39', '40', '41', '43', '44', '45', '46', '47', '48', '49', '51', '52', '53', '54', '55', '56', '57', '58', '60', '61', '62', '63', '64', '65', '66', '81', '82', '84', '86', '90', '91', '92', '93', '94', '95', '98', '212', '213', '216', '218', '220', '221', '222', '223', '224', '225', '226', '227', '228', '229', '230', '231', '232', '233', '234', '235', '236', '237', '238', '239', '240', '241', '242', '243', '244', '245', '246', '248', '249', '250', '251', '252', '253', '254', '255', '256', '257', '258', '260', '261', '262', '263', '264', '265', '266', '267', '268', '269', '290', '291', '297', '298', '299', '350', '351', '352', '353', '354', '355', '356', '357', '358', '359', '370', '371', '372', '373', '374', '375', '376', '377', '378', '380', '381', '382', '383', '385', '386', '387', '389', '420', '421', '423', '500', '501', '502', '503', '504', '505', '506', '507', '508', '509', '590', '591', '592', '593', '594', '595', '596', '597', '598', '599', '670', '672', '673', '674', '675', '676', '677', '678', '679', '680', '681', '682', '683', '684', '685', '686', '687', '688', '689', '690', '691', '692', '850', '852', '853', '855', '856', '880', '886', '960', '961', '962', '963', '964', '965', '966', '967', '968', '970', '971', '972', '973', '974', '975', '976', '977', '992', '993', '994', '995', '996', '998']
+  
+  
+  if (cleaned.length >= 10 && cleaned.length <= 15) {
+    console.log(`📱 Número limpiado: ${phone} -> ${cleaned}`)
+    return cleaned
+  }
+  
+  return null
 }
 
 let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
@@ -122,22 +169,34 @@ msgRetryCache,
 browser: mcode ? Browsers.macOS("Safari") : Browsers.ubuntu("Chrome"),
 version: version,
 generateHighQualityLinkPreview: true,
-keepAliveIntervalMs: 10000,
+
+keepAliveIntervalMs: 30000,  
 markOnlineOnConnect: true,
 syncFullHistory: false,
 fireInitQueries: false,
 shouldSyncHistoryMessage: () => false,
-connectTimeoutMs: 180000,
-defaultQueryTimeoutMs: 180000,
+connectTimeoutMs: 300000,     
+defaultQueryTimeoutMs: 300000, 
 emitOwnEvents: false,
-qrTimeout: 600000,
-retryRequestDelayMs: 2000,
-maxMsgRetryCount: 12,
-pairingCodeTimeout: 600000,
+qrTimeout: 900000,            
+retryRequestDelayMs: 5000,    
+maxMsgRetryCount: 20,         
+pairingCodeTimeout: 900000,   
+
 transactionOpts: {
-maxCommitRetries: 20,
-delayBetweenTriesMs: 3000
+maxCommitRetries: 30,         
+delayBetweenTriesMs: 5000     
 },
+
+options: {
+chatsCache: true,
+reconnectMode: 'on-connection-lost',
+reconnectDelay: 10000,        
+maxReconnectAttempts: 999,    
+backoffMaxDelay: 300000,      
+backoffMultiplier: 1.5,       
+},
+
 getMessage: async (key) => {
 if (store) {
 const msg = await store.loadMessage(key.remoteJid, key.id)
@@ -145,21 +204,31 @@ return msg?.message || undefined
 }
 return undefined
 },
-options: {
-chatsCache: true,
-reconnectMode: 'on-connection-lost',
-reconnectDelay: 5000
-}
+
+cacheVersion: 1,
+treatCiphertextMessagesAsReal: true,
+linkPreviewImageThumbnailWidth: 192,
+transactionTimeout: 60000,    
+waWebSocketUrl: undefined,    
+connectCooldownMs: 5000       
 };
 
 let sock = makeWASocket(connectionOptions)
 sock.isInit = false
 sock.well = false  
 sock.reconnectAttempts = 0
-sock.maxReconnectAttempts = maxReconnectAttempts
+sock.maxReconnectAttempts = 50  
 sock.lastActivity = Date.now()
 sock.sessionStartTime = sessionStartTime
 sock.subreloadHandler = (reload) => creloadHandler(reload)
+
+sock.isAlive = true
+sock.heartbeatInterval = null
+sock.sessionPersistence = true
+sock.autoReconnect = true
+sock.lastHeartbeat = Date.now()
+sock.maxInactiveTime = 3600000  
+sock.healthCheckInterval = 60000  
 
 
 function isSocketReady(s) {
@@ -180,18 +249,19 @@ console.log('🔧 SubBot socket creado con propiedades básicas')
 let isInit = true
 
 
+
 const attemptReconnect = async () => {
 if (sock.reconnectAttempts < sock.maxReconnectAttempts) {
 sock.reconnectAttempts++
 console.log(chalk.yellow(`🔄 Intento de reconexión ${sock.reconnectAttempts}/${sock.maxReconnectAttempts} para +${path.basename(pathMikuJadiBot)}`))
 
-    
+  
     try {
       sock._reconnectNotified = sock._reconnectNotified || false
       const notifyTo = (m && m.sender) ? m.sender : `${path.basename(pathMikuJadiBot)}@s.whatsapp.net`
       if (!sock._reconnectNotified && options.fromCommand && shouldNotifyUser(notifyTo) && isSocketReady(conn)) {
         try {
-          await conn.sendMessage(notifyTo, { text: `🔄 Reconectando SubBot +${path.basename(pathMikuJadiBot)}... Intento ${sock.reconnectAttempts}/${sock.maxReconnectAttempts}` }, { quoted: m }).catch(() => {})
+          await conn.sendMessage(notifyTo, { text: `🔄 Reconectando SubBot +${path.basename(pathMikuJadiBot)}... Intento ${sock.reconnectAttempts}/${sock.maxReconnectAttempts}\n⏰ *Tiempo de sesión:* ${msToTime(Date.now() - sock.sessionStartTime)}\n🔒 *Sesión persistente activada*` }, { quoted: m }).catch(() => {})
           sock._reconnectNotified = true
         } catch (e) {
           
@@ -202,42 +272,58 @@ console.log(chalk.yellow(`🔄 Intento de reconexión ${sock.reconnectAttempts}/
     }
 
 
-const baseWait = 10000 
-const exponentialBackoff = Math.min(5 * 60 * 1000, baseWait * Math.pow(2, sock.reconnectAttempts - 1))
-console.log(chalk.blue(`⏳ Esperando ${exponentialBackoff/1000}s antes de reconectar...`))
+const baseWait = 15000  
+const maxWait = 10 * 60 * 1000  
+const exponentialBackoff = Math.min(maxWait, baseWait * Math.pow(1.5, Math.min(sock.reconnectAttempts - 1, 10)))
+console.log(chalk.blue(`⏳ Esperando ${Math.round(exponentialBackoff/1000)}s antes de reconectar...`))
 await new Promise(resolve => setTimeout(resolve, exponentialBackoff))
 
 try {
 
 try {
-sock.ev.removeAllListeners()
-if (sock.ws && typeof sock.ws.close === 'function') {
-  sock.ws.close()
-}
+  if (sock.heartbeatInterval) {
+    clearInterval(sock.heartbeatInterval)
+    sock.heartbeatInterval = null
+  }
+  sock.ev.removeAllListeners()
+  if (sock.ws && typeof sock.ws.close === 'function') {
+    sock.ws.close()
+  }
+ 
+  await new Promise(resolve => setTimeout(resolve, 3000))
 } catch (e) {
   console.log('Error cerrando conexión anterior:', e.message)
 }
 
 
-await new Promise(resolve => setTimeout(resolve, 2000))
-
-
 const reconnectOptions = {
   ...connectionOptions,
-  connectTimeoutMs: 240000, 
-  defaultQueryTimeoutMs: 240000,
-  keepAliveIntervalMs: 8000, 
-  retryRequestDelayMs: 1500,
-  maxMsgRetryCount: 15
+  connectTimeoutMs: 360000,     
+  defaultQueryTimeoutMs: 360000, 
+  keepAliveIntervalMs: 45000,   
+  retryRequestDelayMs: 3000,    
+  maxMsgRetryCount: 25,         
+  qrTimeout: 1200000,           
+  pairingCodeTimeout: 1200000,  
+  options: {
+    ...connectionOptions.options,
+    reconnectDelay: 15000,      
+    maxReconnectAttempts: 999,  
+    backoffMaxDelay: 600000,    
+  }
 }
 
 sock = makeWASocket(reconnectOptions)
 sock.reconnectAttempts = reconnectAttempts
-sock.maxReconnectAttempts = maxReconnectAttempts
+sock.maxReconnectAttempts = 50 
 sock.lastActivity = Date.now()
 sock.sessionStartTime = sessionStartTime
 sock.isInit = false
 sock.well = false  
+sock.isAlive = true
+sock.sessionPersistence = true
+sock.autoReconnect = true
+sock.lastHeartbeat = Date.now()
 
 
 sock.prefix = global.prefix || '#'
@@ -245,7 +331,7 @@ sock.chats = sock.chats || {}
 sock.contacts = sock.contacts || {}
 sock.blocklist = sock.blocklist || []
 
-console.log(chalk.cyan('🔄 SubBot socket recreado con configuración optimizada'))
+console.log(chalk.cyan('🔄 SubBot socket recreado con configuración ultra-persistente'))
 
 
 sock.connectionUpdate = connectionUpdate.bind(sock)
@@ -254,16 +340,14 @@ sock.ev.on("connection.update", sock.connectionUpdate)
 sock.ev.on("creds.update", sock.credsUpdate)
 
 
-
 console.log('🔍 Reconexión - Verificando handler:', {
   handlerModule: !!handlerModule,
   hasHandler: !!(handlerModule && handlerModule.handler),
   handlerType: typeof (handlerModule && handlerModule.handler)
 })
 
-
 if (!(handlerModule && handlerModule.handler && typeof handlerModule.handler === 'function')) {
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 10; i++) {  
     try {
       const H = await import(`../handler.js?update=${Date.now()}`)
       if (H && H.handler && typeof H.handler === 'function') {
@@ -272,8 +356,8 @@ if (!(handlerModule && handlerModule.handler && typeof handlerModule.handler ===
         break
       }
     } catch (e) {
-      console.log(`Intento ${i+1}/5 de recargar handler falló`)
-      await new Promise(r => setTimeout(r, 2000))
+      console.log(`Intento ${i+1}/10 de recargar handler falló`)
+      await new Promise(r => setTimeout(r, 3000)) 
     }
   }
 }
@@ -285,16 +369,17 @@ if (handlerModule && handlerModule.handler && typeof handlerModule.handler === '
   console.log(chalk.green('✅ Handler reconfigurado en reconexión'))
 }
 
-console.log(chalk.green(`✅ Reconexión ${sock.reconnectAttempts} completada exitosamente`))
+console.log(chalk.green(`✅ Reconexión ${sock.reconnectAttempts} completada exitosamente - Sesión ultra-persistente activada`))
 return true
 } catch (error) {
 console.error(chalk.red(`❌ Error en reconexión ${sock.reconnectAttempts}: ${error.message}`))
 
-await new Promise(resolve => setTimeout(resolve, 5000))
+const errorWait = Math.min(60000, 10000 * sock.reconnectAttempts)
+await new Promise(resolve => setTimeout(resolve, errorWait))
 return false
 }
 }
-console.log(chalk.red(`❌ Máximo de reconexiones alcanzado (${sock.maxReconnectAttempts})`))
+console.log(chalk.red(`❌ Máximo de reconexiones alcanzado (${sock.maxReconnectAttempts}) - Sesión será terminada`))
 return false
 }
 
@@ -336,11 +421,13 @@ let attempts = 0
 const maxAttempts = 5
 
 
-phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
+phoneNumber = cleanPhoneNumber(phoneNumber)
 if (!phoneNumber || phoneNumber.length < 10) {
-  await m.reply(`❌ Error: Número de teléfono inválido. Use el comando desde su número de WhatsApp registrado.`)
+  await m.reply(`❌ Error: Número de teléfono inválido. Use el comando desde su número de WhatsApp registrado.\n\n*Número detectado:* +${(m && m.sender) ? m.sender.split('@')[0] : 'desconocido'}\n*Número limpiado:* ${phoneNumber || 'inválido'}\n\n*Nota:* Si su número incluye espacios o caracteres especiales, el sistema los eliminará automáticamente.`)
   return
 }
+
+console.log(chalk.cyan(`📱 Generando código para número limpiado: +${phoneNumber}`))
 
 while (!secret && attempts < maxAttempts) {
 try {
@@ -567,7 +654,7 @@ await endSesion(false)
   
   console.log(chalk.orange(`🔄 Método no permitido (405), reintentando con configuración conservadora...`))
   if (sock.reconnectAttempts < 5) {
-    await new Promise(resolve => setTimeout(resolve, 30000)) // Esperar 30s
+    await new Promise(resolve => setTimeout(resolve, 30000)) 
     const reconnected = await attemptReconnect()
     if (!reconnected) await endSesion(false)
   } else {
@@ -591,15 +678,32 @@ sock.lastActivity = Date.now()
 try { sock._reconnectNotified = false } catch (e) {}
 
 
+
 try {
   if (typeof saveCreds === 'function') {
     if (!sock._saveCredsInterval) {
       sock._saveCredsInterval = setInterval(() => {
-        try { saveCreds() } catch (e) {}
-      }, 1000 * 60 * 5) 
+        try { 
+          saveCreds()
+          console.log(chalk.blue(`💾 Credenciales guardadas para +${path.basename(pathMikuJadiBot)}`))
+        } catch (e) {
+          console.error(`Error guardando credenciales: ${e.message}`)
+        }
+      }, 1000 * 60 * 2)  
+    }
+    
+    
+    try {
+      saveCreds()
+      console.log(chalk.green(`💾 Credenciales guardadas inmediatamente para +${path.basename(pathMikuJadiBot)}`))
+    } catch (e) {
+      console.error(`Error en guardado inmediato: ${e.message}`)
     }
   }
-} catch (e) {}
+} catch (e) {
+  console.error('Error configurando guardado de credenciales:', e.message)
+}
+
 
 
 try {
@@ -607,6 +711,8 @@ try {
     sock._keepAliveInterval = setInterval(async () => {
       try {
         if (isSocketReady(sock)) {
+          
+          
           
           if (typeof sock.updatePresence === 'function') {
             await sock.updatePresence('available').catch(() => {})
@@ -618,22 +724,42 @@ try {
           }
           
           
+          if (typeof sock.sendPresenceUpdate === 'function') {
+            await sock.sendPresenceUpdate('available').catch(() => {})
+          }
+          
+          
           sock.lastActivity = Date.now()
+          sock.lastHeartbeat = Date.now()
           
           
           const now = Date.now()
-          if (!sock._lastHealthLog || (now - sock._lastHealthLog) > 5 * 60 * 1000) {
+          if (!sock._lastHealthLog || (now - sock._lastHealthLog) > 3 * 60 * 1000) {  // Cada 3 minutos
             const uptime = msToTime(now - sock.sessionStartTime)
-            console.log(chalk.green(`💚 SubBot +${path.basename(pathMikuJadiBot)} - Uptime: ${uptime}, Reconexiones: ${sock.reconnectAttempts}`))
+            const totalConns = global.conns.filter(c => c && c.user && isSocketReady(c)).length
+            console.log(chalk.green(`💚 SubBot +${path.basename(pathMikuJadiBot)} - Uptime: ${uptime}, Reconexiones: ${sock.reconnectAttempts}, Total activos: ${totalConns}`))
             sock._lastHealthLog = now
           }
+          
+          
+          const timeSinceLastHeartbeat = now - (sock.lastHeartbeat || now)
+          if (timeSinceLastHeartbeat > 120000) {  
+            console.log(chalk.yellow(`⚠️ Heartbeat retrasado para +${path.basename(pathMikuJadiBot)}: ${Math.round(timeSinceLastHeartbeat/1000)}s`))
+          }
+          
         } else {
           console.log(chalk.yellow(`⚠️ Socket no listo para +${path.basename(pathMikuJadiBot)}, estado: ${sock?.ws?.socket?.readyState}`))
+          
+         
+          if (sock.autoReconnect && sock.reconnectAttempts < sock.maxReconnectAttempts) {
+            console.log(chalk.cyan(`🔄 Iniciando reconexión automática por socket no listo...`))
+            setTimeout(() => attemptReconnect(), 5000)
+          }
         }
       } catch (e) {
         console.error(`Error en keep-alive para +${path.basename(pathMikuJadiBot)}:`, e.message)
       }
-    }, 15000) 
+    }, 20000)  
   }
 } catch (e) {
   console.error('Error configurando keep-alive:', e.message)
@@ -647,25 +773,73 @@ try {
         const now = Date.now()
         const inactiveTime = now - (sock.lastActivity || now)
         
-        
-        if (inactiveTime > 30 * 60 * 1000) {
+       
+        if (inactiveTime > sock.maxInactiveTime) {
           console.log(chalk.yellow(`⏰ SubBot +${path.basename(pathMikuJadiBot)} inactivo por ${msToTime(inactiveTime)}, reactivando...`))
           
           if (isSocketReady(sock)) {
-           
+            
             sock.updatePresence('available').catch(() => {})
+            if (typeof sock.sendPresenceUpdate === 'function') {
+              sock.sendPresenceUpdate('available').catch(() => {})
+            }
             sock.lastActivity = now
           } else {
-            console.log(chalk.red(`❌ Socket no responde después de inactividad, podría necesitar reconexión`))
+            console.log(chalk.red(`❌ Socket no responde después de inactividad, iniciando reconexión...`))
+            if (sock.autoReconnect) {
+              setTimeout(() => attemptReconnect(), 2000)
+            }
           }
         }
+        
+        
+        const sessionTime = now - sock.sessionStartTime
+        if (sessionTime > 24 * 60 * 60 * 1000) {  
+          console.log(chalk.blue(`🎉 SubBot +${path.basename(pathMikuJadiBot)} llevando ${msToTime(sessionTime)} activo - Sesión ultra-persistente funcionando!`))
+        }
+        
       } catch (e) {
         console.error('Error en monitor de inactividad:', e.message)
       }
-    }, 5 * 60 * 1000) 
+    }, 2 * 60 * 1000)  
   }
 } catch (e) {
   console.error('Error configurando monitor de inactividad:', e.message)
+}
+
+
+try {
+  if (!sock.heartbeatInterval) {
+    sock.heartbeatInterval = setInterval(() => {
+      try {
+        if (sock.isAlive && isSocketReady(sock)) {
+          sock.lastHeartbeat = Date.now()
+          
+          
+          if (typeof sock.query === 'function') {
+            sock.query({
+              tag: 'iq',
+              attrs: { type: 'get', xmlns: 'urn:xmpp:ping' }
+            }).catch(() => {})
+          }
+          
+        } else {
+          const timeSinceLastHeartbeat = Date.now() - (sock.lastHeartbeat || 0)
+          if (timeSinceLastHeartbeat > 300000) {  
+            console.log(chalk.red(`💔 Heartbeat perdido para +${path.basename(pathMikuJadiBot)}, marcando para reconexión...`))
+            sock.isAlive = false
+            if (sock.autoReconnect) {
+              setTimeout(() => attemptReconnect(), 1000)
+            }
+          }
+        }
+      } catch (e) {
+        console.error('Error en heartbeat personalizado:', e.message)
+      }
+    }, 60000)  
+  }
+} catch (e) {
+  console.error('Error configurando heartbeat personalizado:', e.message)
 }
 
 
