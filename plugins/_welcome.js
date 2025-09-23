@@ -54,7 +54,37 @@ export async function before(m, { conn, participants, groupMetadata }) {
     const sendSingleWelcome = async (jid, text, user, quoted) => {
       try {
         
-        const cleanRcanal = {
+        let ppBuffer = null
+        try {
+          const ppUrl = await conn.profilePictureUrl(user, 'image').catch(() => null)
+          if (ppUrl) {
+            const response = await fetch(ppUrl)
+            ppBuffer = await response.buffer()
+          }
+        } catch (e) {
+          console.log('Error obteniendo foto de perfil:', e)
+        }
+
+       
+        if (!ppBuffer) {
+          try {
+            const defaultResponse = await fetch('https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg')
+            ppBuffer = await defaultResponse.buffer()
+          } catch (e) {
+            ppBuffer = null
+          }
+        }
+
+       
+        console.log('📤 Enviando welcome con imagen GRANDE...')
+        await conn.sendMessage(jid, {
+          image: ppBuffer,
+          caption: text,
+          mentions: [user]
+        }, { quoted })
+
+        
+        const canalButton = {
           contextInfo: {
             externalAdReply: {
               showAdAttribution: true,
@@ -71,13 +101,12 @@ export async function before(m, { conn, participants, groupMetadata }) {
           }
         }
 
-       
-        console.log('📤 Enviando welcome - SOLO texto con botón del canal...')
+      
+        console.log('🎵 Enviando botón del canal por separado...')
         return await conn.sendMessage(jid, {
-          text: text,
-          mentions: [user],
-          ...cleanRcanal
-        }, { quoted })
+          text: '🎵 *¡Únete a nuestro canal oficial para más contenido de Miku!* 💙',
+          ...canalButton
+        })
 
       } catch (err) {
         console.log('sendSingleWelcome error:', err)
@@ -107,7 +136,7 @@ export async function before(m, { conn, participants, groupMetadata }) {
 🎶 ¡Que la música te acompañe siempre!`
 
       await sendSingleWelcome(m.chat, welcomeText, user, m)
-      console.log('✅ Single welcome message sent with Ver Canal button')
+      console.log('✅ Welcome: Imagen grande + botón canal separado enviados')
       return true
     }
 
@@ -128,7 +157,7 @@ export async function before(m, { conn, participants, groupMetadata }) {
 ✨ ¡Cuídate y hasta el próximo concierto!`
 
       await sendSingleWelcome(m.chat, byeText, user, m)
-      console.log('✅ Single goodbye message sent with Ver Canal button')
+      console.log('✅ Goodbye: Imagen grande + botón canal separado enviados')
       return true
     }
 
