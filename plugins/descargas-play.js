@@ -396,6 +396,42 @@ async function fetchFromApis(apis) {
 }
 
 
+async function getAud(url) {
+  const apis = [
+    { api: 'ZenzzXD', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
+    { api: 'ZenzzXD v2', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp3v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url }, 
+    { api: 'Vreden', endpoint: `${global.APIs.vreden.url}/api/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url },
+    { api: 'Delirius', endpoint: `${global.APIs.delirius.url}/download/ymp3?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url }
+  ]
+  return await fetchFromBackupApis(apis)
+}
+
+async function getVid(url) {
+  const apis = [
+    { api: 'ZenzzXD', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
+    { api: 'ZenzzXD v2', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp4v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
+    { api: 'Vreden', endpoint: `${global.APIs.vreden.url}/api/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url },
+    { api: 'Delirius', endpoint: `${global.APIs.delirius.url}/download/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url }
+  ]
+  return await fetchFromBackupApis(apis)
+}
+
+async function fetchFromBackupApis(apis) {
+  for (const { api, endpoint, extractor } of apis) {
+    try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 10000)
+      const res = await fetch(endpoint, { signal: controller.signal }).then(r => r.json())
+      clearTimeout(timeout)
+      const link = extractor(res)
+      if (link) return { url: link, api }
+    } catch (e) {}
+    await new Promise(resolve => setTimeout(resolve, 500))
+  }
+  return null
+}
+
+
 async function handleApiVideoResponse(response, apiType) {
   try {
     
@@ -451,6 +487,12 @@ async function getAudioUrl(url) {
     
     { api: 'Google-YT-v3', endpoint: `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${encodeURIComponent(url.split('v=')[1])}&key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY`, extractor: res => `https://www.googleapis.com/youtube/v3/captions/${res?.items?.[0]?.id}` },
     
+    
+    { api: 'ZenzzXD', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
+    { api: 'ZenzzXD v2', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp3v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url }, 
+    { api: 'Vreden', endpoint: `${global.APIs.vreden.url}/api/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url },
+    { api: 'Delirius', endpoint: `${global.APIs.delirius.url}/download/ymp3?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url },
+    
     { api: 'YT1S-Audio', endpoint: `https://yt1s.com/api/ajaxSearch/index`, 
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
       method: 'POST', 
@@ -501,6 +543,18 @@ async function getAudioUrl(url) {
   const result = await fetchFromApis(apis);
   if (result) return result;
   
+ 
+  try {
+    console.log('🔄 Trying backup APIs from getAud function...');
+    const backupResult = await getAud(url);
+    if (backupResult && backupResult.url) {
+      console.log(`✅ Backup API ${backupResult.api} succeeded`);
+      return backupResult.url;
+    }
+  } catch (error) {
+    console.error('❌ Backup APIs from getAud failed:', error.message);
+  }
+  
   
   try {
     console.log('🔄 Intentando método directo para audio como último recurso...');
@@ -521,6 +575,13 @@ async function getVideoUrl(url) {
   const apis = [
     
     { api: 'YTDL-Core-Video', endpoint: `https://ytdl-core.herokuapp.com/api/info?url=${encodeURIComponent(url)}`, extractor: res => res?.formats?.find(f => f.hasVideo && f.hasAudio)?.url },
+    
+    
+    { api: 'ZenzzXD', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
+    { api: 'ZenzzXD v2', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp4v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
+    { api: 'Vreden', endpoint: `${global.APIs.vreden.url}/api/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url },
+    { api: 'Delirius', endpoint: `${global.APIs.delirius.url}/download/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url },
+    
     { api: 'YT1S-Video', endpoint: `https://yt1s.com/api/ajaxSearch/index`, 
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
       method: 'POST', 
@@ -565,6 +626,18 @@ async function getVideoUrl(url) {
   
   const result = await fetchFromApis(apis);
   if (result) return result;
+  
+  
+  try {
+    console.log('🔄 Trying backup APIs from getVid function...');
+    const backupResult = await getVid(url);
+    if (backupResult && backupResult.url) {
+      console.log(`✅ Backup API ${backupResult.api} succeeded`);
+      return backupResult.url;
+    }
+  } catch (error) {
+    console.error('❌ Backup APIs from getVid failed:', error.message);
+  }
   
   
   try {
