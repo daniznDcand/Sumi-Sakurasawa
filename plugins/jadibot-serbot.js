@@ -425,10 +425,10 @@ sock.blocklist = sock.blocklist || []
 
 console.log(chalk.cyan('🔄 SubBot socket recreado con configuración ultra-persistente'))
 
-// 🛡️ Wrapper seguro para saveCreds con manejo de errores
+
 const safeSaveCreds = async () => {
   try {
-    if (sock._isBeingDeleted) return // 🚫 No guardar si se está eliminando
+    if (sock._isBeingDeleted) return 
     if (sock.ws && sock.ws.readyState === 1 && fs.existsSync(pathMikuJadiBot)) {
       await saveCreds()
     }
@@ -1411,10 +1411,10 @@ if (handlerModule && handlerModule.handler && typeof handlerModule.handler === '
   console.error('⚠️ Handler no disponible en creloadHandler, continuará sin procesar comandos hasta que se recargue')
 }
 
-// 🛡️ Wrapper seguro para saveCreds inicial con manejo de errores
+
 const safeSaveCredsInitial = async () => {
   try {
-    if (sock._isBeingDeleted) return // 🚫 No guardar si se está eliminando
+    if (sock._isBeingDeleted) return 
     if (sock.ws && sock.ws.readyState === 1 && fs.existsSync(pathMikuJadiBot)) {
       await saveCreds()
     }

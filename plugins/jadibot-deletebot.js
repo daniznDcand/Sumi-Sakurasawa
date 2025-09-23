@@ -123,10 +123,10 @@ async function deleteSubBot(bot, phoneNumber, m, conn, usedPrefix, silent = fals
   try {
     console.log(chalk.red(`🗑️ Eliminando SubBot +${phoneNumber}...`))
     
-    // 🚫 Marcar bot como siendo eliminado para evitar guardado de credenciales
+    
     bot._isBeingDeleted = true
     
-    // 🔄 Limpiar todos los intervalos
+    
     if (bot._keepAliveInterval) {
       clearInterval(bot._keepAliveInterval)
       bot._keepAliveInterval = null
@@ -148,15 +148,15 @@ async function deleteSubBot(bot, phoneNumber, m, conn, usedPrefix, silent = fals
       bot._presenceInterval = null
     }
 
-    // 🔒 Cerrar socket de manera segura para evitar errores de Baileys
+    
     try {
       if (bot.ws && typeof bot.ws.close === 'function') {
-        // Desactivar el auto-save de credenciales antes de cerrar
+        
         if (bot.saveCreds) {
-          bot.saveCreds = () => {} // Noop function
+          bot.saveCreds = () => {} 
         }
         if (bot.saveState) {
-          bot.saveState = () => {} // Noop function  
+          bot.saveState = () => {} 
         }
         bot.ws.close()
       }
