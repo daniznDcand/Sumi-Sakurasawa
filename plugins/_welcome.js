@@ -83,30 +83,11 @@ export async function before(m, { conn, participants, groupMetadata }) {
           mentions: [user]
         }, { quoted })
 
-        
-        const canalButton = {
-          contextInfo: {
-            externalAdReply: {
-              showAdAttribution: true,
-              title: '🎵 Canal Oficial Hatsune Miku',
-              body: 'Toca aquí para seguir nuestro canal',
-              mediaUrl: null,
-              description: null,
-              previewType: "PHOTO",
-              thumbnailUrl: global.icono || 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg',
-              sourceUrl: canalUrl,
-              mediaType: 1,
-              renderLargerThumbnail: false
-            }
-          }
-        }
-
       
-        console.log('🎵 Enviando botón del canal por separado...')
+        console.log('🎵 Enviando botón del canal con rcanal completo...')
         return await conn.sendMessage(jid, {
-          text: '🎵 *¡Únete a nuestro canal oficial para más contenido de Miku!* 💙',
-          ...canalButton
-        })
+          text: '🎵 *¡Únete a nuestro canal oficial para más contenido de Miku!* 💙'
+        }, { quoted, ...global.rcanal })
 
       } catch (err) {
         console.log('sendSingleWelcome error:', err)
