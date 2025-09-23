@@ -1,13 +1,10 @@
 const handler = async (m, { conn, usedPrefix, command, args }) => {
   
-  if (m.message && (m.text?.includes('menu') || command?.includes('menu'))) {
+  if (command && command.includes('menu')) {
     console.log('🔍 DEBUG MENU:', {
       command: command,
       text: m.text,
-      message: Object.keys(m.message || {}),
-      selectedId: m.message?.templateButtonReplyMessage?.selectedId || 
-                 m.message?.buttonsResponseMessage?.selectedButtonId ||
-                 m.message?.listResponseMessage?.singleSelectReply?.selectedRowId
+      message: Object.keys(m.message || {})
     })
   }
   
@@ -22,11 +19,9 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
   usedPrefix = '.'
 
   
-  const menuCommand = command || m.text || m.message?.templateButtonReplyMessage?.selectedId || 
-                     m.message?.buttonsResponseMessage?.selectedButtonId ||
-                     m.message?.listResponseMessage?.singleSelectReply?.selectedRowId || ''
+  const menuCommand = command || ''
   
- 
+  
   if (menuCommand && menuCommand.includes('menu')) {
     console.log('🎯 PROCESSING MENU:', menuCommand)
   }
@@ -309,7 +304,7 @@ Usa los botones de abajo o escribe el comando directamente.
 👏 \`.clap\` - Aplaudir
 🤮 \`.drunk\` - Estar borracho
 
-� ═══ *EMOCIONES* ═══ �
+🤣 ═══ *EMOCIONES* ═══ 😢
 😢 \`.cry\` - Llorar
 😞 \`.sad\` - Estar triste
 😠 \`.angry\` - Estar enojado
@@ -438,7 +433,6 @@ function clockString(ms) {
 handler.before = async function (m, { conn, usedPrefix }) {
   if (!m.message) return false
   
-
   let buttonId = null
   
   if (m.message.templateButtonReplyMessage) {
@@ -465,9 +459,15 @@ handler.before = async function (m, { conn, usedPrefix }) {
   
   if (buttonId && buttonId.startsWith('menu')) {
     console.log('🎯 BUTTON DETECTED:', buttonId)
-    m.text = buttonId
-    m.command = buttonId
-    return false 
+    
+    
+    try {
+      await handler(m, { conn, usedPrefix: '.', command: buttonId, args: [] })
+      return true 
+    } catch (error) {
+      console.log('❌ Error processing button:', error)
+      return false
+    }
   }
   
   return false
