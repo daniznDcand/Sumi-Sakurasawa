@@ -1,23 +1,23 @@
 import fetch from 'node-fetch';
 import yts from 'yt-search';
 
-
-const handler = async (m, { conn, text, usedPrefix, command }) => {
+// Función principal del comando play
+let handler = async (m, { conn, text, usedPrefix, command }) => {
   if (!text) {
     return m.reply(`❌ Por favor proporciona un término de búsqueda.\n\n*Ejemplo:* ${usedPrefix + command} despacito`);
   }
 
   try {
-    m.reply('🔍 Buscando en YouTube...');
+    await m.reply('🔍 Buscando en YouTube...');
     
     const search = await yts(text);
     
-    if (!search || !search.all || search.all.length === 0) {
+    if (!search || !search.videos || search.videos.length === 0) {
       return m.reply('No se encontraron resultados para tu búsqueda.');
     }
 
-    const videoInfo = search.all[0];
-    if (!videoInfo) {
+    const video = search.videos[0];
+    if (!video) {
       return m.reply('No se pudo obtener información del video.');
     }
 
@@ -29,7 +29,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       ago = 'Desconocido', 
       url = '', 
       author = { name: 'Desconocido' } 
-    } = videoInfo;
+    } = video;
 
     if (!url) {
       return m.reply('No se pudo obtener la URL del video.');
@@ -38,31 +38,20 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     const vistas = formatViews(views);
     const canal = author.name || 'Desconocido';
     
-    const buttons = [
-      ['🎵 MP3 (Audio)', 'ytdl_audio_mp3'],
-      ['🎬 MP4 (Video)', 'ytdl_video_mp4'],
-      ['📁 MP3 Documento', 'ytdl_audio_doc'],
-      ['📁 MP4 Documento', 'ytdl_video_doc']
-    ];
-    
-    const infoText = `*𖹭.╭╭ִ╼࣪━ִﮩ٨ـﮩ💙𝗠𝗶𝗸𝘂𝗺𝗶𝗻🌱ﮩ٨ـﮩ━ִ╾࣪╮╮.𖹭*
+    // Información del video
+    const infoText = `� *YOUTUBE PLAY*
 
-> 💙 *Título:* ${title}
-*°.⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸.°*
-> 🌱 *Duración:* ${timestamp}
-*°.⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸.°*
-> 💙 *Vistas:* ${vistas}
-*°.⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸.°*
-> 🌱 *Canal:* ${canal}
-*°.⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸.°*
-> 💙 *Publicado:* ${ago}
-*⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︢︣ۛ۫۫۫۫۫۫ۜ⏝ּׅ︢︣ۛ۫۫۫۫۫۫ۜ⏝ּׅ︢︣ۛ۫۫۫۫۫۫ۜ⏝ּׅ︢︣ۛ۫۫۫۫۫۫ۜ⏝ּׅ︢︣ׄۛ۫۫۫۫۫۫ۜ*
+� *Título:* ${title}
+⏰ *Duración:* ${timestamp}
+� *Vistas:* ${vistas}
+📢 *Canal:* ${canal}
+� *Publicado:* ${ago}
+
+🔗 *URL:* ${url}
 
 💌 *Selecciona el formato para descargar:*`;
 
-    const footer = '🌱 Hatsune Miku Bot - YouTube';
-
-    
+    // Guardar información en cache
     global.videoInfoCache = global.videoInfoCache || {};
     global.videoInfoCache[m.chat] = {
       url,
@@ -74,30 +63,21 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       publishedTime: ago
     };
 
-    try {
-      await conn.sendButton(
-        m.chat,
-        infoText,
-        footer,
-        thumbnail || null,
-        buttons,
-        m
-      );
-      
-    } catch (buttonError) {
-      console.log('Error enviando botones, usando mensaje alternativo:', buttonError);
-      
-      await conn.sendMessage(m.chat, {
-        image: { url: thumbnail },
-        caption: `${infoText}\n\n*Para descargar responde con:*\n• *audio* - Para MP3\n• *video* - Para MP4\n• *doc* - Para documento`
-      }, { quoted: m });
-    }
+    // Enviar información del video
+    await conn.sendMessage(m.chat, {
+      image: { url: thumbnail },
+      caption: infoText
+    }, { quoted: m });
+
+    // Enviar opciones de descarga
+    await m.reply('📱 *Opciones de descarga:*\n\n• Responde *audio* para MP3\n• Responde *video* para MP4\n• Responde *doc* para documento');
 
   } catch (error) {
     console.error('Error en play command:', error);
-    m.reply('❌ Ocurrió un error al buscar el video. Inténtalo de nuevo.');
+    await m.reply('❌ Ocurrió un error al buscar el video. Inténtalo de nuevo.');
   }
 };
+
 
 // Función para formatear vistas
 function formatViews(views) {
@@ -114,11 +94,11 @@ function formatViews(views) {
   return num.toString();
 }
 
-
+// Función simple para obtener audio
 async function getAudioUrl(url) {
   console.log('🔍 Buscando URL de audio para:', url);
   
-  
+  // API principal - neoxr.eu
   try {
     const response = await fetch(`https://api.neoxr.eu/api/youtube?url=${encodeURIComponent(url)}&type=audio&quality=128kbps&apikey=GataDios`);
     const data = await response.json();
@@ -131,7 +111,7 @@ async function getAudioUrl(url) {
     console.log('❌ Error con neoxr.eu:', error.message);
   }
   
-  
+  // API de respaldo - siputzx
   try {
     const response = await fetch(`https://api.siputzx.my.id/api/d/ytmp4?url=${encodeURIComponent(url)}`);
     const data = await response.json();
@@ -148,11 +128,11 @@ async function getAudioUrl(url) {
   return null;
 }
 
-
+// Función simple para obtener video
 async function getVideoUrl(url) {
   console.log('🔍 Buscando URL de video para:', url);
   
-  
+  // API principal - neoxr.eu
   try {
     const response = await fetch(`https://api.neoxr.eu/api/youtube?url=${encodeURIComponent(url)}&type=video&quality=720p&apikey=GataDios`);
     const data = await response.json();
@@ -165,7 +145,7 @@ async function getVideoUrl(url) {
     console.log('❌ Error con neoxr.eu:', error.message);
   }
   
-  
+  // API de respaldo - siputzx
   try {
     const response = await fetch(`https://api.siputzx.my.id/api/d/ytmp4?url=${encodeURIComponent(url)}`);
     const data = await response.json();
@@ -183,103 +163,9 @@ async function getVideoUrl(url) {
 }
 
 
+// Handler para respuestas de texto
 handler.before = async (m, { conn }) => {
-  
-  const buttonId = m.selectedButtonId || m.butt || m.selectedId || 
-                   (m.message?.buttonsResponseMessage?.selectedButtonId) ||
-                   (m.message?.templateButtonReplyMessage?.selectedId);
-  
-  if (buttonId && global.videoInfoCache?.[m.chat]) {
-    const chatInfo = global.videoInfoCache[m.chat];
-    const { url, title } = chatInfo;
-    
-    if (buttonId === 'ytdl_audio_mp3') {
-      try {
-        await m.reply('⬇️ Descargando audio...');
-        const audioUrl = await getAudioUrl(url);
-        
-        if (audioUrl) {
-          await conn.sendMessage(m.chat, {
-            audio: { url: audioUrl },
-            mimetype: 'audio/mpeg',
-            fileName: `${title}.mp3`
-          }, { quoted: m });
-        } else {
-          m.reply(`❌ No se pudo descargar el audio de: *${title}*\n\n🔗 *URL:* ${url}\n\n💌 Puedes intentar más tarde o usar esta URL en tu descargador favorito.`);
-        }
-      } catch (error) {
-        console.error('Error descargando audio:', error);
-        m.reply('❌ Error al descargar el audio.');
-      }
-      return false;
-    }
-    
-    if (buttonId === 'ytdl_video_mp4') {
-      try {
-        await m.reply('⬇️ Descargando video...');
-        const videoUrl = await getVideoUrl(url);
-        
-        if (videoUrl) {
-          await conn.sendMessage(m.chat, {
-            video: { url: videoUrl },
-            mimetype: 'video/mp4',
-            fileName: `${title}.mp4`,
-            caption: `🎬 *${title}*`
-          }, { quoted: m });
-        } else {
-          m.reply(`❌ No se pudo descargar el video de: *${title}*\n\n🔗 *URL:* ${url}\n\n💌 Puedes intentar más tarde o usar esta URL en tu descargador favorito.`);
-        }
-      } catch (error) {
-        console.error('Error descargando video:', error);
-        m.reply('❌ Error al descargar el video.');
-      }
-      return false;
-    }
-    
-    if (buttonId === 'ytdl_audio_doc') {
-      try {
-        await m.reply('⬇️ Descargando audio como documento...');
-        const audioUrl = await getAudioUrl(url);
-        
-        if (audioUrl) {
-          await conn.sendMessage(m.chat, {
-            document: { url: audioUrl },
-            mimetype: 'audio/mpeg',
-            fileName: `${title}.mp3`
-          }, { quoted: m });
-        } else {
-          m.reply(`❌ No se pudo descargar el audio de: *${title}*\n\n🔗 *URL:* ${url}\n\n💌 Puedes intentar más tarde o usar esta URL en tu descargador favorito.`);
-        }
-      } catch (error) {
-        console.error('Error descargando audio como documento:', error);
-        m.reply('❌ Error al descargar el audio como documento.');
-      }
-      return false;
-    }
-    
-    if (buttonId === 'ytdl_video_doc') {
-      try {
-        await m.reply('⬇️ Descargando video como documento...');
-        const videoUrl = await getVideoUrl(url);
-        
-        if (videoUrl) {
-          await conn.sendMessage(m.chat, {
-            document: { url: videoUrl },
-            mimetype: 'video/mp4',
-            fileName: `${title}.mp4`
-          }, { quoted: m });
-        } else {
-          m.reply(`❌ No se pudo descargar el video de: *${title}*\n\n🔗 *URL:* ${url}\n\n💌 Puedes intentar más tarde o usar esta URL en tu descargador favorito.`);
-        }
-      } catch (error) {
-        console.error('Error descargando video como documento:', error);
-        m.reply('❌ Error al descargar el video como documento.');
-      }
-      return false;
-    }
-  }
-  
-  
+  // Solo procesar si hay texto y hay un video en cache
   if (m.text && global.videoInfoCache?.[m.chat]) {
     const chatInfo = global.videoInfoCache[m.chat];
     const { url, title } = chatInfo;
@@ -296,6 +182,7 @@ handler.before = async (m, { conn }) => {
             mimetype: 'audio/mpeg',
             fileName: `${title}.mp3`
           }, { quoted: m });
+          await m.reply('✅ Audio enviado exitosamente');
         } else {
           await m.reply('❌ No se pudo descargar el audio');
         }
@@ -318,6 +205,7 @@ handler.before = async (m, { conn }) => {
             fileName: `${title}.mp4`,
             caption: `🎬 *${title}*`
           }, { quoted: m });
+          await m.reply('✅ Video enviado exitosamente');
         } else {
           await m.reply('❌ No se pudo descargar el video');
         }
@@ -339,6 +227,7 @@ handler.before = async (m, { conn }) => {
             mimetype: 'audio/mpeg',
             fileName: `${title}.mp3`
           }, { quoted: m });
+          await m.reply('✅ Documento enviado exitosamente');
         } else {
           await m.reply('❌ No se pudo descargar el documento');
         }
@@ -350,7 +239,7 @@ handler.before = async (m, { conn }) => {
     }
   }
   
-  return true; 
+  return true; // Permitir otros comandos
 };
 
 handler.command = handler.help = ['play'];
