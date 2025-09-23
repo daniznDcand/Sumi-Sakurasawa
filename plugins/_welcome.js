@@ -54,28 +54,6 @@ export async function before(m, { conn, participants, groupMetadata }) {
     const sendSingleWelcome = async (jid, text, user, quoted) => {
       try {
         
-        let ppBuffer = null
-        try {
-          const ppUrl = await conn.profilePictureUrl(user, 'image').catch(() => null)
-          if (ppUrl) {
-            const response = await fetch(ppUrl)
-            ppBuffer = await response.buffer()
-          }
-        } catch (e) {
-          console.log('Error obteniendo foto de perfil:', e)
-        }
-
-        
-        if (!ppBuffer) {
-          try {
-            const defaultResponse = await fetch('https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg')
-            ppBuffer = await defaultResponse.buffer()
-          } catch (e) {
-            ppBuffer = null
-          }
-        }
-
-        
         const cleanRcanal = {
           contextInfo: {
             externalAdReply: {
@@ -88,16 +66,15 @@ export async function before(m, { conn, participants, groupMetadata }) {
               thumbnailUrl: global.icono || 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg',
               sourceUrl: canalUrl,
               mediaType: 1,
-              renderLargerThumbnail: true
+              renderLargerThumbnail: false
             }
           }
         }
 
        
-        console.log('📤 Enviando welcome con rcanal limpio (sin newsletter)...')
+        console.log('📤 Enviando welcome - SOLO texto con botón del canal...')
         return await conn.sendMessage(jid, {
-          image: ppBuffer,
-          caption: text,
+          text: text,
           mentions: [user],
           ...cleanRcanal
         }, { quoted })
