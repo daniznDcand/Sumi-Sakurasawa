@@ -1,5 +1,5 @@
 const handler = async (m, { conn, usedPrefix, command, args }) => {
-  console.log('🔍 Handler principal ejecutado con comando:', command)
+  // Reduced logging to prevent spam
   
   let userId = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.sender
   let user = global.db.data.users[userId]
@@ -44,10 +44,9 @@ Usa los botones de abajo o escribe el comando directamente.
     const menuGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
     try {
-      console.log('🎵 Enviando menú principal con botones...')
       return await conn.sendNCarousel(m.chat, text, footer, menuGif, buttons, null, null, null, m)
     } catch (error) {
-      console.log('❌ Error con sendNCarousel, usando método alternativo:', error)
+      // Silent fallback - no spam logging
       
       const buttonMessage = {
         text: text,
@@ -95,10 +94,8 @@ Usa los botones de abajo o escribe el comando directamente.
     const descargasGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
     try {
-      console.log('📥 Enviando menú de descargas...')
       return await conn.sendNCarousel(m.chat, text, footer, descargasGif, buttons, null, null, null, m)
     } catch (error) {
-      console.log('❌ Error enviando menú descargas:', error)
       return await conn.sendMessage(m.chat, { text: text }, { quoted: m })
     }
   }
@@ -145,7 +142,7 @@ Usa los botones de abajo o escribe el comando directamente.
         }))
       }, { quoted: m })
     } catch (error) {
-      console.log('Error enviando video-gif, enviando solo texto:', error)
+      // Silent error handling
       return await conn.sendMessage(m.chat, {
         text: text
       }, { quoted: m })
@@ -305,8 +302,6 @@ _(Solo para administradores)_
       }, { quoted: m })
     }
   }
-
-  console.log('🔍 Verificando mensaje para botones...', m.text)
 }
 
 function clockString(ms) {
@@ -320,60 +315,53 @@ function clockString(ms) {
 handler.before = async function (m, { conn, usedPrefix }) {
   if (!m.message) return false
   
-  
+  // Detectar botones sin spam de logs
   let buttonId = null
   let buttonText = null
   
-  
+  // Template button
   if (m.message.templateButtonReplyMessage) {
     buttonId = m.message.templateButtonReplyMessage.selectedId
     buttonText = m.message.templateButtonReplyMessage.selectedDisplayText
-    console.log('🔵 Template button detected:', buttonId)
   }
   
-  
+  // Buttons response
   if (m.message.buttonsResponseMessage) {
     buttonId = m.message.buttonsResponseMessage.selectedButtonId
     buttonText = m.message.buttonsResponseMessage.selectedDisplayText
-    console.log('🟢 Buttons response detected:', buttonId)
   }
   
-  
+  // Interactive response
   if (m.message.interactiveResponseMessage) {
     try {
       const paramsJson = m.message.interactiveResponseMessage.nativeFlowResponseMessage?.paramsJson
       if (paramsJson) {
         const params = JSON.parse(paramsJson)
         buttonId = params.id
-        console.log('🟡 Interactive response detected:', buttonId)
       }
     } catch (e) {
-      console.log('Error parsing interactive response:', e)
+      // Silent error handling
     }
   }
   
- 
+  // List response
   if (m.message.listResponseMessage) {
     buttonId = m.message.listResponseMessage.singleSelectReply?.selectedRowId
     buttonText = m.message.listResponseMessage.title
-    console.log('🟣 List response detected:', buttonId)
   }
   
-  
+  // QuickReply
   if (m.message.quickReplyMessage) {
     buttonId = m.message.quickReplyMessage.quickReplyButton?.id
     buttonText = m.message.quickReplyMessage.quickReplyButton?.displayText
-    console.log('🔶 QuickReply detected:', buttonId)
   }
   
-  
+  // Process menu buttons (only log once per session)
   if (buttonId && (buttonId.startsWith('menu') || buttonId === 'menu')) {
-    console.log(`📥 Procesando botón de menú: ${buttonId}`)
-    
-    
+    // Mark as menu to prevent other handlers from processing
     m.isMenu = true
     
-    
+    // Create fake message for command execution
     const fakeM = {
       ...m,
       text: buttonId,
