@@ -2,6 +2,8 @@ import fetch from "node-fetch";
 import yts from 'yt-search';
 import axios from "axios";
 
+console.log('🔍 Plugin descargas-play.js cargado correctamente');
+
 const handler = async (m, { conn, text, usedPrefix, command }) => {
   let user = global.db.data.users[m.sender];
   
@@ -22,7 +24,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
   }
 
   if (user.moneda < 2) {
-    return conn.reply(m.chat, `💙 No tienes suficientes *Cebollines 🌱* Necesitas 2 más para usar este comando. Tienes: ${user.chocolates}`, m);
+    return conn.reply(m.chat, `💙 No tienes suficientes *Cebollines 🌱* Necesitas 2 más para usar este comando. Tienes: ${user.moneda}`, m);
   }
 
   try {
@@ -122,7 +124,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       await conn.reply(m.chat, infoMessage + '\n\n*Para descargar responde con:*\n• *audio* - Para MP3\n• *video* - Para MP4\n• *doc* - Para documento', m, JT);
     }
 
-    user.chocolates -= 2;
+    user.moneda -= 2;
     conn.reply(m.chat, `💙 Has utilizado 2 *Cebollines 🌱*`, m);
 
   } catch (error) {
@@ -399,6 +401,8 @@ async function fetchFromApis(apis) {
 
 handler.command = handler.help = ['play'];
 handler.tags = ['downloader'];
+
+console.log('🔍 Plugin .play registrado con comando:', handler.command);
 
 export default handler;
 
