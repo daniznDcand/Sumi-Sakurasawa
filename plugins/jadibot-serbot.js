@@ -28,6 +28,106 @@ if (global.conns instanceof Array) console.log()
 else global.conns = []
 
 
+const RESOURCE_LIMITS = {
+  MAX_RAM_MB: 2048,        
+  MAX_STORAGE_MB: 3072,    
+  MAX_SUBBOTS: 25,         
+  CLEANUP_INTERVAL: 30000, 
+  DELETE_TIMEOUT: 300000  
+}
+
+
+setInterval(async () => {
+  try {
+    if (!global.conns || global.conns.length === 0) return
+    
+    let cleaned = 0
+    const indicesToRemove = []
+    
+    for (let i = 0; i < global.conns.length; i++) {
+      const conn = global.conns[i]
+      if (!conn) {
+        indicesToRemove.push(i)
+        continue
+      }
+      
+     
+      if (conn._shouldDelete || 
+          (!conn.user || !conn.user.jid) ||
+          (conn.connectionStatus === 'close' && !conn.ws) ||
+          (conn.ws && conn.ws.socket && conn.ws.socket.readyState === 3)) { 
+        
+        const phoneNumber = conn.user?.jid ? cleanPhoneNumber(conn.user.jid) : 'unknown'
+        
+        
+        try {
+          if (conn.ws && typeof conn.ws.close === 'function') {
+            conn.ws.close()
+          }
+          if (conn.ev && typeof conn.ev.removeAllListeners === 'function') {
+            conn.ev.removeAllListeners()
+          }
+          // Limpiar intervalos
+          ['_keepAliveInterval', '_saveCredsInterval', '_inactivityMonitor', 'heartbeatInterval', '_presenceInterval'].forEach(interval => {
+            if (conn[interval]) {
+              clearInterval(conn[interval])
+              conn[interval] = null
+            }
+          })
+        } catch (e) {}
+        
+        indicesToRemove.push(i)
+        cleaned++
+        console.log(chalk.blue(`🗑️ Auto-eliminado SubBot +${phoneNumber} (conexión rota)`))
+      }
+    }
+    
+   
+    indicesToRemove.reverse().forEach(index => {
+      if (global.conns[index]) {
+        global.conns.splice(index, 1)
+      }
+    })
+    
+    if (cleaned > 0) {
+      console.log(chalk.green(`✅ Limpieza automática: ${cleaned} SubBots eliminados`))
+      
+      if (global.gc) {
+        global.gc()
+      }
+    }
+    
+  } catch (error) {
+    console.error('Error en limpieza automática:', error.message)
+  }
+}, RESOURCE_LIMITS.CLEANUP_INTERVAL)
+
+
+function checkResourceLimits() {
+  const activeConnections = global.conns.filter(c => c && c.user).length
+  
+  
+  if (activeConnections >= RESOURCE_LIMITS.MAX_SUBBOTS) {
+    console.log(chalk.yellow(`⚠️ Límite de SubBots alcanzado: ${activeConnections}/${RESOURCE_LIMITS.MAX_SUBBOTS}`))
+    return false
+  }
+  
+ 
+  try {
+    const jadiPath = path.join(process.cwd(), 'jadi')
+    if (fs.existsSync(jadiPath)) {
+      const stats = fs.statSync(jadiPath)
+      const sizeGB = stats.size / (1024 * 1024 * 1024)
+      if (sizeGB > 3) {
+        console.log(chalk.yellow(`⚠️ Almacenamiento alto: ${sizeGB.toFixed(2)}GB/3GB`))
+      }
+    }
+  } catch (e) {}
+  
+  return true
+}
+
+
 
 function cleanPhoneNumber(phone) {
   if (!phone) return null
@@ -158,6 +258,12 @@ handler.command = ['qr', 'code']
 export default handler 
 
 export async function mikuJadiBot(options) {
+
+if (!checkResourceLimits()) {
+  const { m, usedPrefix } = options
+  return m.reply(`🚫 *Límite de recursos alcanzado*\n\n📊 SubBots activos: ${global.conns.filter(c => c && c.user).length}/${RESOURCE_LIMITS.MAX_SUBBOTS}\n💾 Sistema optimizado para 2GB RAM / 3GB almacenamiento\n\n⏳ Espera a que se liberen recursos automáticamente\n💡 El sistema elimina SubBots inactivos cada 30 segundos`)
+}
+
 let { pathMikuJadiBot, m, conn, args, usedPrefix, command } = options
 if (command === 'code') {
 command = 'qr'; 
@@ -286,19 +392,18 @@ function isSocketReady(s) {
       return false
     }
     
-   
+  
     const now = Date.now()
     const connectionAge = now - (s.sessionStartTime || now)
     const isNewConnection = connectionAge < 120000 
     
-   
+    
     const hasWebSocket = s.ws && s.ws.socket
     const isOpen = hasWebSocket && s.ws.socket.readyState === 1 
     const hasUser = s.user && s.user.jid
     
     
     const hasBasicAuth = s.authState || s.user || isNewConnection
-    
     
     const isConnected = s.connectionStatus === 'open' || isOpen || 
                        s.connectionStatus === 'connecting' || isNewConnection
@@ -308,16 +413,30 @@ function isSocketReady(s) {
       (hasUser && (hasWebSocket || hasBasicAuth)) :  
       (hasWebSocket && isOpen && hasUser && hasBasicAuth) 
     
+   
+    if (!isReady && !isNewConnection && connectionAge > 300000) { 
+      s._shouldDelete = true
+      
+      if (!s._deleteMarked) {
+        console.log(`🗑️ MARCADO PARA ELIMINACIÓN: +${path.basename(s.user?.jid || 'unknown')} - ${Math.round(connectionAge/1000)}s roto`)
+        s._deleteMarked = true
+      }
+      return false
+    }
     
-    if (!isReady && !isNewConnection && (!s._lastErrorLog || (now - s._lastErrorLog) > 45000)) {
+    
+    if (!isReady && !isNewConnection && (!s._lastErrorLog || (now - s._lastErrorLog) > 120000)) {
       const status = s.connectionStatus || 'undefined'
       const wsState = hasWebSocket ? s.ws.socket.readyState : 'no-ws'
       const userJid = hasUser ? 'has-user' : 'no-user'
       const authStatus = s.authState ? 'has-auth' : 'no-auth'
       const age = Math.round(connectionAge / 1000)
       
-      console.log(`⚠️ Socket no listo para +${path.basename(pathMikuJadiBot)} (${age}s): estado=${status}, ws=${wsState}, user=${userJid}, auth=${authStatus}`)
-      s._lastErrorLog = now
+     
+      if (!s._shouldDelete) {
+        console.log(`⚠️ Socket no listo para +${path.basename(s.user?.jid || 'unknown')} (${age}s): estado=${status}, ws=${wsState}, user=${userJid}, auth=${authStatus}`)
+        s._lastErrorLog = now
+      }
     }
     
     return isReady
@@ -824,6 +943,7 @@ try {
 
 
 
+
 try {
   if (!sock._keepAliveInterval) {
     sock._keepAliveInterval = setInterval(async () => {
@@ -831,8 +951,19 @@ try {
         const now = Date.now()
         const timeSinceLastActivity = now - (sock.lastActivity || now)
         
-        if (isSocketReady(sock)) {
         
+        const memUsage = Math.round(process.memoryUsage().heapUsed / 1024 / 1024)
+        const ramPerBot = Math.round(RESOURCE_LIMITS.MAX_RAM_MB / Math.max(global.conns.length, 1))
+        
+        
+        if (memUsage > RESOURCE_LIMITS.MAX_RAM_MB * 0.9) { 
+          console.log(chalk.red(`⚠️ RAM crítica: ${memUsage}MB - Marcando SubBot para limpieza`))
+          sock._shouldDelete = true
+          return
+        }
+        
+        if (isSocketReady(sock)) {
+          
           if (timeSinceLastActivity > 60000) { 
             if (typeof sock.ws?.ping === 'function') {
               const pingStart = Date.now()
@@ -1174,15 +1305,16 @@ sock.lastActivity = Date.now()
 
 
 
+
 setInterval(async () => {
 const currentTime = Date.now()
-const cleanupThreshold = 45 * 60 * 1000 
-const connectionAgeThreshold = 5 * 60 * 1000 
+const instantCleanupThreshold = 60000 
+const connectionAgeThreshold = 120000 
 
 try {
   if (!global.conns || global.conns.length === 0) return
   
-
+ 
   const indicesToRemove = []
   
   for (let index = 0; index < global.conns.length; index++) {
@@ -1199,21 +1331,21 @@ try {
     const inactiveTime = currentTime - lastActivity
     
     
-    const shouldCleanup = (
+    const shouldInstantCleanup = (
       
       (!conn.user || !conn.user.jid) ||
       
-      (!isSocketReady(conn) && connectionAge > connectionAgeThreshold) ||
+      conn._shouldDelete ||
       
-      (inactiveTime > cleanupThreshold && connectionAge > connectionAgeThreshold)
+      (conn.ws && conn.ws.socket && conn.ws.socket.readyState === 3 && inactiveTime > instantCleanupThreshold) ||
+      
+      (conn.connectionStatus === undefined && inactiveTime > instantCleanupThreshold) ||
+      
+      (!isSocketReady(conn) && connectionAge > connectionAgeThreshold && inactiveTime > instantCleanupThreshold)
     )
     
-    if (shouldCleanup) {
-      console.log(chalk.yellow(`🧹 Programando limpieza de SubBot en índice ${index}:`))
-      console.log(chalk.yellow(`   📱 JID: ${conn.user?.jid || 'sin JID'}`))
-      console.log(chalk.yellow(`   ⏰ Edad: ${msToTime(connectionAge)}`))
-      console.log(chalk.yellow(`   😴 Inactivo: ${msToTime(inactiveTime)}`))
-      console.log(chalk.yellow(`   🔌 Socket: ${isSocketReady(conn) ? 'OK' : 'NO READY'}`))
+    if (shouldInstantCleanup) {
+      const phoneNumber = conn.user?.jid ? cleanPhoneNumber(conn.user.jid) : 'unknown'
       
       
       try { 
@@ -1229,34 +1361,32 @@ try {
       } catch (e) {}
       
       indicesToRemove.push(index)
+      
+      
+      console.log(chalk.blue(`💙 Auto-limpieza: +${phoneNumber} (${Math.round(inactiveTime/1000)}s inactivo)`))
     }
   }
   
   
   if (indicesToRemove.length > 0) {
-    console.log(chalk.blue(`🗑️ Limpiando ${indicesToRemove.length} conexiones inválidas`))
-    
     indicesToRemove.reverse().forEach(i => {
       if (global.conns[i]) {
-        console.log(chalk.blue(`   ❌ Removida conexión en índice ${i}`))
-        delete global.conns[i]
         global.conns.splice(i, 1)
       }
     })
     
-   
-    if (global.gc) {
+    
+    if (global.gc && indicesToRemove.length > 3) {
       global.gc()
-      console.log(chalk.green('♻️ Garbage collection ejecutado'))
+      console.log(chalk.green(`♻️ Memoria liberada tras limpiar ${indicesToRemove.length} conexiones`))
     }
-  } else {
-    console.log(chalk.green(`✅ Todas las ${global.conns.length} conexiones están saludables`))
   }
   
 } catch (error) {
-  console.error(`❌ Error en monitor de limpieza: ${error.message}`)
+  console.error(`❌ Error en limpieza optimizada: ${error.message}`)
 }
-}, 3 * 60 * 1000) 
+}, 30000)
+
 
 setInterval(() => {
   try {
