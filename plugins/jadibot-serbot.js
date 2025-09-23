@@ -73,6 +73,62 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
 if (!globalThis.db.data.settings[conn.user.jid].jadibotmd) {
 return m.reply(`💙 El Comando *${command}* está desactivado temporalmente.`)
 }
+
+
+const MAX_CONNECTIONS = 25 
+const MAX_CONNECTIONS_PER_USER = 2 
+const MEMORY_LIMIT_MB = 1000 
+
+try {
+  
+  const memUsage = Math.round(process.memoryUsage().heapUsed / 1024 / 1024)
+  const activeConnections = global.conns.filter(c => c && c.user && isSocketReady(c)).length
+  
+  console.log(`🔍 Estado del servidor: ${activeConnections}/${MAX_CONNECTIONS} conexiones, ${memUsage}MB RAM`)
+  
+  
+  if (memUsage > MEMORY_LIMIT_MB) {
+    console.log(chalk.red(`⚠️ Memoria crítica: ${memUsage}MB - Rechazando nueva conexión`))
+    return m.reply(`🚫 *Servidor en alta demanda*\n\n⚠️ El servidor está utilizando ${memUsage}MB de RAM\n🔄 Intenta crear tu SubBot en unos minutos cuando los recursos se liberen.\n\n💡 *Tip:* Los SubBots existentes tienen prioridad de recursos.`)
+  }
+  
+  
+  if (activeConnections >= MAX_CONNECTIONS) {
+    console.log(chalk.red(`⚠️ Límite de conexiones alcanzado: ${activeConnections}/${MAX_CONNECTIONS}`))
+    return m.reply(`🚫 *Límite de conexiones alcanzado*\n\n📊 Conexiones activas: ${activeConnections}/${MAX_CONNECTIONS}\n⏳ Espera a que se liberen recursos o intenta más tarde.\n\n💡 *Tip:* El sistema da prioridad a mantener las conexiones existentes estables.`)
+  }
+  
+  
+  const userPhone = cleanPhoneNumber(m.sender)
+  if (userPhone) {
+    const userConnections = global.conns.filter(c => 
+      c && c.user && isSocketReady(c) && 
+      c.user.jid && cleanPhoneNumber(c.user.jid) === userPhone
+    ).length
+    
+    if (userConnections >= MAX_CONNECTIONS_PER_USER) {
+      console.log(chalk.yellow(`⚠️ Usuario ${userPhone} ya tiene ${userConnections} SubBots activos`))
+      return m.reply(`🚫 *Límite por usuario alcanzado*\n\n👤 Ya tienes ${userConnections}/${MAX_CONNECTIONS_PER_USER} SubBots activos\n📱 Desconecta un SubBot existente antes de crear uno nuevo.\n\n💡 *Comando:* ${usedPrefix}stop para desconectar un SubBot.`)
+    }
+  }
+  
+  
+  let cleanedCount = 0
+  global.conns = global.conns.filter(c => {
+    if (!c || !c.user || !isSocketReady(c)) {
+      cleanedCount++
+      return false
+    }
+    return true
+  })
+  
+  if (cleanedCount > 0) {
+    console.log(chalk.blue(`🧹 ${cleanedCount} conexiones muertas eliminadas antes de crear nueva`))
+  }
+  
+} catch (error) {
+  console.error('Error en gestión de conexiones:', error.message)
+}
 let time = global.db.data.users[m.sender].Subs + 120000
 if (new Date - global.db.data.users[m.sender].Subs < 120000) return conn.reply(m.chat, `⏱️ Debes esperar ${msToTime(time - new Date())} para volver a vincular un *Sub-Bot.*`, m)
 const subBots = [...new Set([...global.conns.filter((conn) => conn.user && conn.ws.socket && conn.ws.socket.readyState !== ws.CLOSED).map((conn) => conn)])]
@@ -144,50 +200,63 @@ msgRetry,
 msgRetryCache,
 browser: mcode ? Browsers.macOS("Safari") : Browsers.ubuntu("Chrome"),
 version: version,
-generateHighQualityLinkPreview: true,
+generateHighQualityLinkPreview: false, 
 
-keepAliveIntervalMs: 30000,  
-markOnlineOnConnect: true,
+
+keepAliveIntervalMs: 45000,  
+markOnlineOnConnect: false, 
 syncFullHistory: false,
 fireInitQueries: false,
 shouldSyncHistoryMessage: () => false,
-connectTimeoutMs: 300000,     
-defaultQueryTimeoutMs: 300000, 
+connectTimeoutMs: 200000,    
+defaultQueryTimeoutMs: 200000, 
 emitOwnEvents: false,
-qrTimeout: 900000,            
-retryRequestDelayMs: 5000,    
-maxMsgRetryCount: 20,         
-pairingCodeTimeout: 900000,   
+qrTimeout: 600000,            
+retryRequestDelayMs: 8000,    
+maxMsgRetryCount: 10,         
+pairingCodeTimeout: 600000,   
+
 
 transactionOpts: {
-maxCommitRetries: 30,         
-delayBetweenTriesMs: 5000     
+maxCommitRetries: 15,        
+delayBetweenTriesMs: 8000    
 },
 
+
 options: {
-chatsCache: true,
+chatsCache: false,            
 reconnectMode: 'on-connection-lost',
-reconnectDelay: 10000,        
-maxReconnectAttempts: 999,    
-backoffMaxDelay: 300000,      
-backoffMultiplier: 1.5,       
+reconnectDelay: 15000,       
+maxReconnectAttempts: 25,     
+backoffMaxDelay: 180000,      
+backoffMultiplier: 1.3,       
 },
 
 getMessage: async (key) => {
-if (store) {
+
+if (store && Object.keys(store.chats || {}).length < 500) {
 const msg = await store.loadMessage(key.remoteJid, key.id)
 return msg?.message || undefined
 }
 return undefined
 },
 
+
 cacheVersion: 1,
 treatCiphertextMessagesAsReal: true,
-linkPreviewImageThumbnailWidth: 192,
-transactionTimeout: 60000,    
+linkPreviewImageThumbnailWidth: 96,   
+transactionTimeout: 45000,           
 waWebSocketUrl: undefined,    
-connectCooldownMs: 5000       
+connectCooldownMs: 8000,              
+defaultConnectionTimeout: 30000,      
+maxQueryResponseTime: 20000,          
+enableAutoHistorySync: false,         
 };
+
+
+if (connectionOptions.auth?.keys) {
+  connectionOptions.auth.keys.maxCacheSize = 1000 
+}
 
 let sock = makeWASocket(connectionOptions)
 sock.isInit = false
@@ -209,8 +278,30 @@ sock.healthCheckInterval = 60000
 
 function isSocketReady(s) {
   try {
-    return !!(s && s.ws && s.ws.socket && s.ws.socket.readyState === ws.OPEN)
+    if (!s) {
+      console.log('⚠️ Socket is null/undefined')
+      return false
+    }
+    
+    
+    const hasWebSocket = s.ws && s.ws.socket
+    const isOpen = hasWebSocket && s.ws.socket.readyState === ws.OPEN
+    const hasUser = s.user && s.user.jid
+    const hasAuthState = s.authState && s.authState.creds
+    const isConnected = s.connectionStatus === 'open' || isOpen
+    
+    const isReady = hasWebSocket && isOpen && hasUser && hasAuthState && isConnected
+    
+    if (!isReady) {
+      const status = s.connectionStatus || 'undefined'
+      const wsState = hasWebSocket ? s.ws.socket.readyState : 'no-ws'
+      const userJid = hasUser ? 'has-user' : 'no-user'
+      console.log(`⚠️ Socket no listo: estado=${status}, ws=${wsState}, user=${userJid}`)
+    }
+    
+    return isReady
   } catch (e) {
+    console.log('⚠️ Error verificando estado del socket:', e.message)
     return false
   }
 }
@@ -686,56 +777,85 @@ try {
   if (!sock._keepAliveInterval) {
     sock._keepAliveInterval = setInterval(async () => {
       try {
+        const now = Date.now()
+        const timeSinceLastActivity = now - (sock.lastActivity || now)
+        
         if (isSocketReady(sock)) {
-          
-          
-          
-          if (typeof sock.updatePresence === 'function') {
-            await sock.updatePresence('available').catch(() => {})
+        
+          if (timeSinceLastActivity > 60000) { 
+            if (typeof sock.ws?.ping === 'function') {
+              const pingStart = Date.now()
+              try {
+                await sock.ws.ping()
+                const pingTime = Date.now() - pingStart
+                sock.lastPingTime = pingTime
+                
+                if (pingTime > 5000) {
+                  console.log(chalk.yellow(`⚠️ Ping lento: ${pingTime}ms para +${path.basename(pathMikuJadiBot)}`))
+                }
+              } catch (pingError) {
+                console.log(chalk.red(`❌ Ping falló para +${path.basename(pathMikuJadiBot)}: ${pingError.message}`))
+                
+                sock._shouldReconnect = true
+              }
+            }
           }
           
           
-          if (typeof sock.ws?.ping === 'function') {
-            sock.ws.ping().catch(() => {})
+          if (!sock._lastPresenceUpdate || (now - sock._lastPresenceUpdate) > 120000) {
+            if (typeof sock.updatePresence === 'function') {
+              await sock.updatePresence('available').catch(() => {})
+              sock._lastPresenceUpdate = now
+            }
           }
           
           
-          if (typeof sock.sendPresenceUpdate === 'function') {
-            await sock.sendPresenceUpdate('available').catch(() => {})
-          }
+          sock.lastActivity = now
+          sock.lastHeartbeat = now
           
           
-          sock.lastActivity = Date.now()
-          sock.lastHeartbeat = Date.now()
-          
-          
-          const now = Date.now()
-          if (!sock._lastHealthLog || (now - sock._lastHealthLog) > 3 * 60 * 1000) {  // Cada 3 minutos
+          if (!sock._lastHealthLog || (now - sock._lastHealthLog) > 5 * 60 * 1000) {  
             const uptime = msToTime(now - sock.sessionStartTime)
             const totalConns = global.conns.filter(c => c && c.user && isSocketReady(c)).length
-            console.log(chalk.green(`💚 SubBot +${path.basename(pathMikuJadiBot)} - Uptime: ${uptime}, Reconexiones: ${sock.reconnectAttempts}, Total activos: ${totalConns}`))
+            const memUsage = Math.round(process.memoryUsage().heapUsed / 1024 / 1024)
+            const pingInfo = sock.lastPingTime ? `${sock.lastPingTime}ms` : 'N/A'
+            
+            console.log(chalk.green(`💚 SubBot +${path.basename(pathMikuJadiBot)} - Uptime: ${uptime}, Ping: ${pingInfo}, Memoria: ${memUsage}MB, Activos: ${totalConns}`))
             sock._lastHealthLog = now
           }
           
           
-          const timeSinceLastHeartbeat = now - (sock.lastHeartbeat || now)
-          if (timeSinceLastHeartbeat > 120000) {  
-            console.log(chalk.yellow(`⚠️ Heartbeat retrasado para +${path.basename(pathMikuJadiBot)}: ${Math.round(timeSinceLastHeartbeat/1000)}s`))
+          const wsState = sock.ws?.socket?.readyState
+          if (wsState !== ws.OPEN && wsState !== undefined) {
+            console.log(chalk.yellow(`⚠️ WebSocket en estado no óptimo: ${wsState} para +${path.basename(pathMikuJadiBot)}`))
+            sock._shouldReconnect = true
           }
           
         } else {
-          console.log(chalk.yellow(`⚠️ Socket no listo para +${path.basename(pathMikuJadiBot)}, estado: ${sock?.ws?.socket?.readyState}`))
+          const status = sock?.connectionStatus || 'undefined'
+          const wsState = sock?.ws?.socket?.readyState || 'no-ws'
+          console.log(chalk.yellow(`⚠️ Socket no listo para +${path.basename(pathMikuJadiBot)}, estado: ${status}, ws: ${wsState}`))
           
-         
+          
           if (sock.autoReconnect && sock.reconnectAttempts < sock.maxReconnectAttempts) {
             console.log(chalk.cyan(`🔄 Iniciando reconexión automática por socket no listo...`))
-            setTimeout(() => attemptReconnect(), 5000)
+            sock._shouldReconnect = true
+            setTimeout(() => attemptReconnect(), 2000) 
           }
         }
+        
+       
+        if (sock._shouldReconnect && sock.autoReconnect) {
+          sock._shouldReconnect = false
+          setTimeout(() => attemptReconnect(), 1000)
+        }
+        
       } catch (e) {
         console.error(`Error en keep-alive para +${path.basename(pathMikuJadiBot)}:`, e.message)
+        
+        sock._shouldReconnect = true
       }
-    }, 20000)  
+    }, 15000)  
   }
 } catch (e) {
   console.error('Error configurando keep-alive:', e.message)
@@ -1028,6 +1148,83 @@ try {
   console.error(`Error en monitor de limpieza: ${error.message}`)
 }
 }, 2 * 60 * 1000) 
+
+setInterval(() => {
+  try {
+    
+    if (sock && sock.msgRetryCache) {
+      const cacheKeys = Object.keys(sock.msgRetryCache)
+      const now = Date.now()
+      let cleanedCount = 0
+      
+      cacheKeys.forEach(key => {
+        const entry = sock.msgRetryCache[key]
+        if (entry && entry.timestamp && (now - entry.timestamp) > 600000) { 
+          delete sock.msgRetryCache[key]
+          cleanedCount++
+        }
+      })
+      
+      if (cleanedCount > 0) {
+        console.log(`🧹 Caché limpiado: ${cleanedCount} entradas eliminadas`)
+      }
+    }
+    
+    
+    if (sock && sock.chats) {
+      const chatKeys = Object.keys(sock.chats)
+      const chatCount = chatKeys.length
+      
+      if (chatCount > 1000) { 
+        console.log(`🧹 Limpiando chats: ${chatCount} chats en memoria`)
+        
+        const sortedChats = chatKeys.map(key => ({
+          key,
+          lastMessageTime: sock.chats[key]?.lastMessageTime || 0
+        })).sort((a, b) => b.lastMessageTime - a.lastMessageTime)
+        
+        
+        const toDelete = sortedChats.slice(500)
+        toDelete.forEach(chat => {
+          delete sock.chats[chat.key]
+        })
+        
+        console.log(`🧹 ${toDelete.length} chats antiguos eliminados de memoria`)
+      }
+    }
+    
+    
+    if (global.gc && typeof global.gc === 'function') {
+      global.gc()
+      console.log('🧠 Garbage collection ejecutado')
+    }
+    
+    
+    const memUsage = process.memoryUsage()
+    const memMB = Math.round(memUsage.heapUsed / 1024 / 1024)
+    
+    if (memMB > 500) { 
+      console.log(`⚠️ Alto uso de memoria: ${memMB}MB - Ejecutando limpieza agresiva`)
+      
+      
+      if (sock && sock.contacts) {
+        const contactKeys = Object.keys(sock.contacts)
+        if (contactKeys.length > 2000) {
+          
+          const importantContacts = {}
+          contactKeys.slice(0, 1000).forEach(key => {
+            importantContacts[key] = sock.contacts[key]
+          })
+          sock.contacts = importantContacts
+          console.log(`🧹 ${contactKeys.length - 1000} contactos eliminados de memoria`)
+        }
+      }
+    }
+    
+  } catch (error) {
+    console.error('Error en gestión de memoria:', error.message)
+  }
+}, 5 * 60 * 1000) 
 
 let handlerModule = await import('../handler.js')
 let creloadHandler = async function (restatConn) {
