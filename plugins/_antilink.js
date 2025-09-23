@@ -165,7 +165,7 @@ export async function before(m, { conn, isAdmin, isBotAdmin }) {
           
           await conn.reply(
             m.chat,
-            `💙 ¡Ara ara! @${userNumber} ha sido expulsado del escenario virtual por enviar enlaces de WhatsApp! 💙🎤\n\n🎵 ¡En el mundo de Miku no permitimos enlaces de grupos/canales!\n\n🔗 Enlaces detectados: ${linkDetection.foundLinks.join(', ')}`,
+            `💙 ¡Ara ara! @${userNumber} ha sido expulsado del escenario virtual por enviar enlaces de WhatsApp! 💙🎤\n\n🎵 ¡En el mundo de Miku no permitimos enlaces de grupos/canales!`,
             m,
             { mentions: [m.sender] }
           )
@@ -213,7 +213,7 @@ export async function before(m, { conn, isAdmin, isBotAdmin }) {
           
           await conn.reply(
             m.chat,
-            `💙 ¡Ara ara! @${userNumber} ha sido expulsado del escenario virtual por enviar enlaces prohibidos! 💙🎤\n\n🎵 ¡En el mundo de Miku no permitimos enlaces de ningún tipo!\n\n🔗 Enlaces detectados: ${linkDetection.foundLinks.join(', ')}`,
+            `💙 ¡Ara ara! @${userNumber} ha sido expulsado del escenario virtual por enviar enlaces prohibidos! 💙🎤\n\n🎵 ¡En el mundo de Miku no permitimos enlaces de ningún tipo!`,
             m,
             { mentions: [m.sender] }
           )
