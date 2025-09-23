@@ -15,8 +15,9 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
     const buttons = [
       ['📥 Descargas', 'menu_descargas'],
       ['🛠️ Herramientas', 'menu_herramientas'],
+      ['🔍 Buscadores', 'menu_buscadores'],
       ['🎮 Juegos', 'menu_juegos'],
-      ['🎌 Anime & Reacciones', 'menu_anime'],
+      ['🎌 Anime', 'menu_anime'],
       ['👥 Grupos', 'menu_grupos'],
       ['ℹ️ Info Bot', 'menu_info']
     ]
@@ -46,7 +47,7 @@ Usa los botones de abajo o escribe el comando directamente.
     try {
       return await conn.sendNCarousel(m.chat, text, footer, menuGif, buttons, null, null, null, m)
     } catch (error) {
-      // Silent fallback - no spam logging
+      
       
       const buttonMessage = {
         text: text,
@@ -72,20 +73,31 @@ Usa los botones de abajo o escribe el comando directamente.
     const text = `📥 *MENÚ DE DESCARGAS*
 
 🎵 ═══ *MÚSICA Y VIDEOS* ═══ 🎵
-🎼 \`.play [nombre]\` - YouTube Music
-🎥 \`.ytmp3 [url]\` - YouTube a MP3
-📹 \`.ytmp4 [url]\` - YouTube a MP4
+🎼 \`.play [nombre]\` - YouTube Music/Video
+🛒 \`.spotify [nombre]\` - Spotify Music
+🔗 \`.mp3 [url]\` - URL a MP3
+🎞 \`.mp4 [url]\` - URL a MP4
 
 📱 ═══ *REDES SOCIALES* ═══ 📱
 🎬 \`.tiktok [url]\` - Videos TikTok
-📸 \`.instagram [url]\` - Posts IG
-💙 \`.facebook [url]\` - Videos FB
-🐦 \`.twitter [url]\` - Videos Twitter
+🎵 \`.tiktokmp3 [url]\` - TikTok Audio
+📸 \`.tiktokimg [url]\` - TikTok Imágenes
+🔄 \`.ttrandom\` - TikTok Random
+📸 \`.instagram [url]\` - Posts/Reels IG
+💙 \`.facebook [url]\` - Videos Facebook
+🐦 \`.twitter [url]\` - Videos Twitter/X
+📌 \`.pinvideo [url]\` - Videos Pinterest
 
-📁 ═══ *ARCHIVOS* ═══ 📁
+📁 ═══ *ARCHIVOS Y REPOS* ═══ 📁
 💾 \`.mediafire [url]\` - MediaFire
 ☁️ \`.mega [url]\` - MEGA
-📱 \`.apk [nombre]\` - APKs
+📱 \`.apk [nombre]\` - APKs y ModAPKs
+🛠️ \`.npmjs [package]\` - NPM Packages
+🗂️ \`.gitclone [repo]\` - Clonar Repositorios
+
+🔞 ═══ *CONTENIDO ADULTO* ═══ 🔞
+🔞 \`.xnxxdl [url]\` - XNXX Videos
+🔞 \`.xvideosdl [url]\` - XVideos
 
 💙 *Escribe cualquier comando para usarlo*
 ⬅️ *O toca el botón para volver al menú principal*`
@@ -107,20 +119,40 @@ Usa los botones de abajo o escribe el comando directamente.
 
     const text = `🛠️ *HERRAMIENTAS ÚTILES*
 
-🌸 ═══ 🌐 *UTILIDADES WEB* 🌐 ═══ 🌸
+🔒 ═══ *UTILIDADES WEB* ═══ 🧷
 🌤️ \`.clima [ciudad]\` - Ver clima
-🈵 \`.translate [texto]\` - Traductor  
-📷 \`.ss [url]\` - Screenshot
+🈵 \`.translate [texto]\` - Traductor
+📷 \`.ss [url]\` - Screenshot web
+🔍 \`.google [búsqueda]\` - Buscar en Google
+💮 \`.wikipedia [tema]\` - Wikipedia
+🔍 \`.ip [dirección]\` - Info de IP
 
-💙 ═══ 🎨 *EDICIÓN* 🎨 ═══ 💙
-✨ \`.enhance\` - Mejorar imagen
+🎨 ═══ *EDICIÓN Y STICKERS* ═══ 🎨
+✨ \`.hd\` - Mejorar calidad imagen
 🌟 \`.s\` - Crear sticker
 🖼️ \`.toimg\` - Sticker a imagen
+🎭 \`.emojimix\` - Mezclar emojis
+📝 \`.ttp [texto]\` - Texto a sticker
+💬 \`.qc [texto]\` - Quote creator
+⏲ \`.brat [texto]\` - Brat video
+🏷️ \`.wm [pack|autor]\` - Marca de agua
 
-🎵 ═══ 🔧 *CONVERSORES* 🔧 ═══ 🎵
-🎵 \`.tomp3\` - Audio a MP3
+🔧 ═══ *CONVERSORES* ═══ 🔧
+🎵 \`.tomp3\` - Video a MP3
 🎬 \`.tovideo\` - Audio a video
 🎞️ \`.togif\` - Video a GIF
+🔗 \`.tourl\` - Subir archivos
+☁️ \`.catbox\` - Subir a Catbox
+📷 \`.ibb\` - Subir a ImgBB
+🗣️ \`.tts [texto]\` - Texto a voz
+
+🔍 ═══ *DETECCIÓN Y ANÁLISIS* ═══ 🔍
+🎵 \`.shazam\` - Reconocer música
+🎶 \`.whatmusic\` - Identificar canción
+🕵️ \`.detectar\` - Detectar persona
+📋 \`.todoc\` - Convertir a documento
+📏 \`.tamaño\` - Tamaño de archivo
+🔤 \`.letra [canción]\` - Letras de música
 
 💙 *Escribe cualquier comando para usarlo*
 ⬅️ *O toca el botón para volver al menú principal*`
@@ -142,45 +174,88 @@ Usa los botones de abajo o escribe el comando directamente.
         }))
       }, { quoted: m })
     } catch (error) {
-      // Silent error handling
+      
       return await conn.sendMessage(m.chat, {
         text: text
       }, { quoted: m })
     }
   }
 
+  if (command === 'menu_buscadores' || m.text === 'menu_buscadores') {
+    const buttons = [
+      ['⬅️ Volver al Menú', 'menu']
+    ]
+
+    const text = `🔍 *BUSCADORES Y CONSULTAS*
+
+🌐 ═══ *BUSCADORES GENERALES* ═══ 🌐
+🔍 \`.google [búsqueda]\` - Buscar en Google
+📊 \`.wikipedia [tema]\` - Consultar Wikipedia
+🎵 \`.yts [música]\` - Buscar en YouTube
+📱 \`.npmjs [package]\` - Buscar NPM packages
+📚 \`.githubsearch [repo]\` - Buscar repositorios
+
+🎌 ═══ *ANIME Y ENTRETENIMIENTO* ═══ 🎌
+🎭 \`.infoanime [nombre]\` - Info de anime
+🎬 \`.cuevanasearch [película]\` - Buscar películas
+🔍 \`.tiktoksearch [término]\` - Buscar TikToks
+🐦 \`.tweetposts [usuario]\` - Posts de Twitter
+
+📸 ═══ *IMÁGENES* ═══ 📸
+🖼️ \`.imagen [búsqueda]\` - Buscar imágenes
+📸 \`.pinterest [término]\` - Buscar en Pinterest
+
+🔞 ═══ *CONTENIDO ADULTO* ═══ 🔞
+🔞 \`.pornhubsearch [término]\` - Buscar PornHub
+🔞 \`.xnxxsearch [término]\` - Buscar XNXX
+🔞 \`.xvideos [término]\` - Buscar XVideos
+🔞 \`.hentaisearch [término]\` - Buscar Hentai
+
+💙 *Escribe cualquier comando para usarlo*
+⬅️ *O toca el botón para volver al menú principal*`
+    
+    const buscadoresGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+
+    try {
+      return await conn.sendNCarousel(m.chat, text, '🔍 Módulo de Buscadores - Hatsune Miku Bot', buscadoresGif, buttons, null, null, null, m)
+    } catch (error) {
+      
+      return await conn.sendMessage(m.chat, { text: text }, { quoted: m })
+    }
+  }
+
   if (command === 'menu_juegos' || m.text === 'menu_juegos') {
+    const buttons = [
+      ['⬅️ Volver al Menú', 'menu']
+    ]
+
     const text = `🎮 *CENTRO DE JUEGOS*
 
 🕹️ ═══ *JUEGOS CLÁSICOS* ═══ 🕹️
-⭕ \`.ttt\` - Tres en raya
+⭕ \`.ttt\` - Tres en raya (TicTacToe)
 ✂️ \`.ppt\` - Piedra/Papel/Tijera
 🎪 \`.ahorcado\` - Juego del ahorcado
 🔤 \`.sopa\` - Sopa de letras
+🗑️ \`.delttt\` - Eliminar juego TTT
 
 🎰 ═══ *CASINO & APUESTAS* ═══ 🎰
-🎲 \`.casino [cantidad]\` - Apostar
-🎰 \`.slot [cantidad]\` - Tragamonedas
-🪙 \`.cf [cantidad]\` - Cara o cruz
-🔫 \`.ruleta\` - Ruleta rusa
+🎲 \`.casino [cantidad]\` - Apostar dinero
+💰 \`.apostar [cantidad]\` - Apostar
 
 ⚔️ ═══ *COMPETITIVO* ═══ ⚔️
-🥊 \`.pvp [@usuario]\` - Pelear
-🧠 \`.matematicas\` - Quiz matemático
+🥊 \`.pvp [@usuario]\` - PvP contra usuario
+🧠 \`.math\` - Quiz matemático
+📊 \`.matematicas\` - Desafío matemático
 
 💙 *Escribe cualquier comando para usarlo*
-⬅️ *Escribe* \`menu\` *para volver al menú principal*`
+⬅️ *O toca el botón para volver al menú principal*`
     
     const juegosGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
     try {
-      return await conn.sendMessage(m.chat, {
-        video: { url: juegosGif },
-        caption: text,
-        gifPlayback: true
-      }, { quoted: m })
+      return await conn.sendNCarousel(m.chat, text, '🎮 Módulo de Juegos - Hatsune Miku Bot', juegosGif, buttons, null, null, null, m)
     } catch (error) {
-      console.log('Error enviando video-gif, enviando solo texto:', error)
+      
       return await conn.sendMessage(m.chat, {
         text: text
       }, { quoted: m })
@@ -188,38 +263,66 @@ Usa los botones de abajo o escribe el comando directamente.
   }
 
   if (command === 'menu_anime' || m.text === 'menu_anime') {
+    const buttons = [
+      ['⬅️ Volver al Menú', 'menu']
+    ]
+
     const text = `🎌 *ANIME & REACCIONES*
 
 😊 ═══ *REACCIONES POSITIVAS* ═══ 😊
 🤗 \`.hug [@usuario]\` - Dar abrazo
 😘 \`.kiss [@usuario]\` - Dar beso  
 🤲 \`.pat [@usuario]\` - Acariciar
-😊 \`.happy\` - Estar feliz
+😊 \`.happy [@usuario]\` - Estar feliz
+😍 \`.love [@usuario]\` - Demostrar amor
+☕ \`.coffee [@usuario]\` - Tomar café
+👋 \`.hello [@usuario]\` - Saludar
+🫵 \`.poke [@usuario]\` - Picar
 
 💃 ═══ *ACCIONES* ═══ 💃
 💃 \`.dance\` - Bailar
 🍽️ \`.eat\` - Comer
 😴 \`.sleep\` - Dormir
 🤔 \`.think\` - Pensar
+🏃 \`.run\` - Correr
+🚬 \`.smoke\` - Fumar
+👏 \`.clap\` - Aplaudir
+🤮 \`.drunk\` - Estar borracho
 
-😔 ═══ *EMOCIONES* ═══ 😔
+� ═══ *EMOCIONES* ═══ �
 😢 \`.cry\` - Llorar
 😞 \`.sad\` - Estar triste
 😠 \`.angry\` - Estar enojado
+😳 \`.blush\` - Sonrojarse
+😎 \`.bored\` - Estar aburrido
+😨 \`.scared\` - Estar asustado
+😊 \`.shy\` - Estar tímido
+😤 \`.pout\` - Hacer pucheros
+
+⚔️ ═══ *ACCIONES AGRESIVAS* ═══ ⚔️
+👊 \`.punch [@usuario]\` - Golpear
+👋 \`.slap [@usuario]\` - Abofetear
+🗡️ \`.kill [@usuario]\` - Eliminar
+🦷 \`.bite [@usuario]\` - Morder
+👅 \`.lick [@usuario]\` - Lamer
+🤤 \`.seduce [@usuario]\` - Seducir
+
+🎨 ═══ *PERSONAJES ANIME* ═══ 🎨
+🎎 \`.waifu\` - Imagen waifu random
+👫 \`.ppcp\` - Fotos de perfil parejas
+🎭 \`.akira\` | \`.naruto\` | \`.sasuke\`
+🌸 \`.sakura\` | \`.hinata\` | \`.mikasa\`
+🎵 \`.hatsunemiku\` | \`.nezuko\` | \`.emilia\`
 
 💙 *Escribe cualquier comando para usarlo*
-⬅️ *Escribe* \`menu\` *para volver al menú principal*`
+⬅️ *O toca el botón para volver al menú principal*`
 
     const animeGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
 
     try {
-      return await conn.sendMessage(m.chat, {
-        video: { url: animeGif },
-        caption: text,
-        gifPlayback: true
-      }, { quoted: m })
+      return await conn.sendNCarousel(m.chat, text, '🎌 Módulo de Anime - Hatsune Miku Bot', animeGif, buttons, null, null, null, m)
     } catch (error) {
-      console.log('Error enviando video-gif, enviando solo texto:', error)
+      
       return await conn.sendMessage(m.chat, {
         text: text
       }, { quoted: m })
@@ -385,7 +488,7 @@ handler.before = async function (m, { conn, usedPrefix }) {
           const text = `📥 *MENÚ DE DESCARGAS*
 
 🎵 ═══ *MÚSICA Y VIDEOS* ═══ 🎵
-🎼 \`.play [nombre]\` - YouTube Music
+🎼 \`.play [nombre]\` - YouTube Music 
 🎥 \`.ytmp3 [url]\` - YouTube a MP3
 📹 \`.ytmp4 [url]\` - YouTube a MP4
 
@@ -428,6 +531,6 @@ handler.before = async function (m, { conn, usedPrefix }) {
 
 handler.help = ['menu', 'menú', 'help']
 handler.tags = ['main', 'menu']
-handler.command = /^(menu|menú|help|menu_descargas|menu_herramientas|menu_juegos|menu_anime|menu_grupos|menu_info)$/i
+handler.command = /^(menu|menú|help|menu_descargas|menu_herramientas|menu_buscadores|menu_juegos|menu_anime|menu_grupos|menu_info)$/i
 
 export default handler
