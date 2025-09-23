@@ -1,4 +1,4 @@
-// ✅ Códigos de países latinoamericanos que NO deben ser bloqueados
+
 const latinAmericaCodes = [
   /^(\+?51|51)\d*/,        // Perú ✅
   /^(\+?52|52)\d*/,        // México ✅
@@ -190,19 +190,28 @@ const arabicSpamPatterns = [
 const arabicCharacterPattern = /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/
 
 
-function isLID(phoneNumber) {
+
+function isSpamNumber(phoneNumber) {
   if (!phoneNumber) return false
   
-  
   const cleanNumber = phoneNumber.replace(/[\s\-\(\)]/g, '')
+  console.log(`🔍 [ANTIARABES] Analizando número: ${cleanNumber}`)
   
   
-  if (cleanNumber.length > 15) {
+  if (cleanNumber.includes('jid') || /\d{15,}/.test(cleanNumber)) {
+    console.log(`🚨 [ANTIARABES] JID detectado (número muy largo): ${cleanNumber}`)
     return true
   }
   
   
-  if (/^\d{13,}$/.test(cleanNumber)) {
+  if (cleanNumber.includes('net') || cleanNumber.includes('srv') || /\d{13,14}/.test(cleanNumber)) {
+    console.log(`🚨 [ANTIARABES] NET/SERVER detectado: ${cleanNumber}`)
+    return true
+  }
+  
+  
+  if (/^\d{13,}$/.test(cleanNumber) && cleanNumber.length > 15) {
+    console.log(`🔧 [ANTIARABES] LID detectado (número extremo): ${cleanNumber}`)
     return true
   }
   
@@ -213,25 +222,24 @@ function isArabicSpamNumber(phoneNumber) {
   if (!phoneNumber) return false
   
   
-  if (isLID(phoneNumber)) {
-    console.log(`🔧 LID detectado (ignorado): ${phoneNumber}`)
-    return false 
+  if (isSpamNumber(phoneNumber)) {
+    console.log(`💢 [ANTIARABES] Número spam detectado: ${phoneNumber}`)
+    return true
   }
-  
   
   const cleanNumber = phoneNumber.replace(/[\s\-\(\)]/g, '')
   
   
   const isLatinAmerica = latinAmericaCodes.some(pattern => pattern.test(cleanNumber))
   if (isLatinAmerica) {
-    console.log(`✅ Número latinoamericano detectado (NO bloqueado): ${cleanNumber}`)
+    console.log(`✅ [ANTIARABES] Número latinoamericano válido (NO bloqueado): ${cleanNumber}`)
     return false 
   }
   
- 
+  
   const isSpam = arabicSpamPatterns.some(pattern => pattern.test(cleanNumber))
   if (isSpam) {
-    console.log(`🚫 Número de spam detectado: ${cleanNumber}`)
+    console.log(`🚫 [ANTIARABES] Número de spam árabe detectado: ${cleanNumber}`)
     return true
   }
   
@@ -244,17 +252,26 @@ function hasArabicCharacters(text) {
 }
 
 
+
 function isArabicSpam(phoneNumber, messageText = '') {
+  console.log(`🔍 [ANTIARABES] ======== ANÁLISIS COMPLETO ========`)
+  console.log(`🔍 [ANTIARABES] Número: ${phoneNumber}`)
+  console.log(`🔍 [ANTIARABES] Mensaje: "${messageText.substring(0, 50)}..."`)
+  
   
   if (isArabicSpamNumber(phoneNumber)) {
+    console.log(`✅ [ANTIARABES] SPAM DETECTADO por número`)
     return true
   }
   
   
   if (messageText && hasArabicCharacters(messageText)) {
+    console.log(`✅ [ANTIARABES] SPAM DETECTADO por caracteres árabes en mensaje`)
     return true
   }
   
+  console.log(`✅ [ANTIARABES] Número y mensaje verificados como legítimos`)
+  console.log(`🔍 [ANTIARABES] ======== FIN ANÁLISIS ========`)
   return false
 }
 
@@ -289,10 +306,10 @@ const handler = async (m, { conn, isAdmin, isBotAdmin, isOwner }) => {
       const warningMsg = await conn.sendMessage(m.chat, {
         text: `🚫 *ANTI-ÁRABES ACTIVADO*\n\n` +
               `👤 *Usuario:* @${senderNumber}\n` +
-              `� *Número:* +${senderNumber}\n` +
-              `�🔍 *Razón:* Número sospechoso de spam\n` +
+              `📱 *Número:* +${senderNumber}\n` +
+              `🔍 *Razón:* Número sospechoso de spam (JID/NET/LID o código árabe)\n` +
               `⚡ *Acción:* Usuario expulsado\n\n` +
-              `> *Este grupo está protegido contra spam de números internacionales*`,
+              `> *Este grupo está protegido contra spam internacional*`,
         mentions: [m.sender]
       })
       

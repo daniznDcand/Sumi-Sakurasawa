@@ -1,4 +1,4 @@
-import { createHash } from 'crypto' 
+﻿import { createHash } from 'crypto' 
 import fetch from 'node-fetch'
 
 const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isROwner }) => {
@@ -9,7 +9,7 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
   let isAll = false, isUser = false
   let isEnable = chat[type] || false
 
-  // Lista de funciones válidas
+  
   const validFunctions = [
     'welcome', 'bienvenida',
     'antibot', 'antibots', 
@@ -24,6 +24,7 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
     'antilink', 'antilink2',
     'antifake',
     'antiarabes', 'antiarab',
+    'antitoxic', 'antitoxics', 
     'autolevelup', 'autonivel',
     'antispam',
     'antiprivado', 'antiprivate',
@@ -64,6 +65,7 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
         '│ • antilink - Anti enlaces',
         '│ • antifake - Anti números falsos',
         '│ • antiarabes - Anti números árabes/spam',
+        '│ • antitoxic - Anti lenguaje tóxico/ofensivo',
         '│ • autolevelup/autonivel - Subir nivel automático',
         '│ • antispam - Anti spam',
         '├─⊷ **BOT GLOBAL**',
@@ -106,6 +108,7 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
         '│ • antilink - Anti enlaces',
         '│ • antifake - Anti números falsos',
         '│ • antiarabes - Anti números árabes/spam',
+        '│ • antitoxic - Anti lenguaje tóxico/ofensivo',
         '│ • autolevelup/autonivel - Subir nivel automático',
         '│ • antispam - Anti spam',
         '├─⊷ **BOT GLOBAL**',
@@ -344,6 +347,17 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
       chat.antiarabes = isEnable
       break
       
+    case 'antitoxic':
+    case 'antitoxics':
+      if (m.isGroup) {
+        if (!(isAdmin || isOwner)) {
+          global.dfail('admin', m, conn)
+          throw false
+        }
+      }
+      chat.antitoxic = isEnable
+      break
+      
     case 'autolevelup':
     case 'autonivel':
       if (m.isGroup) {
@@ -381,9 +395,10 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
   conn.reply(m.chat, `💙 La función *${type}* se *${isEnable ? 'activó' : 'desactivó'}* ${isAll ? 'para este Bot' : isUser ? '' : 'para este chat'}`, m, global.rcanal);
 };
 
-handler.help = ['welcome', 'bienvenida', 'antiprivado', 'antiprivate', 'restrict', 'restringir', 'autolevelup', 'autonivel', 'antibot', 'antibots', 'autoaceptar', 'aceptarauto', 'autorechazar', 'rechazarauto', 'autoresponder', 'autorespond', 'antisubbots', 'antibot2', 'modoadmin', 'soloadmin', 'reaction', 'reaccion', 'nsfw', 'modohorny', 'antispam', 'jadibotmd', 'modejadibot', 'subbots', 'detect', 'avisos', 'antilink', 'antilink2', 'antifake', 'antiarabes', 'enable', 'disable']
+handler.help = ['welcome', 'bienvenida', 'antiprivado', 'antiprivate', 'restrict', 'restringir', 'autolevelup', 'autonivel', 'antibot', 'antibots', 'autoaceptar', 'aceptarauto', 'autorechazar', 'rechazarauto', 'autoresponder', 'autorespond', 'antisubbots', 'antibot2', 'modoadmin', 'soloadmin', 'reaction', 'reaccion', 'nsfw', 'modohorny', 'antispam', 'jadibotmd', 'modejadibot', 'subbots', 'detect', 'avisos', 'antilink', 'antilink2', 'antifake', 'antiarabes', 'antitoxic', 'enable', 'disable']
 handler.tags = ['nable'];
-handler.command = ['welcome', 'bienvenida', 'antiprivado', 'antiprivate', 'restrict', 'restringir', 'autolevelup', 'autonivel', 'antibot', 'antibots', 'autoaceptar', 'aceptarauto', 'autorechazar', 'rechazarauto', 'autoresponder', 'autorespond', 'antisubbots', 'antibot2', 'modoadmin', 'soloadmin', 'reaction', 'reaccion', 'nsfw', 'modohorny', 'antispam', 'jadibotmd', 'modejadibot', 'subbots', 'detect', 'avisos', 'antilink', 'antilink2', 'antifake', 'antiarabes', 'enable', 'disable']
+handler.command = ['welcome', 'bienvenida', 'antiprivado', 'antiprivate', 'restrict', 'restringir', 'autolevelup', 'autonivel', 'antibot', 'antibots', 'autoaceptar', 'aceptarauto', 'autorechazar', 'rechazarauto', 'autoresponder', 'autorespond', 'antisubbots', 'antibot2', 'modoadmin', 'soloadmin', 'reaction', 'reaccion', 'nsfw', 'modohorny', 'antispam', 'jadibotmd', 'modejadibot', 'subbots', 'detect', 'avisos', 'antilink', 'antilink2', 'antifake', 'antiarabes', 'antitoxic', 'enable', 'disable']
 
 export default handler
+
 
