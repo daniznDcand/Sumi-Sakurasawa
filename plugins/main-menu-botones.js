@@ -1,5 +1,15 @@
 const handler = async (m, { conn, usedPrefix, command, args }) => {
-  // Reduced logging to prevent spam
+  
+  if (m.message && (m.text?.includes('menu') || command?.includes('menu'))) {
+    console.log('🔍 DEBUG MENU:', {
+      command: command,
+      text: m.text,
+      message: Object.keys(m.message || {}),
+      selectedId: m.message?.templateButtonReplyMessage?.selectedId || 
+                 m.message?.buttonsResponseMessage?.selectedButtonId ||
+                 m.message?.listResponseMessage?.singleSelectReply?.selectedRowId
+    })
+  }
   
   let userId = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.sender
   let user = global.db.data.users[userId]
@@ -11,7 +21,17 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
   
   usedPrefix = '.'
 
-  if (command === 'menu' || command === 'menú' || command === 'help') {
+  
+  const menuCommand = command || m.text || m.message?.templateButtonReplyMessage?.selectedId || 
+                     m.message?.buttonsResponseMessage?.selectedButtonId ||
+                     m.message?.listResponseMessage?.singleSelectReply?.selectedRowId || ''
+  
+ 
+  if (menuCommand && menuCommand.includes('menu')) {
+    console.log('🎯 PROCESSING MENU:', menuCommand)
+  }
+  
+  if (menuCommand === 'menu' || menuCommand === 'menú' || menuCommand === 'help') {
     const buttons = [
       ['📥 Descargas', 'menu_descargas'],
       ['🛠️ Herramientas', 'menu_herramientas'],
@@ -65,7 +85,7 @@ Usa los botones de abajo o escribe el comando directamente.
     }
   }
 
-  if (command === 'menu_descargas' || m.text === 'menu_descargas') {
+  if (menuCommand === 'menu_descargas') {
     const buttons = [
       ['⬅️ Volver al Menú', 'menu']
     ]
@@ -112,7 +132,7 @@ Usa los botones de abajo o escribe el comando directamente.
     }
   }
 
-  if (command === 'menu_herramientas' || m.text === 'menu_herramientas') {
+  if (menuCommand === 'menu_herramientas') {
     const buttons = [
       ['⬅️ Volver al Menú', 'menu']
     ]
@@ -181,7 +201,7 @@ Usa los botones de abajo o escribe el comando directamente.
     }
   }
 
-  if (command === 'menu_buscadores' || m.text === 'menu_buscadores') {
+  if (menuCommand === 'menu_buscadores') {
     const buttons = [
       ['⬅️ Volver al Menú', 'menu']
     ]
@@ -224,7 +244,7 @@ Usa los botones de abajo o escribe el comando directamente.
     }
   }
 
-  if (command === 'menu_juegos' || m.text === 'menu_juegos') {
+  if (menuCommand === 'menu_juegos') {
     const buttons = [
       ['⬅️ Volver al Menú', 'menu']
     ]
@@ -262,7 +282,7 @@ Usa los botones de abajo o escribe el comando directamente.
     }
   }
 
-  if (command === 'menu_anime' || m.text === 'menu_anime') {
+  if (menuCommand === 'menu_anime') {
     const buttons = [
       ['⬅️ Volver al Menú', 'menu']
     ]
@@ -329,7 +349,7 @@ Usa los botones de abajo o escribe el comando directamente.
     }
   }
 
-  if (command === 'menu_grupos' || m.text === 'menu_grupos') {
+  if (menuCommand === 'menu_grupos') {
     const text = `👥 *GESTIÓN DE GRUPOS*
 _(Solo para administradores)_
 
@@ -368,7 +388,7 @@ _(Solo para administradores)_
     }
   }
 
-  if (command === 'menu_info' || m.text === 'menu_info') {
+  if (menuCommand === 'menu_info') {
     const text = `ℹ️ *INFORMACIÓN DEL BOT*
 
 🤖 ═══ *DATOS DEL BOT* ═══ 🤖
@@ -415,7 +435,43 @@ function clockString(ms) {
 }
 
 
+handler.before = async function (m, { conn, usedPrefix }) {
+  if (!m.message) return false
+  
 
+  let buttonId = null
+  
+  if (m.message.templateButtonReplyMessage) {
+    buttonId = m.message.templateButtonReplyMessage.selectedId
+  }
+  if (m.message.buttonsResponseMessage) {
+    buttonId = m.message.buttonsResponseMessage.selectedButtonId
+  }
+  if (m.message.listResponseMessage) {
+    buttonId = m.message.listResponseMessage.singleSelectReply?.selectedRowId
+  }
+  if (m.message.interactiveResponseMessage) {
+    try {
+      const paramsJson = m.message.interactiveResponseMessage.nativeFlowResponseMessage?.paramsJson
+      if (paramsJson) {
+        const params = JSON.parse(paramsJson)
+        buttonId = params.id
+      }
+    } catch (e) {
+      
+    }
+  }
+  
+  
+  if (buttonId && buttonId.startsWith('menu')) {
+    console.log('🎯 BUTTON DETECTED:', buttonId)
+    m.text = buttonId
+    m.command = buttonId
+    return false 
+  }
+  
+  return false
+}
 
 handler.help = ['menu', 'menú', 'help']
 handler.tags = ['main', 'menu']
