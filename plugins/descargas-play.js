@@ -4,9 +4,25 @@ import axios from "axios";
 
 const handler = async (m, { conn, text, usedPrefix, command }) => {
   let user = global.db.data.users[m.sender];
+  
+  
+  console.log('🔍 Debug .play comando:', {
+    sender: m.sender,
+    text: text,
+    command: command,
+    userExists: !!user,
+    moneda: user?.moneda || 'undefined'
+  });
 
-  if (user.chocolates < 2) {
-    return conn.reply(m.chat, `💙 No tienes suficientes *Cebollines 🌱* Necesitas 2 más para usar este comando.`, m);
+  if (!user) {
+    user = global.db.data.users[m.sender] = {
+      moneda: 10, 
+      
+    };
+  }
+
+  if (user.moneda < 2) {
+    return conn.reply(m.chat, `💙 No tienes suficientes *Cebollines 🌱* Necesitas 2 más para usar este comando. Tienes: ${user.chocolates}`, m);
   }
 
   try {
@@ -14,12 +30,17 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       return conn.reply(m.chat, `💙 Ingresa el nombre de la música a descargar.`, m);
     }
 
+    console.log('🔍 Buscando:', text);
     const search = await yts(text);
+    console.log('🔍 Resultados encontrados:', search.all?.length || 0);
+    
     if (!search.all || search.all.length === 0) {
       return m.reply('No se encontraron resultados para tu búsqueda.');
     }
 
     const videoInfo = search.all[0];
+    console.log('🔍 Video info:', videoInfo?.title || 'Sin título');
+    
     if (!videoInfo) {
       return m.reply('No se pudo obtener información del video.');
     }
@@ -68,6 +89,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       publishedTime: ago
     };
 
+    console.log('🔍 Intentando enviar botones...');
     try {
       await conn.sendButton(
         m.chat,
@@ -77,8 +99,10 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         buttons,
         m
       );
+      console.log('✅ Botones enviados correctamente');
     } catch (buttonError) {
-      console.log('Error enviando botones, usando mensaje alternativo:', buttonError);
+      console.log('❌ Error enviando botones:', buttonError.message);
+      console.log('🔍 Usando mensaje alternativo...');
       
       const thumb = (await conn.getFile(thumbnail))?.data;
       const JT = {
@@ -102,7 +126,8 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     conn.reply(m.chat, `💙 Has utilizado 2 *Cebollines 🌱*`, m);
 
   } catch (error) {
-    return m.reply(`⚠︎ Ocurrió un error: ${error}`);
+    console.log('❌ Error general en .play:', error);
+    return m.reply(`⚠︎ Ocurrió un error: ${error.message}`);
   }
 };
 
