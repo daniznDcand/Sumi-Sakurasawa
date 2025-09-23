@@ -487,37 +487,7 @@ async function getAudioUrl(url) {
     
     { api: 'Delirius', endpoint: `https://delirius-apiofc.vercel.app/download/ymp3?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url },
     { api: 'ZenzzXD', endpoint: `https://api.zenzxz.my.id/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-    { api: 'Vreden', endpoint: `https://api.vreden.tech/api/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url },
-    { api: 'YT-Audio-Simple', endpoint: `https://yt-download.org/api/button/mp3/320/${encodeURIComponent(url)}`, extractor: res => res?.dlink },
     { api: 'Y2Mate', endpoint: `https://api-y2mate.onrender.com/api/download/audio/${encodeURIComponent(url)}`, extractor: res => res?.download_url },
-    { api: 'ZenzzXD v2', endpoint: `https://api.zenzxz.my.id/downloader/ytmp3v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-    
-    { api: 'YT1S-Audio', endpoint: `https://yt1s.com/api/ajaxSearch/index`, 
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
-      method: 'POST', 
-      body: `q=${encodeURIComponent(url)}&vt=mp3`, 
-      extractor: res => res?.links?.mp3?.mp3128?.url 
-    },
-    { api: 'Download-YT-Audio', endpoint: `https://api.downloadyt.com/download?url=${encodeURIComponent(url)}&format=mp3&quality=320`, extractor: res => res?.download_url },
-    { api: 'YT-DLP-Web', endpoint: `https://yt-dlp-web.vercel.app/api/download?url=${encodeURIComponent(url)}&format=mp3`, extractor: res => res?.downloadUrl },
-    
-    { api: 'YTDL-Core', endpoint: `https://ytdl-core.herokuapp.com/api/info?url=${encodeURIComponent(url)}`, extractor: res => res?.formats?.find(f => f.audioBitrate)?.url },
-    { api: 'YouTube-MP3-API', endpoint: `https://youtube-mp3-download1.p.rapidapi.com/dl?id=${encodeURIComponent(url.split('v=')[1])}`, extractor: res => res?.link },
-    { api: 'SaveTube-Audio', endpoint: `https://savetube.me/api/v1/techtunes?url=${encodeURIComponent(url)}`, extractor: res => res?.data?.audio_url },
-    { api: 'Widipe', endpoint: `https://widipe.com/download/ytdl?url=${encodeURIComponent(url)}`, extractor: res => res?.result?.mp3?.["128"]?.download },
-    { api: 'SaveFrom-API', endpoint: `https://api.savefrom.net/get-url?url=${encodeURIComponent(url)}&format=mp3`, extractor: res => res?.download_url },
-    
-    { api: 'MP3-Converter', endpoint: `https://mp3-convert.org/api/button/${encodeURIComponent(url)}`, extractor: res => res?.download_link },
-    { api: 'Online-Converter', endpoint: `https://www.onlinevideoconverter.pro/api/convert?url=${encodeURIComponent(url)}&format=mp3`, extractor: res => res?.download_url },
-    { api: 'Y2Mate-Alternative', endpoint: `https://yt-api.p.rapidapi.com/dl?id=${encodeURIComponent(url.split('v=')[1])}&geo=US&x-cg-partnerid=api-savefrom-net`, extractor: res => res?.audio?.['128']?.url },
-    { api: 'YouTube-API', endpoint: `https://youtube-mp36.p.rapidapi.com/dl?id=${encodeURIComponent(url.split('v=')[1])}`, extractor: res => res?.link },
-    
-    { api: 'Cobalt', endpoint: `https://co.wuk.sh/api/json`, extractor: res => res?.url, 
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, 
-      method: 'POST', 
-      body: JSON.stringify({ url, vQuality: 'max', aFormat: 'mp3' }) 
-    },
-    
     { api: 'StellarWA', endpoint: `https://api.stellarwa.xyz/dow/ytmp3?url=${encodeURIComponent(url)}&apikey=Diamond`, extractor: res => res?.data?.dl },
     { api: 'Lolhuman', endpoint: `https://api.lolhuman.xyz/api/ytaudio?apikey=GataDios&url=${encodeURIComponent(url)}`, extractor: res => res?.result?.link }
   ];
@@ -559,32 +529,7 @@ async function getVideoUrl(url) {
     
     { api: 'Delirius', endpoint: `https://delirius-apiofc.vercel.app/download/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url },
     { api: 'ZenzzXD', endpoint: `https://api.zenzxz.my.id/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-    { api: 'Vreden', endpoint: `https://api.vreden.tech/api/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url },
     { api: 'Y2Mate-Video', endpoint: `https://api-y2mate.onrender.com/api/download/video/${encodeURIComponent(url)}`, extractor: res => res?.download_url },
-    { api: 'ZenzzXD v2', endpoint: `https://api.zenzxz.my.id/downloader/ytmp4v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-    
-    { api: 'YTDL-Core-Video', endpoint: `https://ytdl-core.herokuapp.com/api/info?url=${encodeURIComponent(url)}`, extractor: res => res?.formats?.find(f => f.hasVideo && f.hasAudio)?.url },
-    { api: 'YT1S-Video', endpoint: `https://yt1s.com/api/ajaxSearch/index`, 
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
-      method: 'POST', 
-      body: `q=${encodeURIComponent(url)}&vt=mp4`, 
-      extractor: res => res?.links?.mp4?.mp4720?.url || res?.links?.mp4?.mp4480?.url 
-    },
-    { api: 'SaveTube-Video', endpoint: `https://savetube.me/api/v1/techtunes?url=${encodeURIComponent(url)}`, extractor: res => res?.data?.video_url },
-    { api: 'YT-DLP-Web', endpoint: `https://yt-dlp-web.vercel.app/api/download?url=${encodeURIComponent(url)}&format=mp4`, extractor: res => res?.downloadUrl },
-    { api: 'Widipe', endpoint: `https://widipe.com/download/ytdl?url=${encodeURIComponent(url)}`, extractor: res => res?.result?.mp4?.["720"]?.download || res?.result?.mp4?.["480"]?.download || res?.result?.mp4?.["360"]?.download },
-    { api: 'SaveFrom-Video', endpoint: `https://api.savefrom.net/get-url?url=${encodeURIComponent(url)}&format=mp4`, extractor: res => res?.download_url },
-    { api: 'OnlineConverter-Video', endpoint: `https://www.onlinevideoconverter.pro/api/convert?url=${encodeURIComponent(url)}&format=mp4`, extractor: res => res?.download_url },
-    { api: 'VideoConverter', endpoint: `https://video-converter.org/api/button/${encodeURIComponent(url)}`, extractor: res => res?.download_link },
-    { api: 'YouTube-Video-API', endpoint: `https://youtube-video-download1.p.rapidapi.com/dl?id=${encodeURIComponent(url.split('v=')[1])}`, extractor: res => res?.download_url },
-    
-    { api: 'Cobalt', endpoint: `https://co.wuk.sh/api/json`, extractor: res => res?.url, 
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, 
-      method: 'POST', 
-      body: JSON.stringify({ url, vQuality: '720', vCodec: 'h264', aFormat: 'mp3' }) 
-    },
-    { api: 'SaveTube', endpoint: `https://savetube.me/api/v1/techtunes?url=${encodeURIComponent(url)}`, extractor: res => res?.data?.video_url },
-    
     { api: 'Lolhuman', endpoint: `https://api.lolhuman.xyz/api/ytvideo?apikey=GataDios&url=${encodeURIComponent(url)}`, extractor: res => res?.result?.link }
   ];
   
