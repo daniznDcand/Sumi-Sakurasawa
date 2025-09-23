@@ -425,9 +425,24 @@ sock.blocklist = sock.blocklist || []
 
 console.log(chalk.cyan('🔄 SubBot socket recreado con configuración ultra-persistente'))
 
+// 🛡️ Wrapper seguro para saveCreds con manejo de errores
+const safeSaveCreds = async () => {
+  try {
+    if (sock._isBeingDeleted) return // 🚫 No guardar si se está eliminando
+    if (sock.ws && sock.ws.readyState === 1 && fs.existsSync(pathMikuJadiBot)) {
+      await saveCreds()
+    }
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      console.log(chalk.yellow(`⚠️ Sesión eliminándose, ignorando guardado de credenciales`))
+    } else {
+      console.error(chalk.red(`❌ Error guardando credenciales: ${error.message}`))
+    }
+  }
+}
 
 sock.connectionUpdate = connectionUpdate.bind(sock)
-sock.credsUpdate = saveCreds
+sock.credsUpdate = safeSaveCreds
 sock.ev.on("connection.update", sock.connectionUpdate)
 sock.ev.on("creds.update", sock.credsUpdate)
 
@@ -776,20 +791,31 @@ try {
     if (!sock._saveCredsInterval) {
       sock._saveCredsInterval = setInterval(() => {
         try { 
+          if (sock._isBeingDeleted) return // 🚫 No guardar si se está eliminando
           saveCreds()
           console.log(chalk.blue(`💾 Credenciales guardadas para +${path.basename(pathMikuJadiBot)}`))
         } catch (e) {
-          console.error(`Error guardando credenciales: ${e.message}`)
+          if (e.code === 'ENOENT') {
+            console.log(chalk.yellow(`⚠️ Sesión eliminándose, ignorando guardado de credenciales`))
+          } else {
+            console.error(`Error guardando credenciales: ${e.message}`)
+          }
         }
       }, 1000 * 60 * 2)  
     }
     
     
     try {
-      saveCreds()
-      console.log(chalk.green(`💾 Credenciales guardadas inmediatamente para +${path.basename(pathMikuJadiBot)}`))
+      if (!sock._isBeingDeleted) { // 🚫 No guardar si se está eliminando
+        saveCreds()
+        console.log(chalk.green(`💾 Credenciales guardadas inmediatamente para +${path.basename(pathMikuJadiBot)}`))
+      }
     } catch (e) {
-      console.error(`Error en guardado inmediato: ${e.message}`)
+      if (e.code === 'ENOENT') {
+        console.log(chalk.yellow(`⚠️ Sesión eliminándose, ignorando guardado de credenciales`))
+      } else {
+        console.error(`Error en guardado inmediato: ${e.message}`)
+      }
     }
   }
 } catch (e) {
@@ -1385,8 +1411,24 @@ if (handlerModule && handlerModule.handler && typeof handlerModule.handler === '
   console.error('⚠️ Handler no disponible en creloadHandler, continuará sin procesar comandos hasta que se recargue')
 }
 
+// 🛡️ Wrapper seguro para saveCreds inicial con manejo de errores
+const safeSaveCredsInitial = async () => {
+  try {
+    if (sock._isBeingDeleted) return // 🚫 No guardar si se está eliminando
+    if (sock.ws && sock.ws.readyState === 1 && fs.existsSync(pathMikuJadiBot)) {
+      await saveCreds()
+    }
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      console.log(chalk.yellow(`⚠️ Sesión eliminándose, ignorando guardado de credenciales`))
+    } else {
+      console.error(chalk.red(`❌ Error guardando credenciales: ${error.message}`))
+    }
+  }
+}
+
 sock.connectionUpdate = connectionUpdate.bind(sock)
-sock.credsUpdate = saveCreds
+sock.credsUpdate = safeSaveCredsInitial
 sock.ev.on("connection.update", sock.connectionUpdate)
 sock.ev.on("creds.update", sock.credsUpdate)
 isInit = false

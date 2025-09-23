@@ -123,7 +123,10 @@ async function deleteSubBot(bot, phoneNumber, m, conn, usedPrefix, silent = fals
   try {
     console.log(chalk.red(`🗑️ Eliminando SubBot +${phoneNumber}...`))
     
+    // 🚫 Marcar bot como siendo eliminado para evitar guardado de credenciales
+    bot._isBeingDeleted = true
     
+    // 🔄 Limpiar todos los intervalos
     if (bot._keepAliveInterval) {
       clearInterval(bot._keepAliveInterval)
       bot._keepAliveInterval = null
@@ -145,9 +148,16 @@ async function deleteSubBot(bot, phoneNumber, m, conn, usedPrefix, silent = fals
       bot._presenceInterval = null
     }
 
-   
+    // 🔒 Cerrar socket de manera segura para evitar errores de Baileys
     try {
       if (bot.ws && typeof bot.ws.close === 'function') {
+        // Desactivar el auto-save de credenciales antes de cerrar
+        if (bot.saveCreds) {
+          bot.saveCreds = () => {} // Noop function
+        }
+        if (bot.saveState) {
+          bot.saveState = () => {} // Noop function  
+        }
         bot.ws.close()
       }
     } catch (e) {
@@ -174,7 +184,7 @@ async function deleteSubBot(bot, phoneNumber, m, conn, usedPrefix, silent = fals
     }
 
    
-    const sessionPath = path.join(process.cwd(), 'MikuJadiBot', phoneNumber)
+    const sessionPath = path.join(process.cwd(), 'jadi', phoneNumber)
     if (fs.existsSync(sessionPath)) {
       try {
         fs.rmSync(sessionPath, { recursive: true, force: true })
@@ -182,6 +192,8 @@ async function deleteSubBot(bot, phoneNumber, m, conn, usedPrefix, silent = fals
       } catch (e) {
         console.error('Error eliminando sesión:', e.message)
       }
+    } else {
+      console.log(chalk.yellow(`⚠️ Directorio de sesión no encontrado: ${sessionPath}`))
     }
 
     if (!silent && m) {
