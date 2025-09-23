@@ -498,7 +498,6 @@ async function getAudioUrl(url) {
       body: `q=${encodeURIComponent(url)}&vt=mp3`, 
       extractor: res => res?.links?.mp3?.mp3128?.url 
     },
-    { api: 'YT-Audio-Simple', endpoint: `https://yt-download.org/api/button/mp3/320/${encodeURIComponent(url)}`, extractor: res => res?.dlink },
     { api: 'Download-YT-Audio', endpoint: `https://api.downloadyt.com/download?url=${encodeURIComponent(url)}&format=mp3&quality=320`, extractor: res => res?.download_url },
     { api: 'YT-DLP-Web', endpoint: `https://yt-dlp-web.vercel.app/api/download?url=${encodeURIComponent(url)}&format=mp3`, extractor: res => res?.downloadUrl },
     
@@ -513,21 +512,6 @@ async function getAudioUrl(url) {
     { api: 'Y2Mate-Alternative', endpoint: `https://yt-api.p.rapidapi.com/dl?id=${encodeURIComponent(url.split('v=')[1])}&geo=US&x-cg-partnerid=api-savefrom-net`, extractor: res => res?.audio?.['128']?.url },
     { api: 'YouTube-API', endpoint: `https://youtube-mp36.p.rapidapi.com/dl?id=${encodeURIComponent(url.split('v=')[1])}`, extractor: res => res?.link },
     
-    { api: 'API.Video-Audio', endpoint: `https://sandbox.api.video/videos`, extractor: res => res?.assets?.hls, 
-      headers: { 
-        'Authorization': 'Bearer h92qspHJpE3iiOgKH6A5MknP6ylbP44ODKfLAr9VqV1',
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }, 
-      method: 'POST', 
-      body: JSON.stringify({ 
-        title: `YouTube Audio Download - ${url.split('v=')[1]}`,
-        source: url,
-        public: false
-      }) 
-    },
-    
-    { api: 'Y2Mate', endpoint: `https://api-y2mate.onrender.com/api/download/audio/${encodeURIComponent(url)}`, extractor: res => res?.download_url },
     { api: 'Cobalt', endpoint: `https://co.wuk.sh/api/json`, extractor: res => res?.url, 
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, 
       method: 'POST', 
@@ -580,7 +564,6 @@ async function getVideoUrl(url) {
     { api: 'ZenzzXD v2', endpoint: `https://api.zenzxz.my.id/downloader/ytmp4v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
     
     { api: 'YTDL-Core-Video', endpoint: `https://ytdl-core.herokuapp.com/api/info?url=${encodeURIComponent(url)}`, extractor: res => res?.formats?.find(f => f.hasVideo && f.hasAudio)?.url },
-    
     { api: 'YT1S-Video', endpoint: `https://yt1s.com/api/ajaxSearch/index`, 
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, 
       method: 'POST', 
@@ -590,27 +573,10 @@ async function getVideoUrl(url) {
     { api: 'SaveTube-Video', endpoint: `https://savetube.me/api/v1/techtunes?url=${encodeURIComponent(url)}`, extractor: res => res?.data?.video_url },
     { api: 'YT-DLP-Web', endpoint: `https://yt-dlp-web.vercel.app/api/download?url=${encodeURIComponent(url)}&format=mp4`, extractor: res => res?.downloadUrl },
     { api: 'Widipe', endpoint: `https://widipe.com/download/ytdl?url=${encodeURIComponent(url)}`, extractor: res => res?.result?.mp4?.["720"]?.download || res?.result?.mp4?.["480"]?.download || res?.result?.mp4?.["360"]?.download },
-    { api: 'Y2Mate-Video', endpoint: `https://api-y2mate.onrender.com/api/download/video/${encodeURIComponent(url)}`, extractor: res => res?.download_url },
     { api: 'SaveFrom-Video', endpoint: `https://api.savefrom.net/get-url?url=${encodeURIComponent(url)}&format=mp4`, extractor: res => res?.download_url },
     { api: 'OnlineConverter-Video', endpoint: `https://www.onlinevideoconverter.pro/api/convert?url=${encodeURIComponent(url)}&format=mp4`, extractor: res => res?.download_url },
     { api: 'VideoConverter', endpoint: `https://video-converter.org/api/button/${encodeURIComponent(url)}`, extractor: res => res?.download_link },
-    { api: 'SaveFrom-Video', endpoint: `https://api.savefrom.net/get-url?url=${encodeURIComponent(url)}&format=mp4`, extractor: res => res?.download_url },
     { api: 'YouTube-Video-API', endpoint: `https://youtube-video-download1.p.rapidapi.com/dl?id=${encodeURIComponent(url.split('v=')[1])}`, extractor: res => res?.download_url },
-    { api: 'Y2Mate-Video', endpoint: `https://api-y2mate.onrender.com/api/download/video/${encodeURIComponent(url)}`, extractor: res => res?.download_url },
-    
-    { api: 'API.Video', endpoint: `https://sandbox.api.video/videos`, extractor: res => res?.assets?.mp4, 
-      headers: { 
-        'Authorization': 'Bearer h92qspHJpE3iiOgKH6A5MknP6ylbP44ODKfLAr9VqV1',
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }, 
-      method: 'POST', 
-      body: JSON.stringify({ 
-        title: `YouTube Download - ${url.split('v=')[1]}`,
-        source: url,
-        public: false
-      }) 
-    },
     
     { api: 'Cobalt', endpoint: `https://co.wuk.sh/api/json`, extractor: res => res?.url, 
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, 
