@@ -1,7 +1,6 @@
 import fetch from "node-fetch";
 import yts from 'yt-search';
 import axios from "axios";
-import { fetchYouTubeDownload } from '../lib/ytdll.js'
 
 const handler = async (m, { conn, text, usedPrefix, command }) => {
   let user = global.db.data.users[m.sender];
@@ -301,21 +300,7 @@ async function getAudioUrl(url) {
     console.log(`✅ Audio obtenido con ${result.api}`);
     return result.url;
   }
-  
-  
-  try {
-    const result = await fetchYouTubeDownload(url);
-    
-    if (result.success && result.downloads) {
-      const audio = result.downloads.find(d => d.contentType?.startsWith('audio'));
-      if (audio?.url) {
-        console.log('✅ Audio obtenido con fetchYouTubeDownload');
-        return audio.url;
-      }
-    }
-  } catch (error) {
-    console.log('❌ Error con fetchYouTubeDownload:', error.message);
-  }
+
   
   console.log('❌ Todas las APIs de audio fallaron');
   return null;
@@ -345,20 +330,7 @@ async function getVideoUrl(url) {
     return result.url;
   }
   
- 
-  try {
-    const result = await fetchYouTubeDownload(url);
-    
-    if (result.success && result.downloads) {
-      const video = result.downloads.find(d => d.contentType?.startsWith('video'));
-      if (video?.url) {
-        console.log('✅ Video obtenido con fetchYouTubeDownload');
-        return video.url;
-      }
-    }
-  } catch (error) {
-    console.log('❌ Error con fetchYouTubeDownload:', error.message);
-  }
+
   
   console.log('❌ Todas las APIs de video fallaron');
   return null;
