@@ -99,7 +99,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
   }
 };
 
-// Función para formatear vistas
+
 function formatViews(views) {
   if (!views || views === 0) return '0';
   
@@ -113,6 +113,7 @@ function formatViews(views) {
   }
   return num.toString();
 }
+
 
 
 async function getAudioUrl(url) {
@@ -149,6 +150,7 @@ async function getAudioUrl(url) {
 }
 
 
+
 async function getVideoUrl(url) {
   console.log('🔍 Buscando URL de video para:', url);
   
@@ -181,6 +183,7 @@ async function getVideoUrl(url) {
   console.log('❌ Todas las APIs de video fallaron');
   return null;
 }
+
 
 
 handler.before = async (m, { conn }) => {
