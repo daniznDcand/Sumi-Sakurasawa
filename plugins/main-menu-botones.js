@@ -33,7 +33,7 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
       ['🔍 Buscadores', 'menu_buscadores'],
       ['🎮 Juegos', 'menu_juegos'],
       ['🎌 Anime', 'menu_anime'],
-      ['👥 Grupos', 'menu_grupos'],
+      ['👥 admin Grupos', 'menu_grupos'],
       ['ℹ️ Info Bot', 'menu_info']
     ]
 
