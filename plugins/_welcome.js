@@ -86,7 +86,7 @@ export async function before(m, { conn, participants, groupMetadata }) {
       
         console.log('🎵 Enviando botón del canal con rcanal completo...')
         return await conn.sendMessage(jid, {
-          text: '🎵 *¡Únete a nuestro canal oficial para más contenido de Miku!* 💙'
+          text: '🎵 *¡Únete a nuestro canal oficial para más!* 💙'
         }, { quoted, ...global.rcanal })
 
       } catch (err) {
@@ -114,7 +114,9 @@ export async function before(m, { conn, participants, groupMetadata }) {
 
 📝 Para cualquier ayuda, escribe *#help*
 
-🎶 ¡Que la música te acompañe siempre!`
+🎶 ¡Que la música te acompañe siempre!
+
+https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o`
 
       await sendSingleWelcome(m.chat, welcomeText, user, m)
       console.log('✅ Welcome: Imagen grande + botón canal separado enviados')
@@ -135,7 +137,9 @@ export async function before(m, { conn, participants, groupMetadata }) {
 
 🎵 La música de Miku seguirá sonando fuerte aquí para ti.
 
-✨ ¡Cuídate y hasta el próximo concierto!`
+✨ ¡Cuídate y hasta el próximo concierto!
+
+https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o`
 
       await sendSingleWelcome(m.chat, byeText, user, m)
       console.log('✅ Goodbye: Imagen grande + botón canal separado enviados')
