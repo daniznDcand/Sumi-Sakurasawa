@@ -30,7 +30,7 @@ function cleanPhoneNumber(phone) {
 let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   try {
     if (!global.conns || global.conns.length === 0) {
-      return m.reply(`❌ *No hay SubBots activos*\n\n🤖 Actualmente no hay ningún SubBot conectado al servidor.\n\n💡 *Usa:* ${usedPrefix}qr para crear un SubBot`)
+      return m.reply(`❌ *No hay SubBots activos*\n\n🤖 Actualmente no hay ningún SubBot conectado al servidor.\n\n💡 *Usa:* ${usedPrefix}serbot para crear un SubBot`)
     }
 
     
@@ -39,7 +39,7 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
     const totalBots = activeConnections.length + inactiveConnections.length
     
     if (totalBots === 0) {
-      return m.reply(`❌ *No hay SubBots válidos*\n\n🤖 No se encontraron SubBots con información válida.\n\n💡 *Usa:* ${usedPrefix}qr para crear un SubBot`)
+      return m.reply(`❌ *No hay SubBots válidos*\n\n🤖 No se encontraron SubBots con información válida.\n\n💡 *Usa:* ${usedPrefix}serbot para crear un SubBot`)
     }
 
     console.log(chalk.blue(`📊 Generando estado de SubBots...`))

@@ -286,34 +286,44 @@ function isSocketReady(s) {
       return false
     }
     
+   
+    const now = Date.now()
+    const connectionAge = now - (s.sessionStartTime || now)
+    const isNewConnection = connectionAge < 120000 
     
+   
     const hasWebSocket = s.ws && s.ws.socket
     const isOpen = hasWebSocket && s.ws.socket.readyState === 1 
     const hasUser = s.user && s.user.jid
     
     
-    const hasBasicAuth = s.authState || s.user
+    const hasBasicAuth = s.authState || s.user || isNewConnection
     
     
-    const isConnected = s.connectionStatus === 'open' || isOpen || s.connectionStatus === 'connecting'
+    const isConnected = s.connectionStatus === 'open' || isOpen || 
+                       s.connectionStatus === 'connecting' || isNewConnection
     
-    const isReady = hasWebSocket && isOpen && hasUser && hasBasicAuth
+    
+    const isReady = isNewConnection ? 
+      (hasUser && (hasWebSocket || hasBasicAuth)) :  
+      (hasWebSocket && isOpen && hasUser && hasBasicAuth) 
     
     
-    if (!isReady && (!s._lastErrorLog || (Date.now() - s._lastErrorLog) > 30000)) {
+    if (!isReady && !isNewConnection && (!s._lastErrorLog || (now - s._lastErrorLog) > 45000)) {
       const status = s.connectionStatus || 'undefined'
       const wsState = hasWebSocket ? s.ws.socket.readyState : 'no-ws'
       const userJid = hasUser ? 'has-user' : 'no-user'
       const authStatus = s.authState ? 'has-auth' : 'no-auth'
+      const age = Math.round(connectionAge / 1000)
       
-      console.log(`⚠️ Socket no listo para +${path.basename(pathMikuJadiBot)}: estado=${status}, ws=${wsState}, user=${userJid}, auth=${authStatus}`)
-      s._lastErrorLog = Date.now()
+      console.log(`⚠️ Socket no listo para +${path.basename(pathMikuJadiBot)} (${age}s): estado=${status}, ws=${wsState}, user=${userJid}, auth=${authStatus}`)
+      s._lastErrorLog = now
     }
     
     return isReady
   } catch (e) {
     
-    if (!s._lastExceptionLog || (Date.now() - s._lastExceptionLog) > 60000) {
+    if (!s._lastExceptionLog || (Date.now() - s._lastExceptionLog) > 120000) {
       console.log(`⚠️ Error verificando estado del socket +${path.basename(pathMikuJadiBot)}:`, e.message)
       s._lastExceptionLog = Date.now()
     }
@@ -1007,7 +1017,15 @@ console.log('🔍 Configurando handler para SubBot recién conectado...')
 const handlerModule = await import('../handler.js')
 if (handlerModule && handlerModule.handler && typeof handlerModule.handler === 'function') {
 
-  const originalHandler = handlerModule.handler.bind(sock)
+  // Verificación adicional de seguridad para el binding
+  let originalHandler
+  try {
+    originalHandler = handlerModule.handler.bind(sock)
+  } catch (bindError) {
+    console.log('⚠️ Error en bind del handler, usando función directa:', bindError.message)
+    originalHandler = handlerModule.handler
+  }
+  
   sock.handler = async (chatUpdate) => {
     try {
       console.log('📨 SubBot procesando mensaje:', {
@@ -1015,7 +1033,13 @@ if (handlerModule && handlerModule.handler && typeof handlerModule.handler === '
         messageTypes: chatUpdate?.messages?.map(m => Object.keys(m.message || {})) || [],
         fromSender: chatUpdate?.messages?.[0]?.key?.fromMe ? 'SubBot' : 'Usuario'
       })
-      return await originalHandler(chatUpdate)
+      
+      // Llamar al handler con el contexto correcto
+      if (originalHandler.bind) {
+        return await originalHandler.call(sock, chatUpdate)
+      } else {
+        return await originalHandler(chatUpdate)
+      }
     } catch (error) {
       console.error('❌ Error en handler de SubBot:', error.message)
       console.error('Stack:', error.stack)
@@ -1056,7 +1080,11 @@ console.error('❌ Error configurando handler para SubBot:', error.message)
 }
 
 if (!global.conns.find(c => c.user?.jid === sock.user?.jid)) {
+
+sock.createdAt = Date.now()
+sock.lastActivity = Date.now()
 global.conns.push(sock)
+console.log(chalk.green(`✅ SubBot agregado a pool - Total: ${global.conns.length}`))
 }
 
 
@@ -1106,8 +1134,11 @@ await joinChannels(sock)
   }
 
 
+
 setInterval(() => {
 if (sock && sock.user) {
+
+if (!sock.createdAt) sock.createdAt = sock.sessionStartTime || Date.now()
 sock.lastActivity = Date.now()
 }
 }, 30000)
@@ -1116,53 +1147,90 @@ sock.lastActivity = Date.now()
 
 
 
+
 setInterval(async () => {
 const currentTime = Date.now()
-const cleanupThreshold = 30 * 60 * 1000 // Aumentado a 30 minutos para mayor tolerancia
+const cleanupThreshold = 45 * 60 * 1000 
+const connectionAgeThreshold = 5 * 60 * 1000 
 
 try {
- 
-  const isValidSocket = sock && 
-                       sock.user && 
-                       sock.user.jid && 
-                       isSocketReady(sock) &&
-                       (currentTime - (sock.lastActivity || 0)) < cleanupThreshold
+  if (!global.conns || global.conns.length === 0) return
+  
 
-  if (!isValidSocket) {
-    const inactiveTime = sock?.lastActivity ? currentTime - sock.lastActivity : 'desconocido'
-    console.log(chalk.red(`🧹 Limpiando SubBot inválido +${path.basename(pathMikuJadiBot)} - Inactivo: ${typeof inactiveTime === 'number' ? msToTime(inactiveTime) : inactiveTime}`))
+  const indicesToRemove = []
+  
+  for (let index = 0; index < global.conns.length; index++) {
+    const conn = global.conns[index]
+    
+    if (!conn) {
+      indicesToRemove.push(index)
+      continue
+    }
     
     
-    try { 
-      if (sock?.ws && typeof sock.ws.close === 'function') {
-        sock.ws.close()
-      }
-    } catch (e) {}
-    
-    try { sock.ev.removeAllListeners() } catch (e) {}
-    
-   
-    const indices = []
-    global.conns.forEach((conn, index) => {
-      if (!conn || !conn.user || !isSocketReady(conn) || 
-          (sock.user && conn.user.jid === sock.user.jid)) {
-        indices.push(index)
-      }
-    })
+    const connectionAge = conn.createdAt ? currentTime - conn.createdAt : currentTime
+    const lastActivity = conn.lastActivity || conn.createdAt || 0
+    const inactiveTime = currentTime - lastActivity
     
     
-    indices.reverse().forEach(i => {
+    const shouldCleanup = (
+      
+      (!conn.user || !conn.user.jid) ||
+      
+      (!isSocketReady(conn) && connectionAge > connectionAgeThreshold) ||
+      
+      (inactiveTime > cleanupThreshold && connectionAge > connectionAgeThreshold)
+    )
+    
+    if (shouldCleanup) {
+      console.log(chalk.yellow(`🧹 Programando limpieza de SubBot en índice ${index}:`))
+      console.log(chalk.yellow(`   📱 JID: ${conn.user?.jid || 'sin JID'}`))
+      console.log(chalk.yellow(`   ⏰ Edad: ${msToTime(connectionAge)}`))
+      console.log(chalk.yellow(`   😴 Inactivo: ${msToTime(inactiveTime)}`))
+      console.log(chalk.yellow(`   🔌 Socket: ${isSocketReady(conn) ? 'OK' : 'NO READY'}`))
+      
+      
+      try { 
+        if (conn?.ws && typeof conn.ws.close === 'function') {
+          conn.ws.close()
+        }
+      } catch (e) {}
+      
+      try { 
+        if (conn?.ev && typeof conn.ev.removeAllListeners === 'function') {
+          conn.ev.removeAllListeners()
+        }
+      } catch (e) {}
+      
+      indicesToRemove.push(index)
+    }
+  }
+  
+  
+  if (indicesToRemove.length > 0) {
+    console.log(chalk.blue(`🗑️ Limpiando ${indicesToRemove.length} conexiones inválidas`))
+    
+    indicesToRemove.reverse().forEach(i => {
       if (global.conns[i]) {
-        console.log(chalk.blue(`🗑️ Removiendo conexión inválida en índice ${i}`))
+        console.log(chalk.blue(`   ❌ Removida conexión en índice ${i}`))
         delete global.conns[i]
         global.conns.splice(i, 1)
       }
     })
+    
+   
+    if (global.gc) {
+      global.gc()
+      console.log(chalk.green('♻️ Garbage collection ejecutado'))
+    }
+  } else {
+    console.log(chalk.green(`✅ Todas las ${global.conns.length} conexiones están saludables`))
   }
+  
 } catch (error) {
-  console.error(`Error en monitor de limpieza: ${error.message}`)
+  console.error(`❌ Error en monitor de limpieza: ${error.message}`)
 }
-}, 2 * 60 * 1000) 
+}, 3 * 60 * 1000) 
 
 setInterval(() => {
   try {
