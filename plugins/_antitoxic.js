@@ -9,7 +9,8 @@ const toxicWords = {
     'idiota', 'estupido', 'estúpido', 'imbecil', 'imbécil',
     'mierda', 'joder', 'coño', 'cono', 'carajo', 'verga',
     'chingar', 'chinga', 'pinche', 'culero', 'culera',
-    'marica', 'maricon', 'maricón', 'gay', 'joto', 'pargo','pinga'
+    'marica', 'maricon', 'maricón', 'gay', 'joto', 'pargo','pinga',
+    'chobolo dow'
   ],
   
   
