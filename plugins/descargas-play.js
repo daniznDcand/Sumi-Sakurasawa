@@ -567,20 +567,6 @@ async function getDirectVideoUrl(url) {
 
 handler.before = async (m, { conn }) => {
   
-  if (m.sender && global.db.data.users[m.sender]?.lastYTSearch) {
-    console.log('\n🔍 [FULL DEBUG] Message received from user with active search:');
-    console.log(`   📱 Sender: ${m.sender}`);
-    console.log(`   📝 Type (mtype): ${m.mtype}`);
-    console.log(`   💬 Text: "${m.text}"`);
-    console.log(`   🗂️ Full message object:`, JSON.stringify(m, null, 2));
-    console.log(`   📊 Message structure:`, {
-      key: m.key,
-      message: m.message,
-      msg: m.msg
-    });
-    console.log('─'.repeat(80));
-  }
-  
   
   const buttonPatterns = [
     /^ytdl_(audio|video)_(mp3|mp4|doc)$/,
@@ -626,22 +612,16 @@ handler.before = async (m, { conn }) => {
   }
   
   if (!isButtonResponse && !textContainsButton && !isButtonTextResponse) {
-    
-    if (m.sender && global.db.data.users[m.sender]?.lastYTSearch) {
-      console.log(`❌ [DEBUG] Message "${m.text}" doesn't match any button pattern`);
-    }
     return false;
   }
   
   const user = global.db.data.users[m.sender];
   if (!user || !user.lastYTSearch) {
-    console.log(`❌ [DEBUG] No user or no active search for ${m.sender}`);
     return false;
   }
   
-  console.log(`✅ [BUTTON DETECTED] Pattern: ${matchedPattern || 'keyword match'}`);
-  console.log(`📱 User: ${m.sender}`);
-  console.log(`🎵 Active search: ${user.lastYTSearch.title}`);
+  // Reduced logging - only show key information
+  console.log(`🎵 Processing download: ${user.lastYTSearch.title}`);
   
   const currentTime = Date.now();
   const searchTime = user.lastYTSearch.timestamp || 0;
@@ -668,20 +648,15 @@ handler.before = async (m, { conn }) => {
   
   else if (/🎵.*MP3.*Audio/i.test(m.text)) {
     option = 1; 
-    console.log(`✅ [DETECTED] Button text matched: MP3 Audio`);
   } else if (/🎬.*MP4.*Video/i.test(m.text)) {
     option = 2; 
-    console.log(`✅ [DETECTED] Button text matched: MP4 Video`);
   } else if (/📁.*MP3.*Documento/i.test(m.text)) {
     option = 3; 
-    console.log(`✅ [DETECTED] Button text matched: MP3 Document`);
   } else if (/📁.*MP4.*Documento/i.test(m.text)) {
     option = 4; 
-    console.log(`✅ [DETECTED] Button text matched: MP4 Document`);
   }
   
   if (!option) {
-    console.log(`❌ [DEBUG] No option found for button text: "${m.text}"`);
     return false;
   }
   
