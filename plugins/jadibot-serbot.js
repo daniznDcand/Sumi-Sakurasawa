@@ -820,11 +820,12 @@ try {
 
 
 try {
-if (!sock.prefix) sock.prefix = global.prefix
+if (!sock.prefix) sock.prefix = global.prefix || '#'
 if (sock.user && sock.authState?.creds?.me) {
 sock.user.jid = sock.authState.creds.me.jid || sock.user.jid
 sock.user.name = sock.authState.creds.me.name || sock.user.name || 'SubBot'
 }
+
 
 
 sock.user = sock.user || {}
@@ -832,9 +833,33 @@ sock.chats = sock.chats || {}
 sock.contacts = sock.contacts || {}
 
 
-sock.sendMessage = sock.sendMessage.bind(sock)
-sock.updatePresence = sock.updatePresence.bind(sock) 
-sock.presenceSubscribe = sock.presenceSubscribe.bind(sock)
+if (typeof sock.sendMessage === 'function') {
+  try {
+    sock.sendMessage = sock.sendMessage.bind(sock)
+  } catch (e) {
+    console.log('⚠️ Error binding sendMessage:', e.message)
+  }
+}
+if (typeof sock.updatePresence === 'function') {
+  try {
+    sock.updatePresence = sock.updatePresence.bind(sock)
+  } catch (e) {
+    console.log('⚠️ Error binding updatePresence:', e.message)
+    sock.updatePresence = async () => {} 
+  }
+} else {
+  sock.updatePresence = async () => {} 
+}
+if (typeof sock.presenceSubscribe === 'function') {
+  try {
+    sock.presenceSubscribe = sock.presenceSubscribe.bind(sock)
+  } catch (e) {
+    console.log('⚠️ Error binding presenceSubscribe:', e.message)
+    sock.presenceSubscribe = async () => {} 
+  }
+} else {
+  sock.presenceSubscribe = async () => {} 
+}
 
 console.log('🔧 Propiedades básicas del SubBot configuradas')
 } catch (error) {
