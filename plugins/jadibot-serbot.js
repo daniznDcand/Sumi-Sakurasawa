@@ -203,33 +203,33 @@ version: version,
 generateHighQualityLinkPreview: false, 
 
 
-keepAliveIntervalMs: 45000,  
-markOnlineOnConnect: false, 
+keepAliveIntervalMs: 25000,  
+markOnlineOnConnect: false,  
 syncFullHistory: false,
 fireInitQueries: false,
 shouldSyncHistoryMessage: () => false,
-connectTimeoutMs: 200000,    
-defaultQueryTimeoutMs: 200000, 
+connectTimeoutMs: 300000,     
+defaultQueryTimeoutMs: 250000, 
 emitOwnEvents: false,
-qrTimeout: 600000,            
-retryRequestDelayMs: 8000,    
-maxMsgRetryCount: 10,         
-pairingCodeTimeout: 600000,   
+qrTimeout: 900000,            
+retryRequestDelayMs: 3000,    
+maxMsgRetryCount: 15,         
+pairingCodeTimeout: 900000,   
 
 
 transactionOpts: {
-maxCommitRetries: 15,        
-delayBetweenTriesMs: 8000    
+maxCommitRetries: 25,         
+delayBetweenTriesMs: 3000     
 },
 
 
 options: {
 chatsCache: false,            
 reconnectMode: 'on-connection-lost',
-reconnectDelay: 15000,       
-maxReconnectAttempts: 25,     
-backoffMaxDelay: 180000,      
-backoffMultiplier: 1.3,       
+reconnectDelay: 5000,         
+maxReconnectAttempts: 50,     
+backoffMaxDelay: 60000,       
+backoffMultiplier: 1.2,       
 },
 
 getMessage: async (key) => {
@@ -272,36 +272,51 @@ sock.heartbeatInterval = null
 sock.sessionPersistence = true
 sock.autoReconnect = true
 sock.lastHeartbeat = Date.now()
-sock.maxInactiveTime = 3600000  
-sock.healthCheckInterval = 60000  
+sock.maxInactiveTime = 7200000  
+sock.healthCheckInterval = 30000  
+sock.connectionStability = 'ultra-high'
+sock.tolerateErrors = true
+sock.maxErrorsBeforeReconnect = 10  
+sock.errorCount = 0
 
 
 function isSocketReady(s) {
   try {
     if (!s) {
-      console.log('⚠️ Socket is null/undefined')
       return false
     }
     
     
     const hasWebSocket = s.ws && s.ws.socket
-    const isOpen = hasWebSocket && s.ws.socket.readyState === ws.OPEN
+    const isOpen = hasWebSocket && s.ws.socket.readyState === 1 
     const hasUser = s.user && s.user.jid
-    const hasAuthState = s.authState && s.authState.creds
-    const isConnected = s.connectionStatus === 'open' || isOpen
     
-    const isReady = hasWebSocket && isOpen && hasUser && hasAuthState && isConnected
     
-    if (!isReady) {
+    const hasBasicAuth = s.authState || s.user
+    
+    
+    const isConnected = s.connectionStatus === 'open' || isOpen || s.connectionStatus === 'connecting'
+    
+    const isReady = hasWebSocket && isOpen && hasUser && hasBasicAuth
+    
+    
+    if (!isReady && (!s._lastErrorLog || (Date.now() - s._lastErrorLog) > 30000)) {
       const status = s.connectionStatus || 'undefined'
       const wsState = hasWebSocket ? s.ws.socket.readyState : 'no-ws'
       const userJid = hasUser ? 'has-user' : 'no-user'
-      console.log(`⚠️ Socket no listo: estado=${status}, ws=${wsState}, user=${userJid}`)
+      const authStatus = s.authState ? 'has-auth' : 'no-auth'
+      
+      console.log(`⚠️ Socket no listo para +${path.basename(pathMikuJadiBot)}: estado=${status}, ws=${wsState}, user=${userJid}, auth=${authStatus}`)
+      s._lastErrorLog = Date.now()
     }
     
     return isReady
   } catch (e) {
-    console.log('⚠️ Error verificando estado del socket:', e.message)
+    
+    if (!s._lastExceptionLog || (Date.now() - s._lastExceptionLog) > 60000) {
+      console.log(`⚠️ Error verificando estado del socket +${path.basename(pathMikuJadiBot)}:`, e.message)
+      s._lastExceptionLog = Date.now()
+    }
     return false
   }
 }
@@ -855,7 +870,7 @@ try {
         
         sock._shouldReconnect = true
       }
-    }, 15000)  
+    }, 20000)  
   }
 } catch (e) {
   console.error('Error configurando keep-alive:', e.message)
@@ -1103,7 +1118,7 @@ sock.lastActivity = Date.now()
 
 setInterval(async () => {
 const currentTime = Date.now()
-const cleanupThreshold = 5 * 60 * 1000 
+const cleanupThreshold = 30 * 60 * 1000 // Aumentado a 30 minutos para mayor tolerancia
 
 try {
  
