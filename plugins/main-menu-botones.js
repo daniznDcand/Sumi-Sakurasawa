@@ -315,23 +315,23 @@ function clockString(ms) {
 handler.before = async function (m, { conn, usedPrefix }) {
   if (!m.message) return false
   
-  // Detectar botones sin spam de logs
+  
   let buttonId = null
   let buttonText = null
   
-  // Template button
+ 
   if (m.message.templateButtonReplyMessage) {
     buttonId = m.message.templateButtonReplyMessage.selectedId
     buttonText = m.message.templateButtonReplyMessage.selectedDisplayText
   }
   
-  // Buttons response
+  
   if (m.message.buttonsResponseMessage) {
     buttonId = m.message.buttonsResponseMessage.selectedButtonId
     buttonText = m.message.buttonsResponseMessage.selectedDisplayText
   }
   
-  // Interactive response
+  
   if (m.message.interactiveResponseMessage) {
     try {
       const paramsJson = m.message.interactiveResponseMessage.nativeFlowResponseMessage?.paramsJson
@@ -340,28 +340,28 @@ handler.before = async function (m, { conn, usedPrefix }) {
         buttonId = params.id
       }
     } catch (e) {
-      // Silent error handling
+      
     }
   }
   
-  // List response
+ 
   if (m.message.listResponseMessage) {
     buttonId = m.message.listResponseMessage.singleSelectReply?.selectedRowId
     buttonText = m.message.listResponseMessage.title
   }
   
-  // QuickReply
+  
   if (m.message.quickReplyMessage) {
     buttonId = m.message.quickReplyMessage.quickReplyButton?.id
     buttonText = m.message.quickReplyMessage.quickReplyButton?.displayText
   }
   
-  // Process menu buttons (only log once per session)
+  
   if (buttonId && (buttonId.startsWith('menu') || buttonId === 'menu')) {
-    // Mark as menu to prevent other handlers from processing
+    
     m.isMenu = true
     
-    // Create fake message for command execution
+    
     const fakeM = {
       ...m,
       text: buttonId,
@@ -375,8 +375,51 @@ handler.before = async function (m, { conn, usedPrefix }) {
       await handler(fakeM, { conn, usedPrefix: '.', command: buttonId, args: [] })
       return true 
     } catch (error) {
-      console.log('❌ Error ejecutando comando de botón:', error)
-      await conn.reply(m.chat, `⚠️ Error procesando el comando: ${buttonId}`, m)
+      console.log('❌ Error ejecutando comando de botón:', error.message)
+      
+      
+      try {
+       
+        if (buttonId === 'menu_descargas') {
+          const buttons = [['⬅️ Volver al Menú', 'menu']]
+          const text = `📥 *MENÚ DE DESCARGAS*
+
+🎵 ═══ *MÚSICA Y VIDEOS* ═══ 🎵
+🎼 \`.play [nombre]\` - YouTube Music
+🎥 \`.ytmp3 [url]\` - YouTube a MP3
+📹 \`.ytmp4 [url]\` - YouTube a MP4
+
+📱 ═══ *REDES SOCIALES* ═══ 📱
+🎬 \`.tiktok [url]\` - Videos TikTok
+📸 \`.instagram [url]\` - Posts IG
+💙 \`.facebook [url]\` - Videos FB
+🐦 \`.twitter [url]\` - Videos Twitter
+
+📁 ═══ *ARCHIVOS* ═══ 📁
+💾 \`.mediafire [url]\` - MediaFire
+☁️ \`.mega [url]\` - MEGA
+📱 \`.apk [nombre]\` - APKs
+
+💙 *Escribe cualquier comando para usarlo*
+⬅️ *O toca el botón para volver al menú principal*`
+          
+          const footer = '🎵 Módulo de Descargas - Hatsune Miku Bot'
+          const descargasGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+          
+          await conn.sendNCarousel(m.chat, text, footer, descargasGif, buttons, null, null, null, m)
+          return true
+        }
+        
+        
+        const menuContext = { conn, usedPrefix: '.', command: buttonId, args: [] }
+        fakeM.command = buttonId
+        await handler(fakeM, menuContext)
+        return true
+        
+      } catch (fallbackError) {
+        console.log('❌ Fallback también falló:', fallbackError.message)
+        await conn.reply(m.chat, `⚠️ Error procesando el comando: ${buttonId}`, m)
+      }
     }
   }
   
