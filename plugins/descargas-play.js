@@ -297,136 +297,95 @@ async function getVideoUrl(url) {
 
 handler.before = async (m, { conn }) => {
   
-  if (m.selectedButtonId || m.butt || m.selectedId) {
-    console.log('🔍 [DEBUG] Detectado clic de botón:');
-    console.log('📱 m.selectedButtonId:', m.selectedButtonId);
-    console.log('📱 m.butt:', m.butt);
-    console.log('📱 m.selectedId:', m.selectedId);
-    console.log('📱 m.text:', m.text);
-    console.log('📱 m.mtype:', m.mtype);
-  }
+  const buttonId = m.selectedButtonId || m.butt || m.selectedId;
   
-  
-  const buttonId = m.selectedButtonId || m.butt || m.selectedId || 
-                   (m.message?.buttonsResponseMessage?.selectedButtonId) ||
-                   (m.message?.templateButtonReplyMessage?.selectedId);
-  
-  if (buttonId) {
-    console.log('✅ [PARSER] Found buttonId:', buttonId);
-    
-    const chatInfo = global.videoInfoCache?.[m.chat];
-    
-    if (!chatInfo) {
-      console.log('❌ [ERROR] No hay videoInfoCache para chat:', m.chat);
-      return m.reply('❌ No hay información de video disponible. Busca un video primero.');
-    }
-    
-    console.log('📹 [INFO] Usando video:', chatInfo.title);
+  if (buttonId && global.videoInfoCache?.[m.chat]) {
+    const chatInfo = global.videoInfoCache[m.chat];
     const { url, title } = chatInfo;
     
     if (buttonId === 'ytdl_audio_mp3') {
       try {
-        console.log('🎵 [ACTION] Iniciando descarga de audio...');
         await m.reply('⬇️ Descargando audio...');
         const audioUrl = await getAudioUrl(url);
         
         if (audioUrl) {
-          console.log('✅ [SUCCESS] Audio URL obtenido, enviando...');
           await conn.sendMessage(m.chat, {
             audio: { url: audioUrl },
             mimetype: 'audio/mpeg',
             fileName: `${title}.mp3`
           }, { quoted: m });
-          await m.reply('✅ Audio enviado exitosamente');
         } else {
-          console.log('❌ [ERROR] No se pudo obtener audio URL');
-          m.reply(`❌ No se pudo descargar el audio de: *${title}*\n\n🔗 *URL:* ${url}\n\n💌 Puedes intentar más tarde o usar esta URL en tu descargador favorito.`);
+          m.reply(`❌ No se pudo descargar el audio de: *${title}*`);
         }
       } catch (error) {
-        console.error('❌ [ERROR] Error descargando audio:', error);
+        console.error('Error descargando audio:', error);
         m.reply('❌ Error al descargar el audio.');
       }
-      return false; 
+      return false;
     }
     
-    else if (buttonId === 'ytdl_video_mp4') {
+    if (buttonId === 'ytdl_video_mp4') {
       try {
-        console.log('🎬 [ACTION] Iniciando descarga de video...');
         await m.reply('⬇️ Descargando video...');
         const videoUrl = await getVideoUrl(url);
         
         if (videoUrl) {
-          console.log('✅ [SUCCESS] Video URL obtenido, enviando...');
           await conn.sendMessage(m.chat, {
             video: { url: videoUrl },
             mimetype: 'video/mp4',
             fileName: `${title}.mp4`,
             caption: `🎬 *${title}*`
           }, { quoted: m });
-          await m.reply('✅ Video enviado exitosamente');
         } else {
-          console.log('❌ [ERROR] No se pudo obtener video URL');
-          m.reply(`❌ No se pudo descargar el video de: *${title}*\n\n🔗 *URL:* ${url}\n\n💌 Puedes intentar más tarde o usar esta URL en tu descargador favorito.`);
+          m.reply(`❌ No se pudo descargar el video de: *${title}*`);
         }
       } catch (error) {
-        console.error('❌ [ERROR] Error descargando video:', error);
+        console.error('Error descargando video:', error);
         m.reply('❌ Error al descargar el video.');
       }
-      return false; 
+      return false;
     }
     
-    else if (buttonId === 'ytdl_audio_doc') {
+    if (buttonId === 'ytdl_audio_doc') {
       try {
-        console.log('📁 [ACTION] Iniciando descarga de audio como documento...');
         await m.reply('⬇️ Descargando audio como documento...');
         const audioUrl = await getAudioUrl(url);
         
         if (audioUrl) {
-          console.log('✅ [SUCCESS] Audio doc URL obtenido, enviando...');
           await conn.sendMessage(m.chat, {
             document: { url: audioUrl },
             mimetype: 'audio/mpeg',
             fileName: `${title}.mp3`
           }, { quoted: m });
-          await m.reply('✅ Audio documento enviado');
         } else {
-          console.log('❌ [ERROR] No se pudo obtener audio doc URL');
-          m.reply(`❌ No se pudo descargar el audio de: *${title}*\n\n🔗 *URL:* ${url}\n\n💌 Puedes intentar más tarde o usar esta URL en tu descargador favorito.`);
+          m.reply(`❌ No se pudo descargar el audio de: *${title}*`);
         }
       } catch (error) {
-        console.error('❌ [ERROR] Error descargando audio como documento:', error);
+        console.error('Error descargando audio como documento:', error);
         m.reply('❌ Error al descargar el audio como documento.');
       }
       return false;
     }
     
-    else if (buttonId === 'ytdl_video_doc') {
+    if (buttonId === 'ytdl_video_doc') {
       try {
-        console.log('📁 [ACTION] Iniciando descarga de video como documento...');
         await m.reply('⬇️ Descargando video como documento...');
         const videoUrl = await getVideoUrl(url);
         
         if (videoUrl) {
-          console.log('✅ [SUCCESS] Video doc URL obtenido, enviando...');
           await conn.sendMessage(m.chat, {
             document: { url: videoUrl },
             mimetype: 'video/mp4',
             fileName: `${title}.mp4`
           }, { quoted: m });
-          await m.reply('✅ Video documento enviado');
         } else {
-          console.log('❌ [ERROR] No se pudo obtener video doc URL');
-          m.reply(`❌ No se pudo descargar el video de: *${title}*\n\n🔗 *URL:* ${url}\n\n💌 Puedes intentar más tarde o usar esta URL en tu descargador favorito.`);
+          m.reply(`❌ No se pudo descargar el video de: *${title}*`);
         }
       } catch (error) {
-        console.error('❌ [ERROR] Error descargando video como documento:', error);
+        console.error('Error descargando video como documento:', error);
         m.reply('❌ Error al descargar el video como documento.');
       }
-      return false; 
-    }
-    
-    else {
-      console.log('⚠️ [WARNING] ButtonId no reconocido:', buttonId);
+      return false;
     }
   }
   
@@ -438,7 +397,6 @@ handler.before = async (m, { conn }) => {
     
     if (userResponse === 'audio' || userResponse === 'mp3') {
       try {
-        console.log('🎵 [TEXT] Descarga de audio por texto...');
         m.reply('⬇️ Descargando audio...');
         const audioUrl = await getAudioUrl(url);
         
@@ -448,8 +406,6 @@ handler.before = async (m, { conn }) => {
             mimetype: 'audio/mpeg',
             fileName: `${title}.mp3`
           }, { quoted: m });
-        } else {
-          m.reply(`❌ No se pudo descargar el audio de: *${title}*\n\n🔗 *URL:* ${url}\n\n💌 Puedes intentar más tarde o usar esta URL en tu descargador favorito.`);
         }
       } catch (error) {
         console.error('Error descargando audio:', error);
@@ -460,7 +416,6 @@ handler.before = async (m, { conn }) => {
     
     if (userResponse === 'video' || userResponse === 'mp4') {
       try {
-        console.log('🎬 [TEXT] Descarga de video por texto...');
         m.reply('⬇️ Descargando video...');
         const videoUrl = await getVideoUrl(url);
         
@@ -471,34 +426,10 @@ handler.before = async (m, { conn }) => {
             fileName: `${title}.mp4`,
             caption: `🎬 *${title}*`
           }, { quoted: m });
-        } else {
-          m.reply(`❌ No se pudo descargar el video de: *${title}*\n\n🔗 *URL:* ${url}\n\n💌 Puedes intentar más tarde o usar esta URL en tu descargador favorito.`);
         }
       } catch (error) {
         console.error('Error descargando video:', error);
         m.reply('❌ Error al descargar el video.');
-      }
-      return false;
-    }
-    
-    if (userResponse === 'doc' || userResponse === 'documento') {
-      try {
-        console.log('📁 [TEXT] Descarga de documento por texto...');
-        m.reply('⬇️ Descargando como documento...');
-        const audioUrl = await getAudioUrl(url);
-        
-        if (audioUrl) {
-          await conn.sendMessage(m.chat, {
-            document: { url: audioUrl },
-            mimetype: 'audio/mpeg',
-            fileName: `${title}.mp3`
-          }, { quoted: m });
-        } else {
-          m.reply(`❌ No se pudo descargar el audio de: *${title}*\n\n🔗 *URL:* ${url}\n\n💌 Puedes intentar más tarde o usar esta URL en tu descargador favorito.`);
-        }
-      } catch (error) {
-        console.error('Error descargando documento:', error);
-        m.reply('❌ Error al descargar el documento.');
       }
       return false;
     }
