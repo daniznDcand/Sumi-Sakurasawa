@@ -452,7 +452,7 @@ function isSocketReady(s) {
       (hasUser && (hasWebSocket || hasBasicAuth)) :  
       (hasWebSocket && isOpen && hasUser && hasBasicAuth) 
     
-   
+    
     if (!isReady && !isNewConnection && connectionAge > 300000) { 
       s._shouldDelete = true
       
