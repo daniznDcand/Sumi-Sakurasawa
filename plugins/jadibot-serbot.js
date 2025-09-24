@@ -326,36 +326,38 @@ msgRetry,
 msgRetryCache,
 browser: mcode ? Browsers.macOS("Safari") : Browsers.ubuntu("Chrome"),
 version: version,
-generateHighQualityLinkPreview: false, 
+generateHighQualityLinkPreview: false,
 
 
-keepAliveIntervalMs: 15000,    
-markOnlineOnConnect: true,    
+protocol: 'http',
+hostname: 'localhost',
+port: undefined,
+
+keepAliveIntervalMs: 15000,
+markOnlineOnConnect: true,
 syncFullHistory: false,
-fireInitQueries: true,         
+fireInitQueries: true,
 shouldSyncHistoryMessage: () => false,
-connectTimeoutMs: 120000,      
-defaultQueryTimeoutMs: 90000,  
+connectTimeoutMs: 120000,
+defaultQueryTimeoutMs: 90000,
 emitOwnEvents: false,
-qrTimeout: 600000,             
-retryRequestDelayMs: 2000,     
-maxMsgRetryCount: 20,          
-pairingCodeTimeout: 600000,    
-
+qrTimeout: 600000,
+retryRequestDelayMs: 2000,
+maxMsgRetryCount: 20,
+pairingCodeTimeout: 600000,
 
 transactionOpts: {
-maxCommitRetries: 30,          
-delayBetweenTriesMs: 2000      
+maxCommitRetries: 30,
+delayBetweenTriesMs: 2000
 },
 
-
 options: {
-chatsCache: true,              
-reconnectMode: 'on-any-error', 
-reconnectDelay: 3000,          
-maxReconnectAttempts: 100,     
-backoffMaxDelay: 120000,       
-backoffMultiplier: 1.15,       
+chatsCache: true,
+reconnectMode: 'on-any-error',
+reconnectDelay: 3000,
+maxReconnectAttempts: 100,
+backoffMaxDelay: 120000,
+backoffMultiplier: 1.15,
 },
 
 getMessage: async (key) => {
@@ -384,10 +386,27 @@ if (connectionOptions.auth?.keys) {
   connectionOptions.auth.keys.maxCacheSize = 1000 
 }
 
-let sock = makeWASocket(connectionOptions)
-sock.isInit = false
-sock.well = false  
-sock.reconnectAttempts = 0
+
+if (!connectionOptions.protocol) {
+  connectionOptions.protocol = 'http'
+  console.log('⚠️ Configurando protocolo por defecto')
+}
+
+if (!connectionOptions.version && version) {
+  connectionOptions.version = version
+  console.log('⚠️ Configurando versión de Baileys')
+}
+
+let sock
+try {
+  sock = makeWASocket(connectionOptions)
+  sock.isInit = false
+  sock.well = false  
+  sock.reconnectAttempts = 0
+} catch (error) {
+  console.error('❌ Error creando socket:', error.message)
+  throw new Error(`Error en configuración de socket: ${error.message}`)
+}
 sock.maxReconnectAttempts = 50  
 sock.lastActivity = Date.now()
 sock.sessionStartTime = sessionStartTime
@@ -1515,7 +1534,21 @@ if (restatConn) {
 const oldChats = sock.chats
 try { sock.ws.close() } catch { }
 sock.ev.removeAllListeners()
-sock = makeWASocket(connectionOptions, { chats: oldChats })
+
+
+if (!connectionOptions.protocol) {
+  connectionOptions.protocol = 'http'
+}
+
+try {
+  sock = makeWASocket(connectionOptions, { chats: oldChats })
+} catch (error) {
+  console.error('❌ Error recreando socket:', error.message)
+  
+  const basicOptions = { ...connectionOptions }
+  delete basicOptions.options
+  sock = makeWASocket(basicOptions, { chats: oldChats })
+}
 
 
 sock.isInit = true
