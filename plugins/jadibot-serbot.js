@@ -28,11 +28,12 @@ if (global.conns instanceof Array) console.log()
 else global.conns = []
 
 
+
 const RESOURCE_LIMITS = {
-  MAX_RAM_MB: 2048,        
-  MAX_STORAGE_MB: 3072,    
-  MAX_SUBBOTS: 25,         
-  CLEANUP_INTERVAL: 30000, 
+  MAX_RAM_MB: 4096,        
+  MAX_STORAGE_MB: 6144,    
+  MAX_SUBBOTS: 50,         
+  CLEANUP_INTERVAL: 20000, 
   DELETE_TIMEOUT: 300000  
 }
 
@@ -67,7 +68,7 @@ setInterval(async () => {
           if (conn.ev && typeof conn.ev.removeAllListeners === 'function') {
             conn.ev.removeAllListeners()
           }
-          // Limpiar intervalos
+         
           ['_keepAliveInterval', '_saveCredsInterval', '_inactivityMonitor', 'heartbeatInterval', '_presenceInterval'].forEach(interval => {
             if (conn[interval]) {
               clearInterval(conn[interval])
@@ -103,23 +104,42 @@ setInterval(async () => {
 }, RESOURCE_LIMITS.CLEANUP_INTERVAL)
 
 
+
 function checkResourceLimits() {
-  const activeConnections = global.conns.filter(c => c && c.user).length
+  
+  const activeConnections = global.conns.filter(c => 
+    c && c.user && c.ws && c.ws.socket && c.ws.socket.readyState === 1
+  ).length
   
   
   if (activeConnections >= RESOURCE_LIMITS.MAX_SUBBOTS) {
-    console.log(chalk.yellow(`⚠️ Límite de SubBots alcanzado: ${activeConnections}/${RESOURCE_LIMITS.MAX_SUBBOTS}`))
+    console.log(chalk.yellow(`⚠️ Límite de SubBots funcionando alcanzado: ${activeConnections}/${RESOURCE_LIMITS.MAX_SUBBOTS}`))
     return false
   }
   
- 
+  
   try {
+    const memUsage = process.memoryUsage()
+    const memUsedMB = Math.round(memUsage.heapUsed / 1024 / 1024)
+    const memPercent = Math.round((memUsage.heapUsed / memUsage.heapTotal) * 100)
+    
+    
+    if (memPercent > 90) {
+      console.log(chalk.red(`⚠️ Memoria crítica: ${memUsedMB}MB (${memPercent}%)`))
+      return false
+    } else if (memPercent > 75) {
+      console.log(chalk.yellow(`⚠️ Memoria alta: ${memUsedMB}MB (${memPercent}%)`))
+      
+    }
+    
+    
     const jadiPath = path.join(process.cwd(), 'jadi')
     if (fs.existsSync(jadiPath)) {
       const stats = fs.statSync(jadiPath)
       const sizeGB = stats.size / (1024 * 1024 * 1024)
-      if (sizeGB > 3) {
-        console.log(chalk.yellow(`⚠️ Almacenamiento alto: ${sizeGB.toFixed(2)}GB/3GB`))
+      if (sizeGB > 6) {
+        console.log(chalk.yellow(`⚠️ Almacenamiento alto: ${sizeGB.toFixed(2)}GB/6GB`))
+        
       }
     }
   } catch (e) {}
@@ -261,7 +281,7 @@ export async function mikuJadiBot(options) {
 
 if (!checkResourceLimits()) {
   const { m, usedPrefix } = options
-  return m.reply(`🚫 *Límite de recursos alcanzado*\n\n📊 SubBots activos: ${global.conns.filter(c => c && c.user).length}/${RESOURCE_LIMITS.MAX_SUBBOTS}\n💾 Sistema optimizado para 2GB RAM / 3GB almacenamiento\n\n⏳ Espera a que se liberen recursos automáticamente\n💡 El sistema elimina SubBots inactivos cada 30 segundos`)
+  return m.reply(`🚫 *Sistema temporalmente saturado*\n\n📊 SubBots activos: ${global.conns.filter(c => c && c.user && c.ws?.socket?.readyState === 1).length}/${RESOURCE_LIMITS.MAX_SUBBOTS}\n💾 Sistema optimizado para 4GB RAM / 6GB almacenamiento\n\n⏳ Espera unos minutos - el sistema se optimiza automáticamente\n💡 Los SubBots inactivos se desconectan automáticamente cada 20 segundos`)
 }
 
 let { pathMikuJadiBot, m, conn, args, usedPrefix, command } = options
@@ -309,33 +329,33 @@ version: version,
 generateHighQualityLinkPreview: false, 
 
 
-keepAliveIntervalMs: 25000,  
-markOnlineOnConnect: false,  
+keepAliveIntervalMs: 15000,    
+markOnlineOnConnect: true,    
 syncFullHistory: false,
-fireInitQueries: false,
+fireInitQueries: true,         
 shouldSyncHistoryMessage: () => false,
-connectTimeoutMs: 300000,     
-defaultQueryTimeoutMs: 250000, 
+connectTimeoutMs: 120000,      
+defaultQueryTimeoutMs: 90000,  
 emitOwnEvents: false,
-qrTimeout: 900000,            
-retryRequestDelayMs: 3000,    
-maxMsgRetryCount: 15,         
-pairingCodeTimeout: 900000,   
+qrTimeout: 600000,             
+retryRequestDelayMs: 2000,     
+maxMsgRetryCount: 20,          
+pairingCodeTimeout: 600000,    
 
 
 transactionOpts: {
-maxCommitRetries: 25,         
-delayBetweenTriesMs: 3000     
+maxCommitRetries: 30,          
+delayBetweenTriesMs: 2000      
 },
 
 
 options: {
-chatsCache: false,            
-reconnectMode: 'on-connection-lost',
-reconnectDelay: 5000,         
-maxReconnectAttempts: 50,     
-backoffMaxDelay: 60000,       
-backoffMultiplier: 1.2,       
+chatsCache: true,              
+reconnectMode: 'on-any-error', 
+reconnectDelay: 3000,          
+maxReconnectAttempts: 100,     
+backoffMaxDelay: 120000,       
+backoffMultiplier: 1.15,       
 },
 
 getMessage: async (key) => {
@@ -483,10 +503,12 @@ console.log(chalk.yellow(`🔄 Intento de reconexión ${sock.reconnectAttempts}/
     }
 
 
-const baseWait = 15000  
-const maxWait = 10 * 60 * 1000  
-const exponentialBackoff = Math.min(maxWait, baseWait * Math.pow(1.5, Math.min(sock.reconnectAttempts - 1, 10)))
-console.log(chalk.blue(`⏳ Esperando ${Math.round(exponentialBackoff/1000)}s antes de reconectar...`))
+
+const baseWait = 5000   
+const maxWait = 3 * 60 * 1000  
+const backoffLimit = 8 
+const exponentialBackoff = Math.min(maxWait, baseWait * Math.pow(1.2, Math.min(sock.reconnectAttempts - 1, backoffLimit)))
+console.log(chalk.blue(`⏳ Esperando ${Math.round(exponentialBackoff/1000)}s antes de reconectar (intento ${sock.reconnectAttempts})...`))
 await new Promise(resolve => setTimeout(resolve, exponentialBackoff))
 
 try {
@@ -496,12 +518,19 @@ try {
     clearInterval(sock.heartbeatInterval)
     sock.heartbeatInterval = null
   }
+  if (sock.pingInterval) {
+    clearInterval(sock.pingInterval)
+    sock.pingInterval = null
+  }
+  
   sock.ev.removeAllListeners()
+  
   if (sock.ws && typeof sock.ws.close === 'function') {
     sock.ws.close()
   }
- 
-  await new Promise(resolve => setTimeout(resolve, 3000))
+  
+  
+  await new Promise(resolve => setTimeout(resolve, 1500))
 } catch (e) {
   console.log('Error cerrando conexión anterior:', e.message)
 }
@@ -509,10 +538,10 @@ try {
 
 const reconnectOptions = {
   ...connectionOptions,
-  connectTimeoutMs: 360000,     
-  defaultQueryTimeoutMs: 360000, 
-  keepAliveIntervalMs: 45000,   
-  retryRequestDelayMs: 3000,    
+  connectTimeoutMs: 90000,       
+  defaultQueryTimeoutMs: 75000,  
+  keepAliveIntervalMs: 12000,    
+  retryRequestDelayMs: 2000,       
   maxMsgRetryCount: 25,         
   qrTimeout: 1200000,           
   pairingCodeTimeout: 1200000,  

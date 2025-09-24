@@ -122,44 +122,7 @@ function isValidUrl(string) {
 }
 
 
-async function handleGoogleYTv3API(apiConfig) {
-  try {
-    console.log('🎯 Procesando con Google YouTube v3 API...');
-    
-    const response = await fetch(apiConfig.endpoint, {
-      method: 'GET',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept': 'application/json'
-      }
-    });
-    
-    if (!response.ok) {
-      console.log(`❌ Google API error: ${response.status}`);
-      return null;
-    }
-    
-    const data = await response.json();
-    
-    if (data.items && data.items.length > 0) {
-      const video = data.items[0];
-      const videoId = video.id;
-      
-      
-      if (apiConfig.api.includes('Google-YT-v3') && !apiConfig.api.includes('Video')) {
-        return `https://rr3---sn-4g5e6ne7.googlevideo.com/videoplayback?expire=9999999999&ei=abc123&ip=0.0.0.0&id=${videoId}&itag=140&aitags=140&source=youtube&requiressl=yes&mime=audio/mp4&gir=yes&clen=0&dur=0&lmt=0&fvip=3&c=WEB&txp=5532432&sparams=expire,ei,ip,id,aitags,source,requiressl,mime,gir,clen,dur,lmt&lsparams=mh,mm,mn,ms,mv,mvi,pl,lsig&lsig=AG3C_xAwRAIgDummy`;
-      } else {
-        // Para video
-        return `https://rr3---sn-4g5e6ne7.googlevideo.com/videoplayback?expire=9999999999&ei=abc123&ip=0.0.0.0&id=${videoId}&itag=22&source=youtube&requiressl=yes&mime=video/mp4&cnr=14&dur=0&lmt=0&fvip=3&c=WEB&txp=5532432&sparams=expire,ei,ip,id,itag,source,requiressl,mime,cnr,dur,lmt&lsparams=mh,mm,mn,ms,mv,mvi,pl,lsig&lsig=AG3C_xAwRAIgDummy`;
-      }
-    }
-    
-    return null;
-  } catch (error) {
-    console.log(`❌ Error en Google YT v3 API: ${error.message}`);
-    return null;
-  }
-}
+// Google YT v3 API handler removido - no funcional
 
 async function validateDownloadUrl(url) {
   if (!url || typeof url !== 'string' || url.trim() === '') {
@@ -174,7 +137,7 @@ async function validateDownloadUrl(url) {
     console.log(`🔍 Validating download URL: ${url.substring(0, 100)}...`);
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 segundos timeout
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // Reducido de 15 a 8 segundos
     
     const response = await fetch(url, {
       method: 'HEAD',
@@ -319,28 +282,13 @@ async function fetchFromApis(apis) {
     try {
       console.log(`🔍 Probando ${apis[i].api}: ${apis[i].endpoint}`);
       
-      
-      if (apis[i].api.includes('Google-YT-v3')) {
-        const result = await handleGoogleYTv3API(apis[i]);
-        if (result) {
-          console.log(`✅ ${apis[i].api} - URL obtenida exitosamente`);
-          const isValid = await validateDownloadUrl(result);
-          if (isValid) {
-            return result;
-          } else {
-            console.log(`❌ ${apis[i].api} - URL no válida, continuando...`);
-            continue;
-          }
-        }
-      }
-      
       const fetchOptions = {
         method: apis[i].method || 'GET',
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
           ...apis[i].headers
         },
-        timeout: 8000 
+        timeout: 5000
       };
       
       if (apis[i].body) {
@@ -357,33 +305,30 @@ async function fetchFromApis(apis) {
       const apiJson = await response.json();
       console.log(`${apis[i].api} response:`, JSON.stringify(apiJson, null, 2));
       
+      const downloadUrl = apis[i].extractor(apiJson);
+        
+      // Validación de URL más rápida - skip validation para URLs confiables
+      const isTrustedDomain = downloadUrl && (
+        downloadUrl.includes('savemedia.website') || 
+        downloadUrl.includes('stellarwa.xyz') || 
+        downloadUrl.includes('da.gd')
+      );
       
-      if (apis[i].api === 'API.Video' || apis[i].api === 'API.Video-Audio') {
-        const downloadUrl = await handleApiVideoResponse(apiJson, apis[i].api);
-        if (downloadUrl && isValidUrl(downloadUrl)) {
-          
-          const isWorking = await validateDownloadUrl(downloadUrl);
-          if (isWorking) {
-            console.log(`✅ ${apis[i].api} devolvió URL válida y funcional: ${downloadUrl}`);
-            return downloadUrl;
-          } else {
-            console.log(`❌ ${apis[i].api} URL no funciona (404 o error): ${downloadUrl}`);
-          }
+      if (downloadUrl && isValidUrl(downloadUrl)) {
+        if (isTrustedDomain) {
+          console.log(`✅ ${apis[i].api} - Trusted domain, skipping validation`);
+          return downloadUrl;
+        }
+        
+        const isWorking = await validateDownloadUrl(downloadUrl);
+        if (isWorking) {
+          console.log(`✅ ${apis[i].api} devolvió URL válida y funcional: ${downloadUrl}`);
+          return downloadUrl;
+        } else {
+          console.log(`❌ ${apis[i].api} URL no funciona (404 o error): ${downloadUrl}`);
         }
       } else {
-        const downloadUrl = apis[i].extractor(apiJson);
-        if (downloadUrl && isValidUrl(downloadUrl)) {
-          
-          const isWorking = await validateDownloadUrl(downloadUrl);
-          if (isWorking) {
-            console.log(`✅ ${apis[i].api} devolvió URL válida y funcional: ${downloadUrl}`);
-            return downloadUrl;
-          } else {
-            console.log(`❌ ${apis[i].api} URL no funciona (404 o error): ${downloadUrl}`);
-          }
-        } else {
-          console.log(`✗ ${apis[i].api} no devolvió URL válida:`, downloadUrl);
-        }
+        console.log(`✗ ${apis[i].api} no devolvió URL válida:`, downloadUrl);
       }
       
     } catch (error) {
@@ -397,20 +342,17 @@ async function fetchFromApis(apis) {
 
 
 async function getAud(url) {
+  // Solo APIs que funcionan
   const apis = [
-    { api: 'ZenzzXD', endpoint: `https://api.zenzxz.my.id/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-    { api: 'ZenzzXD v2', endpoint: `https://api.zenzxz.my.id/downloader/ytmp3v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url }, 
-    { api: 'Vreden', endpoint: `https://api.vreden.tech/api/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url },
-    { api: 'Delirius', endpoint: `https://delirius-apiofc.vercel.app/download/ymp3?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url }
+    { api: 'ZenzzXD', endpoint: `https://api.zenzxz.my.id/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.download_url }
   ]
   return await fetchFromBackupApis(apis)
 }
 
 async function getVid(url) {
+  // Solo APIs que funcionan
   const apis = [
     { api: 'ZenzzXD', endpoint: `https://api.zenzxz.my.id/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-    { api: 'ZenzzXD v2', endpoint: `https://api.zenzxz.my.id/downloader/ytmp4v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-    { api: 'Vreden', endpoint: `https://api.vreden.tech/api/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url },
     { api: 'Delirius', endpoint: `https://delirius-apiofc.vercel.app/download/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url }
   ]
   return await fetchFromBackupApis(apis)
@@ -420,150 +362,77 @@ async function fetchFromBackupApis(apis) {
   for (const { api, endpoint, extractor } of apis) {
     try {
       const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 5000) 
+      const timeout = setTimeout(() => controller.abort(), 3000) // Reducido de 5000 a 3000ms
       const res = await fetch(endpoint, { signal: controller.signal }).then(r => r.json())
       clearTimeout(timeout)
       const link = extractor(res)
       if (link) return { url: link, api }
     } catch (e) {}
-    await new Promise(resolve => setTimeout(resolve, 200)) 
+    await new Promise(resolve => setTimeout(resolve, 100)) // Reducido de 200ms a 100ms
   }
   return null
 }
 
 
-async function handleApiVideoResponse(response, apiType) {
-  try {
-    
-    if (response.videoId) {
-      console.log(`📹 ${apiType} videoId: ${response.videoId}`);
-      
-      
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      
-      const videoDetailResponse = await fetch(`https://sandbox.api.video/videos/${response.videoId}`, {
-        headers: {
-          'Authorization': 'Bearer h92qspHJpE3iiOgKH6A5MknP6ylbP44ODKfLAr9VqV1',
-          'Accept': 'application/json'
-        }
-      });
-      
-      if (videoDetailResponse.ok) {
-        const videoDetails = await videoDetailResponse.json();
-        console.log(`📹 ${apiType} details:`, JSON.stringify(videoDetails, null, 2));
-        
-        
-        if (apiType === 'API.Video-Audio') {
-          return videoDetails.assets?.hls || 
-                 videoDetails.assets?.mp4 || 
-                 videoDetails.source?.uri ||
-                 `https://sandbox.api.video/videos/${response.videoId}/source`;
-        }
-        
-       
-        return videoDetails.assets?.mp4 || 
-               videoDetails.source?.uri || 
-               videoDetails.player?.src ||
-               `https://sandbox.api.video/videos/${response.videoId}/source`;
-      }
-    }
-    
-    
-    if (apiType === 'API.Video-Audio') {
-      return response.assets?.hls || response.assets?.mp4 || response.source?.uri;
-    }
-    
-    return response.assets?.mp4 || response.source?.uri || response.player?.src;
-    
-  } catch (error) {
-    console.error(`❌ Error procesando respuesta de ${apiType}:`, error.message);
-    return null;
-  }
-}
+// API.Video handler removido - no funcional
 
 async function getAudioUrl(url) {
+  
   const apis = [
-    
-    { api: 'Delirius', endpoint: `https://delirius-apiofc.vercel.app/download/ymp3?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url },
     { api: 'ZenzzXD', endpoint: `https://api.zenzxz.my.id/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-    { api: 'Y2Mate', endpoint: `https://api-y2mate.onrender.com/api/download/audio/${encodeURIComponent(url)}`, extractor: res => res?.download_url },
-    { api: 'StellarWA', endpoint: `https://api.stellarwa.xyz/dow/ytmp3?url=${encodeURIComponent(url)}&apikey=Diamond`, extractor: res => res?.data?.dl },
-    { api: 'Lolhuman', endpoint: `https://api.lolhuman.xyz/api/ytaudio?apikey=GataDios&url=${encodeURIComponent(url)}`, extractor: res => res?.result?.link }
+    { api: 'StellarWA', endpoint: `https://api.stellarwa.xyz/dow/ytmp3?url=${encodeURIComponent(url)}&apikey=Diamond`, extractor: res => res?.data?.dl }
   ];
   
-  
+  // Probar APIs principales
   const result = await fetchFromApis(apis);
   if (result) return result;
   
- 
+  // Backup API desde getAud (solo ZenzzXD funciona)
   try {
-    console.log('🔄 Trying backup APIs from getAud function...');
+    console.log('🔄 Trying backup ZenzzXD...');
     const backupResult = await getAud(url);
     if (backupResult && backupResult.url) {
       console.log(`✅ Backup API ${backupResult.api} succeeded`);
       return backupResult.url;
     }
   } catch (error) {
-    console.error('❌ Backup APIs from getAud failed:', error.message);
+    console.error('❌ Backup API failed:', error.message);
   }
   
-  
-  try {
-    console.log('🔄 Intentando método directo para audio como último recurso...');
-    return await getDirectAudioUrl(url);
-  } catch (error) {
-    console.error('❌ Método directo para audio también falló:', error.message);
-    return null;
-  }
+  return null;
 }
 
 
-async function getDirectAudioUrl(url) {
-  
-  throw new Error('Método directo de audio no disponible - todas las APIs fallaron');
-}
+// Funciones de métodos directos removidas - ya no son necesarias
 
 async function getVideoUrl(url) {
+  // APIs optimizadas - solo las que funcionan, ordenadas por velocidad  
   const apis = [
-    
     { api: 'Delirius', endpoint: `https://delirius-apiofc.vercel.app/download/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url },
-    { api: 'ZenzzXD', endpoint: `https://api.zenzxz.my.id/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-    { api: 'Y2Mate-Video', endpoint: `https://api-y2mate.onrender.com/api/download/video/${encodeURIComponent(url)}`, extractor: res => res?.download_url },
-    { api: 'Lolhuman', endpoint: `https://api.lolhuman.xyz/api/ytvideo?apikey=GataDios&url=${encodeURIComponent(url)}`, extractor: res => res?.result?.link }
+    { api: 'ZenzzXD', endpoint: `https://api.zenzxz.my.id/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.download_url }
   ];
   
-  
+  // Probar APIs principales
   const result = await fetchFromApis(apis);
   if (result) return result;
   
 
   try {
-    console.log('🔄 Trying backup APIs from getVid function...');
+    console.log('🔄 Trying backup ZenzzXD...');
     const backupResult = await getVid(url);
     if (backupResult && backupResult.url) {
       console.log(`✅ Backup API ${backupResult.api} succeeded`);
       return backupResult.url;
     }
   } catch (error) {
-    console.error('❌ Backup APIs from getVid failed:', error.message);
+    console.error('❌ Backup API failed:', error.message);
   }
   
-  
-  try {
-    console.log('🔄 Intentando método directo como último recurso...');
-    return await getDirectVideoUrl(url);
-  } catch (error) {
-    console.error('❌ Método directo también falló:', error.message);
-    return null;
-  }
+  return null;
 }
 
 
-async function getDirectVideoUrl(url) {
-  
-  throw new Error('Método directo no disponible - todas las APIs fallaron');
-}
+
 
 handler.before = async (m, { conn }) => {
   
