@@ -13,7 +13,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 
   try {
     if (!text.trim()) {
-      return conn.reply(m.chat, `💙 Ingresa el nombre de la música a descargar.\n\nEjemplo: ${usedPrefix}${command} Coldplay Viva la Vida`, m, fake);
+      return conn.reply(m.chat, `💙 Ingresa el nombre de la música a descargar.\n\nEjemplo: ${usedPrefix}${command} Let you Down Cyberpunk`, m, rcanal);
     }
 
     const search = await yts(text);
@@ -45,8 +45,8 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     
     
     const buttons = [
-      ['🎵 MP3 (Audio)', 'ytdl_audio_mp3'],
-      ['🎬 MP4 (Video)', 'ytdl_video_mp4'],
+      ['🎵 Audio', 'ytdl_audio_mp3'],
+      ['🎬 Video', 'ytdl_video_mp4'],
       ['📁 MP3 Documento', 'ytdl_audio_doc'],
       ['📁 MP4 Documento', 'ytdl_video_doc']
     ];
@@ -85,8 +85,6 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         timestamp: Date.now() 
       };
       
-      console.log(`Stored search for user ${m.sender}: ${title} (ID: ${m.key.id})`);
-      
     } catch (thumbError) {
      
       await conn.sendNCarousel(m.chat, infoText, footer, null, buttons, null, null, null, m);
@@ -102,7 +100,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         timestamp: Date.now() 
       };
       
-      console.log("Error al obtener la miniatura:", thumbError);
+      console.error("Error al obtener la miniatura:", thumbError);
     }
 
   } catch (error) {
@@ -122,7 +120,7 @@ function isValidUrl(string) {
 }
 
 
-// Google YT v3 API handler removido - no funcional
+
 
 async function validateDownloadUrl(url) {
   if (!url || typeof url !== 'string' || url.trim() === '') {
@@ -137,7 +135,7 @@ async function validateDownloadUrl(url) {
     console.log(`🔍 Validating download URL: ${url.substring(0, 100)}...`);
     
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // Reducido de 15 a 8 segundos
+    const timeoutId = setTimeout(() => controller.abort(), 3000); 
     
     const response = await fetch(url, {
       method: 'HEAD',
@@ -192,7 +190,9 @@ async function processDownload(conn, m, url, title, option) {
   };
   
   const downloadType = downloadTypes[option] || 'archivo';
-  await conn.reply(m.chat, `💙 Procesando ${downloadType}. Por favor espera...`, m);
+  
+ 
+  const processingMsg = await conn.reply(m.chat, `💙 Obteniendo ${downloadType}... ⚡`, m);
   
   try {
     let downloadUrl;
@@ -200,28 +200,23 @@ async function processDownload(conn, m, url, title, option) {
     let mimeType;
 
     if (option === 1 || option === 3) {
-     
+      
       downloadUrl = await getAudioUrl(url);
       fileName = `${title.replace(/[^\w\s]/gi, '')}.mp3`;
       mimeType = 'audio/mpeg';
       
       if (!downloadUrl) {
-        
-        const contentType = (option === 1 || option === 3) ? 'audio' : 'video';
-        throw new Error(`❌ No se pudo obtener el enlace de ${contentType}. Las APIs pueden estar temporalmente fuera de servicio. Por favor intenta de nuevo en unos minutos.`);
+        throw new Error(`❌ No se pudo obtener el enlace de audio. Intenta de nuevo.`);
       }
 
-      console.log(`Audio URL obtenida: ${downloadUrl}`);
-
+      
       if (option === 1) {
-       
         await conn.sendMessage(m.chat, { 
           audio: { url: downloadUrl }, 
           fileName: fileName, 
           mimetype: mimeType 
         }, { quoted: m });
       } else {
-        
         await conn.sendMessage(m.chat, { 
           document: { url: downloadUrl },
           mimetype: mimeType,
@@ -235,15 +230,11 @@ async function processDownload(conn, m, url, title, option) {
       mimeType = 'video/mp4';
       
       if (!downloadUrl) {
-        
-        const contentType = 'video';
-        throw new Error(`❌ No se pudo obtener el enlace de ${contentType}. Las APIs pueden estar temporalmente fuera de servicio. Por favor intenta de nuevo en unos minutos.`);
+        throw new Error(`❌ No se pudo obtener el enlace de video. Intenta de nuevo.`);
       }
 
-      console.log(`Video URL obtenida: ${downloadUrl}`);
-
+      
       if (option === 2) {
-        
         await conn.sendMessage(m.chat, { 
           video: { url: downloadUrl }, 
           fileName: fileName, 
@@ -251,7 +242,6 @@ async function processDownload(conn, m, url, title, option) {
           caption: title
         }, { quoted: m });
       } else {
-       
         await conn.sendMessage(m.chat, { 
           document: { url: downloadUrl },
           mimetype: mimeType,
@@ -261,7 +251,7 @@ async function processDownload(conn, m, url, title, option) {
       }
     }
     
-    
+   
     const user = global.db.data.users[m.sender];
     if (!user.cebollinesDeducted) {
       user.chocolates -= 2;
@@ -280,7 +270,7 @@ async function processDownload(conn, m, url, title, option) {
 async function fetchFromApis(apis) {
   for (let i = 0; i < apis.length; i++) {
     try {
-      console.log(`🔍 Probando ${apis[i].api}: ${apis[i].endpoint}`);
+      console.log(`🔍 Probando ${apis[i].api}`);
       
       const fetchOptions = {
         method: apis[i].method || 'GET',
@@ -288,7 +278,7 @@ async function fetchFromApis(apis) {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
           ...apis[i].headers
         },
-        timeout: 5000
+        timeout: 3000 
       };
       
       if (apis[i].body) {
@@ -303,32 +293,38 @@ async function fetchFromApis(apis) {
       }
       
       const apiJson = await response.json();
-      console.log(`${apis[i].api} response:`, JSON.stringify(apiJson, null, 2));
       
       const downloadUrl = apis[i].extractor(apiJson);
         
-      // Validación de URL más rápida - skip validation para URLs confiables
-      const isTrustedDomain = downloadUrl && (
-        downloadUrl.includes('savemedia.website') || 
-        downloadUrl.includes('stellarwa.xyz') || 
-        downloadUrl.includes('da.gd')
+      
+      const trustedDomains = [
+        'savemedia.website',
+        'stellarwa.xyz', 
+        'da.gd',
+        'api.zenzxz.my.id',
+        'delirius-apiofc.vercel.app'
+      ];
+      
+      const isTrustedDomain = downloadUrl && trustedDomains.some(domain => 
+        downloadUrl.includes(domain)
       );
       
       if (downloadUrl && isValidUrl(downloadUrl)) {
         if (isTrustedDomain) {
-          console.log(`✅ ${apis[i].api} - Trusted domain, skipping validation`);
+          console.log(`✅ ${apis[i].api} - Dominio confiable, omitiendo validación`);
           return downloadUrl;
         }
         
+       
         const isWorking = await validateDownloadUrl(downloadUrl);
         if (isWorking) {
-          console.log(`✅ ${apis[i].api} devolvió URL válida y funcional: ${downloadUrl}`);
+          console.log(`✅ ${apis[i].api} devolvió URL válida: ${downloadUrl.substring(0, 50)}...`);
           return downloadUrl;
         } else {
-          console.log(`❌ ${apis[i].api} URL no funciona (404 o error): ${downloadUrl}`);
+          console.log(`❌ ${apis[i].api} URL no funciona`);
         }
       } else {
-        console.log(`✗ ${apis[i].api} no devolvió URL válida:`, downloadUrl);
+        console.log(`✗ ${apis[i].api} no devolvió URL válida`);
       }
       
     } catch (error) {
@@ -342,7 +338,7 @@ async function fetchFromApis(apis) {
 
 
 async function getAud(url) {
-  // Solo APIs que funcionan
+  
   const apis = [
     { api: 'ZenzzXD', endpoint: `https://api.zenzxz.my.id/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.download_url }
   ]
@@ -350,7 +346,7 @@ async function getAud(url) {
 }
 
 async function getVid(url) {
-  // Solo APIs que funcionan
+  
   const apis = [
     { api: 'ZenzzXD', endpoint: `https://api.zenzxz.my.id/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
     { api: 'Delirius', endpoint: `https://delirius-apiofc.vercel.app/download/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url }
@@ -362,32 +358,32 @@ async function fetchFromBackupApis(apis) {
   for (const { api, endpoint, extractor } of apis) {
     try {
       const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 3000) // Reducido de 5000 a 3000ms
+      const timeout = setTimeout(() => controller.abort(), 2000)
       const res = await fetch(endpoint, { signal: controller.signal }).then(r => r.json())
       clearTimeout(timeout)
       const link = extractor(res)
       if (link) return { url: link, api }
     } catch (e) {}
-    await new Promise(resolve => setTimeout(resolve, 100)) // Reducido de 200ms a 100ms
+    await new Promise(resolve => setTimeout(resolve, 50)) 
   }
   return null
 }
 
 
-// API.Video handler removido - no funcional
+
 
 async function getAudioUrl(url) {
   
   const apis = [
-    { api: 'ZenzzXD', endpoint: `https://api.zenzxz.my.id/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-    { api: 'StellarWA', endpoint: `https://api.stellarwa.xyz/dow/ytmp3?url=${encodeURIComponent(url)}&apikey=Diamond`, extractor: res => res?.data?.dl }
+    { api: 'StellarWA', endpoint: `https://api.stellarwa.xyz/dow/ytmp3?url=${encodeURIComponent(url)}&apikey=Diamond`, extractor: res => res?.data?.dl },
+    { api: 'ZenzzXD', endpoint: `https://api.zenzxz.my.id/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.download_url }
   ];
   
-  // Probar APIs principales
+  
   const result = await fetchFromApis(apis);
   if (result) return result;
   
-  // Backup API desde getAud (solo ZenzzXD funciona)
+  
   try {
     console.log('🔄 Trying backup ZenzzXD...');
     const backupResult = await getAud(url);
@@ -403,16 +399,16 @@ async function getAudioUrl(url) {
 }
 
 
-// Funciones de métodos directos removidas - ya no son necesarias
+
 
 async function getVideoUrl(url) {
-  // APIs optimizadas - solo las que funcionan, ordenadas por velocidad  
+  
   const apis = [
-    { api: 'Delirius', endpoint: `https://delirius-apiofc.vercel.app/download/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url },
-    { api: 'ZenzzXD', endpoint: `https://api.zenzxz.my.id/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.download_url }
+    { api: 'ZenzzXD', endpoint: `https://api.zenzxz.my.id/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
+    { api: 'Delirius', endpoint: `https://delirius-apiofc.vercel.app/download/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url }
   ];
   
-  // Probar APIs principales
+  
   const result = await fetchFromApis(apis);
   if (result) return result;
   
@@ -489,15 +485,14 @@ handler.before = async (m, { conn }) => {
     return false;
   }
   
-  // Reduced logging - only show key information
-  console.log(`🎵 Processing download: ${user.lastYTSearch.title}`);
+ 
+  console.log(`🎵 Procesando: ${user.lastYTSearch.title}`);
   
   const currentTime = Date.now();
   const searchTime = user.lastYTSearch.timestamp || 0;
   
   
   if (currentTime - searchTime > 10 * 60 * 1000) {
-    console.log("⏰ Search expired");
     await conn.reply(m.chat, '⏰ La búsqueda ha expirado. Por favor realiza una nueva búsqueda.', m);
     return false; 
   }
@@ -528,12 +523,9 @@ handler.before = async (m, { conn }) => {
   if (!option) {
     return false;
   }
-  
-  console.log(`🎵 Processing option ${option} for "${user.lastYTSearch.title}"`);
 
   
   if (user.processingDownload) {
-    console.log(`⚠️ Ya está procesando una descarga, ignorando solicitud duplicada`);
     return false;
   }
   
@@ -552,10 +544,9 @@ handler.before = async (m, { conn }) => {
     
     user.lastYTSearch = null;
     user.processingDownload = false;
-    console.log(`✅ Download processed successfully for option ${option}`);
     
   } catch (error) {
-    console.error(`❌ Error processing download:`, error);
+    console.error(`❌ Error:`, error.message);
     user.processingDownload = false;
     await conn.reply(m.chat, `💙 Error al procesar la descarga: ${error.message}`, m);
   }
