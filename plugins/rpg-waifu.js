@@ -14,7 +14,7 @@ const waifuList = [
         name: "Hatsune Chibi",
         rarity: "común",
         probability: 5,  
-        img: "https://qu.ax/aWtNa.png"
+        img: "https://i.pinimg.com/originals/21/68/0a/21680a7aeec369f1428daaa82a054eac.png"
     },
     {
         name: "Aoki Chibi",
@@ -50,7 +50,7 @@ const waifuList = [
         name: "Haku Chibi",
         rarity: "común",
         probability: 5,
-        img: "https://qu.ax/BReiE.png"
+        img: "https://images.jammable.com/voices/yowane-haku-6GXWn/2341bc1d-9a5e-4419-8657-cb0cd6bbba40.png"
     },
     {
         name: "Rin Chibi",
@@ -68,7 +68,7 @@ const waifuList = [
         name: "Gumi Chibi",
         rarity: "común",
         probability: 5,
-        img: "https://qu.ax/MsAUn.png"
+        img: "https://i.pinimg.com/originals/84/20/37/84203775150673cf10084888b4f7d67f.png"
     },
     {
         name: "Emu Chibi",
@@ -100,7 +100,7 @@ const waifuList = [
         name: "Hatsune Miku 2006",
         rarity: "rara",
         probability: 3,
-        img: "https://qu.ax/xpAMK.png"
+        img: "https://i.pinimg.com/736x/ab/22/a9/ab22a9b92f94e77c46645ac78d16a01b.jpg"
     },
     {
         name: "Aoki Lapis 2006",
@@ -130,7 +130,7 @@ const waifuList = [
         name: "Yowane Haku 2006",
         rarity: "rara",
         probability: 3,
-        img: "https://qu.ax/QAaKc.png"
+        img: "https://i.pinimg.com/originals/13/5d/02/135d0231c953db4d8cd85cc42abdf7b2.png"
     },
     {
         name: "Akita Neru 2006",
@@ -178,7 +178,7 @@ const waifuList = [
         name: "Luka Megurine 2006",
         rarity: "rara",
         probability: 3,
-        img: "https://qu.ax/mMBGD.png"
+        img: "https://i1.sndcdn.com/artworks-8ne47oeiNyxO90bm-LBx2Ng-t500x500.jpg"
     },
     
     
@@ -186,7 +186,7 @@ const waifuList = [
         name: "💙Miku💙",
         rarity: "épica",
         probability: 1.5,
-        img: "https://qu.ax/KxBuO.png"
+        img: "https://cdn.vietgame.asia/wp-content/uploads/20161116220419/hatsune-miku-project-diva-future-tone-se-ra-mat-o-phuong-tay-news.jpg"
     },
     {
         name: "💚Momo💗",
@@ -222,19 +222,19 @@ const waifuList = [
         name: "💛Neru💛",
         rarity: "épica",
         probability: 1.5,
-        img: "https://qu.ax/pZTCf.png"
+        img: "https://images3.alphacoders.com/768/768095.jpg"
     },
     {
         name: "🍺Haku🍺",
         rarity: "épica",
         probability: 1.5,
-        img: "https://qu.ax/MKmhB.png"
+        img: "https://prodigits.co.uk/thumbs/wallpapers/p2/anime/12/681ab84912482088.jpg"
     },
     {
         name: "💛Rin💛",
         rarity: "épica",
         probability: 1.5,
-        img: "https://qu.ax/muceU.png"
+        img: "https://images5.alphacoders.com/330/330144.jpg"
     },
     {
         name: "💚Gumi💚",
@@ -258,7 +258,7 @@ const waifuList = [
         name: "🍌 Len 🍌",
         rarity: "épica",
         probability: 1.5,
-        img: "https://qu.ax/nskdt.png"
+        img: "https://i.pinimg.com/236x/3a/af/e5/3aafe5d43f983f083440fb5ab9d9f3d8.jpg"
     },
     {
         name: "💗LUKA🪷",
@@ -284,7 +284,7 @@ const waifuList = [
         name: "🩵Aoki Lapis🩵",
         rarity: "ultra rara",
         probability: 0.4,
-        img: "https://qu.ax/NLdTF.png"
+        img: "https://c4.wallpaperflare.com/wallpaper/737/427/729/vocaloid-aoki-lapis-sword-blue-hair-wallpaper-preview.jpg"
     },
     {
         name: "🖤Namine Ritsu💞",
@@ -296,7 +296,7 @@ const waifuList = [
         name: "🍻Yowane Haku🥂",
         rarity: "ultra rara",
         probability: 0.4,
-        img: "https://qu.ax/RwlPs.png"
+        img: "https://files.catbox.moe/fk14cc.png"
     },
     {
         name: "🤍Sukone Tei💘",
@@ -308,7 +308,7 @@ const waifuList = [
         name: "💜Utane Defoko💜",
         rarity: "ultra rara",
         probability: 0.4,
-        img: "https://qu.ax/HYHSi.png"
+        img: "https://i.pinimg.com/236x/4a/c8/aa/4ac8aa5c5fc1fc5ce83ef0fb71952e14.jpg"
     },
     {
         name: "💛AKITA NERU💛",
