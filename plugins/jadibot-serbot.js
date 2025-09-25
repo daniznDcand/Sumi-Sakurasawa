@@ -328,11 +328,6 @@ browser: mcode ? Browsers.macOS("Safari") : Browsers.ubuntu("Chrome"),
 version: version,
 generateHighQualityLinkPreview: false,
 
-
-protocol: 'http',
-hostname: 'localhost',
-port: undefined,
-
 keepAliveIntervalMs: 15000,
 markOnlineOnConnect: true,
 syncFullHistory: false,
@@ -351,45 +346,14 @@ maxCommitRetries: 30,
 delayBetweenTriesMs: 2000
 },
 
-options: {
-chatsCache: true,
-reconnectMode: 'on-any-error',
-reconnectDelay: 3000,
-maxReconnectAttempts: 100,
-backoffMaxDelay: 120000,
-backoffMultiplier: 1.15,
-},
-
 getMessage: async (key) => {
-
-if (store && Object.keys(store.chats || {}).length < 500) {
-const msg = await store.loadMessage(key.remoteJid, key.id)
-return msg?.message || undefined
-}
 return undefined
-},
-
-
-cacheVersion: 1,
-treatCiphertextMessagesAsReal: true,
-linkPreviewImageThumbnailWidth: 96,   
-transactionTimeout: 45000,           
-waWebSocketUrl: undefined,    
-connectCooldownMs: 8000,              
-defaultConnectionTimeout: 30000,      
-maxQueryResponseTime: 20000,          
-enableAutoHistorySync: false,         
+}
 };
 
 
 if (connectionOptions.auth?.keys) {
   connectionOptions.auth.keys.maxCacheSize = 1000 
-}
-
-
-if (!connectionOptions.protocol) {
-  connectionOptions.protocol = 'http'
-  console.log('⚠️ Configurando protocolo por defecto')
 }
 
 if (!connectionOptions.version && version) {
@@ -563,13 +527,7 @@ const reconnectOptions = {
   retryRequestDelayMs: 2000,       
   maxMsgRetryCount: 25,         
   qrTimeout: 1200000,           
-  pairingCodeTimeout: 1200000,  
-  options: {
-    ...connectionOptions.options,
-    reconnectDelay: 15000,      
-    maxReconnectAttempts: 999,  
-    backoffMaxDelay: 600000,    
-  }
+  pairingCodeTimeout: 1200000
 }
 
 sock = makeWASocket(reconnectOptions)
@@ -1534,11 +1492,6 @@ if (restatConn) {
 const oldChats = sock.chats
 try { sock.ws.close() } catch { }
 sock.ev.removeAllListeners()
-
-
-if (!connectionOptions.protocol) {
-  connectionOptions.protocol = 'http'
-}
 
 try {
   sock = makeWASocket(connectionOptions, { chats: oldChats })
