@@ -38,6 +38,14 @@ const RESOURCE_LIMITS = {
 }
 
 
+global.reconnectThrottle = global.reconnectThrottle || {
+  lastReconnect: 0,
+  activeReconnects: 0,
+  maxConcurrentReconnects: 3, 
+  minInterval: 15000 
+}
+
+
 setInterval(async () => {
   try {
     if (!global.conns || global.conns.length === 0) return
@@ -396,7 +404,7 @@ try {
   console.log('🔍 Opciones usadas:', Object.keys(cleanConnectionOptions))
   throw new Error(`Error en configuración de socket: ${error.message}`)
 }
-sock.maxReconnectAttempts = 50  
+sock.maxReconnectAttempts = 8  
 sock.lastActivity = Date.now()
 sock.sessionStartTime = sessionStartTime
 sock.subreloadHandler = (reload) => creloadHandler(reload)
@@ -407,10 +415,10 @@ sock.sessionPersistence = true
 sock.autoReconnect = true
 sock.lastHeartbeat = Date.now()
 sock.maxInactiveTime = 7200000  
-sock.healthCheckInterval = 30000  
-sock.connectionStability = 'ultra-high'
+sock.healthCheckInterval = 120000  
+sock.connectionStability = 'conservative' 
 sock.tolerateErrors = true
-sock.maxErrorsBeforeReconnect = 10  
+sock.maxErrorsBeforeReconnect = 5   
 sock.errorCount = 0
 
 
@@ -512,12 +520,17 @@ console.log(chalk.yellow(`🔄 Intento de reconexión ${sock.reconnectAttempts}/
 
 
 
-const baseWait = 5000   
-const maxWait = 3 * 60 * 1000  
-const backoffLimit = 8 
-const exponentialBackoff = Math.min(maxWait, baseWait * Math.pow(1.2, Math.min(sock.reconnectAttempts - 1, backoffLimit)))
-console.log(chalk.blue(`⏳ Esperando ${Math.round(exponentialBackoff/1000)}s antes de reconectar (intento ${sock.reconnectAttempts})...`))
-await new Promise(resolve => setTimeout(resolve, exponentialBackoff))
+const baseWait = 10000   
+const maxWait = 8 * 60 * 1000  
+const backoffLimit = 6 
+const exponentialBackoff = Math.min(maxWait, baseWait * Math.pow(2.0, Math.min(sock.reconnectAttempts - 1, backoffLimit))) // Factor 2.0 en lugar de 1.2
+
+
+const jitter = Math.random() * 5000 
+const totalWait = exponentialBackoff + jitter
+
+console.log(chalk.blue(`⏳ Esperando ${Math.round(totalWait/1000)}s antes de reconectar (intento ${sock.reconnectAttempts}). Base: ${Math.round(exponentialBackoff/1000)}s + Jitter: ${Math.round(jitter/1000)}s`))
+await new Promise(resolve => setTimeout(resolve, totalWait))
 
 try {
 
@@ -856,25 +869,20 @@ if (connection === 'close') {
 console.log(chalk.yellow(`🔌 Conexión cerrada para +${path.basename(pathMikuJadiBot)}. Código: ${reason}`))
 
 
+
 const shouldReconnect = [
 428,  
-408,  
 440,  
 515,  
 500,  
 502,  
 503,  
-429,  
-404,  
-422,  
-403,  
-425,  
-426,  
+
 ].includes(reason)
 
 
 const criticalReconnect = [428, 440, 515].includes(reason)
-if (criticalReconnect && sock.maxReconnectAttempts < 15) {
+if (criticalReconnect && sock.maxReconnectAttempts < 12) { 
   sock.maxReconnectAttempts = 15
   console.log(chalk.cyan(`🔄 Aumentando intentos de reconexión a ${sock.maxReconnectAttempts} por código crítico ${reason}`))
 }
@@ -942,7 +950,7 @@ try {
     if (!sock._saveCredsInterval) {
       sock._saveCredsInterval = setInterval(() => {
         try { 
-          if (sock._isBeingDeleted) return // 🚫 No guardar si se está eliminando
+          if (sock._isBeingDeleted) return 
           saveCreds()
           console.log(chalk.blue(`💾 Credenciales guardadas para +${path.basename(pathMikuJadiBot)}`))
         } catch (e) {
@@ -957,7 +965,7 @@ try {
     
     
     try {
-      if (!sock._isBeingDeleted) { // 🚫 No guardar si se está eliminando
+      if (!sock._isBeingDeleted) { 
         saveCreds()
         console.log(chalk.green(`💾 Credenciales guardadas inmediatamente para +${path.basename(pathMikuJadiBot)}`))
       }
@@ -996,7 +1004,7 @@ try {
         
         if (isSocketReady(sock)) {
           
-          if (timeSinceLastActivity > 60000) { 
+          if (timeSinceLastActivity > 180000) { 
             if (typeof sock.ws?.ping === 'function') {
               const pingStart = Date.now()
               try {
@@ -1004,19 +1012,23 @@ try {
                 const pingTime = Date.now() - pingStart
                 sock.lastPingTime = pingTime
                 
-                if (pingTime > 5000) {
+                if (pingTime > 8000) { 
                   console.log(chalk.yellow(`⚠️ Ping lento: ${pingTime}ms para +${path.basename(pathMikuJadiBot)}`))
                 }
               } catch (pingError) {
                 console.log(chalk.red(`❌ Ping falló para +${path.basename(pathMikuJadiBot)}: ${pingError.message}`))
                 
-                sock._shouldReconnect = true
+                sock.errorCount = (sock.errorCount || 0) + 1
+                if (sock.errorCount >= 3) {
+                  sock._shouldReconnect = true
+                  sock.errorCount = 0
+                }
               }
             }
           }
           
           
-          if (!sock._lastPresenceUpdate || (now - sock._lastPresenceUpdate) > 120000) {
+          if (!sock._lastPresenceUpdate || (now - sock._lastPresenceUpdate) > 300000) { 
             if (typeof sock.updatePresence === 'function') {
               await sock.updatePresence('available').catch(() => {})
               sock._lastPresenceUpdate = now
@@ -1067,9 +1079,13 @@ try {
       } catch (e) {
         console.error(`Error en keep-alive para +${path.basename(pathMikuJadiBot)}:`, e.message)
         
-        sock._shouldReconnect = true
+        sock.errorCount = (sock.errorCount || 0) + 1
+        if (sock.errorCount >= 3) {
+          sock._shouldReconnect = true
+          sock.errorCount = 0
+        }
       }
-    }, 20000)  
+    }, 90000)   
   }
 } catch (e) {
   console.error('Error configurando keep-alive:', e.message)
