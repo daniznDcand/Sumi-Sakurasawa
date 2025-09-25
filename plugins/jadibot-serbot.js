@@ -204,7 +204,7 @@ return m.reply(`💙 El Comando *${command}* está desactivado temporalmente.`)
 
 
 const isFromSubBot = conn.isSubBot === true
-if (isFromSubBot) {
+if (isFromSubBot && (command === 'qr' || command === 'code')) {
   console.log(chalk.blue(`🤖 Comando ${command} detectado desde SubBot - delegando a subbot-commands.js`))
   return 
 }
