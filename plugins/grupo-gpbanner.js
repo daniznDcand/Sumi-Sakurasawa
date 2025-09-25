@@ -1,4 +1,4 @@
-import { makeWASocket } from '@whiskeysockets/baileys';
+import { makeWASocket } from '@baileys-md/stable';
 
 let handler = async (m, { conn, usedPrefix, command }) => {
   let q = m.quoted ? m.quoted : m;

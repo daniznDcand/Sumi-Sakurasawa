@@ -1,4 +1,4 @@
-const { useMultiFileAuthState, DisconnectReason, makeCacheableSignalKeyStore, fetchLatestBaileysVersion, Browsers } = (await import("@whiskeysockets/baileys"));
+const { useMultiFileAuthState, DisconnectReason, makeCacheableSignalKeyStore, fetchLatestBaileysVersion, Browsers, makeWASocket } = (await import("@baileys-md/stable"));
 import qrcode from "qrcode"
 import NodeCache from "node-cache"
 import fs from "fs"
@@ -8,8 +8,7 @@ import chalk from 'chalk'
 import util from 'util' 
 import * as ws from 'ws'
 const { child, spawn, exec } = await import('child_process')
-const { CONNECTING } = ws
-import { makeWASocket } from '../lib/simple.js'
+const { CONNECTING, OPEN, CLOSED } = { CONNECTING: 0, OPEN: 1, CLOSED: 3 }
 import { fileURLToPath } from 'url'
 
 let crm1 = "Y2QgcGx1Z2lucy"
@@ -251,7 +250,7 @@ try {
 }
 let time = global.db.data.users[m.sender].Subs + 120000
 if (new Date - global.db.data.users[m.sender].Subs < 120000) return conn.reply(m.chat, `⏱️ Debes esperar ${msToTime(time - new Date())} para volver a vincular un *Sub-Bot.*`, m)
-const subBots = [...new Set([...global.conns.filter((conn) => conn.user && conn.ws.socket && conn.ws.socket.readyState !== ws.CLOSED).map((conn) => conn)])]
+const subBots = [...new Set([...global.conns.filter((conn) => conn.user && conn.ws.socket && conn.ws.socket.readyState !== CLOSED).map((conn) => conn)])]
 const subBotsCount = subBots.length
 if (subBotsCount === 20) {
 return m.reply(`💙 No se han encontrado espacios para *Sub-Bots* disponibles.`)
@@ -1014,7 +1013,7 @@ try {
           
           
           const wsState = sock.ws?.socket?.readyState
-          if (wsState !== ws.OPEN && wsState !== undefined) {
+          if (wsState !== OPEN && wsState !== undefined) {
             console.log(chalk.yellow(`⚠️ WebSocket en estado no óptimo: ${wsState} para +${path.basename(pathMikuJadiBot)}`))
             sock._shouldReconnect = true
           }
