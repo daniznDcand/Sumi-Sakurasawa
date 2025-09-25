@@ -203,6 +203,13 @@ return m.reply(`💙 El Comando *${command}* está desactivado temporalmente.`)
 }
 
 
+const isFromSubBot = conn.isSubBot === true
+if (isFromSubBot) {
+  console.log(chalk.blue(`🤖 Comando ${command} detectado desde SubBot - delegando a subbot-commands.js`))
+  return 
+}
+
+
 const MAX_CONNECTIONS = 25 
 const MAX_CONNECTIONS_PER_USER = 2 
 const MEMORY_LIMIT_MB = 1000 
@@ -422,6 +429,10 @@ sock.maxErrorsBeforeReconnect = 5
 sock.errorCount = 0
 
 
+sock.isSubBot = true
+sock.parentBot = conn 
+
+
 function isSocketReady(s) {
   try {
     if (!s) {
@@ -581,6 +592,9 @@ sock.sessionPersistence = true
 sock.autoReconnect = true
 sock.lastHeartbeat = Date.now()
 
+
+sock.isSubBot = true
+sock.parentBot = conn 
 
 sock.prefix = global.prefix || '#'
 sock.chats = sock.chats || {}
