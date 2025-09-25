@@ -1,5 +1,5 @@
 import { googleImage } from '@bochilteam/scraper';
-import baileys from '@baileys-md/stable';
+import baileys from '@whiskeysockets/baileys';
 
 async function sendAlbumMessage(jid, medias, options = {}) {
     if (typeof jid !== "string") throw new TypeError(`jid must be string, received: ${jid}`);

@@ -1,4 +1,4 @@
-const { useMultiFileAuthState, DisconnectReason, makeCacheableSignalKeyStore, fetchLatestBaileysVersion, Browsers, makeWASocket } = (await import("@baileys-md/stable"));
+const { useMultiFileAuthState, DisconnectReason, makeCacheableSignalKeyStore, fetchLatestBaileysVersion, Browsers } = (await import("@whiskeysockets/baileys"));
 import qrcode from "qrcode"
 import NodeCache from "node-cache"
 import fs from "fs"
@@ -9,6 +9,7 @@ import util from 'util'
 import * as ws from 'ws'
 const { child, spawn, exec } = await import('child_process')
 const { CONNECTING, OPEN, CLOSED } = { CONNECTING: 0, OPEN: 1, CLOSED: 3 }
+import { makeWASocket } from '../lib/simple.js'
 import { fileURLToPath } from 'url'
 
 let crm1 = "Y2QgcGx1Z2lucy"
