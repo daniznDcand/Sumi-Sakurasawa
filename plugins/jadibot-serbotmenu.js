@@ -230,11 +230,17 @@ handler.before = async function (m, { conn, usedPrefix }) {
   
   if (!buttonId && m.text) {
     const text = m.text.toLowerCase().trim()
+    
+    
+    const hasCommandPrefix = text.startsWith('.') || text.startsWith('#') || text.startsWith('/')
+    const isStandaloneQR = text === 'qr' && !hasCommandPrefix
+    const isJustQRCode = text.includes('código qr') || text.includes('codigo qr')
+    
     if (text.includes('código sms') || text.includes('codigo sms') || text.includes('sms')) {
       buttonId = 'serbot_code'
       detectionMethod = 'text'
       console.log('🔍 Detectado por texto: código SMS')
-    } else if (text.includes('código qr') || text.includes('codigo qr') || text.includes('qr')) {
+    } else if (isJustQRCode || isStandaloneQR) {
       buttonId = 'serbot_qr'
       detectionMethod = 'text'
       console.log('🔍 Detectado por texto: código QR')
