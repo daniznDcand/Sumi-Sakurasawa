@@ -318,37 +318,56 @@ const msgRetry = (MessageRetryMap) => { }
 const msgRetryCache = new NodeCache({ stdTTL: 600, checkperiod: 120 })
 const { state, saveState, saveCreds } = await useMultiFileAuthState(pathMikuJadiBot)
 
-const connectionOptions = {
-logger: pino({ level: "fatal" }),
-printQRInTerminal: false,
-auth: { creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, pino({level: 'silent'})) },
-msgRetry,
-msgRetryCache,
-browser: mcode ? Browsers.macOS("Safari") : Browsers.ubuntu("Chrome"),
-version: version,
-generateHighQualityLinkPreview: false,
 
-keepAliveIntervalMs: 15000,
-markOnlineOnConnect: true,
-syncFullHistory: false,
-fireInitQueries: true,
-shouldSyncHistoryMessage: () => false,
-connectTimeoutMs: 120000,
-defaultQueryTimeoutMs: 90000,
-emitOwnEvents: false,
-qrTimeout: 600000,
-retryRequestDelayMs: 2000,
-maxMsgRetryCount: 20,
-pairingCodeTimeout: 600000,
-
-transactionOpts: {
-maxCommitRetries: 30,
-delayBetweenTriesMs: 2000
-},
-
-getMessage: async (key) => {
-return undefined
+function cleanSocketOptions(options) {
+  const clean = { ...options }
+  
+  const invalidProps = [
+    'protocol', 'hostname', 'port', 'waWebSocketUrl', 'cacheVersion',
+    'treatCiphertextMessagesAsReal', 'linkPreviewImageThumbnailWidth',
+    'transactionTimeout', 'connectCooldownMs', 'defaultConnectionTimeout',
+    'maxQueryResponseTime', 'enableAutoHistorySync', 'options'
+  ]
+  
+  invalidProps.forEach(prop => {
+    if (clean.hasOwnProperty(prop)) {
+      console.log(`🧹 Eliminando propiedad inválida: ${prop}`)
+      delete clean[prop]
+    }
+  })
+  
+  return clean
 }
+
+
+const connectionOptions = {
+  logger: pino({ level: "fatal" }),
+  printQRInTerminal: false,
+  auth: { 
+    creds: state.creds, 
+    keys: makeCacheableSignalKeyStore(state.keys, pino({level: 'silent'})) 
+  },
+  msgRetry,
+  msgRetryCache,
+  browser: mcode ? Browsers.macOS("Safari") : Browsers.ubuntu("Chrome"),
+  version: version,
+  
+  
+  connectTimeoutMs: 60000,
+  defaultQueryTimeoutMs: 60000,
+  keepAliveIntervalMs: 30000,
+  generateHighQualityLinkPreview: false,
+  syncFullHistory: false,
+  markOnlineOnConnect: true,
+  
+
+  qrTimeout: 300000,
+  pairingCodeTimeout: 300000,
+  
+
+  getMessage: async (key) => {
+    return undefined
+  }
 };
 
 
@@ -363,12 +382,18 @@ if (!connectionOptions.version && version) {
 
 let sock
 try {
-  sock = makeWASocket(connectionOptions)
+  console.log('🔧 Creando socket con opciones limpias...')
+  const cleanConnectionOptions = cleanSocketOptions(connectionOptions)
+  console.log('🔍 Opciones finales para socket:', Object.keys(cleanConnectionOptions))
+  sock = makeWASocket(cleanConnectionOptions)
   sock.isInit = false
   sock.well = false  
   sock.reconnectAttempts = 0
+  console.log('✅ Socket creado exitosamente')
 } catch (error) {
   console.error('❌ Error creando socket:', error.message)
+  console.error('❌ Stack completo:', error.stack)
+  console.log('🔍 Opciones usadas:', Object.keys(cleanConnectionOptions))
   throw new Error(`Error en configuración de socket: ${error.message}`)
 }
 sock.maxReconnectAttempts = 50  
@@ -519,18 +544,19 @@ try {
 }
 
 
+
 const reconnectOptions = {
   ...connectionOptions,
-  connectTimeoutMs: 90000,       
-  defaultQueryTimeoutMs: 75000,  
-  keepAliveIntervalMs: 12000,    
-  retryRequestDelayMs: 2000,       
-  maxMsgRetryCount: 25,         
-  qrTimeout: 1200000,           
-  pairingCodeTimeout: 1200000
+  connectTimeoutMs: 60000,
+  defaultQueryTimeoutMs: 60000,
+  keepAliveIntervalMs: 30000,
+  qrTimeout: 600000,
+  pairingCodeTimeout: 600000
 }
 
-sock = makeWASocket(reconnectOptions)
+console.log('🔄 Creando socket de reconexión con opciones limpias...')
+const cleanReconnectOptions = cleanSocketOptions(reconnectOptions)
+sock = makeWASocket(cleanReconnectOptions)
 sock.reconnectAttempts = reconnectAttempts
 sock.maxReconnectAttempts = 50 
 sock.lastActivity = Date.now()
@@ -1494,12 +1520,14 @@ try { sock.ws.close() } catch { }
 sock.ev.removeAllListeners()
 
 try {
-  sock = makeWASocket(connectionOptions, { chats: oldChats })
+  console.log('🔄 Recreando socket con opciones limpias...')
+  const cleanReloadOptions = cleanSocketOptions(connectionOptions)
+  sock = makeWASocket(cleanReloadOptions, { chats: oldChats })
 } catch (error) {
   console.error('❌ Error recreando socket:', error.message)
   
-  const basicOptions = { ...connectionOptions }
-  delete basicOptions.options
+  console.log('🔄 Usando opciones básicas como fallback...')
+  const basicOptions = cleanSocketOptions(connectionOptions)
   sock = makeWASocket(basicOptions, { chats: oldChats })
 }
 
