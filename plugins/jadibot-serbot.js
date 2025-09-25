@@ -28,6 +28,34 @@ if (global.conns instanceof Array) console.log()
 else global.conns = []
 
 
+if (!global._subbotSessionErrorHandlerInstalled) {
+  global._subbotSessionErrorHandlerInstalled = true
+  process.on('unhandledRejection', async (reason) => {
+    try {
+      if (reason && reason.message && reason.message.includes('SessionError: No sessions')) {
+        console.log(chalk.red('🚨 Capturado global unhandledRejection: SessionError: No sessions'))
+        
+        for (const s of global.conns || []) {
+          try {
+            if (!s) continue
+            if (s.auth && s.auth.keys && typeof s.auth.keys.clear === 'function') {
+              await s.auth.keys.clear()
+              console.log(chalk.green(`🧹 Cache de sesiones limpiado para +${path.basename(s.user?.jid || 'unknown')}`))
+            }
+            
+            try { s._shouldReconnect = true } catch (e) {}
+          } catch (e) {
+            console.error('Error limpiando subbot tras unhandledRejection:', e?.message || e)
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Error en global unhandledRejection handler:', e?.message || e)
+    }
+  })
+}
+
+
 
 const RESOURCE_LIMITS = {
   MAX_RAM_MB: 4096,        
@@ -449,13 +477,13 @@ sock.sessionErrorHandler = (error) => {
       try {
         console.log('🧹 Limpiando sesiones corruptas por error no capturado...')
         
-        // Limpiar cache de sesiones
+        
         if (sock.auth && sock.auth.keys && typeof sock.auth.keys.clear === 'function') {
           await sock.auth.keys.clear()
           console.log('✅ Cache de sesiones limpiado')
         }
         
-        // Reiniciar conexión si es posible
+       
         if (sock.autoReconnect && sock.reconnectAttempts < sock.maxReconnectAttempts) {
           console.log('🔄 Iniciando reconexión automática por SessionError no capturado...')
           await attemptReconnect()
@@ -466,12 +494,11 @@ sock.sessionErrorHandler = (error) => {
       } finally {
         sock._handlingSessionError = false
       }
-    }, 3000) // Delay más corto para errores no capturados
+    }, 3000) 
   }
 }
 
-// Agregar listener para errores no capturados específico de este SubBot
-process.on('unhandledRejection', sock.sessionErrorHandler) 
+
 
 
 function isSocketReady(s) {
@@ -910,10 +937,9 @@ const endSesion = async (loaded) => {
         sock.credsUpdate = null
         
        
+        
         if (sock.sessionErrorHandler) {
-          process.removeListener('unhandledRejection', sock.sessionErrorHandler)
           sock.sessionErrorHandler = null
-          console.log('✅ Listener de SessionError removido')
         }
       } catch (e) {}
       
