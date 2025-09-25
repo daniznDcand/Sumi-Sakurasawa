@@ -879,8 +879,41 @@ const endSesion = async (loaded) => {
 }
 
 const reason = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode
+const errorMessage = lastDisconnect?.error?.message || ''
+
 if (connection === 'close') {
 console.log(chalk.yellow(`🔌 Conexión cerrada para +${path.basename(pathMikuJadiBot)}. Código: ${reason}`))
+
+
+if (errorMessage.includes('SessionError: No sessions')) {
+  console.log(chalk.red(`🚨 SessionError detectado: ${errorMessage}`))
+  
+  try {
+    
+    if (sock.auth && sock.auth.keys) {
+      console.log('🧹 Limpiando cache de sesiones corruptas...')
+      if (typeof sock.auth.keys.clear === 'function') {
+        await sock.auth.keys.clear()
+      }
+    }
+    
+    
+    console.log('⏱️ Esperando 10 segundos antes de reconectar por SessionError...')
+    await new Promise(resolve => setTimeout(resolve, 10000))
+    
+    if (sock.reconnectAttempts < sock.maxReconnectAttempts) {
+      console.log(chalk.cyan('🔄 Iniciando reconexión por SessionError...'))
+      const reconnected = await attemptReconnect()
+      if (!reconnected) {
+        console.log(chalk.red(`❌ Falló la reconexión por SessionError para +${path.basename(pathMikuJadiBot)}`))
+        await endSesion(false)
+      }
+      return 
+    }
+  } catch (sessionError) {
+    console.error('❌ Error manejando SessionError:', sessionError.message)
+  }
+}
 
 
 
@@ -1236,7 +1269,7 @@ console.log('🔍 Configurando handler para SubBot recién conectado...')
 const handlerModule = await import('../handler.js')
 if (handlerModule && handlerModule.handler && typeof handlerModule.handler === 'function') {
 
-  // Verificación adicional de seguridad para el binding
+  
   let originalHandler
   try {
     originalHandler = handlerModule.handler.bind(sock)
@@ -1253,13 +1286,38 @@ if (handlerModule && handlerModule.handler && typeof handlerModule.handler === '
         fromSender: chatUpdate?.messages?.[0]?.key?.fromMe ? 'SubBot' : 'Usuario'
       })
       
-      // Llamar al handler con el contexto correcto
+      
       if (originalHandler.bind) {
         return await originalHandler.call(sock, chatUpdate)
       } else {
         return await originalHandler(chatUpdate)
       }
     } catch (error) {
+      
+      if (error.message && error.message.includes('SessionError: No sessions')) {
+        console.error('🚨 SessionError detectado en SubBot - Intentando recuperación de sesión:', error.message)
+        
+        try {
+          
+          if (sock.auth && sock.auth.keys && typeof sock.auth.keys.clear === 'function') {
+            await sock.auth.keys.clear()
+            console.log('🧹 Cache de sesiones limpiado')
+          }
+          
+         
+          setTimeout(async () => {
+            if (sock.autoReconnect && sock.reconnectAttempts < sock.maxReconnectAttempts) {
+              console.log('🔄 Iniciando reconexión por SessionError...')
+              await attemptReconnect()
+            }
+          }, 5000)
+          
+        } catch (recoveryError) {
+          console.error('❌ Error en recuperación de SessionError:', recoveryError.message)
+        }
+        return 
+      }
+      
       console.error('❌ Error en handler de SubBot:', error.message)
       console.error('Stack:', error.stack)
     }
