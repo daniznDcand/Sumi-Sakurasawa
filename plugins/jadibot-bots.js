@@ -147,10 +147,10 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
 
     
     statusText += `🛠️ *COMANDOS DISPONIBLES:*\n`
-    statusText += `├ ${usedPrefix}qr - Crear nuevo SubBot\n`
-    statusText += `├ ${usedPrefix}deletebot - Eliminar SubBot\n`
-    statusText += `├ ${usedPrefix}bots - Ver estado actual\n`
-    statusText += `├ ${usedPrefix}bots all - Ver todos (Owner)\n`
+    statusText += `├usa ${usedPrefix}qr - Crear nuevo SubBot\n`
+    statusText += `├usa ${usedPrefix}deletebot - Eliminar SubBot\n`
+    statusText += `├usa ${usedPrefix}bots - Ver estado actual\n`
+    statusText += `├usa ${usedPrefix}bots all - Ver todos (Owner)\n`
     statusText += `└────────────────────\n\n`
 
     
