@@ -1,9 +1,15 @@
 async function stopSubBot(userId) {
-    if (!global.conns || !global.conns.has(userId)) {
+    if (!global.conns || global.conns.length === 0) {
         return false
     }
     
-    const conn = global.conns.get(userId)
+    
+    const connIndex = global.conns.findIndex(c => c && c.user && c.user.jid && c.user.jid.split('@')[0] === userId)
+    if (connIndex === -1) {
+        return false
+    }
+    
+    const conn = global.conns[connIndex]
     
     try {
         console.log(`🎵 Deteniendo SubBot ${userId} manualmente...`)
@@ -13,15 +19,21 @@ async function stopSubBot(userId) {
             conn.ws.close()
         }
         
-       
+        
         try {
             conn.ev.removeAllListeners()
         } catch (e) {}
         
         
-        global.conns.delete(userId)
-        global.connStatus.delete(userId)
-        global.reconnectAttempts.delete(userId)
+        ['_keepAliveInterval', '_saveCredsInterval', '_inactivityMonitor', 'heartbeatInterval', '_presenceInterval'].forEach(interval => {
+            if (conn[interval]) {
+                clearInterval(conn[interval])
+                conn[interval] = null
+            }
+        })
+        
+       
+        global.conns.splice(connIndex, 1)
         
         console.log(`🎵 SubBot ${userId} detenido exitosamente`)
         return true
@@ -36,23 +48,32 @@ let handler = async (m, { conn, usedPrefix, command }) => {
     let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender
     let id = `${who.split`@`[0]}`
     
-    if (!global.conns || !global.conns.has(id)) {
-        return m.reply('🎵 No tienes ningún Sub-Bot activo para desconectar.')
+    if (!global.conns || global.conns.length === 0) {
+        return m.reply('🎵 No tienes ningún SubBot activo para desconectar.')
     }
     
-    const subBot = global.conns.get(id)
-    if (!subBot || !subBot.ws || !subBot.ws.socket || subBot.ws.socket.readyState !== 1) {
-       
-        global.conns.delete(id)
-        global.connStatus.delete(id)
-        global.reconnectAttempts.delete(id)
-        return m.reply('🎵 Tu Sub-Bot ya estaba desconectado. Se limpió la sesión.')
+    
+    const userSubBot = global.conns.find(c => c && c.user && c.user.jid && c.user.jid.split('@')[0] === id)
+    
+    if (!userSubBot) {
+        return m.reply('🎵 No tienes ningún SubBot activo para desconectar.')
+    }
+    
+    const isConnected = userSubBot.ws && userSubBot.ws.socket && userSubBot.ws.socket.readyState === 1
+    
+    if (!isConnected) {
+        
+        const connIndex = global.conns.findIndex(c => c && c.user && c.user.jid && c.user.jid.split('@')[0] === id)
+        if (connIndex !== -1) {
+            global.conns.splice(connIndex, 1)
+        }
+        return m.reply('🎵 Tu SubBot ya estaba desconectado. Se limpió la sesión.')
     }
     
     try {
         const success = await stopSubBot(id)
         if (success) {
-            m.reply('🎤 Tu Sub-Bot se ha desconectado exitosamente del concierto de Miku.\n\n💫 Usa *' + usedPrefix + 'qr* o *' + usedPrefix + 'code* para reconectar.')
+            m.reply('🎤 Tu SubBot se ha desconectado exitosamente del concierto de Miku.\n\n💫 Usa `' + usedPrefix + 'qr` o `' + usedPrefix + 'code` para reconectar.')
         } else {
             m.reply('⚠️ Hubo un problema al desconectar tu Sub-Bot.')
         }

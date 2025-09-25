@@ -30,7 +30,7 @@ function cleanPhoneNumber(phone) {
 let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   try {
     if (!global.conns || global.conns.length === 0) {
-      return m.reply(`❌ *No hay SubBots activos*\n\n🤖 Actualmente no hay ningún SubBot conectado al servidor.\n\n💡 *Usa:* ${usedPrefix}serbot para crear un SubBot`)
+      return m.reply(`❌ *No hay SubBots activos*\n\n🤖 Actualmente no hay ningún SubBot conectado al servidor.\n\n💡 *Comando:* \`${usedPrefix}serbot\` para crear un SubBot`)
     }
 
     
@@ -39,7 +39,7 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
     const totalBots = activeConnections.length + inactiveConnections.length
     
     if (totalBots === 0) {
-      return m.reply(`❌ *No hay SubBots válidos*\n\n🤖 No se encontraron SubBots con información válida.\n\n💡 *Usa:* ${usedPrefix}serbot para crear un SubBot`)
+      return m.reply(`❌ *No hay SubBots válidos*\n\n🤖 No se encontraron SubBots con información válida.\n\n💡 *Comando:* \`${usedPrefix}serbot\` para crear un SubBot`)
     }
 
     console.log(chalk.blue(`📊 Generando estado de SubBots...`))
@@ -147,10 +147,10 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
 
     
     statusText += `🛠️ *COMANDOS DISPONIBLES:*\n`
-    statusText += `├usa ${usedPrefix}qr - Crear nuevo SubBot\n`
-    statusText += `├usa ${usedPrefix}deletebot - Eliminar SubBot\n`
-    statusText += `├usa ${usedPrefix}bots - Ver estado actual\n`
-    statusText += `├usa ${usedPrefix}bots all - Ver todos (Owner)\n`
+    statusText += `├ 📱 \`${usedPrefix}qr\` - Crear nuevo SubBot\n`
+    statusText += `├ 🗑️ \`${usedPrefix}deletebot\` - Eliminar SubBot\n`
+    statusText += `├ 📊 \`${usedPrefix}bots\` - Ver estado actual\n`
+    statusText += `├ 🌐 \`${usedPrefix}bots all\` - Ver todos (Owner)\n`
     statusText += `└────────────────────\n\n`
 
     
@@ -203,7 +203,7 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
     fallbackText += `📊 Activos: ${activeConnections.length} | Total: ${totalBots}\n`
     fallbackText += `💾 Memoria: ${memUsage}MB\n\n`
     fallbackText += `⚠️ Error generando reporte completo\n`
-    fallbackText += `💡 Usa: ${usedPrefix}qr para crear SubBot`
+    fallbackText += `💡 Comando: \`${usedPrefix}qr\` para crear SubBot`
     
     m.reply(fallbackText)
   }
