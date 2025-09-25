@@ -433,6 +433,47 @@ sock.isSubBot = true
 sock.parentBot = conn 
 
 
+sock.sessionErrorHandler = (error) => {
+  if (error && error.message && error.message.includes('SessionError: No sessions')) {
+    console.log(chalk.red(`🚨 [${path.basename(pathMikuJadiBot)}] SessionError no capturado detectado: ${error.message}`))
+    
+   
+    if (sock._handlingSessionError) {
+      console.log('⏸️ Ya se está manejando un SessionError, esperando...')
+      return
+    }
+    
+    sock._handlingSessionError = true
+    
+    setTimeout(async () => {
+      try {
+        console.log('🧹 Limpiando sesiones corruptas por error no capturado...')
+        
+        // Limpiar cache de sesiones
+        if (sock.auth && sock.auth.keys && typeof sock.auth.keys.clear === 'function') {
+          await sock.auth.keys.clear()
+          console.log('✅ Cache de sesiones limpiado')
+        }
+        
+        // Reiniciar conexión si es posible
+        if (sock.autoReconnect && sock.reconnectAttempts < sock.maxReconnectAttempts) {
+          console.log('🔄 Iniciando reconexión automática por SessionError no capturado...')
+          await attemptReconnect()
+        }
+        
+      } catch (recoveryError) {
+        console.error('❌ Error en recuperación de SessionError no capturado:', recoveryError.message)
+      } finally {
+        sock._handlingSessionError = false
+      }
+    }, 3000) // Delay más corto para errores no capturados
+  }
+}
+
+// Agregar listener para errores no capturados específico de este SubBot
+process.on('unhandledRejection', sock.sessionErrorHandler) 
+
+
 function isSocketReady(s) {
   try {
     if (!s) {
@@ -867,6 +908,13 @@ const endSesion = async (loaded) => {
         sock.handler = null
         sock.connectionUpdate = null
         sock.credsUpdate = null
+        
+       
+        if (sock.sessionErrorHandler) {
+          process.removeListener('unhandledRejection', sock.sessionErrorHandler)
+          sock.sessionErrorHandler = null
+          console.log('✅ Listener de SessionError removido')
+        }
       } catch (e) {}
       
       console.log(chalk.green(`✅ Sesión +${path.basename(pathMikuJadiBot)} finalizada correctamente`))
