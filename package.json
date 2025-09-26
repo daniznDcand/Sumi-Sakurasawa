@@ -1,6 +1,6 @@
 {
 "name": "Hatsune miku",
-"version": "2.2.5",
+"version": "2.2.6",
 "description": "WhatsApp Bot Multi Device",
 "main": "index.js",
 "type": "module",
