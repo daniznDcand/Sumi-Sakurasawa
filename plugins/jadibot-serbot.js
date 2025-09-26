@@ -585,13 +585,22 @@ console.log(chalk.yellow(`🔄 Intento de reconexión ${sock.reconnectAttempts}/
     try {
       sock._reconnectNotified = sock._reconnectNotified || false
       const notifyTo = (m && m.sender) ? m.sender : `${path.basename(pathMikuJadiBot)}@s.whatsapp.net`
-      if (!sock._reconnectNotified && options.fromCommand && shouldNotifyUser(notifyTo) && isSocketReady(conn)) {
-        try {
-          await conn.sendMessage(notifyTo, { text: `🔄 Reconectando SubBot +${path.basename(pathMikuJadiBot)}... Intento ${sock.reconnectAttempts}/${sock.maxReconnectAttempts}\n⏰ *Tiempo de sesión:* ${msToTime(Date.now() - sock.sessionStartTime)}\n🔒 *Sesión persistente activada*` }, { quoted: m }).catch(() => {})
-          sock._reconnectNotified = true
-        } catch (e) {
-          
+      try {
+        const now = Date.now()
+        const lastNotify = sock._lastReconnectNotify || 0
+        if (!sock._reconnectNotified && options.fromCommand && (now - lastNotify) > NOTIFY_COOLDOWN && shouldNotifyUser(notifyTo) && isSocketReady(conn)) {
+          try {
+            await conn.sendMessage(notifyTo, { text: `🔄 Reconectando SubBot +${path.basename(pathMikuJadiBot)}... Intento ${sock.reconnectAttempts}/${sock.maxReconnectAttempts}\n⏰ *Tiempo de sesión:* ${msToTime(Date.now() - sock.sessionStartTime)}\n🔒 *Sesión persistente activada*` }, { quoted: m }).catch(() => {})
+          } catch (e) {
+            console.error('Error notificando reconexión:', e?.message || e)
+          } finally {
+            
+            sock._reconnectNotified = true
+            sock._lastReconnectNotify = Date.now()
+          }
         }
+      } catch (e) {
+        console.error('Error intentando notificar reconexión:', e?.message || e)
       }
     } catch (e) {
       console.error('Error intentando notificar reconexión:', e?.message || e)
@@ -742,9 +751,22 @@ if (isNewLogin) sock.isInit = false
 
 
 if (qr && !mcode) {
+  
+  if (!options.fromCommand) {
+    console.log('ℹ️ QR generado pero omitido (no solicitado por comando)')
+    return
+  }
+
   if (m?.chat) {
     try {
-      txtQR = await conn.sendMessage(m.chat, { image: await qrcode.toBuffer(qr, { scale: 8 }), caption: rtx.trim()}, { quoted: m})
+      const now = Date.now()
+      const QR_COOLDOWN = 60 * 1000 
+      if (sock._lastQrSent && (now - sock._lastQrSent) < QR_COOLDOWN) {
+        console.log('⚠️ Omitiendo QR porque está en cooldown por este SubBot')
+      } else {
+        txtQR = await conn.sendMessage(m.chat, { image: await qrcode.toBuffer(qr, { scale: 8 }), caption: rtx.trim()}, { quoted: m})
+        sock._lastQrSent = Date.now()
+      }
     } catch (e) {
       console.error('Error enviando QR al usuario:', e?.message || e)
       return
@@ -756,13 +778,11 @@ if (qr && !mcode) {
     setTimeout(async () => {
       try {
         await conn.sendMessage(m.sender, { delete: txtQR.key })
-      } catch (e) {
-        
-      }
+      } catch (e) {}
     }, 45000)
   }
-return
-} 
+  return
+}
 
 
 if (qr && mcode) {
