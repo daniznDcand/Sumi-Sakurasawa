@@ -18,8 +18,11 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
             throw "Error al analizar la respuesta JSON."
         })
 
-        if (!data.data.dl_url) throw "No se pudo obtener el enlace de descarga."
-        const info = `💙 Descargando *<${data.data.title}>*\n\n> 💫 Artista » *${data.data.artist}*\n> 💌 Album » *${data.data.album}*\n> ⏲ Duracion » *${data.data.duration}*\n> 🜸 Link » ${song.url}`
+        
+        const dlUrl = (data && data.data && (data.data.dl_url || data.data.dlUrl || data.data.url)) || data?.dl_url || data?.dlUrl || null
+        if (!dlUrl) throw "No se pudo obtener el enlace de descarga desde la API."
+
+        const info = `💙 Descargando *<${data.data.title || 'Desconocido'}>*\n\n> 💫 Artista » *${data.data.artist || 'Desconocido'}*\n> 💌 Album » *${data.data.album || 'Desconocido'}*\n> ⏲ Duracion » *${data.data.duration || 'N/A'}*\n> 🜸 Link » ${song.url}`
 
         await conn.sendMessage(m.chat, { text: info, contextInfo: { forwardingScore: 9999999, isForwarded: false, 
         externalAdReply: {
@@ -34,7 +37,21 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
             sourceUrl: song.url
         }}}, { quoted: m })
 
-        conn.sendMessage(m.chat, { audio: { url: data.data.dl_url }, fileName: `${data.data.title}.mp3`, mimetype: 'audio/mp4', ptt: true }, { quoted: m })
+        
+        try {
+            const audioBuffer = await getBuffer(dlUrl)
+            if (audioBuffer && audioBuffer.byteLength && audioBuffer.length) {
+                await conn.sendMessage(m.chat, { audio: audioBuffer, fileName: `${(data.data.title || 'song').replace(/[/\\?%*:|"<>]/g, '')}.mp3`, mimetype: 'audio/mpeg' }, { quoted: m })
+            } else {
+                
+                await conn.sendMessage(m.chat, { text: `⚠️ No se pudo descargar el archivo directamente. Enlace de descarga: ${dlUrl}` }, { quoted: m })
+            }
+        } catch (errAudio) {
+            console.error('Error descargando o enviando audio:', errAudio)
+            try {
+                await conn.sendMessage(m.chat, { text: `⚠️ Error al descargar el audio. Enlace de descarga: ${dlUrl}` }, { quoted: m })
+            } catch (e) {}
+        }
 
     } catch (e1) {
         m.reply(`${e1.message || e1}`)
