@@ -28,6 +28,10 @@ if (global.conns instanceof Array) console.log()
 else global.conns = []
 
 
+const SUBBOT_VERBOSE = (process.env.SUBBOT_VERBOSE === 'true') || false
+const vlog = (...args) => { if (SUBBOT_VERBOSE) console.log(...args) }
+
+
 if (!global._subbotSessionErrorHandlerInstalled) {
   global._subbotSessionErrorHandlerInstalled = true
   process.on('unhandledRejection', async (reason) => {
@@ -425,14 +429,14 @@ if (!connectionOptions.version && version) {
 
 let sock
 try {
-  console.log('🔧 Creando socket con opciones limpias...')
+  vlog('🔧 Creando socket con opciones limpias...')
   const cleanConnectionOptions = cleanSocketOptions(connectionOptions)
-  console.log('🔍 Opciones finales para socket:', Object.keys(cleanConnectionOptions))
+  vlog('🔍 Opciones finales para socket:', Object.keys(cleanConnectionOptions))
   sock = makeWASocket(cleanConnectionOptions)
   sock.isInit = false
   sock.well = false  
   sock.reconnectAttempts = 0
-  console.log('✅ Socket creado exitosamente')
+  vlog('✅ Socket creado exitosamente')
 } catch (error) {
   console.error('❌ Error creando socket:', error.message)
   console.error('❌ Stack completo:', error.stack)
@@ -655,7 +659,7 @@ const reconnectOptions = {
   pairingCodeTimeout: 600000
 }
 
-console.log('🔄 Creando socket de reconexión con opciones limpias...')
+vlog('🔄 Creando socket de reconexión con opciones limpias...')
 const cleanReconnectOptions = cleanSocketOptions(reconnectOptions)
 sock = makeWASocket(cleanReconnectOptions)
 sock.reconnectAttempts = reconnectAttempts
@@ -678,7 +682,7 @@ sock.chats = sock.chats || {}
 sock.contacts = sock.contacts || {}
 sock.blocklist = sock.blocklist || []
 
-console.log(chalk.cyan('🔄 SubBot socket recreado con configuración ultra-persistente'))
+vlog(chalk.cyan('🔄 SubBot socket recreado con configuración ultra-persistente'))
 
 
 const safeSaveCreds = async () => {
@@ -702,7 +706,7 @@ sock.ev.on("connection.update", sock.connectionUpdate)
 sock.ev.on("creds.update", sock.credsUpdate)
 
 
-console.log('🔍 Reconexión - Verificando handler:', {
+vlog('🔍 Reconexión - Verificando handler:', {
   handlerModule: !!handlerModule,
   hasHandler: !!(handlerModule && handlerModule.handler),
   handlerType: typeof (handlerModule && handlerModule.handler)
@@ -728,10 +732,10 @@ if (handlerModule && handlerModule.handler && typeof handlerModule.handler === '
   sock.handler = handlerModule.handler.bind(sock)
   try { sock.ev.removeAllListeners('messages.upsert') } catch (e) {}
   sock.ev.on('messages.upsert', sock.handler)
-  console.log(chalk.green('✅ Handler reconfigurado en reconexión'))
+  vlog(chalk.green('✅ Handler reconfigurado en reconexión'))
 }
 
-console.log(chalk.green(`✅ Reconexión ${sock.reconnectAttempts} completada exitosamente - Sesión ultra-persistente activada`))
+vlog(chalk.green(`✅ Reconexión ${sock.reconnectAttempts} completada exitosamente - Sesión ultra-persistente activada`))
 return true
 } catch (error) {
 console.error(chalk.red(`❌ Error en reconexión ${sock.reconnectAttempts}: ${error.message}`))
@@ -1455,7 +1459,7 @@ if (!global.conns.find(c => c.user?.jid === sock.user?.jid)) {
 sock.createdAt = Date.now()
 sock.lastActivity = Date.now()
 global.conns.push(sock)
-console.log(chalk.green(`✅ SubBot agregado a pool - Total: ${global.conns.length}`))
+  vlog(chalk.green(`✅ SubBot agregado a pool - Total: ${global.conns.length}`))
 }
 
 
@@ -1466,13 +1470,13 @@ let userName = sock.user.name || 'SubBot'
 let userJid = sock.user.jid || `${path.basename(pathMikuJadiBot)}@s.whatsapp.net`
 
 
-console.log(chalk.bold.green(`✅ SubBot conectado exitosamente:`))
-console.log(chalk.cyan(`   👤 Usuario: ${userName}`))
-console.log(chalk.cyan(`   📱 Número: +${path.basename(pathMikuJadiBot)}`))
-console.log(chalk.cyan(`   🆔 JID: ${userJid}`))
-console.log(chalk.cyan(`   🕒 Conectado: ${new Date().toLocaleString()}`))
-console.log(chalk.cyan(`   ⏱️ Duración sesión: ${durationFormatted}`))
-console.log(chalk.cyan(`   🔄 Reconexiones: ${sock.reconnectAttempts}/${sock.maxReconnectAttempts}`))
+vlog(chalk.bold.green(`✅ SubBot conectado exitosamente:`))
+vlog(chalk.cyan(`   👤 Usuario: ${userName}`))
+vlog(chalk.cyan(`   📱 Número: +${path.basename(pathMikuJadiBot)}`))
+vlog(chalk.cyan(`   🆔 JID: ${userJid}`))
+vlog(chalk.cyan(`   🕒 Conectado: ${new Date().toLocaleString()}`))
+vlog(chalk.cyan(`   ⏱️ Duración sesión: ${durationFormatted}`))
+vlog(chalk.cyan(`   🔄 Reconexiones: ${sock.reconnectAttempts}/${sock.maxReconnectAttempts}`))
 
 
 await joinChannels(sock)
