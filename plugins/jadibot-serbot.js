@@ -236,7 +236,7 @@ return m.reply(`💙 El Comando *${command}* está desactivado temporalmente.`)
 
 
 const isFromSubBot = conn.isSubBot === true
-if (isFromSubBot && (command === 'qr' || command === 'code')) {
+if (isFromSubBot && (command === 'code')) {
   console.log(chalk.blue(`🤖 Comando ${command} detectado desde SubBot - delegando a subbot-commands.js`))
   return 
 }
@@ -319,9 +319,9 @@ mikuJBOptions.fromCommand = true
 mikuJadiBot(mikuJBOptions)
 global.db.data.users[m.sender].Subs = new Date * 1
 } 
-handler.help = ['qr', 'code']
+handler.help = [ 'code']
 handler.tags = ['serbot']
-handler.command = ['qr', 'code']
+handler.command = ['code']
 export default handler 
 
 export async function mikuJadiBot(options) {
