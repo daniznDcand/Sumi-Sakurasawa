@@ -278,8 +278,6 @@ handler.before = async function (m, { conn, usedPrefix }) {
     try {
       if (buttonId === 'serbot_code') {
         
-        await conn.reply(m.chat, '📱 Generando código de vinculación...', m)
-        
         
         const { mikuJadiBot } = await import('./jadibot-serbot.js')
         const pathMikuJadiBot = `./jadi/${m.sender.split('@')[0]}`
@@ -303,9 +301,7 @@ handler.before = async function (m, { conn, usedPrefix }) {
         user.Subs = Date.now()
         return true
         
-      } else if (buttonId === 'serbot_qr') {
-        
-        await conn.reply(m.chat, '📄 Generando código QR...', m)
+      } else if (buttonId === '') {
         
         
         const { mikuJadiBot } = await import('./jadibot-serbot.js')
