@@ -754,39 +754,7 @@ const { connection, lastDisconnect, isNewLogin, qr } = update
 if (isNewLogin) sock.isInit = false
 
 
-if (qr && !mcode) {
-  
-  if (!options.fromCommand) {
-    console.log('ℹ️ QR generado pero omitido (no solicitado por comando)')
-    return
-  }
-
-  if (m?.chat) {
-    try {
-      const now = Date.now()
-      const QR_COOLDOWN = 60 * 1000 
-      if (sock._lastQrSent && (now - sock._lastQrSent) < QR_COOLDOWN) {
-        console.log('⚠️ Omitiendo QR porque está en cooldown por este SubBot')
-      } else {
-        txtQR = await conn.sendMessage(m.chat, { image: await qrcode.toBuffer(qr, { scale: 8 }), caption: rtx.trim()}, { quoted: m})
-        sock._lastQrSent = Date.now()
-      }
-    } catch (e) {
-      console.error('Error enviando QR al usuario:', e?.message || e)
-      return
-    }
-  } else {
-    return
-  }
-  if (txtQR && txtQR.key) {
-    setTimeout(async () => {
-      try {
-        await conn.sendMessage(m.sender, { delete: txtQR.key })
-      } catch (e) {}
-    }, 45000)
-  }
-  return
-}
+// Eliminado el envío de QR para evitar spam
 
 
 if (qr && mcode) {
