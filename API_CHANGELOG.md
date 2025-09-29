@@ -25,6 +25,21 @@ Se agregaron APIs equivalentes para MP3:
 6. **ZenzzXD v2** - `${global.APIs.zenzxz.url}/downloader/ytmp3v2`
 7. **ZenzzXD Legacy** - `https://api.zenzxz.my.id/downloader/ytmp3` (URL fija)
 
+## 🛡️ Protecciones Implementadas
+
+### **v2.0 - Manejo Seguro de APIs**
+- ✅ **Validación de global.APIs** - No causa errores si no está definido
+- ✅ **URLs por defecto** - Fallback automático a URLs predeterminadas  
+- ✅ **Conditional loading** - Solo carga APIs que estén correctamente configuradas
+- ✅ **APIs legacy** - Siempre disponibles como respaldo final
+- ✅ **Error handling** - Tolerante a fallos de configuración
+
+### **Error Corregido:**
+```
+❌ ANTES: TypeError: Cannot read properties of undefined (reading 'xyro')
+✅ AHORA: Funciona incluso sin global.APIs configurado
+```
+
 ## 🔧 Características
 
 - **Total de APIs para Video:** 8 APIs (antes 2)
@@ -32,6 +47,7 @@ Se agregaron APIs equivalentes para MP3:
 - **Tolerancia a fallos:** El sistema intentará todas las APIs hasta encontrar una que funcione
 - **URLs dinámicas:** Utiliza `global.APIs` para URLs configurables
 - **URLs de respaldo:** Mantiene URLs fijas como fallback
+- **Configuración opcional:** Funciona sin configuración adicional
 
 ## 🎯 Beneficios
 
@@ -39,10 +55,12 @@ Se agregaron APIs equivalentes para MP3:
 - ✅ **Mejor rendimiento** - APIs alternativas si una es lenta
 - ✅ **Flexibilidad** - URLs configurables desde `global.APIs`
 - ✅ **Compatibilidad** - Mantiene APIs legacy como respaldo
+- ✅ **Plug & Play** - Funciona inmediatamente sin configuración
+- ✅ **Error-proof** - No se rompe por configuración faltante
 
-## ⚠️ Requisitos
+## ⚙️ Configuración (Opcional)
 
-Asegúrate de que `global.APIs` esté configurado en tu archivo de configuración con:
+Si quieres personalizar las URLs de las APIs, agrega esto a tu configuración:
 
 ```javascript
 global.APIs = {
@@ -54,5 +72,7 @@ global.APIs = {
 }
 ```
 
+**Nota:** Si no configuras `global.APIs`, el bot usará URLs por defecto y funcionará normalmente.
+
 ---
-*Actualización: Septiembre 2025*
+*Actualización: Septiembre 2025 - v2.0 Error-proof*

@@ -376,14 +376,30 @@ async function fetchFromBackupApis(apis) {
 
 async function getAudioUrl(url) {
   
+  const defaultAPIs = {
+    xyro: { url: 'https://api.xyro.com' },
+    yupra: { url: 'https://api.yupra.com' },
+    vreden: { url: 'https://api.vreden.com' },
+    delirius: { url: 'https://delirius-apiofc.vercel.app' },
+    zenzxz: { url: 'https://api.zenzxz.my.id' }
+  };
+  
+  
+  const APIs = global.APIs || defaultAPIs;
+  
   const apis = [
+    
     { api: 'StellarWA', endpoint: `https://api.stellarwa.xyz/dow/ytmp3?url=${encodeURIComponent(url)}&apikey=Diamond`, extractor: res => res?.data?.dl },
-    { api: 'Xyro', endpoint: `${global.APIs.xyro.url}/download/youtubemp3?url=${encodeURIComponent(url)}`, extractor: res => res.result?.dl },
-    { api: 'Yupra', endpoint: `${global.APIs.yupra.url}/api/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.resultado?.enlace },
-    { api: 'Vreden', endpoint: `${global.APIs.vreden.url}/api/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url },
-    { api: 'Delirius', endpoint: `${global.APIs.delirius.url}/download/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url },
-    { api: 'ZenzzXD', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-    { api: 'ZenzzXD v2', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp3v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
+    
+    
+    ...(APIs.xyro?.url ? [{ api: 'Xyro', endpoint: `${APIs.xyro.url}/download/youtubemp3?url=${encodeURIComponent(url)}`, extractor: res => res.result?.dl }] : []),
+    ...(APIs.yupra?.url ? [{ api: 'Yupra', endpoint: `${APIs.yupra.url}/api/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.resultado?.enlace }] : []),
+    ...(APIs.vreden?.url ? [{ api: 'Vreden', endpoint: `${APIs.vreden.url}/api/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url }] : []),
+    ...(APIs.delirius?.url ? [{ api: 'Delirius', endpoint: `${APIs.delirius.url}/download/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url }] : []),
+    ...(APIs.zenzxz?.url ? [{ api: 'ZenzzXD', endpoint: `${APIs.zenzxz.url}/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.download_url }] : []),
+    ...(APIs.zenzxz?.url ? [{ api: 'ZenzzXD v2', endpoint: `${APIs.zenzxz.url}/downloader/ytmp3v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url }] : []),
+    
+    
     { api: 'ZenzzXD Legacy', endpoint: `https://api.zenzxz.my.id/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.download_url }
   ];
   
@@ -411,13 +427,27 @@ async function getAudioUrl(url) {
 
 async function getVideoUrl(url) {
   
+  const defaultAPIs = {
+    xyro: { url: 'https://api.xyro.com' },
+    yupra: { url: 'https://api.yupra.com' },
+    vreden: { url: 'https://api.vreden.com' },
+    delirius: { url: 'https://delirius-apiofc.vercel.app' },
+    zenzxz: { url: 'https://api.zenzxz.my.id' }
+  };
+  
+  
+  const APIs = global.APIs || defaultAPIs;
+  
   const apis = [
-    { api: 'Xyro', endpoint: `${global.APIs.xyro.url}/download/youtubemp4?url=${encodeURIComponent(url)}&quality=360`, extractor: res => res.result?.dl },
-    { api: 'Yupra', endpoint: `${global.APIs.yupra.url}/api/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.resultado?.formatos?.[0]?.url },
-    { api: 'Vreden', endpoint: `${global.APIs.vreden.url}/api/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url },
-    { api: 'Delirius', endpoint: `${global.APIs.delirius.url}/download/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url },
-    { api: 'ZenzzXD', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-    { api: 'ZenzzXD v2', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp4v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
+    
+    ...(APIs.xyro?.url ? [{ api: 'Xyro', endpoint: `${APIs.xyro.url}/download/youtubemp4?url=${encodeURIComponent(url)}&quality=360`, extractor: res => res.result?.dl }] : []),
+    ...(APIs.yupra?.url ? [{ api: 'Yupra', endpoint: `${APIs.yupra.url}/api/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.resultado?.formatos?.[0]?.url }] : []),
+    ...(APIs.vreden?.url ? [{ api: 'Vreden', endpoint: `${APIs.vreden.url}/api/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url }] : []),
+    ...(APIs.delirius?.url ? [{ api: 'Delirius', endpoint: `${APIs.delirius.url}/download/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url }] : []),
+    ...(APIs.zenzxz?.url ? [{ api: 'ZenzzXD', endpoint: `${APIs.zenzxz.url}/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.download_url }] : []),
+    ...(APIs.zenzxz?.url ? [{ api: 'ZenzzXD v2', endpoint: `${APIs.zenzxz.url}/downloader/ytmp4v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url }] : []),
+    
+    
     { api: 'ZenzzXD Legacy', endpoint: `https://api.zenzxz.my.id/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
     { api: 'Delirius Legacy', endpoint: `https://delirius-apiofc.vercel.app/download/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url }
   ];
