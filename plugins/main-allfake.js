@@ -10,7 +10,18 @@ handler.all = async function (m) {
 
 global.getBuffer = async function getBuffer(url, options) {
 try {
-options ? options : {}
+options = options || {}
+
+
+const cacheKey = `buffer_${url}`
+if (global.iconCache && global.iconCache.has(cacheKey)) {
+  const cached = global.iconCache.get(cacheKey)
+  if (Date.now() - cached.timestamp < 300000) { 
+    console.log('⚡ Buffer desde caché')
+    return cached.data
+  }
+}
+
 var res = await axios({
 method: "get",
 url,
@@ -19,12 +30,23 @@ headers: {
 'User-Agent': 'GoogleBot',
 'Upgrade-Insecure-Request': 1
 },
+timeout: options.timeout || 8000, 
 ...options,
 responseType: 'arraybuffer'
 })
+
+
+if (global.iconCache && res.data) {
+  global.iconCache.set(cacheKey, {
+    data: res.data,
+    timestamp: Date.now()
+  })
+}
+
 return res.data
 } catch (e) {
-console.log(`Error : ${e}`)
+console.log(`⚠️ Error en getBuffer: ${e.message}`)
+return null 
 }}
 
 
@@ -113,31 +135,96 @@ let category = "imagen"
 const db = './src/database/db.json'
 
 
-try {
-  const db_ = JSON.parse(fs.readFileSync(db))
-  const random = Math.floor(Math.random() * db_.links[category].length)
-  const randomlink = db_.links[category][random]
+global.iconCache = global.iconCache || new Map()
+global.defaultIcon = 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg'
+
+
+async function loadIconOptimized() {
+  const cacheKey = 'daily_icon'
+  const cacheExpiry = 1000 * 60 * 60 * 12 
   
-  console.log(`🔄 Cargando icono desde: ${randomlink}`)
-  const response = await safeFetch(randomlink, {
-    timeout: 8000,
-    fallbackUrl: 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg'
+ 
+  const cached = global.iconCache.get(cacheKey)
+  if (cached && (Date.now() - cached.timestamp) < cacheExpiry) {
+    console.log(`✅ Usando icono desde caché`)
+    global.icons = cached.data
+    return
+  }
+  
+  
+  setImmediate(async () => {
+    try {
+      const db_ = JSON.parse(fs.readFileSync(db))
+      const random = Math.floor(Math.random() * db_.links[category].length)
+      const randomlink = db_.links[category][random]
+      
+      console.log(`🔄 Cargando icono en background: ${randomlink}`)
+      const response = await safeFetch(randomlink, {
+        timeout: 5000, 
+        fallbackUrl: global.defaultIcon
+      })
+      
+      if (response.ok) {
+        const rimg = await response.buffer()
+        
+        
+        global.iconCache.set(cacheKey, {
+          data: rimg,
+          timestamp: Date.now()
+        })
+        
+        global.icons = rimg
+        console.log(`✅ Icono cargado y cacheado exitosamente`)
+      } else {
+        throw new Error(`HTTP ${response.status}`)
+      }
+    } catch (error) {
+      console.log(`⚠️ Error cargando icono en background: ${error.message}`)
+      
+     
+      try {
+        const fallbackResponse = await safeFetch(global.defaultIcon, { timeout: 3000 })
+        if (fallbackResponse.ok) {
+          const fallbackImg = await fallbackResponse.buffer()
+          global.iconCache.set(cacheKey, {
+            data: fallbackImg,
+            timestamp: Date.now()
+          })
+          global.icons = fallbackImg
+          console.log(`✅ Icono fallback cargado`)
+        }
+      } catch (fallbackError) {
+        console.log('⚠️ Usando modo sin icono')
+        global.icons = null
+      }
+    }
   })
   
-  if (response.ok) {
-    const rimg = await response.buffer()
-    global.icons = rimg
-    console.log(`✅ Icono cargado exitosamente`)
-  } else {
-    throw new Error(`HTTP ${response.status}`)
+
+  if (!cached) {
+    console.log('🔄 Usando modo rápido sin descarga inicial...')
+    global.icons = null
   }
-} catch (error) {
-  console.log(`⚠️ Error cargando icono: ${error.message}`)
-  console.log('🔄 Usando icono por defecto...')
-  
-  
-  global.icons = null
 }
+
+
+await loadIconOptimized()
+
+
+setInterval(() => {
+  if (global.iconCache && global.iconCache.size > 50) {
+    const now = Date.now()
+    const expiry = 1000 * 60 * 30 
+    
+    for (const [key, value] of global.iconCache.entries()) {
+      if (now - value.timestamp > expiry) {
+        global.iconCache.delete(key)
+      }
+    }
+    
+    console.log(`🧹 Cache limpiado: ${global.iconCache.size} elementos restantes`)
+  }
+}, 1000 * 60 * 30) 
 
 var ase = new Date(); var hour = ase.getHours(); switch(hour){ case 0: hour = 'Lɪɴᴅᴀ Nᴏᴄʜᴇ 🌃'; break; case 1: hour = 'Lɪɴᴅᴀ Nᴏᴄʜᴇ 🌃'; break; case 2: hour = 'Lɪɴᴅᴀ Nᴏᴄʜᴇ 🌃'; break; case 3: hour = 'Lɪɴᴅᴀ Mᴀɴ̃ᴀɴᴀ 🌄'; break; case 4: hour = 'Lɪɴᴅᴀ Mᴀɴ̃ᴀɴᴀ 🌄'; break; case 5: hour = 'Lɪɴᴅᴀ Mᴀɴ̃ᴀɴᴀ 🌄'; break; case 6: hour = 'Lɪɴᴅᴀ Mᴀɴ̃ᴀɴᴀ 🌄'; break; case 7: hour = 'Lɪɴᴅᴀ Mᴀɴ̃ᴀɴᴀ 🌅'; break; case 8: hour = 'Lɪɴᴅᴀ Mᴀɴ̃ᴀɴᴀ 🌄'; break; case 9: hour = 'Lɪɴᴅᴀ Mᴀɴ̃ᴀɴᴀ 🌄'; break; case 10: hour = 'Lɪɴᴅᴏ Dɪᴀ 🌤'; break; case 11: hour = 'Lɪɴᴅᴏ Dɪᴀ 🌤'; break; case 12: hour = 'Lɪɴᴅᴏ Dɪᴀ 🌤'; break; case 13: hour = 'Lɪɴᴅᴏ Dɪᴀ 🌤'; break; case 14: hour = 'Lɪɴᴅᴀ Tᴀʀᴅᴇ 🌆'; break; case 15: hour = 'Lɪɴᴅᴀ Tᴀʀᴅᴇ 🌆'; break; case 16: hour = 'Lɪɴᴅᴀ Tᴀʀᴅᴇ 🌆'; break; case 17: hour = 'Lɪɴᴅᴀ Tᴀʀᴅᴇ 🌆'; break; case 18: hour = 'Lɪɴᴅᴀ Nᴏᴄʜᴇ 🌃'; break; case 19: hour = 'Lɪɴᴅᴀ Nᴏᴄʜᴇ 🌃'; break; case 20: hour = 'Lɪɴᴅᴀ Nᴏᴄʜᴇ 🌃'; break; case 21: hour = 'Lɪɴᴅᴀ Nᴏᴄʜᴇ 🌃'; break; case 22: hour = 'Lɪɴᴅᴀ Nᴏᴄʜᴇ 🌃'; break; case 23: hour = 'Lɪɴᴅᴀ Nᴏᴄʜᴇ 🌃'; break;}
 global.saludo = hour;
