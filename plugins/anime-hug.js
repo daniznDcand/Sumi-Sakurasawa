@@ -13,27 +13,21 @@ let handler = async (m, { conn, usedPrefix }) => {
     let name2 = conn.getName(m.sender)
 
     let str = m.mentionedJid.length > 0 || m.quoted 
-        ? `🎤💙 \`${name2}\` le dio un abrazo virtual lleno de amor a \`${name || who}\` como en el mundo de Miku ✨🤗�` 
-        : `�💙 \`${name2}\` se abrazó a sí mismo/a con cariño virtual ✨🤗💫`
+        ? `💙 \`${name2}\` le dio un abrazo virtual lleno de amor a \`${name || who}\` como en el mundo de Miku 🤗` 
+        : `💙 \`${name2}\` se abrazó a sí mismo/a con cariño virtual 🤗`
     
     if (m.isGroup) {
-        let pp = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742866775883.mp4'
-        let pp2 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742866762669.mp4'
-        let pp3 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742866810774.mp4'
-        let pp4 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742866805671.mp4'
-        let pp5 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742866790418.mp4'
-        let pp6 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742866782428.mp4'
-        let pp7 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742866769477.mp4'
-        let pp8 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742866846247.mp4'
-        let pp9 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742866839926.mp4'
-        let pp10 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742866831885.mp4'
-        let pp11 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742866829226.mp4'
-        let pp12 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742866817182.mp4'
-        let pp13 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1745603436585.mp4'
-        let pp14 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1745603441507.mp4'
-        let pp15 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1745603433572.mp4'
+        let pp = 'https://media.tenor.com/20DCjTUJnsMAAAPo/hugging-each-other-david-martinez.mp4'
+        let pp2 = 'https://media.tenor.com/c6BBsLFmn7AAAAPo/chuunibyou-hug.mp4'
+        let pp3 = 'https://media.tenor.com/UWdOymsSvFkAAAPo/bna-hug-bna.mp4'
+        let pp4 = 'https://media.tenor.com/x7El3HRvEHEAAAPo/kon-hug.mp4'
+        let pp5 = 'https://media.tenor.com/gqC-f_diA9EAAAPo/jujutsu-kaisen-hug.mp4'
+        let pp6 = 'https://media.tenor.com/I6YEqtV4gv8AAAPo/anime-hug-hug.mp4'
+        let pp7 = 'https://media.tenor.com/8o4fWGwBY1EAAAPo/aharensan-aharen.mp4'
+        let pp8 = 'https://media.tenor.com/ifQBuYGBX1AAAAPo/levi-love.mp4'
         
-        const videos = [pp, pp2, pp3, pp4, pp5, pp6, pp7, pp8, pp9, pp10, pp11, pp12, pp13, pp14, pp15]
+        
+        const videos = [pp, pp2, pp3, pp4, pp5, pp6, pp7, pp8]
         const video = videos[Math.floor(Math.random() * videos.length)]
         
         conn.sendMessage(m.chat, { video: { url: video }, gifPlayback: true, caption: str, ptt: true, mentions: [who] }, { quoted: m })
@@ -42,7 +36,7 @@ let handler = async (m, { conn, usedPrefix }) => {
 
 handler.help = ['hug']
 handler.tags = ['anime']
-handler.command = ['hug', 'abrazar']
+handler.command = ['hug', 'abrazar','abrazos','abrazo','apapachar','apapacho','cariño','cariñoso','afecto','afectuoso','consuelo','consolar','reconfortar','mimar','mimos']
 handler.group = true
 
 export default handler
