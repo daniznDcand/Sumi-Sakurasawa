@@ -253,9 +253,9 @@ async function processDownload(conn, m, url, title, option) {
     
    
     const user = global.db.data.users[m.sender];
-    if (!user.cebollinesDeducted) {
-      user.chocolates -= 2;
-      user.cebollinesDeducted = true;
+    if (!user.monedaDeducted) {
+      user.moneda -= 2;
+      user.monedaDeducted = true;
       conn.reply(m.chat, `💙 Has utilizado 2 *Cebollines 🌱*`, m);
     }
     
@@ -496,13 +496,11 @@ handler.before = async (m, { conn }) => {
     }
   }
   
-  
   const textContainsButton = m.text.includes('ytdl_') || 
                             m.text.includes('audio_mp3') || 
                             m.text.includes('video_mp4') ||
                             m.text.includes('audio_doc') ||
                             m.text.includes('video_doc');
-  
   
   const buttonTextPatterns = [
     /🎵.*MP3.*Audio/i,
