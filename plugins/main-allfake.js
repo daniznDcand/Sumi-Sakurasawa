@@ -26,6 +26,43 @@ return res.data
 } catch (e) {
 console.log(`Error : ${e}`)
 }}
+
+
+global.safeFetch = async function safeFetch(url, options = {}) {
+  try {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), options.timeout || 10000)
+    
+    const response = await fetch(url, { 
+      signal: controller.signal,
+      timeout: options.timeout || 10000,
+      ...options
+    })
+    
+    clearTimeout(timeoutId)
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    }
+    
+    return response
+  } catch (error) {
+    console.log(`⚠️ SafeFetch error para ${url}: ${error.message}`)
+    
+    
+    if (url.includes('catbox.moe') && options.fallbackUrl) {
+      console.log(`🔄 Intentando con URL fallback: ${options.fallbackUrl}`)
+      try {
+        return await fetch(options.fallbackUrl, { timeout: 5000 })
+      } catch (fallbackError) {
+        console.log(`❌ Fallback también falló: ${fallbackError.message}`)
+        throw new Error(`Tanto URL principal como fallback fallaron`)
+      }
+    }
+    
+    throw error
+  }
+}
   
 global.creador = 'wa.me/51988514570'
 global.ofcbot = `${conn.user.jid.split('@')[0]}`
@@ -74,12 +111,33 @@ global.redes = [canal, comunidad, git, github, correo].getRandom()
 
 let category = "imagen"
 const db = './src/database/db.json'
-const db_ = JSON.parse(fs.readFileSync(db))
-const random = Math.floor(Math.random() * db_.links[category].length)
-const randomlink = db_.links[category][random]
-const response = await fetch(randomlink)
-const rimg = await response.buffer()
-global.icons = rimg
+
+
+try {
+  const db_ = JSON.parse(fs.readFileSync(db))
+  const random = Math.floor(Math.random() * db_.links[category].length)
+  const randomlink = db_.links[category][random]
+  
+  console.log(`🔄 Cargando icono desde: ${randomlink}`)
+  const response = await safeFetch(randomlink, {
+    timeout: 8000,
+    fallbackUrl: 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg'
+  })
+  
+  if (response.ok) {
+    const rimg = await response.buffer()
+    global.icons = rimg
+    console.log(`✅ Icono cargado exitosamente`)
+  } else {
+    throw new Error(`HTTP ${response.status}`)
+  }
+} catch (error) {
+  console.log(`⚠️ Error cargando icono: ${error.message}`)
+  console.log('🔄 Usando icono por defecto...')
+  
+  
+  global.icons = null
+}
 
 var ase = new Date(); var hour = ase.getHours(); switch(hour){ case 0: hour = 'Lɪɴᴅᴀ Nᴏᴄʜᴇ 🌃'; break; case 1: hour = 'Lɪɴᴅᴀ Nᴏᴄʜᴇ 🌃'; break; case 2: hour = 'Lɪɴᴅᴀ Nᴏᴄʜᴇ 🌃'; break; case 3: hour = 'Lɪɴᴅᴀ Mᴀɴ̃ᴀɴᴀ 🌄'; break; case 4: hour = 'Lɪɴᴅᴀ Mᴀɴ̃ᴀɴᴀ 🌄'; break; case 5: hour = 'Lɪɴᴅᴀ Mᴀɴ̃ᴀɴᴀ 🌄'; break; case 6: hour = 'Lɪɴᴅᴀ Mᴀɴ̃ᴀɴᴀ 🌄'; break; case 7: hour = 'Lɪɴᴅᴀ Mᴀɴ̃ᴀɴᴀ 🌅'; break; case 8: hour = 'Lɪɴᴅᴀ Mᴀɴ̃ᴀɴᴀ 🌄'; break; case 9: hour = 'Lɪɴᴅᴀ Mᴀɴ̃ᴀɴᴀ 🌄'; break; case 10: hour = 'Lɪɴᴅᴏ Dɪᴀ 🌤'; break; case 11: hour = 'Lɪɴᴅᴏ Dɪᴀ 🌤'; break; case 12: hour = 'Lɪɴᴅᴏ Dɪᴀ 🌤'; break; case 13: hour = 'Lɪɴᴅᴏ Dɪᴀ 🌤'; break; case 14: hour = 'Lɪɴᴅᴀ Tᴀʀᴅᴇ 🌆'; break; case 15: hour = 'Lɪɴᴅᴀ Tᴀʀᴅᴇ 🌆'; break; case 16: hour = 'Lɪɴᴅᴀ Tᴀʀᴅᴇ 🌆'; break; case 17: hour = 'Lɪɴᴅᴀ Tᴀʀᴅᴇ 🌆'; break; case 18: hour = 'Lɪɴᴅᴀ Nᴏᴄʜᴇ 🌃'; break; case 19: hour = 'Lɪɴᴅᴀ Nᴏᴄʜᴇ 🌃'; break; case 20: hour = 'Lɪɴᴅᴀ Nᴏᴄʜᴇ 🌃'; break; case 21: hour = 'Lɪɴᴅᴀ Nᴏᴄʜᴇ 🌃'; break; case 22: hour = 'Lɪɴᴅᴀ Nᴏᴄʜᴇ 🌃'; break; case 23: hour = 'Lɪɴᴅᴀ Nᴏᴄʜᴇ 🌃'; break;}
 global.saludo = hour;
