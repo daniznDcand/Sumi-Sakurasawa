@@ -1,6 +1,7 @@
 ﻿import { createHash } from 'crypto' 
 import fetch from 'node-fetch'
 import fs from 'fs'
+import path from 'path'
 
 const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isROwner }) => {
   let chat = global.db.data.chats[m.chat]
@@ -185,6 +186,13 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
       try {
         await m.react('⏳')
         const configPath = './tmp/audios_config.json'
+        
+        
+        const configDir = path.dirname(configPath)
+        if (!fs.existsSync(configDir)) {
+          fs.mkdirSync(configDir, { recursive: true })
+        }
+        
         let config = {}
         try {
           config = JSON.parse(fs.readFileSync(configPath, 'utf8'))
