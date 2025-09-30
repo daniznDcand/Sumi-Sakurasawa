@@ -1,21 +1,30 @@
 
 
-import { AUDIO_CONFIG, loadConfig } from './_audios.js';
+import { AUDIO_CONFIG } from './_audios.js';
+import fs from 'fs';
 
 let handler = async (m, { conn }) => {
     
     if (!m.isGroup) return;
     
     const groupId = m.chat;
-    const config = loadConfig();
     
     
-    if (!config.enabledGroups || !config.enabledGroups[groupId]) {
+    let config = {};
+    try {
+        const configPath = './tmp/audios_config.json';
+        config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    } catch {
+        config = { enabledWords: [], blockedWords: [] };
+    }
+    
+    
+    if (!config.enabledWords || !config.enabledWords.includes(groupId)) {
         return; 
     }
     
-   
-    const messageText = (m.text || '').toLowerCase().trim();
+    
+    const messageText = (m.text || '').trim();
     
     if (!messageText) return;
     
@@ -24,7 +33,7 @@ let handler = async (m, { conn }) => {
     
     for (const rawWord of words) {
         
-        const cleanWord = rawWord.replace(/^[^\w]+|[^\w]+$/g, '');
+        const cleanWord = rawWord.replace(/^[^\w]+|[^\w]+$/g, '').toLowerCase();
         
         
         if (AUDIO_CONFIG[cleanWord]) {
@@ -37,7 +46,7 @@ let handler = async (m, { conn }) => {
                     mimetype: 'audio/mp4',
                     ptt: true, 
                     fileName: `${cleanWord}.mp3`,
-                    waveform: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] 
+                    waveform: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
                 });
                 
                 
