@@ -23,24 +23,44 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
         const { audioUrl, title, author, thumbnail } = result;
 
-        const doc = {
+        
+        await conn.reply(m.chat, `✅ *Audio extraído exitosamente*\n\n🎵 *Título:* ${title || 'Audio TikTok'}\n👤 *Autor:* ${author || 'Desconocido'}\n\n📤 Enviando audio...`, m);
+
+       
+        const audioDoc = {
             audio: { url: audioUrl },
-            mimetype: 'audio/mp4',
-            fileName: `${title || 'tiktok_audio'}.mp3`,
+            mimetype: 'audio/mpeg',
+            fileName: `${(title || 'tiktok_audio').replace(/[^\w\s]/gi, '')}.mp3`,
+            ptt: false, 
             contextInfo: {
                 externalAdReply: {
                     showAdAttribution: true,
                     mediaType: 2,
                     mediaUrl: tiktokUrl,
                     title: title || 'Audio de TikTok',
-                    body: `👤 ${author || 'Autor desconocido'}`,
+                    body: `👤 ${author || 'Autor desconocido'} | 🎵 Hatsune Miku Bot`,
                     sourceUrl: tiktokUrl,
                     thumbnail: thumbnail ? await (await conn.getFile(thumbnail)).data : null
                 }
             }
         };
         
-        await conn.sendMessage(m.chat, doc, { quoted: m });
+       
+        try {
+            await conn.sendMessage(m.chat, audioDoc, { quoted: m });
+        } catch (audioError) {
+            console.log('Error enviando como audio, intentando como documento:', audioError);
+            
+            
+            const docMsg = {
+                document: { url: audioUrl },
+                mimetype: 'audio/mpeg',
+                fileName: `${(title || 'tiktok_audio').replace(/[^\w\s]/gi, '')}.mp3`,
+                caption: `🎵 *Audio de TikTok*\n\n📝 *Título:* ${title || 'Audio TikTok'}\n👤 *Autor:* ${author || 'Desconocido'}\n\n💙 *Descargado por Hatsune Miku Bot*`
+            };
+            
+            await conn.sendMessage(m.chat, docMsg, { quoted: m });
+        }
         await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
         
     } catch (error) {
@@ -91,16 +111,24 @@ function validateTikTokUrl(url) {
 async function downloadAudioFromMultipleAPIs(url) {
     const apis = [
         {
-            name: 'Eliasar',
-            func: () => tiktokAudioEliasar(url)
-        },
-        {
             name: 'TikWM',
             func: () => tiktokAudioTikWM(url)
         },
         {
             name: 'SaveTT',
             func: () => tiktokAudioSaveTT(url)
+        },
+        {
+            name: 'Eliasar',
+            func: () => tiktokAudioEliasar(url)
+        },
+        {
+            name: 'SSSTik',
+            func: () => tiktokAudioSSSTik(url)
+        },
+        {
+            name: 'TikDown',
+            func: () => tiktokAudioTikDown(url)
         }
     ];
     
@@ -221,5 +249,79 @@ async function tiktokAudioSaveTT(url) {
         throw new Error('No audio data found');
     } catch (error) {
         throw new Error(`SaveTT API error: ${error.message}`);
+    }
+}
+
+
+async function tiktokAudioSSSTik(url) {
+    try {
+        const apiUrl = `https://snaptik.app/abc2.php`;
+        
+        const formData = new URLSearchParams();
+        formData.append('url', url);
+        formData.append('lang', 'en');
+        
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: formData.toString(),
+            timeout: 15000
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.status === 'success' && data.result && data.result.audio) {
+            return {
+                audioUrl: data.result.audio,
+                title: data.result.title || 'Audio TikTok',
+                author: data.result.author || 'Desconocido',
+                thumbnail: data.result.thumbnail
+            };
+        }
+        
+        throw new Error('No audio data found');
+    } catch (error) {
+        throw new Error(`SSSTik API error: ${error.message}`);
+    }
+}
+
+
+async function tiktokAudioTikDown(url) {
+    try {
+        const apiUrl = `https://tikdown.org/api/download?url=${encodeURIComponent(url)}`;
+        
+        const response = await fetch(apiUrl, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': 'application/json'
+            },
+            timeout: 15000
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success && data.data && data.data.audio_url) {
+            return {
+                audioUrl: data.data.audio_url,
+                title: data.data.title || 'Audio TikTok',
+                author: data.data.author || 'Desconocido',
+                thumbnail: data.data.thumbnail_url
+            };
+        }
+        
+        throw new Error('No audio data found');
+    } catch (error) {
+        throw new Error(`TikDown API error: ${error.message}`);
     }
 }
