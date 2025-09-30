@@ -1,14 +1,27 @@
 import { AUDIO_CONFIG } from './_audios.js';
+
 let handler = async (m, { conn }) => {
     if (!m.isGroup) return;
 
     const groupId = m.chat;
-    const chat = global.db.data.chats[groupId] || {}
 
     
-    if (!chat.audios) return
+    if (!global.db) return
+    if (!global.db.data) return
+    if (!global.db.data.chats) return
+    if (!global.db.data.chats[groupId]) global.db.data.chats[groupId] = {}
+    const chat = global.db.data.chats[groupId]
 
-    const messageText = (m.text || '').trim()
+    
+    if (!chat.audios) {
+        
+        return
+    }
+
+   
+    let messageText = (m.text || '')
+    try { messageText = messageText.normalize('NFKC') } catch (e) {}
+    messageText = messageText.trim()
     if (!messageText) return
 
     
@@ -16,15 +29,15 @@ let handler = async (m, { conn }) => {
 
     const rawWord = messageText
     const cleanWord = rawWord.replace(/^[^\w]+|[^\w]+$/g, '').toLowerCase()
-
     if (!cleanWord) return
 
-    if (!AUDIO_CONFIG[cleanWord]) return
+    const audioUrl = AUDIO_CONFIG[cleanWord]
+    if (!audioUrl) return
 
     try {
-        console.log(`🎵 Enviando audio para "${cleanWord}" en grupo ${groupId}`)
+        console.log(`🎵 Enviando audio para "${cleanWord}" en grupo ${groupId} - URL: ${audioUrl}`)
         await conn.sendMessage(m.chat, {
-            audio: { url: AUDIO_CONFIG[cleanWord] },
+            audio: { url: audioUrl },
             mimetype: 'audio/mp4',
             ptt: true,
             fileName: `${cleanWord}.mp3`
