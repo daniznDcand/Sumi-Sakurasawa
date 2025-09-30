@@ -1,7 +1,5 @@
 ﻿import { createHash } from 'crypto' 
 import fetch from 'node-fetch'
-import fs from 'fs'
-import path from 'path'
 
 const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isROwner }) => {
   let chat = global.db.data.chats[m.chat]
@@ -183,51 +181,9 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
           throw false
         }
       }
-      try {
-        await m.react('⏳')
-        const configPath = './tmp/audios_config.json'
-        
-        
-        const configDir = path.dirname(configPath)
-        if (!fs.existsSync(configDir)) {
-          fs.mkdirSync(configDir, { recursive: true })
-        }
-        
-        let config = {}
-        try {
-          config = JSON.parse(fs.readFileSync(configPath, 'utf8'))
-        } catch {
-          config = { enabledWords: [], blockedWords: [] }
-        }
-        
-        if (isEnable) {
-          
-          if (!config.enabledWords.includes(m.chat)) {
-            config.enabledWords.push(m.chat)
-          }
-          
-          
-          fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
-          
-          await conn.reply(m.chat, '🔊 **AUDIOS AUTOMÁTICOS HABILITADOS**\n\n✅ Los audios automáticos han sido habilitados para este chat.\n\n📝 *Ahora cuando alguien escriba palabras específicas, el bot enviará un audio relacionado automáticamente.*\n\n> Usa `.disable audios` para desactivar', m)
-          await m.react('✅')
-        } else {
-          
-          config.enabledWords = config.enabledWords.filter(chatId => chatId !== m.chat)
-          
-          
-          fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
-          
-          await conn.reply(m.chat, '🔇 **AUDIOS AUTOMÁTICOS DESHABILITADOS**\n\n❌ Los audios automáticos han sido deshabilitados para este chat.\n\n📝 *El bot ya no enviará audios automáticos cuando alguien escriba palabras específicas.*\n\n> Usa `.enable audios` para reactivar', m)
-          await m.react('✅')
-        }
-        return 
-      } catch (error) {
-        console.error('Error en audios:', error)
-        await conn.reply(m.chat, '❌ Error al configurar los audios automáticos', m)
-        await m.react('❌')
-        return
-      }
+      
+      chat.audios = isEnable
+      
       break
 
       case 'restrict':
