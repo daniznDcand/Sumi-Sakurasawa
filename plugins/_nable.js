@@ -193,7 +193,7 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
         }
         
         if (isEnable) {
-         
+          
           if (!config.enabledWords.includes(m.chat)) {
             config.enabledWords.push(m.chat)
           }
@@ -213,10 +213,12 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
           await conn.reply(m.chat, '🔇 **AUDIOS AUTOMÁTICOS DESHABILITADOS**\n\n❌ Los audios automáticos han sido deshabilitados para este chat.\n\n📝 *El bot ya no enviará audios automáticos cuando alguien escriba palabras específicas.*\n\n> Usa `.enable audios` para reactivar', m)
           await m.react('✅')
         }
+        return 
       } catch (error) {
         console.error('Error en audios:', error)
         await conn.reply(m.chat, '❌ Error al configurar los audios automáticos', m)
         await m.react('❌')
+        return
       }
       break
 
