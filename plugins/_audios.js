@@ -70,10 +70,10 @@ let handler = async (m, { conn, text, isAdmin, isOwner }) => {
         }
     }
 
- // Mostrar menú principal
+
     const status = isEnabled ? '🟢 ACTIVADO' : '🔴 DESACTIVADO';
     const adminInfo = (isAdmin || isOwner) ? 
-        `\n🎛️ *CONTROLES DE ADMIN:*\n• \`.menu2 enable\` - Activar audios automáticos\n• \`.menu2 disable\` - Desactivar audios automáticos\n` : '';
+        `\n🎛️ *CONTROLES DE ADMIN:*\n• \`.enable audios\` - Activar audios automáticos\n• \`.disable audios\` - Desactivar audios automáticos\n` : '';
 
     const audioCategories = {
         '👋 SALUDOS': ['hola', 'buenos', 'buenas'],

@@ -1,5 +1,6 @@
 ﻿import { createHash } from 'crypto' 
 import fetch from 'node-fetch'
+import fs from 'fs'
 
 const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isROwner }) => {
   let chat = global.db.data.chats[m.chat]
@@ -30,7 +31,8 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
     'antiprivado', 'antiprivate',
     'restrict', 'restringir',
     'jadibotmd', 'modejadibot',
-    'subbots'
+    'subbots',
+    'audios', 'audiosmenu'
   ]
 
   
@@ -68,6 +70,7 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
         '│ • antitoxic - Anti lenguaje tóxico/ofensivo',
         '│ • autolevelup/autonivel - Subir nivel automático',
         '│ • antispam - Anti spam',
+        '│ • audios - Audios automáticos por palabras',
         '├─⊷ **BOT GLOBAL**',
         '│ • antiprivado/antiprivate - Anti chat privado',
         '│ • restrict/restringir - Modo restricción',
@@ -111,6 +114,7 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
         '│ • antitoxic - Anti lenguaje tóxico/ofensivo',
         '│ • autolevelup/autonivel - Subir nivel automático',
         '│ • antispam - Anti spam',
+        '│ • audios - Audios automáticos por palabras',
         '├─⊷ **BOT GLOBAL**',
         '│ • antiprivado/antiprivate - Anti chat privado',
         '│ • restrict/restringir - Modo restricción',
@@ -170,7 +174,53 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
       bot.antiPrivate = isEnable
       break
 
-    case 'restrict':
+    case 'audios':
+    case 'audiosmenu':
+      if (m.isGroup) {
+        if (!(isAdmin || isOwner)) {
+          global.dfail('admin', m, conn)
+          throw false
+        }
+      }
+      try {
+        await m.react('⏳')
+        const configPath = './tmp/audios_config.json'
+        let config = {}
+        try {
+          config = JSON.parse(fs.readFileSync(configPath, 'utf8'))
+        } catch {
+          config = { enabledWords: [], blockedWords: [] }
+        }
+        
+        if (isEnable) {
+         
+          if (!config.enabledWords.includes(m.chat)) {
+            config.enabledWords.push(m.chat)
+          }
+          
+          
+          fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
+          
+          await conn.reply(m.chat, '🔊 **AUDIOS AUTOMÁTICOS HABILITADOS**\n\n✅ Los audios automáticos han sido habilitados para este chat.\n\n📝 *Ahora cuando alguien escriba palabras específicas, el bot enviará un audio relacionado automáticamente.*\n\n> Usa `.disable audios` para desactivar', m)
+          await m.react('✅')
+        } else {
+          
+          config.enabledWords = config.enabledWords.filter(chatId => chatId !== m.chat)
+          
+          
+          fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
+          
+          await conn.reply(m.chat, '🔇 **AUDIOS AUTOMÁTICOS DESHABILITADOS**\n\n❌ Los audios automáticos han sido deshabilitados para este chat.\n\n📝 *El bot ya no enviará audios automáticos cuando alguien escriba palabras específicas.*\n\n> Usa `.enable audios` para reactivar', m)
+          await m.react('✅')
+        }
+      } catch (error) {
+        console.error('Error en audios:', error)
+        await conn.reply(m.chat, '❌ Error al configurar los audios automáticos', m)
+        await m.react('❌')
+      }
+      break
+
+      case 'restrict':
     case 'restringir':
       isAll = true
       if (!isOwner) {
@@ -395,9 +445,9 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
   conn.reply(m.chat, `💙 La función *${type}* se *${isEnable ? 'activó' : 'desactivó'}* ${isAll ? 'para este Bot' : isUser ? '' : 'para este chat'}`, m, global.rcanal);
 };
 
-handler.help = ['welcome', 'bienvenida', 'antiprivado', 'antiprivate', 'restrict', 'restringir', 'autolevelup', 'autonivel', 'antibot', 'antibots', 'autoaceptar', 'aceptarauto', 'autorechazar', 'rechazarauto', 'autoresponder', 'autorespond', 'antisubbots', 'antibot2', 'modoadmin', 'soloadmin', 'reaction', 'reaccion', 'nsfw', 'modohorny', 'antispam', 'jadibotmd', 'modejadibot', 'subbots', 'detect', 'avisos', 'antilink', 'antilink2', 'antifake', 'antiarabes', 'antitoxic', 'enable', 'disable']
+handler.help = ['welcome', 'bienvenida', 'antiprivado', 'antiprivate', 'restrict', 'restringir', 'autolevelup', 'autonivel', 'antibot', 'antibots', 'autoaceptar', 'aceptarauto', 'autorechazar', 'rechazarauto', 'autoresponder', 'autorespond', 'antisubbots', 'antibot2', 'modoadmin', 'soloadmin', 'reaction', 'reaccion', 'nsfw', 'modohorny', 'antispam', 'jadibotmd', 'modejadibot', 'subbots', 'detect', 'avisos', 'antilink', 'antilink2', 'antifake', 'antiarabes', 'antitoxic', 'audios', 'enable', 'disable']
 handler.tags = ['nable'];
-handler.command = ['welcome', 'bienvenida', 'antiprivado', 'antiprivate', 'restrict', 'restringir', 'autolevelup', 'autonivel', 'antibot', 'antibots', 'autoaceptar', 'aceptarauto', 'autorechazar', 'rechazarauto', 'autoresponder', 'autorespond', 'antisubbots', 'antibot2', 'modoadmin', 'soloadmin', 'reaction', 'reaccion', 'nsfw', 'modohorny', 'antispam', 'jadibotmd', 'modejadibot', 'subbots', 'detect', 'avisos', 'antilink', 'antilink2', 'antifake', 'antiarabes', 'antitoxic', 'enable', 'disable']
+handler.command = ['welcome', 'bienvenida', 'antiprivado', 'antiprivate', 'restrict', 'restringir', 'autolevelup', 'autonivel', 'antibot', 'antibots', 'autoaceptar', 'aceptarauto', 'autorechazar', 'rechazarauto', 'autoresponder', 'autorespond', 'antisubbots', 'antibot2', 'modoadmin', 'soloadmin', 'reaction', 'reaccion', 'nsfw', 'modohorny', 'antispam', 'jadibotmd', 'modejadibot', 'subbots', 'detect', 'avisos', 'antilink', 'antilink2', 'antifake', 'antiarabes', 'antitoxic', 'audios', 'enable', 'disable']
 
 export default handler
 
