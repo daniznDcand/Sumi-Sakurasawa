@@ -1,5 +1,3 @@
-
-
 import { AUDIO_CONFIG } from './_audios.js';
 import fs from 'fs';
 
@@ -45,12 +43,11 @@ let handler = async (m, { conn }) => {
         const cleanWord = rawWord.replace(/^[^\w]+|[^\w]+$/g, '').toLowerCase();
         console.log(`🧹 "${rawWord}" → "${cleanWord}"`);
         
-        
+       
         if (AUDIO_CONFIG[cleanWord]) {
             try {
                 console.log(`🎵 ¡PALABRA ENCONTRADA! "${cleanWord}" tiene audio: ${AUDIO_CONFIG[cleanWord]}`);
-                
-               
+                console.log('Intentando enviar audio:', AUDIO_CONFIG[cleanWord]);
                 await conn.sendMessage(m.chat, {
                     audio: { url: AUDIO_CONFIG[cleanWord] },
                     mimetype: 'audio/mp4',
@@ -58,14 +55,11 @@ let handler = async (m, { conn }) => {
                     fileName: `${cleanWord}.mp3`,
                     waveform: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] 
                 });
-                
                 console.log(`✅ Audio enviado exitosamente para "${cleanWord}"`);
                 
-                
                 break;
-                
             } catch (error) {
-                console.error(`❌ Error enviando audio para "${cleanWord}":`, error);
+                console.error(`❌ Error enviando audio para "${cleanWord}":`, error && (error.stack || error.message || error));
             }
         } else {
             console.log(`❌ "${cleanWord}" NO está en AUDIO_CONFIG`);
