@@ -28,7 +28,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
   }
 }
 
-handler.command = /^(mediafire|mediafiredl|dlmediafire)$/i;
+handler.command = /^(mediafire|mediafiredl|dlmediafire|mf)$/i;
 export default handler;
 
 async function mediafireDl(url) {
