@@ -42,7 +42,7 @@ let handler = async (m, { conn }) => {
 
    
     const palabrasAudio = [
-        'hola', 'buenos', 'buenas', 'wow', 'genial', 'adios', 
+        'depool', 'buenos', 'buenas', 'wow', 'genial', 'adios', 
         'chao', 'bye', 'jaja', 'lol', 'xd', 'triste', 'feliz', 
         'si', 'no', 'miku', 'bot'
     ];
