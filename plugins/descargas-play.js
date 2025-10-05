@@ -8,6 +8,115 @@ import { promisify } from 'util';
 
 const pipeline = promisify(stream.pipeline);
 
+
+function extractYouTubeId(url) {
+  const patterns = [
+    /youtu\.be\/([a-zA-Z0-9\-\_]{11})/,
+    /youtube\.com\/watch\?v=([a-zA-Z0-9\-\_]{11})/,
+    /youtube\.com\/shorts\/([a-zA-Z0-9\-\_]{11})/
+  ];
+  
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+
+async function mnuuConverter(url, format = 'mp3') {
+  try {
+    const videoId = extractYouTubeId(url);
+    if (!videoId) throw new Error('URL de YouTube inválida');
+    
+    console.log(`🔍 Intentando mnuu converter para ${format}...`);
+    
+    
+    const timestamp = Math.floor(Date.now() / 1000);
+    
+    
+    const baseUrls = [
+      'https://www1.mnuu.nu',
+      'https://www2.mnuu.nu', 
+      'https://www3.mnuu.nu'
+    ];
+    
+    for (const baseUrl of baseUrls) {
+      try {
+        
+        const initUrl = `${baseUrl}/api/v1/init?v=${videoId}&f=${format}&t=${timestamp}`;
+        const initResponse = await fetch(initUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Referer': 'https://mnuu.nu/'
+          }
+        });
+        
+        if (!initResponse.ok) continue;
+        
+        const initData = await initResponse.json();
+        if (initData.error) continue;
+        
+        
+        const convertResponse = await fetch(initData.convertURL, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Referer': 'https://mnuu.nu/'
+          }
+        });
+        
+        if (!convertResponse.ok) continue;
+        
+        const convertData = await convertResponse.json();
+        if (convertData.error) continue;
+        
+        
+        let attempts = 0;
+        const maxAttempts = 20;
+        
+        while (attempts < maxAttempts) {
+          try {
+            const progressResponse = await fetch(convertData.progressURL, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Referer': 'https://mnuu.nu/'
+              }
+            });
+            
+            if (progressResponse.ok) {
+              const progressData = await progressResponse.json();
+              
+              if (progressData.progress >= 3) {
+                console.log(`✅ mnuu converter exitosa`);
+                return {
+                  url: convertData.downloadURL,
+                  title: convertData.title || 'Video sin título',
+                  api: 'mnuu'
+                };
+              }
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            attempts++;
+          } catch (e) {
+            attempts++;
+          }
+        }
+        
+      } catch (error) {
+        console.log(`❌ Error con ${baseUrl}: ${error.message}`);
+        continue;
+      }
+    }
+    
+    throw new Error('Todos los servidores mnuu fallaron');
+    
+  } catch (error) {
+    console.log(`❌ mnuu converter falló: ${error.message}`);
+    return null;
+  }
+}
+
 const handler = async (m, { conn, text, usedPrefix, command }) => {
   let user = global.db.data.users[m.sender];
 
@@ -346,6 +455,19 @@ async function fetchFromApis(apis) {
 
 
 async function getAud(url) {
+  
+  try {
+    console.log('🔍 Intentando mnuu converter para audio...');
+    const mnuuResult = await mnuuConverter(url, 'mp3');
+    if (mnuuResult && mnuuResult.url) {
+      console.log(`✅ mnuu converter audio exitosa`);
+      return { url: mnuuResult.url, api: mnuuResult.api };
+    }
+  } catch (error) {
+    console.log(`❌ mnuu converter audio falló: ${error.message}`);
+  }
+
+  
   const apis = [
     { api: 'Xyro', endpoint: `${global.APIs.xyro.url}/download/youtubemp3?url=${encodeURIComponent(url)}`, extractor: res => res.result?.dl },
     { api: 'Yupra', endpoint: `${global.APIs.yupra.url}/api/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.resultado?.enlace },
@@ -360,7 +482,19 @@ async function getAud(url) {
 async function getVid(url) {
   const userVideoData = { url };
   
+
+  try {
+    console.log('🔍 Intentando mnuu converter...');
+    const mnuuResult = await mnuuConverter(userVideoData.url, 'mp4');
+    if (mnuuResult && mnuuResult.url) {
+      console.log(`✅ mnuu converter exitosa`);
+      return { url: mnuuResult.url, api: mnuuResult.api };
+    }
+  } catch (error) {
+    console.log(`❌ mnuu converter falló: ${error.message}`);
+  }
   
+
   const videoApis = [
     {
       name: 'SiputZX Video',
@@ -374,8 +508,16 @@ async function getVid(url) {
     }
   ];
 
-  
+  // Si las APIs de video fallan, usar APIs de audio como fallback
   const audioAsVideoApis = [
+    {
+      name: 'mnuu Audio como Video',
+      url: async () => {
+        const result = await mnuuConverter(userVideoData.url, 'mp3');
+        return result;
+      },
+      extract: (data) => ({data: data?.url, isDirect: false, isAudio: true})
+    },
     {
       name: 'Axeel Audio como Video',
       url: () => fetch(`https://axeel.my.id/api/download/audio?url=${userVideoData.url}`).then((res) => res.json()),
