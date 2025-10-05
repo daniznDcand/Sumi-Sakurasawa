@@ -62,7 +62,7 @@ let handler = async (m, { conn }) => {
         console.log(`🎵 [AUDIO DEBUG] Iniciando envío de audio para: "${palabra}"`);
         console.log(`🎵 [AUDIO DEBUG] URL del audio: ${AUDIO_CONFIG[palabra]}`);
         
-        // Enviar el audio como nota de voz con configuración mejorada
+        
         const audioMessage = await conn.sendMessage(m.chat, {
             audio: { url: AUDIO_CONFIG[palabra] },
             mimetype: 'audio/mpeg',
