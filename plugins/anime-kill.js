@@ -17,23 +17,17 @@ let handler = async (m, { conn, usedPrefix }) => {
         : `🎤💙 \`${name2}\` desapareció dramáticamente en el mundo virtual ✨💫🎭`
     
     if (m.isGroup) {
-        let pp = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742868092808.mp4'
-        let pp2 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742868083346.mp4'
-        let pp3 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742868148234.mp4'
-        let pp4 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742868143055.mp4'
-        let pp5 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742868114367.mp4'
-        let pp6 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742868107676.mp4'
-        let pp7 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742868100525.mp4'
-        let pp8 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742868196115.mp4'
-        let pp9 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742868174088.mp4'
-        let pp10 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742868169192.mp4'
-        let pp11 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742868160846.mp4'
-        let pp12 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1742868154174.mp4'
-        let pp13 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1745603772523.mp4'
-        let pp14 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1745603785046.mp4'
-        let pp15 = 'https://raw.githubusercontent.com/Brauliovh3/HATSUNE-MIKU/main/Contenido/1745603777725.mp4'
+        let pp = 'https://media.tenor.com/jrnH6CdNne0AAAPo/2s.mp4'
+        let pp2 = 'https://media.tenor.com/NbBCakbfZnkAAAPo/die-kill.mp4'
+        let pp3 = 'https://media.tenor.com/SIrXZQWK9WAAAAPo/me-friends.mp4'
+        let pp4 = 'https://media.tenor.com/Ay1Nm0X2VP8AAAPo/falling-from-window-anime-death.mp4'
+        let pp5 = 'https://media.tenor.com/rblZGXCYSmAAAAPo/akame.mp4'
+        let pp6 = 'https://media.tenor.com/dtXcyLvxLLkAAAPo/akame.mp4'
+        let pp7 = 'https://media.tenor.com/WakyzIJP0t0AAAPo/angels-of-death-anime-boy-bandage.mp4'
+        let pp8 = 'https://media.tenor.com/wa_191SsAEwAAAPo/nana-anime.mp4'
         
-        const videos = [pp, pp2, pp3, pp4, pp5, pp6, pp7, pp8, pp9, pp10, pp11, pp12, pp13, pp14, pp15]
+        
+        const videos = [pp, pp2, pp3, pp4, pp5, pp6, pp7, pp8]
         const video = videos[Math.floor(Math.random() * videos.length)]
         
         conn.sendMessage(m.chat, { video: { url: video }, gifPlayback: true, caption: str, ptt: true, mentions: [who] }, { quoted: m })
@@ -42,7 +36,7 @@ let handler = async (m, { conn, usedPrefix }) => {
 
 handler.help = ['kill']
 handler.tags = ['anime']
-handler.command = ['kill', 'matar']
+handler.command = ['kill', 'matar', 'muere']
 handler.group = true
 
 export default handler
