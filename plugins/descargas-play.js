@@ -351,33 +351,27 @@ async function getAud(url) {
 
 async function getVid(url) {
   const userVideoData = { url };
-  const apis = global.APIs?.xyro?.url || 'https://api.xyro.com';
   
   const videoApis = [
     {
       name: 'SiputZX',
       url: () => fetch(`https://api.siputzx.my.id/api/d/ytmp4?url=${userVideoData.url}`).then((res) => res.json()),
-      extract: (data) => ({data: data.dl, isDirect: false})
+      extract: (data) => ({data: data.data?.dl || data.dl, isDirect: false})
     },
     {
-      name: 'NeoXR',
-      url: () => fetch(`https://api.neoxr.eu/api/youtube?url=${userVideoData.url}&type=video&quality=720p&apikey=GataDios`).then((res) => res.json()),
-      extract: (data) => ({data: data.data.url, isDirect: false})
+      name: 'Axeel Audio',
+      url: () => fetch(`https://axeel.my.id/api/download/audio?url=${userVideoData.url}`).then((res) => res.json()),
+      extract: (data) => ({data: data.downloads?.url, isDirect: false})
     },
     {
-      name: 'Stellar',
-      url: () => fetch(`${global.APIs.stellar?.url || 'https://api.stellarwa.xyz'}/dow/ytmp4?url=${userVideoData.url}`).then((res) => res.json()),
-      extract: (data) => ({data: data?.data?.dl, isDirect: false})
-    },
-    {
-      name: 'Xyro',
-      url: () => fetch(`${apis}/download/ytmp4?url=${userVideoData.url}`).then((res) => res.json()),
-      extract: (data) => ({data: data.status ? data.data.download.url : null, isDirect: false})
+      name: 'RyzenDesu',
+      url: () => fetch(`https://api.ryzendesu.vip/api/downloader/ytmp3?url=${userVideoData.url}`).then((res) => res.json()),
+      extract: (data) => ({data: data.status === 'tunnel' && data.url ? data.url : null, isDirect: false})
     },
     {
       name: 'Exonity',
       url: () => fetch(`https://exonity.tech/api/ytdlp2-faster?apikey=adminsepuh&url=${userVideoData.url}`).then((res) => res.json()),
-      extract: (data) => ({data: data.result.media.mp4, isDirect: false})
+      extract: (data) => ({data: data.result?.media?.mp4 || data.result?.url, isDirect: false})
     }
   ];
 
