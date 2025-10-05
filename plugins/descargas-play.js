@@ -224,16 +224,24 @@ async function processDownload(conn, m, url, title, option) {
         }, { quoted: m });
       }
     } else {
-      
-      downloadUrl = await getVideoUrl(url);
+      // Descargar video
+      const videoResult = await getVideoUrl(url);
       fileName = `${title.replace(/[^\w\s]/gi, '')}.mp4`;
       mimeType = 'video/mp4';
       
-      if (!downloadUrl) {
+      if (!videoResult) {
         throw new Error(`❌ No se pudo obtener el enlace de video. Intenta de nuevo.`);
       }
 
+      downloadUrl = videoResult;
       
+      // Si es audio usado como video, cambiar el tipo de archivo
+      if (videoResult.isAudioAsVideo) {
+        console.log('📱 Enviando audio como video...');
+        mimeType = 'video/mp4'; // Mantener como video para que se reproduzca como tal
+      }
+
+      // Enviar el video
       if (option === 2) {
         await conn.sendMessage(m.chat, { 
           video: { url: downloadUrl }, 
@@ -352,29 +360,40 @@ async function getAud(url) {
 async function getVid(url) {
   const userVideoData = { url };
   
+  
   const videoApis = [
     {
-      name: 'SiputZX',
+      name: 'SiputZX Video',
       url: () => fetch(`https://api.siputzx.my.id/api/d/ytmp4?url=${userVideoData.url}`).then((res) => res.json()),
       extract: (data) => ({data: data.data?.dl || data.dl, isDirect: false})
     },
     {
-      name: 'Axeel Audio',
-      url: () => fetch(`https://axeel.my.id/api/download/audio?url=${userVideoData.url}`).then((res) => res.json()),
-      extract: (data) => ({data: data.downloads?.url, isDirect: false})
-    },
-    {
-      name: 'RyzenDesu',
-      url: () => fetch(`https://api.ryzendesu.vip/api/downloader/ytmp3?url=${userVideoData.url}`).then((res) => res.json()),
-      extract: (data) => ({data: data.status === 'tunnel' && data.url ? data.url : null, isDirect: false})
-    },
-    {
-      name: 'Exonity',
+      name: 'Exonity Video',
       url: () => fetch(`https://exonity.tech/api/ytdlp2-faster?apikey=adminsepuh&url=${userVideoData.url}`).then((res) => res.json()),
       extract: (data) => ({data: data.result?.media?.mp4 || data.result?.url, isDirect: false})
     }
   ];
 
+  
+  const audioAsVideoApis = [
+    {
+      name: 'Axeel Audio como Video',
+      url: () => fetch(`https://axeel.my.id/api/download/audio?url=${userVideoData.url}`).then((res) => res.json()),
+      extract: (data) => ({data: data.downloads?.url, isDirect: false, isAudio: true})
+    },
+    {
+      name: 'RyzenDesu Audio como Video',
+      url: () => fetch(`https://api.ryzendesu.vip/api/downloader/ytmp3?url=${userVideoData.url}`).then((res) => res.json()),
+      extract: (data) => ({data: data.status === 'tunnel' && data.url ? data.url : null, isDirect: false, isAudio: true})
+    },
+    {
+      name: 'SiputZX Audio como Video',
+      url: () => fetch(`https://api.siputzx.my.id/api/d/ytmp3?url=${userVideoData.url}`).then((res) => res.json()),
+      extract: (data) => ({data: data.data?.dl || data.dl, isDirect: false, isAudio: true})
+    }
+  ];
+
+ 
   for (const api of videoApis) {
     try {
       console.log(`🔍 Probando ${api.name}...`);
@@ -391,8 +410,28 @@ async function getVid(url) {
       console.log(`❌ ${api.name} falló: ${error.message}`);
     }
   }
+
   
-  console.log('❌ Todas las APIs de video fallaron');
+  console.log('🔄 APIs de video fallaron, intentando APIs de audio como video...');
+  
+  for (const api of audioAsVideoApis) {
+    try {
+      console.log(`🔍 Probando ${api.name}...`);
+      
+      const response = await api.url();
+      const extracted = api.extract(response);
+      
+      if (extracted.data && typeof extracted.data === 'string') {
+        console.log(`✅ ${api.name} exitosa (audio como video)`);
+        return { url: extracted.data, api: api.name, isAudioAsVideo: true };
+      }
+      
+    } catch (error) {
+      console.log(`❌ ${api.name} falló: ${error.message}`);
+    }
+  }
+  
+  console.log('❌ Todas las APIs fallaron');
   return null;
 }
 
