@@ -754,7 +754,7 @@ const { connection, lastDisconnect, isNewLogin, qr } = update
 if (isNewLogin) sock.isInit = false
 
 
-// Eliminado el envío de QR para evitar spam
+
 
 
 if (qr && mcode) {
