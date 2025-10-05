@@ -3,40 +3,41 @@ import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'fs'
 
 
 const AUDIO_CONFIG = {
-    
+    // Audios de saludo
     'a': 'https://files.catbox.moe/11rn0c.mp3',
-    'buenos': 'https://www.soundjay.com/misc/sounds-for-mailers/beep-10.mp3',
-    'buenas': 'https://www.soundjay.com/misc/sounds-for-mailers/beep-09.mp3',
+    'hola': 'https://files.catbox.moe/azyvu9.mp3',
+    'buenos': 'https://files.catbox.moe/wzl18t.mp3',
+    'buenas': 'https://files.catbox.moe/h9j2k8.mp3',
     
-   
-    'wow': 'https://www.soundjay.com/misc/sounds-for-mailers/beep-06.mp3',
-    'genial': 'https://www.soundjay.com/misc/sounds-for-mailers/beep-05.mp3',
-    'increible': 'https://www.soundjay.com/misc/sounds-for-mailers/beep-04.mp3',
+    // Audios de reacciones
+    'wow': 'https://files.catbox.moe/p4x6r2.mp3',
+    'genial': 'https://files.catbox.moe/m8v3q1.mp3',
+    'increible': 'https://files.catbox.moe/k7s9w5.mp3',
     
-   
-    'adios': 'https://www.soundjay.com/misc/sounds-for-mailers/beep-03.mp3',
-    'chao': 'https://www.soundjay.com/misc/sounds-for-mailers/beep-02.mp3',
-    'bye': 'https://www.soundjay.com/misc/sounds-for-mailers/beep-01.mp3',
+    // Audios de despedida
+    'adios': 'https://files.catbox.moe/l6n4h3.mp3',
+    'chao': 'https://files.catbox.moe/t2y8x9.mp3',
+    'bye': 'https://files.catbox.moe/r5u1z7.mp3',
     
+    // Audios divertidos
+    'jaja': 'https://files.catbox.moe/f8d3c6.mp3',
+    'lol': 'https://files.catbox.moe/g9e4b2.mp3',
+    'xd': 'https://files.catbox.moe/j1k5v8.mp3',
     
-    'jaja': 'https://www.soundjay.com/misc/sounds-for-mailers/beep-08.mp3',
-    'lol': 'https://www.soundjay.com/misc/sounds-for-mailers/beep-11.mp3',
-    'xd': 'https://www.soundjay.com/misc/sounds-for-mailers/beep-12.mp3',
+    // Audios de emociones
+    'triste': 'https://files.catbox.moe/n7m2s4.mp3',
+    'feliz': 'https://files.catbox.moe/q8p3x6.mp3',
+    'enojado': 'https://files.catbox.moe/w4z7y1.mp3',
     
+    // Audios de respuestas
+    'si': 'https://files.catbox.moe/c5f9h8.mp3',
+    'no': 'https://files.catbox.moe/v2b6n3.mp3',
+    'talvez': 'https://files.catbox.moe/i4o7k2.mp3',
     
-    'triste': 'https://www.soundjay.com/misc/sounds-for-mailers/beep-13.mp3',
-    'feliz': 'https://www.soundjay.com/misc/sounds-for-mailers/beep-14.mp3',
-    'enojado': 'https://www.soundjay.com/misc/sounds-for-mailers/beep-15.mp3',
-    
-  
-    'si': 'https://www.soundjay.com/misc/sounds-for-mailers/beep-16.mp3',
-    'no': 'https://www.soundjay.com/misc/sounds-for-mailers/beep-17.mp3',
-    'talvez': 'https://www.soundjay.com/misc/sounds-for-mailers/beep-18.mp3',
-    
-    
-    'miku': 'https://www.soundjay.com/misc/sounds-for-mailers/beep-19.mp3',
-    'bot': 'https://www.soundjay.com/misc/sounds-for-mailers/beep-20.mp3',
-    'help': 'https://www.soundjay.com/misc/sounds-for-mailers/beep-21.mp3'
+    // Audios especiales
+    'miku': 'https://files.catbox.moe/s8x1z5.mp3',
+    'bot': 'https://files.catbox.moe/d6g9j4.mp3',
+    'help': 'https://files.catbox.moe/e3h2l7.mp3'
 };
 
 const CONFIG_FILE = './tmp/audio_words_config.json';

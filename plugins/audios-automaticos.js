@@ -1,50 +1,49 @@
-import { AUDIO_CONFIG } from './_audios.js';
+import { AUDIO_CONFIG, loadConfig } from './_audios.js';
 
 let handler = async (m, { conn }) => {
     if (!m.isGroup) return;
 
     const groupId = m.chat;
-
+    const config = loadConfig();
     
-    if (!global.db) return
-    if (!global.db.data) return
-    if (!global.db.data.chats) return
-    if (!global.db.data.chats[groupId]) global.db.data.chats[groupId] = {}
-    const chat = global.db.data.chats[groupId]
-
     
-    if (!chat.audios) {
-        
-        return
+    if (!config.enabledGroups || !config.enabledGroups[groupId]) {
+        return; 
     }
 
-   
-    let messageText = (m.text || '')
-    try { messageText = messageText.normalize('NFKC') } catch (e) {}
-    messageText = messageText.trim()
-    if (!messageText) return
-
     
-    if (messageText.split(/\s+/).length !== 1) return
-
-    const rawWord = messageText
-    const cleanWord = rawWord.replace(/^[^\w]+|[^\w]+$/g, '').toLowerCase()
-    if (!cleanWord) return
-
-    const audioUrl = AUDIO_CONFIG[cleanWord]
-    if (!audioUrl) return
-
-    try {
-        console.log(`🎵 Enviando audio para "${cleanWord}" en grupo ${groupId} - URL: ${audioUrl}`)
-        await conn.sendMessage(m.chat, {
-            audio: { url: audioUrl },
-            mimetype: 'audio/mp4',
-            ptt: true,
-            fileName: `${cleanWord}.mp3`
-        })
-        console.log(`✅ Audio enviado para "${cleanWord}"`)
-    } catch (error) {
-        console.error(`❌ Error enviando audio para "${cleanWord}":`, error && (error.stack || error.message || error))
+    const messageText = (m.text || '').toLowerCase().trim();
+    
+    if (!messageText) return;
+    
+    
+    const words = messageText.split(/\s+/);
+    
+    for (const rawWord of words) {
+        
+        const cleanWord = rawWord.replace(/^[^\w]+|[^\w]+$/g, '');
+        
+        
+        if (AUDIO_CONFIG[cleanWord]) {
+            try {
+                console.log(`🎵 Palabra detectada: "${cleanWord}" en grupo ${groupId}`);
+                
+                
+                await conn.sendMessage(m.chat, {
+                    audio: { url: AUDIO_CONFIG[cleanWord] },
+                    mimetype: 'audio/mp4',
+                    ptt: true, 
+                    fileName: `${cleanWord}.mp3`,
+                    waveform: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+                });
+                
+                
+                break;
+                
+            } catch (error) {
+                console.error(`Error enviando audio para "${cleanWord}":`, error);
+            }
+        }
     }
 }
 handler.all = true; 

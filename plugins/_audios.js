@@ -122,9 +122,9 @@ function saveConfig(config) {
     }
 }
 
-handler.help = ['menu2', 'menuaudios'];
-handler.tags = ['audio', 'menu'];
-handler.command = ['menu2', 'menuaudios'];
+handler.help = ['audios'];
+handler.tags = ['audio', 'group'];
+handler.command = ['audios'];
 handler.group = true;
 
 export default handler;
