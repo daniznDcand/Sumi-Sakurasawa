@@ -349,7 +349,49 @@ async function getAud(url) {
   return await fetchFromBackupApis(apis)
 }
 
+async function apiAdonix(url) {
+  const apiURL = `https://apiadonix.kozow.com/download/ytmp4?apikey=${global.apikey}&url=${encodeURIComponent(url)}`
+  const res = await fetch(apiURL)
+  const data = await res.json()
+
+  if (!data.status || !data.data?.url) throw new Error('API Adonix no devolvió datos válidos')
+  return { url: data.data.url, title: data.data.title || 'Video sin título XD', fuente: 'Adonix' }
+}
+
+async function apiJoseDev(url) {
+  const apiURL = `https://api.sylphy.xyz/download/ytmp4?url=${encodeURIComponent(url)}&apikey=sylphy-fbb9`
+  const res = await fetch(apiURL)
+  const data = await res.json()
+
+  if (!data.status || !data.res?.url) throw new Error('API JoseDev no devolvió datos válidos')
+  return { url: data.res.url, title: data.res.title || 'Video sin título XD', fuente: 'JoseDev' }
+}
+
 async function getVid(url) {
+  
+  try {
+    console.log('🔍 Intentando API Adonix...')
+    const adonixResult = await apiAdonix(url)
+    if (adonixResult && adonixResult.url) {
+      console.log(`✅ API Adonix exitosa: ${adonixResult.fuente}`)
+      return { url: adonixResult.url, api: adonixResult.fuente }
+    }
+  } catch (error) {
+    console.log(`❌ API Adonix falló: ${error.message}`)
+  }
+
+  try {
+    console.log('🔍 Intentando API JoseDev...')
+    const joseResult = await apiJoseDev(url)
+    if (joseResult && joseResult.url) {
+      console.log(`✅ API JoseDev exitosa: ${joseResult.fuente}`)
+      return { url: joseResult.url, api: joseResult.fuente }
+    }
+  } catch (error) {
+    console.log(`❌ API JoseDev falló: ${error.message}`)
+  }
+
+  
   const apis = [
     { api: 'Xyro', endpoint: `${global.APIs.xyro.url}/download/youtubemp4?url=${encodeURIComponent(url)}&quality=360`, extractor: res => res.result?.dl },
     { api: 'Yupra', endpoint: `${global.APIs.yupra.url}/api/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.resultado?.formatos?.[0]?.url },
