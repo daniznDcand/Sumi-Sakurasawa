@@ -5,6 +5,8 @@ import fs from 'fs';
 import path from 'path';
 import stream from 'stream';
 import { promisify } from 'util';
+import { ytmp4 } from '../lib/y2mate.js';
+import ogmp3 from '../lib/scraper.js';
 
 const pipeline = promisify(stream.pipeline);
 
@@ -349,58 +351,58 @@ async function getAud(url) {
   return await fetchFromBackupApis(apis)
 }
 
-async function apiAdonix(url) {
-  const apiURL = `https://apiadonix.kozow.com/download/ytmp4?apikey=${global.apikey}&url=${encodeURIComponent(url)}`
-  const res = await fetch(apiURL)
-  const data = await res.json()
-
-  if (!data.status || !data.data?.url) throw new Error('API Adonix no devolvió datos válidos')
-  return { url: data.data.url, title: data.data.title || 'Video sin título XD', fuente: 'Adonix' }
-}
-
-async function apiJoseDev(url) {
-  const apiURL = `https://api.sylphy.xyz/download/ytmp4?url=${encodeURIComponent(url)}&apikey=sylphy-fbb9`
-  const res = await fetch(apiURL)
-  const data = await res.json()
-
-  if (!data.status || !data.res?.url) throw new Error('API JoseDev no devolvió datos válidos')
-  return { url: data.res.url, title: data.res.title || 'Video sin título XD', fuente: 'JoseDev' }
-}
-
 async function getVid(url) {
+  const userVideoData = { url };
+  const selectedQuality = '720p';
+  const apis = global.APIs?.xyro?.url || 'https://api.xyro.com';
   
-  try {
-    console.log('🔍 Intentando API Adonix...')
-    const adonixResult = await apiAdonix(url)
-    if (adonixResult && adonixResult.url) {
-      console.log(`✅ API Adonix exitosa: ${adonixResult.fuente}`)
-      return { url: adonixResult.url, api: adonixResult.fuente }
+  const videoApis = [
+    {
+      name: 'SiputZX',
+      url: () => fetch(`https://api.siputzx.my.id/api/d/ytmp4?url=${userVideoData.url}`).then((res) => res.json()),
+      extract: (data) => ({data: data.dl, isDirect: false})
+    },
+    {
+      name: 'NeoXR',
+      url: () => fetch(`https://api.neoxr.eu/api/youtube?url=${userVideoData.url}&type=video&quality=720p&apikey=GataDios`).then((res) => res.json()),
+      extract: (data) => ({data: data.data.url, isDirect: false})
+    },
+    {
+      name: 'Stellar',
+      url: () => fetch(`${global.APIs.stellar?.url || 'https://api.stellarwa.xyz'}/dow/ytmp4?url=${userVideoData.url}`).then((res) => res.json()),
+      extract: (data) => ({data: data?.data?.dl, isDirect: false})
+    },
+    {
+      name: 'Xyro',
+      url: () => fetch(`${apis}/download/ytmp4?url=${userVideoData.url}`).then((res) => res.json()),
+      extract: (data) => ({data: data.status ? data.data.download.url : null, isDirect: false})
+    },
+    {
+      name: 'Exonity',
+      url: () => fetch(`https://exonity.tech/api/ytdlp2-faster?apikey=adminsepuh&url=${userVideoData.url}`).then((res) => res.json()),
+      extract: (data) => ({data: data.result.media.mp4, isDirect: false})
     }
-  } catch (error) {
-    console.log(`❌ API Adonix falló: ${error.message}`)
-  }
+  ];
 
-  try {
-    console.log('🔍 Intentando API JoseDev...')
-    const joseResult = await apiJoseDev(url)
-    if (joseResult && joseResult.url) {
-      console.log(`✅ API JoseDev exitosa: ${joseResult.fuente}`)
-      return { url: joseResult.url, api: joseResult.fuente }
+  for (const api of videoApis) {
+    try {
+      console.log(`🔍 Probando ${api.name}...`);
+      
+      const response = await api.url();
+      const extracted = api.extract(response);
+      
+      if (extracted.data && typeof extracted.data === 'string') {
+        console.log(`✅ ${api.name} exitosa`);
+        return { url: extracted.data, api: api.name };
+      }
+      
+    } catch (error) {
+      console.log(`❌ ${api.name} falló: ${error.message}`);
     }
-  } catch (error) {
-    console.log(`❌ API JoseDev falló: ${error.message}`)
   }
-
   
-  const apis = [
-    { api: 'Xyro', endpoint: `${global.APIs.xyro.url}/download/youtubemp4?url=${encodeURIComponent(url)}&quality=360`, extractor: res => res.result?.dl },
-    { api: 'Yupra', endpoint: `${global.APIs.yupra.url}/api/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.resultado?.formatos?.[0]?.url },
-    { api: 'Vreden', endpoint: `${global.APIs.vreden.url}/api/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url },
-    { api: 'Delirius', endpoint: `${global.APIs.delirius.url}/download/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.data?.download?.url },
-    { api: 'ZenzzXD', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-    { api: 'ZenzzXD v2', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp4v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url }
-  ]
-  return await fetchFromBackupApis(apis)
+  console.log('❌ Todas las APIs de video fallaron');
+  return null;
 }
 
 async function fetchFromBackupApis(apis) {
