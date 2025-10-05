@@ -5,8 +5,6 @@ import fs from 'fs';
 import path from 'path';
 import stream from 'stream';
 import { promisify } from 'util';
-import { ytmp4 } from '../lib/y2mate.js';
-import ogmp3 from '../lib/scraper.js';
 
 const pipeline = promisify(stream.pipeline);
 
@@ -353,7 +351,6 @@ async function getAud(url) {
 
 async function getVid(url) {
   const userVideoData = { url };
-  const selectedQuality = '720p';
   const apis = global.APIs?.xyro?.url || 'https://api.xyro.com';
   
   const videoApis = [
