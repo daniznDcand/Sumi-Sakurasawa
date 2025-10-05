@@ -7,7 +7,10 @@ let handler = async (m, { conn }) => {
     const config = loadConfig();
     
     
+    console.log(`🔍 Audios debug - Grupo: ${groupId}, Config:`, config.enabledGroups);
+    
     if (!config.enabledGroups || !config.enabledGroups[groupId]) {
+        console.log(`❌ Audios desactivados para grupo ${groupId}`);
         return; 
     }
 
@@ -20,10 +23,12 @@ let handler = async (m, { conn }) => {
     const words = messageText.split(/\s+/);
     
     for (const rawWord of words) {
-        
+       
         const cleanWord = rawWord.replace(/^[^\w]+|[^\w]+$/g, '');
         
+        console.log(`🔍 Palabra limpia: "${cleanWord}" - Existe en config: ${!!AUDIO_CONFIG[cleanWord]}`);
         
+       
         if (AUDIO_CONFIG[cleanWord]) {
             try {
                 console.log(`🎵 Palabra detectada: "${cleanWord}" en grupo ${groupId}`);

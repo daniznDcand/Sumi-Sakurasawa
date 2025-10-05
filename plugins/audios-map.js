@@ -57,7 +57,7 @@ let handler = async (m, { conn, text, isAdmin, isOwner }) => {
         `\n🎛️ *CONTROLES DE ADMIN:*\n• \`.enable audios\` - Activar audios automáticos\n• \`.disable audios\` - Desactivar audios automáticos\n` : '';
 
     const audioCategories = {
-        '👋 SALUDOS': ['hola', 'buenos', 'buenas'],
+        '👋 SALUDOS': ['a', 'hola', 'buenos', 'buenas'],
         '😲 REACCIONES': ['wow', 'genial', 'increible'],
         '👋 DESPEDIDAS': ['adios', 'chao', 'bye'],
         '😄 DIVERSIÓN': ['jaja', 'lol', 'xd'],
