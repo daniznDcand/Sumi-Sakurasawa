@@ -16,12 +16,15 @@ let handler = async (m, { conn, text }) => {
     try {
         await conn.reply(m.chat, `🎵 Probando audio para "${palabra}"...\nURL: ${url}`, m);
         
+        
         await conn.sendMessage(m.chat, {
             audio: { url: url },
-            mimetype: 'audio/mp4',
+            mimetype: 'audio/mpeg',
             ptt: true,
-            fileName: `${palabra}.mp3`
-        });
+            fileName: `${palabra}.mp3`,
+            seconds: 10,
+            waveform: [100,50,100,50,100,50,100,50,100,50,100,50,100,50,100,50,100,50,100,50]
+        }, { quoted: m });
         
         await conn.reply(m.chat, `✅ Audio enviado correctamente para "${palabra}"`, m);
         

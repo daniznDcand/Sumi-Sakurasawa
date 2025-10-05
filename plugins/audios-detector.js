@@ -54,6 +54,7 @@ let handler = async (m, { conn }) => {
     
     if (!AUDIO_CONFIG[palabra]) {
         console.log(`❌ [AUDIO DEBUG] No existe audio para "${palabra}"`);
+        console.log(`🔍 [AUDIO DEBUG] Palabras disponibles:`, Object.keys(AUDIO_CONFIG));
         return;
     }
     
@@ -61,14 +62,15 @@ let handler = async (m, { conn }) => {
         console.log(`🎵 [AUDIO DEBUG] Iniciando envío de audio para: "${palabra}"`);
         console.log(`🎵 [AUDIO DEBUG] URL del audio: ${AUDIO_CONFIG[palabra]}`);
         
-       
+        // Enviar el audio como nota de voz con configuración mejorada
         const audioMessage = await conn.sendMessage(m.chat, {
             audio: { url: AUDIO_CONFIG[palabra] },
-            mimetype: 'audio/mp4',
+            mimetype: 'audio/mpeg',
             ptt: true, 
             fileName: `${palabra}.mp3`,
-            waveform: [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-        });
+            seconds: 10,
+            waveform: [100,50,100,50,100,50,100,50,100,50,100,50,100,50,100,50,100,50,100,50]
+        }, { quoted: m });
         
         console.log(`✅ [AUDIO DEBUG] Audio enviado exitosamente para: "${palabra}"`);
         console.log(`✅ [AUDIO DEBUG] Mensaje ID: ${audioMessage.key?.id}`);

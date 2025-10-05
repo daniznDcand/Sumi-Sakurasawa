@@ -1,7 +1,7 @@
 
 const AUDIO_CONFIG = {
     // Saludos
-    'depool': 'https://files.catbox.moe/t6y50v.mp3',
+    'depool': 'https://www.soundjay.com/misc/sounds-for-mailers/beep-07a.mp3',
     'buenos': 'https://files.catbox.moe/wzl18t.mp3',
     'buenas': 'https://files.catbox.moe/h9j2k8.mp3',
     
