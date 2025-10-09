@@ -7,15 +7,17 @@ let handler = async (m, { conn }) => {
 
 ¡Gracias por usar el bot! Si quieres apoyar el proyecto, puedes hacerlo con un donativo. Tu ayuda permite que el bot siga activo y mejorando.
 `;
-  await conn.sendMessage(m.chat, {
-    text: descripcion,
-    footer: '🌱 Gracias por tu apoyo',
-    buttons: [
-      { buttonId: '.apoyardepool', buttonText: { displayText: '💙 Apoyar' }, type: 1 },
-      { buttonId: '.sabermasdepool', buttonText: { displayText: 'ℹ️ Saber más' }, type: 1 }
+  await conn.sendButton.value(
+    m.chat,
+    descripcion,
+    '🌱 Gracias por tu apoyo',
+    null,
+    [
+      ['💙 Apoyar', '.apoyardepool'],
+      ['ℹ️ Saber más', '.sabermasdepool']
     ],
-    headerType: 1
-  }, { quoted: m });
+    null, null, m
+  );
 };
 handler.command = ['depool'];
 handler.help = ['depool'];
