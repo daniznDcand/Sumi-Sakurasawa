@@ -321,46 +321,39 @@ async function processDownload(conn, m, url, title, option) {
       
       if (option === 1) {
         await conn.sendMessage(m.chat, { 
-          audio: { url: downloadUrl }, 
+          audio: downloadUrl, 
           fileName: fileName, 
           mimetype: mimeType 
         }, { quoted: m });
       } else {
         await conn.sendMessage(m.chat, { 
-          document: { url: downloadUrl },
+          document: downloadUrl, 
           mimetype: mimeType,
           fileName: fileName
         }, { quoted: m });
       }
     } else {
-      // Descargar video
-      const videoResult = await ytdl(url);
-      fileName = `${title.replace(/[^\w\s]/gi, '')}.mp4`;
-      mimeType = 'video/mp4';
       
+      const videoResult = await ytdl(url);
+      fileName = `${title.replace(/[\w\s]/gi, '')}.mp4`;
+      mimeType = 'video/mp4';
       if (!videoResult) {
         throw new Error(`❌ No se pudo obtener el enlace de video. Intenta de nuevo.`);
       }
-
       downloadUrl = videoResult;
-      
-     
       if (videoResult.isAudioAsVideo) {
-        console.log('📱 Enviando audio como video...');
-        mimeType = 'video/mp4'; 
+        mimeType = 'video/mp4';
       }
-
-      
       if (option === 2) {
         await conn.sendMessage(m.chat, { 
-          video: { url: downloadUrl }, 
+          video: downloadUrl, 
           fileName: fileName, 
           mimetype: mimeType, 
           caption: title
         }, { quoted: m });
       } else {
         await conn.sendMessage(m.chat, { 
-          document: { url: downloadUrl },
+          document: downloadUrl, 
           mimetype: mimeType,
           fileName: fileName,
           caption: title
