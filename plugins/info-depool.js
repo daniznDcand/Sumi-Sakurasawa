@@ -7,17 +7,18 @@ let handler = async (m, { conn }) => {
 
 ¡Gracias por usar el bot! Si quieres apoyar el proyecto, puedes hacerlo con un donativo. Tu ayuda permite que el bot siga activo y mejorando.
 `;
-  await conn.sendButton.value(
-    m.chat,
-    descripcion,
-    '🌱 Gracias por tu apoyo',
-    null,
-    [
-      ['💙 Apoyar', '.apoyardepool'],
-      ['ℹ️ Saber más', '.sabermasdepool']
-    ],
-    null, null, m
-  );
+
+  const templateButtons = [
+    { index: 1, quickReplyButton: { displayText: '💙 Apoyar', id: '.apoyardepool' } },
+    { index: 2, quickReplyButton: { displayText: 'ℹ️ Saber más', id: '.sabermasdepool' } }
+  ];
+
+  await conn.sendMessage(m.chat, {
+    text: descripcion,
+    footer: '🌱 Gracias por tu apoyo',
+    templateButtons,
+    headerType: 1
+  }, { quoted: m });
 };
 handler.command = ['depool'];
 handler.help = ['depool'];
