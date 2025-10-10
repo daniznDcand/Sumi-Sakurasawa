@@ -7,7 +7,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 
   try {
     if (!text.trim()) {
-      return conn.reply(m.chat, `💙 Ingresa el nombre de la música a descargar.\n\nEjemplo: ${usedPrefix}${command} Let you Down Cyberpunk`, m, rcanal);
+      return conn.reply(m.chat, `💙 Ingresa el nombre de la música a descargar.\n\nEjemplo: ${usedPrefix}${command} Let you Down Cyberpunk`, m);
     }
 
     const search = await yts(text);
@@ -104,74 +104,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 };
 
 
-function isValidUrl(string) {
-  try {
-    new URL(string);
-    return string.startsWith('http://') || string.startsWith('https://');
-  } catch (_) {
-    return false;
-  }
-}
 
-
-
-
-async function validateDownloadUrl(url) {
-  if (!url || typeof url !== 'string' || url.trim() === '') {
-    console.log('❌ URL inválida o vacía');
-    return false;
-  }
-
-  try {
-    
-    new URL(url);
-    
-    console.log(`🔍 Validating download URL: ${url.substring(0, 100)}...`);
-    
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3000); 
-    
-    const response = await fetch(url, {
-      method: 'HEAD',
-      signal: controller.signal,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      }
-    });
-    
-    clearTimeout(timeoutId);
-    
-    const isValid = response.ok && 
-                   response.status >= 200 && 
-                   response.status < 400 &&
-                   response.status !== 404 &&
-                   response.status !== 403;
-    
-    const contentType = response.headers.get('content-type') || '';
-    const contentLength = response.headers.get('content-length');
-    
-    
-    const isMediaFile = contentType.includes('video') || 
-                       contentType.includes('audio') || 
-                       contentType.includes('application/octet-stream') ||
-                       contentType.includes('binary') ||
-                       url.includes('.mp4') || 
-                       url.includes('.mp3') || 
-                       url.includes('.m4a');
-    
-    if (isValid && isMediaFile) {
-      console.log(`✅ URL validation status: ${response.status} - Tipo: ${contentType} - Tamaño: ${contentLength || 'desconocido'}`);
-      return true;
-    } else {
-      console.log(`❌ URL no válida - Status: ${response.status}, Tipo: ${contentType}`);
-      return false;
-    }
-    
-  } catch (error) {
-    console.error(`❌ URL validation failed: ${error.message}`);
-    return false;
-  }
-}
 
 
 async function processDownload(conn, m, url, title, option) {
@@ -259,15 +192,6 @@ async function processDownload(conn, m, url, title, option) {
     conn.reply(m.chat, `💙 Error: ${error.message}`, m);
     return false;
   }
-}
-
-
-async function apiJoseDev(url) {
-  const apiURL = `https://api.sylphy.xyz/download/ytmp4?url=${encodeURIComponent(url)}&apikey=sylphy-fbb9`
-  const res = await fetch(apiURL)
-  const data = await res.json()
-  if (!data.status || !data.res?.url) throw new Error('API JoseDev no devolvió datos válidos')
-  return { url: data.res.url, title: data.res.title || 'Video sin título XD', fuente: 'JoseDev' }
 }
 
 
@@ -380,7 +304,7 @@ handler.before = async (m, { conn }) => {
   }
   
   user.processingDownload = true;
-  user.cebollinesDeducted = false;
+  user.monedaDeducted = false;
 
   try {
     await processDownload(
