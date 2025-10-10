@@ -309,51 +309,50 @@ async function processDownload(conn, m, url, title, option) {
     let mimeType;
 
     if (option === 1 || option === 3) {
-      
-      downloadUrl = await ytdlAudio(url);
-      fileName = `${title.replace(/[^\w\s]/gi, '')}.mp3`;
-      mimeType = 'audio/mpeg';
-      
-      if (!downloadUrl) {
+
+      const audioResult = await ytdlAudio(url);
+      if (!audioResult || !audioResult.url) {
         throw new Error(`❌ No se pudo obtener el enlace de audio. Intenta de nuevo.`);
       }
+      downloadUrl = audioResult.url;
+      title = audioResult.title || title;
+      fileName = `${title.replace(/[^\w\s]/gi, '')}.mp3`;
+      mimeType = 'audio/mpeg';
 
-      
       if (option === 1) {
-        await conn.sendMessage(m.chat, { 
-          audio: downloadUrl, 
-          fileName: fileName, 
-          mimetype: mimeType 
+        await conn.sendMessage(m.chat, {
+          audio: downloadUrl,
+          fileName: fileName,
+          mimetype: mimeType
         }, { quoted: m });
       } else {
-        await conn.sendMessage(m.chat, { 
-          document: downloadUrl, 
+        await conn.sendMessage(m.chat, {
+          document: downloadUrl,
           mimetype: mimeType,
           fileName: fileName
         }, { quoted: m });
       }
     } else {
-      
+
       const videoResult = await ytdl(url);
-      fileName = `${title.replace(/[\w\s]/gi, '')}.mp4`;
-      mimeType = 'video/mp4';
-      if (!videoResult) {
+      if (!videoResult || !videoResult.url) {
         throw new Error(`❌ No se pudo obtener el enlace de video. Intenta de nuevo.`);
       }
-      downloadUrl = videoResult;
-      if (videoResult.isAudioAsVideo) {
-        mimeType = 'video/mp4';
-      }
+      downloadUrl = videoResult.url;
+      title = videoResult.title || title;
+      fileName = `${title.replace(/[^\w\s]/gi, '')}.mp4`;
+      mimeType = 'video/mp4';
+
       if (option === 2) {
-        await conn.sendMessage(m.chat, { 
-          video: downloadUrl, 
-          fileName: fileName, 
-          mimetype: mimeType, 
+        await conn.sendMessage(m.chat, {
+          video: downloadUrl,
+          fileName: fileName,
+          mimetype: mimeType,
           caption: title
         }, { quoted: m });
       } else {
-        await conn.sendMessage(m.chat, { 
-          document: downloadUrl, 
+        await conn.sendMessage(m.chat, {
+          document: downloadUrl,
           mimetype: mimeType,
           fileName: fileName,
           caption: title
@@ -378,15 +377,6 @@ async function processDownload(conn, m, url, title, option) {
 }
 
 
-async function apiAdonix(url) {
-  const apiURL = `https://apiadonix.kozow.com/download/ytmp4?apikey=${global.apikey}&url=${encodeURIComponent(url)}`
-  const res = await fetch(apiURL)
-  const data = await res.json()
-  if (!data.status || !data.data?.url) throw new Error('API Adonix no devolvió datos válidos')
-  return { url: data.data.url, title: data.data.title || 'Video sin título XD', fuente: 'Adonix' }
-}
-
-
 async function apiJoseDev(url) {
   const apiURL = `https://api.sylphy.xyz/download/ytmp4?url=${encodeURIComponent(url)}&apikey=sylphy-fbb9`
   const res = await fetch(apiURL)
@@ -396,39 +386,13 @@ async function apiJoseDev(url) {
 }
 
 
-async function apiAdonixAudio(url) {
-  const apiURL = `https://apiadonix.kozow.com/download/ytmp3?apikey=${global.apikey}&url=${encodeURIComponent(url)}`
-  const res = await fetch(apiURL)
-  const data = await res.json()
-  if (!data.status || !data.data?.url) throw new Error('API Adonix (audio) no devolvió datos válidos')
-  return { url: data.data.url, title: data.data.title || 'Audio sin título XD', fuente: 'Adonix' }
-}
-
-
-async function apiJoseDevAudio(url) {
-  const apiURL = `https://api.sylphy.xyz/download/ytmp3?url=${encodeURIComponent(url)}&apikey=sylphy-fbb9`
-  const res = await fetch(apiURL)
-  const data = await res.json()
-  if (!data.status || !data.res?.url) throw new Error('API JoseDev (audio) no devolvió datos válidos')
-  return { url: data.res.url, title: data.res.title || 'Audio sin título XD', fuente: 'JoseDev' }
-}
-
-
 async function ytdl(url) {
-  try {
-    return await apiAdonix(url)
-  } catch (e1) {
-    return await apiJoseDev(url)
-  }
+  return await apiJoseDev(url)
 }
 
 
 async function ytdlAudio(url) {
-  try {
-    return await apiAdonixAudio(url)
-  } catch (e1) {
-    return await apiJoseDevAudio(url)
-  }
+  return await mnuuConverter(url, 'mp3')
 }
 
 handler.before = async (m, { conn }) => {
