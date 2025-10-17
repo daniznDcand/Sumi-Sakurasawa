@@ -2,9 +2,90 @@ import fetch from "node-fetch";
 import yts from 'yt-search';
 import { yta, ytv } from '../lib/y2mate.js';
 
-const handler = async (m, { conn, text, usedPrefix, command }) => {
-  let user = global.db.data.users[m.sender];
+async function fetchFromApis(apis, url) {
+  for (const { api, endpoint, extractor } of apis) {
+    try {
+      console.log(`Intentando con API: ${api}`);
+      
+      let result;
+      if (!endpoint) {
+        result = await extractor();
+      } else {
+        const response = await fetch(endpoint, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          }
+        });
+        
+        if (!response.ok) continue;
+        
+        const data = await response.json();
+        result = extractor(data);
+      }
+      
+      if (result) {
+        console.log(`✅ Descarga exitosa con API: ${api}`);
+        return result;
+      }
+    } catch (error) {
+      console.log(`❌ Fallo con API ${api}:`, error.message);
+      continue;
+    }
+  }
+  throw new Error('Todas las APIs fallaron');
+}
 
+async function getAud(url) {
+  const apis = [
+    { api: 'ZenzzXD', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
+    { api: 'ZenzzXD v2', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp3v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
+    { api: 'Yupra', endpoint: `${global.APIs.yupra.url}/api/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.resultado?.enlace },
+    { api: 'Vreden', endpoint: `${global.APIs.vreden.url}/api/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url }
+  ];
+  return await fetchFromApis(apis, url);
+}
+
+async function getVid(url) {
+  const apis = [
+    { api: 'ZenzzXD', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
+    { api: 'ZenzzXD v2', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp4v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
+    { api: 'Yupra', endpoint: `${global.APIs.yupra.url}/api/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.resultado?.formatos?.[0]?.url },
+    { api: 'Vreden', endpoint: `${global.APIs.vreden.url}/api/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url }
+  ];
+  return await fetchFromApis(apis, url);
+}
+
+async function ytdlAudio(url) {
+  try {
+    const altUrl = await getAud(url);
+    return { url: altUrl, title: 'Audio sin título' };
+  } catch (error) {
+    console.error('Error APIs originales, probando Y2Mate:', error);
+    try {
+      const result = await yta(url);
+      return { url: result?.link, title: result?.title || 'Audio sin título' };
+    } catch {
+      throw new Error('No se pudo descargar el audio');
+    }
+  }
+}
+
+async function ytdl(url) {
+  try {
+    const altUrl = await getVid(url);
+    return { url: altUrl, title: 'Video sin título' };
+  } catch (error) {
+    console.error('Error APIs originales, probando Y2Mate:', error);
+    try {
+      const result = await ytv(url);
+      return { url: result?.link, title: result?.title || 'Video sin título' };
+    } catch {
+      throw new Error('No se pudo descargar el video');
+    }
+  }
+}
+
+const handler = async (m, { conn, text, usedPrefix, command }) => {
   try {
     if (!text.trim()) {
       return conn.reply(m.chat, `💙 Ingresa el nombre de la música a descargar.\n\nEjemplo: ${usedPrefix}${command} Let you Down Cyberpunk`, m);
@@ -37,7 +118,6 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     const vistas = formatViews(views);
     const canal = author.name || 'Desconocido';
     
-    
     const buttons = [
       ['🎵 Audio', 'ytdl_audio_mp3'],
       ['🎬 Video', 'ytdl_video_mp4'],
@@ -64,38 +144,22 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 
     try {
       const thumb = thumbnail ? (await conn.getFile(thumbnail))?.data : null;
-
-      
       await conn.sendNCarousel(m.chat, infoText, footer, thumb, buttons, null, null, null, m);
-      
-      if (!global.db.data.users[m.sender]) {
-        global.db.data.users[m.sender] = {};
-      }
-      
-      global.db.data.users[m.sender].lastYTSearch = {
-        url,
-        title,
-        messageId: m.key.id,  
-        timestamp: Date.now() 
-      };
-      
     } catch (thumbError) {
-     
       await conn.sendNCarousel(m.chat, infoText, footer, null, buttons, null, null, null, m);
-      
-      if (!global.db.data.users[m.sender]) {
-        global.db.data.users[m.sender] = {};
-      }
-      
-      global.db.data.users[m.sender].lastYTSearch = {
-        url,
-        title,
-        messageId: m.key.id,  
-        timestamp: Date.now() 
-      };
-      
       console.error("Error al obtener la miniatura:", thumbError);
     }
+
+    if (!global.db.data.users[m.sender]) {
+      global.db.data.users[m.sender] = {};
+    }
+    
+    global.db.data.users[m.sender].lastYTSearch = {
+      url,
+      title,
+      messageId: m.key.id,  
+      timestamp: Date.now() 
+    };
 
   } catch (error) {
     console.error("Error completo:", error);
@@ -103,12 +167,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
   }
 };
 
-
-
-
-
 async function processDownload(conn, m, url, title, option) {
-  
   const downloadTypes = {
     1: '🎵 audio MP3',
     2: '🎬 video MP4', 
@@ -118,8 +177,7 @@ async function processDownload(conn, m, url, title, option) {
   
   const downloadType = downloadTypes[option] || 'archivo';
   
- 
-  const processingMsg = await conn.reply(m.chat, `💙 Obteniendo ${downloadType}... ⚡`, m);
+  await conn.reply(m.chat, `💙 Obteniendo ${downloadType}... ⚡`, m);
   
   try {
     let downloadUrl;
@@ -127,61 +185,58 @@ async function processDownload(conn, m, url, title, option) {
     let mimeType;
 
     if (option === 1 || option === 3) {
-
       const audioResult = await ytdlAudio(url);
       if (!audioResult || !audioResult.url) {
         throw new Error(`❌ No se pudo obtener el enlace de audio. Intenta de nuevo.`);
       }
       downloadUrl = audioResult.url;
       title = audioResult.title || title;
-      fileName = `${title.replace(/[^\w\s]/gi, '')}.mp3`;
+      fileName = `${title.replace(/[^\w\s]/gi, '').substring(0, 50)}.mp3`;
       mimeType = 'audio/mpeg';
 
       if (option === 1) {
         await conn.sendMessage(m.chat, {
-          audio: downloadUrl,
+          audio: { url: downloadUrl },
           fileName: fileName,
           mimetype: mimeType
         }, { quoted: m });
       } else {
         await conn.sendMessage(m.chat, {
-          document: downloadUrl,
+          document: { url: downloadUrl },
           mimetype: mimeType,
           fileName: fileName
         }, { quoted: m });
       }
     } else {
-
       const videoResult = await ytdl(url);
       if (!videoResult || !videoResult.url) {
         throw new Error(`❌ No se pudo obtener el enlace de video. Intenta de nuevo.`);
       }
       downloadUrl = videoResult.url;
       title = videoResult.title || title;
-      fileName = `${title.replace(/[^\w\s]/gi, '')}.mp4`;
+      fileName = `${title.replace(/[^\w\s]/gi, '').substring(0, 50)}.mp4`;
       mimeType = 'video/mp4';
 
       if (option === 2) {
         await conn.sendMessage(m.chat, {
-          video: downloadUrl,
+          video: { url: downloadUrl },
           fileName: fileName,
           mimetype: mimeType,
-          caption: title
+          caption: `🎬 ${title}`
         }, { quoted: m });
       } else {
         await conn.sendMessage(m.chat, {
-          document: downloadUrl,
+          document: { url: downloadUrl },
           mimetype: mimeType,
           fileName: fileName,
-          caption: title
+          caption: `🎬 ${title}`
         }, { quoted: m });
       }
     }
     
-   
     const user = global.db.data.users[m.sender];
-    if (!user.monedaDeducted) {
-      user.moneda -= 2;
+    if (user && !user.monedaDeducted) {
+      user.moneda = (user.moneda || 0) - 2;
       user.monedaDeducted = true;
       conn.reply(m.chat, `💙 Has utilizado 2 *Cebollines 🌱*`, m);
     }
@@ -194,20 +249,8 @@ async function processDownload(conn, m, url, title, option) {
   }
 }
 
-
-async function ytdl(url) {
-  const result = await ytv(url)
-  return { url: result.link, title: result.title || 'Video sin título' }
-}
-
-
-async function ytdlAudio(url) {
-  const result = await yta(url)
-  return { url: result.link, title: result.title || 'Audio sin título' }
-}
-
 handler.before = async (m, { conn }) => {
-  
+  if (!m.text) return false;
   
   const buttonPatterns = [
     /^ytdl_(audio|video)_(mp3|mp4|doc)$/,
@@ -218,12 +261,10 @@ handler.before = async (m, { conn }) => {
   ];
   
   let isButtonResponse = false;
-  let matchedPattern = null;
   
   for (const pattern of buttonPatterns) {
     if (pattern.test(m.text)) {
       isButtonResponse = true;
-      matchedPattern = pattern;
       break;
     }
   }
@@ -235,8 +276,8 @@ handler.before = async (m, { conn }) => {
                             m.text.includes('video_doc');
   
   const buttonTextPatterns = [
-    /🎵.*MP3.*Audio/i,
-    /🎬.*MP4.*Video/i,
+    /🎵.*Audio/i,
+    /🎬.*Video/i,
     /📁.*MP3.*Documento/i,
     /📁.*MP4.*Documento/i
   ];
@@ -245,7 +286,6 @@ handler.before = async (m, { conn }) => {
   for (const pattern of buttonTextPatterns) {
     if (pattern.test(m.text)) {
       isButtonTextResponse = true;
-      matchedPattern = `text: ${pattern}`;
       break;
     }
   }
@@ -259,18 +299,15 @@ handler.before = async (m, { conn }) => {
     return false;
   }
   
- 
   console.log(`🎵 Procesando: ${user.lastYTSearch.title}`);
   
   const currentTime = Date.now();
   const searchTime = user.lastYTSearch.timestamp || 0;
   
-  
   if (currentTime - searchTime > 10 * 60 * 1000) {
     await conn.reply(m.chat, '⏰ La búsqueda ha expirado. Por favor realiza una nueva búsqueda.', m);
     return false; 
   }
-  
   
   let option = null;
   
@@ -282,11 +319,9 @@ handler.before = async (m, { conn }) => {
     option = 3; 
   } else if (m.text.includes('video_doc') || m.text === 'ytdl_video_doc') {
     option = 4; 
-  }
-  
-  else if (/🎵.*MP3.*Audio/i.test(m.text)) {
+  } else if (/🎵.*Audio/i.test(m.text)) {
     option = 1; 
-  } else if (/🎬.*MP4.*Video/i.test(m.text)) {
+  } else if (/🎬.*Video/i.test(m.text)) {
     option = 2; 
   } else if (/📁.*MP3.*Documento/i.test(m.text)) {
     option = 3; 
@@ -298,7 +333,6 @@ handler.before = async (m, { conn }) => {
     return false;
   }
 
-  
   if (user.processingDownload) {
     return false;
   }
@@ -314,7 +348,6 @@ handler.before = async (m, { conn }) => {
       user.lastYTSearch.title, 
       option
     );
-    
     
     user.lastYTSearch = null;
     user.processingDownload = false;
@@ -351,4 +384,3 @@ handler.command = handler.help = ['play'];
 handler.tags = ['downloader'];
 
 export default handler;
-

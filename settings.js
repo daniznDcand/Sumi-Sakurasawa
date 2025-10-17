@@ -104,7 +104,20 @@ global.cheerio = cheerio
 global.fs = fs
 global.fetch = fetch
 global.axios = axios
-global.moment = moment   
+global.moment = moment
+
+// APIs para descargas
+global.APIs = {
+  zenzxz: {
+    url: 'https://api.zenzxz.my.id'
+  },
+  yupra: {
+    url: 'https://api.yupra.me'
+  },
+  vreden: {
+    url: 'https://api.vreden.my.id'
+  }
+}   
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
