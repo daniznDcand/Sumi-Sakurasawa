@@ -2,26 +2,20 @@ import fetch from "node-fetch";
 import yts from 'yt-search';
 import { yta, ytv } from '../lib/y2mate.js';
 
-async function fetchFromApis(apis, url) {
+async function fetchFromApis(apis) {
   for (const { api, endpoint, extractor } of apis) {
     try {
       console.log(`Intentando con API: ${api}`);
+      const response = await fetch(endpoint, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+      });
       
-      let result;
-      if (!endpoint) {
-        result = await extractor();
-      } else {
-        const response = await fetch(endpoint, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-          }
-        });
-        
-        if (!response.ok) continue;
-        
-        const data = await response.json();
-        result = extractor(data);
-      }
+      if (!response.ok) continue;
+      
+      const data = await response.json();
+      const result = extractor(data);
       
       if (result) {
         console.log(`✅ Descarga exitosa con API: ${api}`);
@@ -36,23 +30,11 @@ async function fetchFromApis(apis, url) {
 }
 
 async function getAud(url) {
-  const apis = [
-    { api: 'ZenzzXD', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-    { api: 'ZenzzXD v2', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp3v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-    { api: 'Yupra', endpoint: `${global.APIs.yupra.url}/api/downloader/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.resultado?.enlace },
-    { api: 'Vreden', endpoint: `${global.APIs.vreden.url}/api/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url }
+  const fuentes = [
+    { api: 'Adonix', endpoint: `https://api-adonix.ultraplus.click/download/ytmp3?apikey=${global.apikey}&url=${encodeURIComponent(url)}`, extractor: res => res?.data?.url },
+    { api: 'MayAPI', endpoint: `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=mp3&apikey=${global.APIKeys['https://mayapi.ooguy.com']}`, extractor: res => res.result.url }
   ];
-  return await fetchFromApis(apis, url);
-}
-
-async function getVid(url) {
-  const apis = [
-    { api: 'ZenzzXD', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-    { api: 'ZenzzXD v2', endpoint: `${global.APIs.zenzxz.url}/downloader/ytmp4v2?url=${encodeURIComponent(url)}`, extractor: res => res.download_url },
-    { api: 'Yupra', endpoint: `${global.APIs.yupra.url}/api/downloader/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.resultado?.formatos?.[0]?.url },
-    { api: 'Vreden', endpoint: `${global.APIs.vreden.url}/api/ytmp4?url=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url }
-  ];
-  return await fetchFromApis(apis, url);
+  return await fetchFromApis(fuentes);
 }
 
 async function ytdlAudio(url) {
@@ -60,7 +42,7 @@ async function ytdlAudio(url) {
     const altUrl = await getAud(url);
     return { url: altUrl, title: 'Audio sin título' };
   } catch (error) {
-    console.error('Error APIs originales, probando Y2Mate:', error);
+    console.error('Error APIs principales, probando Y2Mate:', error);
     try {
       const result = await yta(url);
       return { url: result?.link, title: result?.title || 'Audio sin título' };
@@ -70,12 +52,20 @@ async function ytdlAudio(url) {
   }
 }
 
+async function getVid(url) {
+  const fuentes = [
+    { api: 'Adonix', endpoint: `https://api-adonix.ultraplus.click/download/ytmp4?apikey=${global.apikey}&url=${encodeURIComponent(url)}`, extractor: res => res?.data?.url },
+    { api: 'MayAPI', endpoint: `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=mp4&apikey=${global.APIKeys['https://mayapi.ooguy.com']}`, extractor: res => res.result.url }
+  ];
+  return await fetchFromApis(fuentes);
+}
+
 async function ytdl(url) {
   try {
     const altUrl = await getVid(url);
     return { url: altUrl, title: 'Video sin título' };
   } catch (error) {
-    console.error('Error APIs originales, probando Y2Mate:', error);
+    console.error('Error APIs principales, probando Y2Mate:', error);
     try {
       const result = await ytv(url);
       return { url: result?.link, title: result?.title || 'Video sin título' };

@@ -106,7 +106,7 @@ global.fetch = fetch
 global.axios = axios
 global.moment = moment
 
-// APIs para descargas
+
 global.APIs = {
   zenzxz: {
     url: 'https://api.zenzxz.my.id'
@@ -117,6 +117,12 @@ global.APIs = {
   vreden: {
     url: 'https://api.vreden.my.id'
   }
+}
+
+
+global.apikey = 'tu_api_key_adonix'
+global.APIKeys = {
+  'https://mayapi.ooguy.com': 'tu_api_key_mayapi'
 }   
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
