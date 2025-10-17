@@ -116,6 +116,9 @@ global.APIs = {
   },
   vreden: {
     url: 'https://api.vreden.my.id'
+  },
+  stellar: {
+    url: 'https://api.stellar.my.id'
   }
 }
 

@@ -30,11 +30,37 @@ async function fetchFromApis(apis) {
 }
 
 async function getAud(url) {
-  const fuentes = [
-    { api: 'Adonix', endpoint: `https://api-adonix.ultraplus.click/download/ytmp3?apikey=${global.apikey}&url=${encodeURIComponent(url)}`, extractor: res => res?.data?.url },
-    { api: 'MayAPI', endpoint: `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=mp3&apikey=${global.APIKeys['https://mayapi.ooguy.com']}`, extractor: res => res.result.url }
+  const audioApis = [
+    {
+      url: () => fetch(`https://api.neoxr.eu/api/youtube?url=${url}&type=audio&quality=128kbps&apikey=GataDios`).then((res) => res.json()),
+      extract: (data) => data.data.url
+    },
+    {
+      url: () => fetch(`${global.APIs?.stellar?.url || 'https://api.stellar.my.id'}/dow/ytmp3?url=${url}`).then((res) => res.json()),
+      extract: (data) => data?.data?.dl
+    },
+    {
+      url: () => fetch(`https://api.siputzx.my.id/api/d/ytmp4?url=${url}`).then((res) => res.json()),
+      extract: (data) => data.dl
+    },
+    {
+      url: () => fetch(`https://api.zenkey.my.id/api/download/ytmp3?apikey=zenkey&url=${url}`).then((res) => res.json()),
+      extract: (data) => data.result.download.url
+    }
   ];
-  return await fetchFromApis(fuentes);
+  
+  for (const api of audioApis) {
+    try {
+      const response = await api.url();
+      const downloadUrl = api.extract(response);
+      if (downloadUrl) {
+        return downloadUrl;
+      }
+    } catch (error) {
+      continue;
+    }
+  }
+  throw new Error('Todas las APIs de audio fallaron');
 }
 
 async function ytdlAudio(url) {
@@ -53,11 +79,37 @@ async function ytdlAudio(url) {
 }
 
 async function getVid(url) {
-  const fuentes = [
-    { api: 'Adonix', endpoint: `https://api-adonix.ultraplus.click/download/ytmp4?apikey=${global.apikey}&url=${encodeURIComponent(url)}`, extractor: res => res?.data?.url },
-    { api: 'MayAPI', endpoint: `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=mp4&apikey=${global.APIKeys['https://mayapi.ooguy.com']}`, extractor: res => res.result.url }
+  const videoApis = [
+    {
+      url: () => fetch(`https://api.siputzx.my.id/api/d/ytmp4?url=${url}`).then((res) => res.json()),
+      extract: (data) => data.dl
+    },
+    {
+      url: () => fetch(`https://api.neoxr.eu/api/youtube?url=${url}&type=video&quality=720p&apikey=GataDios`).then((res) => res.json()),
+      extract: (data) => data.data.url
+    },
+    {
+      url: () => fetch(`${global.APIs?.stellar?.url || 'https://api.stellar.my.id'}/dow/ytmp4?url=${url}`).then((res) => res.json()),
+      extract: (data) => data?.data?.dl
+    },
+    {
+      url: () => fetch(`https://exonity.tech/api/ytdlp2-faster?apikey=adminsepuh&url=${url}`).then((res) => res.json()),
+      extract: (data) => data.result.media.mp4
+    }
   ];
-  return await fetchFromApis(fuentes);
+  
+  for (const api of videoApis) {
+    try {
+      const response = await api.url();
+      const downloadUrl = api.extract(response);
+      if (downloadUrl) {
+        return downloadUrl;
+      }
+    } catch (error) {
+      continue;
+    }
+  }
+  throw new Error('Todas las APIs de video fallaron');
 }
 
 async function ytdl(url) {
