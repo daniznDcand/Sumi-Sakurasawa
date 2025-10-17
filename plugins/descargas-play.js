@@ -1,6 +1,5 @@
 import fetch from "node-fetch";
 import yts from 'yt-search';
-import { yta, ytv } from '../lib/y2mate.js';
 
 async function fetchFromApis(apis) {
   for (const { api, endpoint, extractor } of apis) {
@@ -32,31 +31,38 @@ async function fetchFromApis(apis) {
 async function getAud(url) {
   const audioApis = [
     {
+      name: 'Neoxr',
       url: () => fetch(`https://api.neoxr.eu/api/youtube?url=${url}&type=audio&quality=128kbps&apikey=GataDios`).then((res) => res.json()),
-      extract: (data) => data.data.url
+      extract: (data) => data?.data?.url
     },
     {
+      name: 'Stellar',
       url: () => fetch(`${global.APIs?.stellar?.url || 'https://api.stellar.my.id'}/dow/ytmp3?url=${url}`).then((res) => res.json()),
       extract: (data) => data?.data?.dl
     },
     {
+      name: 'Siputzx',
       url: () => fetch(`https://api.siputzx.my.id/api/d/ytmp4?url=${url}`).then((res) => res.json()),
-      extract: (data) => data.dl
+      extract: (data) => data?.dl
     },
     {
+      name: 'Zenkey',
       url: () => fetch(`https://api.zenkey.my.id/api/download/ytmp3?apikey=zenkey&url=${url}`).then((res) => res.json()),
-      extract: (data) => data.result.download.url
+      extract: (data) => data?.result?.download?.url
     }
   ];
   
   for (const api of audioApis) {
     try {
+      console.log(`🎵 Probando ${api.name} para audio...`);
       const response = await api.url();
       const downloadUrl = api.extract(response);
-      if (downloadUrl) {
+      if (downloadUrl && downloadUrl.startsWith('http')) {
+        console.log(`✅ Audio obtenido con ${api.name}`);
         return downloadUrl;
       }
     } catch (error) {
+      console.log(`❌ ${api.name} falló:`, error.message);
       continue;
     }
   }
@@ -68,44 +74,46 @@ async function ytdlAudio(url) {
     const altUrl = await getAud(url);
     return { url: altUrl, title: 'Audio sin título' };
   } catch (error) {
-    console.error('Error APIs principales, probando Y2Mate:', error);
-    try {
-      const result = await yta(url);
-      return { url: result?.link, title: result?.title || 'Audio sin título' };
-    } catch {
-      throw new Error('No se pudo descargar el audio');
-    }
+    console.error('Error al descargar audio:', error.message);
+    throw new Error('No se pudo descargar el audio');
   }
 }
 
 async function getVid(url) {
   const videoApis = [
     {
+      name: 'Siputzx',
       url: () => fetch(`https://api.siputzx.my.id/api/d/ytmp4?url=${url}`).then((res) => res.json()),
-      extract: (data) => data.dl
+      extract: (data) => data?.dl
     },
     {
+      name: 'Neoxr',
       url: () => fetch(`https://api.neoxr.eu/api/youtube?url=${url}&type=video&quality=720p&apikey=GataDios`).then((res) => res.json()),
-      extract: (data) => data.data.url
+      extract: (data) => data?.data?.url
     },
     {
+      name: 'Stellar',
       url: () => fetch(`${global.APIs?.stellar?.url || 'https://api.stellar.my.id'}/dow/ytmp4?url=${url}`).then((res) => res.json()),
       extract: (data) => data?.data?.dl
     },
     {
+      name: 'Exonity',
       url: () => fetch(`https://exonity.tech/api/ytdlp2-faster?apikey=adminsepuh&url=${url}`).then((res) => res.json()),
-      extract: (data) => data.result.media.mp4
+      extract: (data) => data?.result?.media?.mp4
     }
   ];
   
   for (const api of videoApis) {
     try {
+      console.log(`🎬 Probando ${api.name} para video...`);
       const response = await api.url();
       const downloadUrl = api.extract(response);
-      if (downloadUrl) {
+      if (downloadUrl && downloadUrl.startsWith('http')) {
+        console.log(`✅ Video obtenido con ${api.name}`);
         return downloadUrl;
       }
     } catch (error) {
+      console.log(`❌ ${api.name} falló:`, error.message);
       continue;
     }
   }
@@ -117,13 +125,8 @@ async function ytdl(url) {
     const altUrl = await getVid(url);
     return { url: altUrl, title: 'Video sin título' };
   } catch (error) {
-    console.error('Error APIs principales, probando Y2Mate:', error);
-    try {
-      const result = await ytv(url);
-      return { url: result?.link, title: result?.title || 'Video sin título' };
-    } catch {
-      throw new Error('No se pudo descargar el video');
-    }
+    console.error('Error al descargar video:', error.message);
+    throw new Error('No se pudo descargar el video');
   }
 }
 
