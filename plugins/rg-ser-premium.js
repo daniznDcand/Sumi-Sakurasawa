@@ -26,7 +26,7 @@ ${command} 1 d ---> 1 día premium.`
   if (!args[1] || (args[1] !== "h" && args[1] !== "d")) {
     return conn.reply(m.chat, `💙 Formato no válido.`, m)
   }
-  if (user.moneda < (precio + comision)) {
+  if (user.coin < (precio + comision)) {
     return conn.reply(m.chat, `💙 No tienes suficientes ${moneda} para comprar la membresía premium!`, m)
   }
   let tiempo
@@ -36,7 +36,7 @@ ${command} 1 d ---> 1 día premium.`
     if (now < user.premiumTime) user.premiumTime += tiempo
     else user.premiumTime = now + tiempo
     user.premium = true
-    user.moneda -= (pHora * args[0]) + (cHora * args[0])
+    user.coin -= (pHora * args[0]) + (cHora * args[0])
     type = "Hora(s)"
   } else if (args[1] === "d") {
     tiempo = 86400000 * args[0]
@@ -44,7 +44,7 @@ ${command} 1 d ---> 1 día premium.`
     if (now < user.premiumTime) user.premiumTime += tiempo
     else user.premiumTime = now + tiempo
     user.premium = true
-    user.moneda -= (pDia * args[0]) + (cDia * args[0])
+    user.coin -= (pDia * args[0]) + (cDia * args[0])
     type = "Día(s)"
   }
   let cap = `  \`\`\`乂 B U Y  -  P R E M I U M 乂\`\`\`
@@ -52,8 +52,8 @@ ${command} 1 d ---> 1 día premium.`
 👨‍🦰 Usuario » @${m.sender.split`@`[0]}
 ⴵ Tiempo Premium » ${args[0]} ${type}
 📟 Total a pagar » ${precio * args[0] + comision * args[0]} ${moneda}
-⛁ ${moneda} » ${user.moneda}
-💙 Tenía » ${user.moneda + precio * args[0] + comision * args[0]}
+⛁ ${moneda} » ${user.coin}
+💙 Tenía » ${user.coin + precio * args[0] + comision * args[0]}
 💥 Comisión » -${comision * args[0]} (incluida)`
   conn.sendMessage(m.chat, { text: cap, mentions: [m.sender] }, { quoted: m })
 }
