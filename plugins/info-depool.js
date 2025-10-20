@@ -10,8 +10,8 @@ let handler = async (m, { conn }) => {
 🌱 Elige una opción:`;
 
   const buttons = [
-    { buttonId: 'apoyardepool', buttonText: { displayText: '💙 Apoyar' }, type: 1 },
-    { buttonId: 'sabermasdepool', buttonText: { displayText: 'ℹ️ Saber más' }, type: 1 }
+    { buttonId: '.apoyardepool', buttonText: { displayText: '💙 Apoyar' }, type: 1 },
+    { buttonId: '.sabermasdepool', buttonText: { displayText: 'ℹ️ Saber más' }, type: 1 }
   ];
 
   await conn.sendMessage(m.chat, {
