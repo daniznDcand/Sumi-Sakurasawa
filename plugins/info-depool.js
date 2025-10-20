@@ -1,4 +1,8 @@
 let handler = async (m, { conn, command }) => {
+  if (!global.lastDepoolResponse) global.lastDepoolResponse = 0;
+  if (Date.now() - global.lastDepoolResponse < 2000) return;
+  global.lastDepoolResponse = Date.now();
+
   if (command === 'depool') {
     const nombre = 'Brauliovh3';
     const alias = 'DEPOOL';
