@@ -1,7 +1,8 @@
-let handler = async (m, { conn }) => {
-  const nombre = 'Brauliovh3';
-  const alias = 'DEPOOL';
-  const descripcion = `
+let handler = async (m, { conn, command }) => {
+  if (command === 'depool') {
+    const nombre = 'Brauliovh3';
+    const alias = 'DEPOOL';
+    const descripcion = `
 👤 *Creador:* ${nombre} (BVH3 ${alias})
 💙 Desarrollador principal de *Hatsune Miku Bot*
 
@@ -9,34 +10,28 @@ let handler = async (m, { conn }) => {
 
 🌱 Elige una opción:`;
 
-  const buttons = [
-    { buttonId: '.apoyardepool', buttonText: { displayText: '💙 Apoyar' }, type: 1 },
-    { buttonId: '.sabermasdepool', buttonText: { displayText: 'ℹ️ Saber más' }, type: 1 }
-  ];
+    const buttons = [
+      { buttonId: '.apoyardepool', buttonText: { displayText: '💙 Apoyar' }, type: 1 },
+      { buttonId: '.sabermasdepool', buttonText: { displayText: 'ℹ️ Saber más' }, type: 1 }
+    ];
 
-  await conn.sendMessage(m.chat, {
-    text: descripcion,
-    footer: 'Gracias por tu apoyo',
-    buttons: buttons,
-    headerType: 4
-  }, { quoted: m });
+    await conn.sendMessage(m.chat, {
+      text: descripcion,
+      footer: 'Gracias por tu apoyo',
+      buttons: buttons,
+      headerType: 4
+    }, { quoted: m });
+  } else if (command === 'apoyardepool') {
+    await conn.sendMessage(m.chat, {
+      image: { url: 'https://i.postimg.cc/JnVS0C1z/yape.jpg' },
+      caption: '💙 ¡Gracias por tu apoyo! Escanea el QR para donar vía Yape.'
+    }, { quoted: m });
+  } else if (command === 'sabermasdepool') {
+    await conn.reply(m.chat, 'Puedes contactarme en GitHub: https://github.com/Brauliovh3 o en WhatsApp para más información.', m);
+  }
 };
-handler.command = ['depool'];
-handler.help = ['depool'];
+handler.command = ['depool', 'apoyardepool', 'sabermasdepool'];
+handler.help = ['depool', 'apoyardepool', 'sabermasdepool'];
 handler.tags = ['info'];
+
 export default handler;
-
-
-export async function apoyardepool(m, { conn }) {
-  await conn.sendMessage(m.chat, {
-    image: { url: 'https://i.postimg.cc/JnVS0C1z/yape.jpg' },
-    caption: '💙 ¡Gracias por tu apoyo! Escanea el QR para donar vía Yape.'
-  }, { quoted: m });
-}
-apoyardepool.command = ['apoyardepool'];
-
-
-export async function sabermasdepool(m, { conn }) {
-  await conn.reply(m.chat, 'Puedes contactarme en GitHub: https://github.com/Brauliovh3 o en WhatsApp para más información.', m);
-}
-sabermasdepool.command = ['sabermasdepool'];
