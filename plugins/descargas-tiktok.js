@@ -30,7 +30,7 @@ var handler = async (m, { conn, args, usedPrefix, command }) => {
                           `💙 *Descargado por Hatsune Miku Bot*`;
 
             await conn.sendMessage(m.chat, {
-                document: { url: videoUrl },
+                video: { url: videoUrl },
                 mimetype: 'video/mp4',
                 fileName: 'tiktok.mp4',
                 caption: caption
