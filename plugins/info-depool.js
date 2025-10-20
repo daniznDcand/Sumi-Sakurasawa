@@ -6,19 +6,16 @@ let handler = async (m, { conn }) => {
 💙 Desarrollador principal de *Hatsune Miku Bot*
 
 ¡Gracias por usar el bot! Si quieres apoyar el proyecto, puedes hacerlo con un donativo. Tu ayuda permite que el bot siga activo y mejorando.
-`;
 
-  // Enviar presentación primero
-  await conn.reply(m.chat, descripcion, m);
+🌱 Elige una opción:`;
 
-  // Luego enviar mensaje con botones
   const buttons = [
     { buttonId: '.apoyardepool', buttonText: { displayText: '💙 Apoyar' }, type: 1 },
     { buttonId: '.sabermasdepool', buttonText: { displayText: 'ℹ️ Saber más' }, type: 1 }
   ];
 
   await conn.sendMessage(m.chat, {
-    text: '🌱 Elige una opción:',
+    text: descripcion,
     footer: 'Gracias por tu apoyo',
     buttons: buttons,
     headerType: 4
