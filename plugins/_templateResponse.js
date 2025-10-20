@@ -29,7 +29,7 @@ id = JSON.parse(m.message.interactiveResponseMessage.nativeFlowResponseMessage.p
 }
 
 
-if (id && (id.startsWith('menu') || id === 'menu')) {
+if (id && (id.startsWith('menu') || id === 'menu' || id === 'apoyar' || id === 'saber')) {
 return
 }
 
