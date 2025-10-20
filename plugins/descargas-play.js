@@ -1,139 +1,128 @@
 import fetch from "node-fetch";
 import yts from 'yt-search';
+import axios from "axios";
+import fs from 'fs';
+import path from 'path';
+import stream from 'stream';
+import { promisify } from 'util';
 
-async function fetchFromApis(apis) {
-  for (const { api, endpoint, extractor } of apis) {
-    try {
-      console.log(`Intentando con API: ${api}`);
-      const response = await fetch(endpoint, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+const pipeline = promisify(stream.pipeline);
+
+
+function extractYouTubeId(url) {
+  const patterns = [
+    /youtu\.be\/([a-zA-Z0-9\-\_]{11})/,
+    /youtube\.com\/watch\?v=([a-zA-Z0-9\-\_]{11})/,
+    /youtube\.com\/shorts\/([a-zA-Z0-9\-\_]{11})/
+  ];
+  
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+
+async function mnuuConverter(url, format = 'mp3') {
+  try {
+    const videoId = extractYouTubeId(url);
+    if (!videoId) throw new Error('URL de YouTube inválida');
+    
+    console.log(`🔍 Intentando mnuu converter para ${format}...`);
+    
+    
+    const timestamp = Math.floor(Date.now() / 1000);
+    
+    
+    const baseUrls = [
+      'https://www1.mnuu.nu',
+      'https://www2.mnuu.nu', 
+      'https://www3.mnuu.nu'
+    ];
+    
+    for (const baseUrl of baseUrls) {
+      try {
+        
+        const initUrl = `${baseUrl}/api/v1/init?v=${videoId}&f=${format}&t=${timestamp}`;
+        const initResponse = await fetch(initUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Referer': 'https://mnuu.nu/'
+          }
+        });
+        
+        if (!initResponse.ok) continue;
+        
+        const initData = await initResponse.json();
+        if (initData.error) continue;
+        
+        
+        const convertResponse = await fetch(initData.convertURL, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Referer': 'https://mnuu.nu/'
+          }
+        });
+        
+        if (!convertResponse.ok) continue;
+        
+        const convertData = await convertResponse.json();
+        if (convertData.error) continue;
+        
+        
+        let attempts = 0;
+        const maxAttempts = 20;
+        
+        while (attempts < maxAttempts) {
+          try {
+            const progressResponse = await fetch(convertData.progressURL, {
+              headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Referer': 'https://mnuu.nu/'
+              }
+            });
+            
+            if (progressResponse.ok) {
+              const progressData = await progressResponse.json();
+              
+              if (progressData.progress >= 3) {
+                console.log(`✅ mnuu converter exitosa`);
+                return {
+                  url: convertData.downloadURL,
+                  title: convertData.title || 'Video sin título',
+                  api: 'mnuu'
+                };
+              }
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            attempts++;
+          } catch (e) {
+            attempts++;
+          }
         }
-      });
-      
-      if (!response.ok) continue;
-      
-      const data = await response.json();
-      const result = extractor(data);
-      
-      if (result) {
-        console.log(`✅ Descarga exitosa con API: ${api}`);
-        return result;
+        
+      } catch (error) {
+        console.log(`❌ Error con ${baseUrl}: ${error.message}`);
+        continue;
       }
-    } catch (error) {
-      console.log(`❌ Fallo con API ${api}:`, error.message);
-      continue;
     }
-  }
-  throw new Error('Todas las APIs fallaron');
-}
-
-async function getAud(url) {
-  const audioApis = [
-    {
-      name: 'Neoxr',
-      url: () => fetch(`https://api.neoxr.eu/api/youtube?url=${url}&type=audio&quality=128kbps&apikey=GataDios`).then((res) => res.json()),
-      extract: (data) => data?.data?.url
-    },
-    {
-      name: 'Stellar',
-      url: () => fetch(`${global.APIs?.stellar?.url || 'https://api.stellar.my.id'}/dow/ytmp3?url=${url}`).then((res) => res.json()),
-      extract: (data) => data?.data?.dl
-    },
-    {
-      name: 'Siputzx',
-      url: () => fetch(`https://api.siputzx.my.id/api/d/ytmp4?url=${url}`).then((res) => res.json()),
-      extract: (data) => data?.dl
-    },
-    {
-      name: 'Zenkey',
-      url: () => fetch(`https://api.zenkey.my.id/api/download/ytmp3?apikey=zenkey&url=${url}`).then((res) => res.json()),
-      extract: (data) => data?.result?.download?.url
-    }
-  ];
-  
-  for (const api of audioApis) {
-    try {
-      console.log(`🎵 Probando ${api.name} para audio...`);
-      const response = await api.url();
-      const downloadUrl = api.extract(response);
-      if (downloadUrl && downloadUrl.startsWith('http')) {
-        console.log(`✅ Audio obtenido con ${api.name}`);
-        return downloadUrl;
-      }
-    } catch (error) {
-      console.log(`❌ ${api.name} falló:`, error.message);
-      continue;
-    }
-  }
-  throw new Error('Todas las APIs de audio fallaron');
-}
-
-async function ytdlAudio(url) {
-  try {
-    const altUrl = await getAud(url);
-    return { url: altUrl, title: 'Audio sin título' };
+    
+    throw new Error('Todos los servidores mnuu fallaron');
+    
   } catch (error) {
-    console.error('Error al descargar audio:', error.message);
-    throw new Error('No se pudo descargar el audio');
-  }
-}
-
-async function getVid(url) {
-  const videoApis = [
-    {
-      name: 'Siputzx',
-      url: () => fetch(`https://api.siputzx.my.id/api/d/ytmp4?url=${url}`).then((res) => res.json()),
-      extract: (data) => data?.dl
-    },
-    {
-      name: 'Neoxr',
-      url: () => fetch(`https://api.neoxr.eu/api/youtube?url=${url}&type=video&quality=720p&apikey=GataDios`).then((res) => res.json()),
-      extract: (data) => data?.data?.url
-    },
-    {
-      name: 'Stellar',
-      url: () => fetch(`${global.APIs?.stellar?.url || 'https://api.stellar.my.id'}/dow/ytmp4?url=${url}`).then((res) => res.json()),
-      extract: (data) => data?.data?.dl
-    },
-    {
-      name: 'Exonity',
-      url: () => fetch(`https://exonity.tech/api/ytdlp2-faster?apikey=adminsepuh&url=${url}`).then((res) => res.json()),
-      extract: (data) => data?.result?.media?.mp4
-    }
-  ];
-  
-  for (const api of videoApis) {
-    try {
-      console.log(`🎬 Probando ${api.name} para video...`);
-      const response = await api.url();
-      const downloadUrl = api.extract(response);
-      if (downloadUrl && downloadUrl.startsWith('http')) {
-        console.log(`✅ Video obtenido con ${api.name}`);
-        return downloadUrl;
-      }
-    } catch (error) {
-      console.log(`❌ ${api.name} falló:`, error.message);
-      continue;
-    }
-  }
-  throw new Error('Todas las APIs de video fallaron');
-}
-
-async function ytdl(url) {
-  try {
-    const altUrl = await getVid(url);
-    return { url: altUrl, title: 'Video sin título' };
-  } catch (error) {
-    console.error('Error al descargar video:', error.message);
-    throw new Error('No se pudo descargar el video');
+    console.log(`❌ mnuu converter falló: ${error.message}`);
+    return null;
   }
 }
 
 const handler = async (m, { conn, text, usedPrefix, command }) => {
+  let user = global.db.data.users[m.sender];
+
   try {
     if (!text.trim()) {
-      return conn.reply(m.chat, `💙 Ingresa el nombre de la música a descargar.\n\nEjemplo: ${usedPrefix}${command} Let you Down Cyberpunk`, m);
+      return conn.reply(m.chat, `💙 Ingresa el nombre de la música a descargar.\n\nEjemplo: ${usedPrefix}${command} Let you Down Cyberpunk`, m, rcanal);
     }
 
     const search = await yts(text);
@@ -163,6 +152,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     const vistas = formatViews(views);
     const canal = author.name || 'Desconocido';
     
+    
     const buttons = [
       ['🎵 Audio', 'ytdl_audio_mp3'],
       ['🎬 Video', 'ytdl_video_mp4'],
@@ -189,22 +179,38 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 
     try {
       const thumb = thumbnail ? (await conn.getFile(thumbnail))?.data : null;
+
+      
       await conn.sendNCarousel(m.chat, infoText, footer, thumb, buttons, null, null, null, m);
+      
+      if (!global.db.data.users[m.sender]) {
+        global.db.data.users[m.sender] = {};
+      }
+      
+      global.db.data.users[m.sender].lastYTSearch = {
+        url,
+        title,
+        messageId: m.key.id,  
+        timestamp: Date.now() 
+      };
+      
     } catch (thumbError) {
+     
       await conn.sendNCarousel(m.chat, infoText, footer, null, buttons, null, null, null, m);
+      
+      if (!global.db.data.users[m.sender]) {
+        global.db.data.users[m.sender] = {};
+      }
+      
+      global.db.data.users[m.sender].lastYTSearch = {
+        url,
+        title,
+        messageId: m.key.id,  
+        timestamp: Date.now() 
+      };
+      
       console.error("Error al obtener la miniatura:", thumbError);
     }
-
-    if (!global.db.data.users[m.sender]) {
-      global.db.data.users[m.sender] = {};
-    }
-    
-    global.db.data.users[m.sender].lastYTSearch = {
-      url,
-      title,
-      messageId: m.key.id,  
-      timestamp: Date.now() 
-    };
 
   } catch (error) {
     console.error("Error completo:", error);
@@ -212,7 +218,79 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
   }
 };
 
+
+function isValidUrl(string) {
+  try {
+    new URL(string);
+    return string.startsWith('http://') || string.startsWith('https://');
+  } catch (_) {
+    return false;
+  }
+}
+
+
+
+
+async function validateDownloadUrl(url) {
+  if (!url || typeof url !== 'string' || url.trim() === '') {
+    console.log('❌ URL inválida o vacía');
+    return false;
+  }
+
+  try {
+    
+    new URL(url);
+    
+    console.log(`🔍 Validating download URL: ${url.substring(0, 100)}...`);
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000); 
+    
+    const response = await fetch(url, {
+      method: 'HEAD',
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      }
+    });
+    
+    clearTimeout(timeoutId);
+    
+    const isValid = response.ok && 
+                   response.status >= 200 && 
+                   response.status < 400 &&
+                   response.status !== 404 &&
+                   response.status !== 403;
+    
+    const contentType = response.headers.get('content-type') || '';
+    const contentLength = response.headers.get('content-length');
+    
+    
+    const isMediaFile = contentType.includes('video') || 
+                       contentType.includes('audio') || 
+                       contentType.includes('application/octet-stream') ||
+                       contentType.includes('binary') ||
+                       url.includes('.mp4') || 
+                       url.includes('.mp3') || 
+                       url.includes('.m4a');
+    
+    if (isValid && isMediaFile) {
+      console.log(`✅ URL validation status: ${response.status} - Tipo: ${contentType} - Tamaño: ${contentLength || 'desconocido'}`);
+      return true;
+    } else {
+      console.log(`❌ URL no válida - Status: ${response.status}, Tipo: ${contentType}`);
+      return false;
+    }
+    
+  } catch (error) {
+    console.error(`❌ URL validation failed: ${error.message}`);
+    return false;
+  }
+}
+
+
 async function processDownload(conn, m, url, title, option) {
+  
   const downloadTypes = {
     1: '🎵 audio MP3',
     2: '🎬 video MP4', 
@@ -222,7 +300,8 @@ async function processDownload(conn, m, url, title, option) {
   
   const downloadType = downloadTypes[option] || 'archivo';
   
-  await conn.reply(m.chat, `💙 Obteniendo ${downloadType}... ⚡`, m);
+ 
+  const processingMsg = await conn.reply(m.chat, `💙 Obteniendo ${downloadType}... ⚡`, m);
   
   try {
     let downloadUrl;
@@ -230,58 +309,62 @@ async function processDownload(conn, m, url, title, option) {
     let mimeType;
 
     if (option === 1 || option === 3) {
-      const audioResult = await ytdlAudio(url);
-      if (!audioResult || !audioResult.url) {
+      
+      downloadUrl = await ytdlAudio(url);
+      fileName = `${title.replace(/[^\w\s]/gi, '')}.mp3`;
+      mimeType = 'audio/mpeg';
+      
+      if (!downloadUrl) {
         throw new Error(`❌ No se pudo obtener el enlace de audio. Intenta de nuevo.`);
       }
-      downloadUrl = audioResult.url;
-      title = audioResult.title || title;
-      fileName = `${title.replace(/[^\w\s]/gi, '').substring(0, 50)}.mp3`;
-      mimeType = 'audio/mpeg';
 
+      
       if (option === 1) {
-        await conn.sendMessage(m.chat, {
-          audio: { url: downloadUrl },
-          fileName: fileName,
-          mimetype: mimeType
+        await conn.sendMessage(m.chat, { 
+          audio: downloadUrl, 
+          fileName: fileName, 
+          mimetype: mimeType 
         }, { quoted: m });
       } else {
-        await conn.sendMessage(m.chat, {
-          document: { url: downloadUrl },
+        await conn.sendMessage(m.chat, { 
+          document: downloadUrl, 
           mimetype: mimeType,
           fileName: fileName
         }, { quoted: m });
       }
     } else {
+      
       const videoResult = await ytdl(url);
-      if (!videoResult || !videoResult.url) {
+      fileName = `${title.replace(/[\w\s]/gi, '')}.mp4`;
+      mimeType = 'video/mp4';
+      if (!videoResult) {
         throw new Error(`❌ No se pudo obtener el enlace de video. Intenta de nuevo.`);
       }
-      downloadUrl = videoResult.url;
-      title = videoResult.title || title;
-      fileName = `${title.replace(/[^\w\s]/gi, '').substring(0, 50)}.mp4`;
-      mimeType = 'video/mp4';
-
+      downloadUrl = videoResult;
+      if (videoResult.isAudioAsVideo) {
+        mimeType = 'video/mp4';
+      }
       if (option === 2) {
-        await conn.sendMessage(m.chat, {
-          video: { url: downloadUrl },
-          fileName: fileName,
-          mimetype: mimeType,
-          caption: `🎬 ${title}`
+        await conn.sendMessage(m.chat, { 
+          video: downloadUrl, 
+          fileName: fileName, 
+          mimetype: mimeType, 
+          caption: title
         }, { quoted: m });
       } else {
-        await conn.sendMessage(m.chat, {
-          document: { url: downloadUrl },
+        await conn.sendMessage(m.chat, { 
+          document: downloadUrl, 
           mimetype: mimeType,
           fileName: fileName,
-          caption: `🎬 ${title}`
+          caption: title
         }, { quoted: m });
       }
     }
     
+   
     const user = global.db.data.users[m.sender];
-    if (user && !user.monedaDeducted) {
-      user.moneda = (user.moneda || 0) - 2;
+    if (!user.monedaDeducted) {
+      user.moneda -= 2;
       user.monedaDeducted = true;
       conn.reply(m.chat, `💙 Has utilizado 2 *Cebollines 🌱*`, m);
     }
@@ -294,8 +377,62 @@ async function processDownload(conn, m, url, title, option) {
   }
 }
 
+
+async function apiAdonix(url) {
+  const apiURL = `https://apiadonix.kozow.com/download/ytmp4?apikey=${global.apikey}&url=${encodeURIComponent(url)}`
+  const res = await fetch(apiURL)
+  const data = await res.json()
+  if (!data.status || !data.data?.url) throw new Error('API Adonix no devolvió datos válidos')
+  return { url: data.data.url, title: data.data.title || 'Video sin título XD', fuente: 'Adonix' }
+}
+
+
+async function apiJoseDev(url) {
+  const apiURL = `https://api.sylphy.xyz/download/ytmp4?url=${encodeURIComponent(url)}&apikey=sylphy-fbb9`
+  const res = await fetch(apiURL)
+  const data = await res.json()
+  if (!data.status || !data.res?.url) throw new Error('API JoseDev no devolvió datos válidos')
+  return { url: data.res.url, title: data.res.title || 'Video sin título XD', fuente: 'JoseDev' }
+}
+
+
+async function apiAdonixAudio(url) {
+  const apiURL = `https://apiadonix.kozow.com/download/ytmp3?apikey=${global.apikey}&url=${encodeURIComponent(url)}`
+  const res = await fetch(apiURL)
+  const data = await res.json()
+  if (!data.status || !data.data?.url) throw new Error('API Adonix (audio) no devolvió datos válidos')
+  return { url: data.data.url, title: data.data.title || 'Audio sin título XD', fuente: 'Adonix' }
+}
+
+
+async function apiJoseDevAudio(url) {
+  const apiURL = `https://api.sylphy.xyz/download/ytmp3?url=${encodeURIComponent(url)}&apikey=sylphy-fbb9`
+  const res = await fetch(apiURL)
+  const data = await res.json()
+  if (!data.status || !data.res?.url) throw new Error('API JoseDev (audio) no devolvió datos válidos')
+  return { url: data.res.url, title: data.res.title || 'Audio sin título XD', fuente: 'JoseDev' }
+}
+
+
+async function ytdl(url) {
+  try {
+    return await apiAdonix(url)
+  } catch (e1) {
+    return await apiJoseDev(url)
+  }
+}
+
+
+async function ytdlAudio(url) {
+  try {
+    return await apiAdonixAudio(url)
+  } catch (e1) {
+    return await apiJoseDevAudio(url)
+  }
+}
+
 handler.before = async (m, { conn }) => {
-  if (!m.text) return false;
+  
   
   const buttonPatterns = [
     /^ytdl_(audio|video)_(mp3|mp4|doc)$/,
@@ -306,10 +443,12 @@ handler.before = async (m, { conn }) => {
   ];
   
   let isButtonResponse = false;
+  let matchedPattern = null;
   
   for (const pattern of buttonPatterns) {
     if (pattern.test(m.text)) {
       isButtonResponse = true;
+      matchedPattern = pattern;
       break;
     }
   }
@@ -321,8 +460,8 @@ handler.before = async (m, { conn }) => {
                             m.text.includes('video_doc');
   
   const buttonTextPatterns = [
-    /🎵.*Audio/i,
-    /🎬.*Video/i,
+    /🎵.*MP3.*Audio/i,
+    /🎬.*MP4.*Video/i,
     /📁.*MP3.*Documento/i,
     /📁.*MP4.*Documento/i
   ];
@@ -331,6 +470,7 @@ handler.before = async (m, { conn }) => {
   for (const pattern of buttonTextPatterns) {
     if (pattern.test(m.text)) {
       isButtonTextResponse = true;
+      matchedPattern = `text: ${pattern}`;
       break;
     }
   }
@@ -344,15 +484,18 @@ handler.before = async (m, { conn }) => {
     return false;
   }
   
+ 
   console.log(`🎵 Procesando: ${user.lastYTSearch.title}`);
   
   const currentTime = Date.now();
   const searchTime = user.lastYTSearch.timestamp || 0;
   
+  
   if (currentTime - searchTime > 10 * 60 * 1000) {
     await conn.reply(m.chat, '⏰ La búsqueda ha expirado. Por favor realiza una nueva búsqueda.', m);
     return false; 
   }
+  
   
   let option = null;
   
@@ -364,9 +507,11 @@ handler.before = async (m, { conn }) => {
     option = 3; 
   } else if (m.text.includes('video_doc') || m.text === 'ytdl_video_doc') {
     option = 4; 
-  } else if (/🎵.*Audio/i.test(m.text)) {
+  }
+  
+  else if (/🎵.*MP3.*Audio/i.test(m.text)) {
     option = 1; 
-  } else if (/🎬.*Video/i.test(m.text)) {
+  } else if (/🎬.*MP4.*Video/i.test(m.text)) {
     option = 2; 
   } else if (/📁.*MP3.*Documento/i.test(m.text)) {
     option = 3; 
@@ -378,12 +523,13 @@ handler.before = async (m, { conn }) => {
     return false;
   }
 
+  
   if (user.processingDownload) {
     return false;
   }
   
   user.processingDownload = true;
-  user.monedaDeducted = false;
+  user.cebollinesDeducted = false;
 
   try {
     await processDownload(
@@ -393,6 +539,7 @@ handler.before = async (m, { conn }) => {
       user.lastYTSearch.title, 
       option
     );
+    
     
     user.lastYTSearch = null;
     user.processingDownload = false;
