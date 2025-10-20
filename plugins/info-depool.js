@@ -2,7 +2,7 @@ let handler = async (m, { conn }) => {
   const nombre = 'Brauliovh3';
   const alias = 'DEPOOL';
   const descripcion = `
-👤 *Creador:* ${nombre} (a.k.a. ${alias})
+👤 *Creador:* ${nombre} (BVH3 ${alias})
 💙 Desarrollador principal de *Hatsune Miku Bot*
 
 ¡Gracias por usar el bot! Si quieres apoyar el proyecto, puedes hacerlo con un donativo. Tu ayuda permite que el bot siga activo y mejorando.
