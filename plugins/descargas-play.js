@@ -309,16 +309,17 @@ async function processDownload(conn, m, url, title, option) {
     let mimeType;
 
     if (option === 1 || option === 3) {
-      
-      downloadUrl = await ytdlAudio(url);
+
+      const audioResult = await ytdlAudio(url);
       fileName = `${title.replace(/[^\w\s]/gi, '')}.mp3`;
       mimeType = 'audio/mpeg';
-      
-      if (!downloadUrl) {
+
+      if (!audioResult || !audioResult.url) {
         throw new Error(`❌ No se pudo obtener el enlace de audio. Intenta de nuevo.`);
       }
 
-      
+      downloadUrl = audioResult.url;
+
       if (option === 1) {
         await conn.sendMessage(m.chat, {
           audio: { url: downloadUrl },
@@ -327,33 +328,33 @@ async function processDownload(conn, m, url, title, option) {
         }, { quoted: m });
       } else {
         await conn.sendMessage(m.chat, {
-          document: downloadUrl,
+          document: { url: downloadUrl },
           mimetype: mimeType,
           fileName: fileName
         }, { quoted: m });
       }
     } else {
-      
+
       const videoResult = await ytdl(url);
-      fileName = `${title.replace(/[\w\s]/gi, '')}.mp4`;
+      fileName = `${title.replace(/[^\w\s]/gi, '')}.mp4`;
       mimeType = 'video/mp4';
-      if (!videoResult) {
+      if (!videoResult || !videoResult.url) {
         throw new Error(`❌ No se pudo obtener el enlace de video. Intenta de nuevo.`);
       }
-      downloadUrl = videoResult;
+      downloadUrl = videoResult.url;
       if (videoResult.isAudioAsVideo) {
         mimeType = 'video/mp4';
       }
       if (option === 2) {
-        await conn.sendMessage(m.chat, { 
-          document: downloadUrl, 
+        await conn.sendMessage(m.chat, {
+          video: { url: downloadUrl },
           mimetype: mimeType,
           fileName: fileName,
           caption: title
         }, { quoted: m });
       } else {
-        await conn.sendMessage(m.chat, { 
-          document: downloadUrl, 
+        await conn.sendMessage(m.chat, {
+          document: { url: downloadUrl },
           mimetype: mimeType,
           fileName: fileName,
           caption: title
