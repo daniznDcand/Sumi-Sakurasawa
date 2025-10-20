@@ -8,16 +8,16 @@ let handler = async (m, { conn }) => {
 ¡Gracias por usar el bot! Si quieres apoyar el proyecto, puedes hacerlo con un donativo. Tu ayuda permite que el bot siga activo y mejorando.
 `;
 
-  const templateButtons = [
-    { index: 1, quickReplyButton: { displayText: '💙 Apoyar', id: '.apoyardepool' } },
-    { index: 2, quickReplyButton: { displayText: 'ℹ️ Saber más', id: '.sabermasdepool' } }
+  const buttons = [
+    { buttonId: '.apoyardepool', buttonText: { displayText: '💙 Apoyar' }, type: 1 },
+    { buttonId: '.sabermasdepool', buttonText: { displayText: 'ℹ️ Saber más' }, type: 1 }
   ];
 
   await conn.sendMessage(m.chat, {
     text: descripcion,
     footer: '🌱 Gracias por tu apoyo',
-    templateButtons,
-    headerType: 1
+    buttons: buttons,
+    headerType: 4
   }, { quoted: m });
 };
 handler.command = ['depool'];
