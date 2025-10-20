@@ -46,23 +46,15 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         };
         
         
-        try {
-            await conn.sendMessage(m.chat, audioMessage, { quoted: m });
-            await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
-        } catch (audioError) {
-            console.log('Error enviando audio, intentando como documento:', audioError);
-            
-            
-            const docMessage = {
-                document: { url: audioUrl },
-                mimetype: 'audio/mpeg',
-                fileName: `${(title || 'tiktok_audio').replace(/[^\w\s]/gi, '').substring(0, 50)}.mp3`,
-                caption: `🎵 *Audio de TikTok*\n\n📝 *Título:* ${title || 'Audio TikTok'}\n👤 *Autor:* ${author || 'Desconocido'}\n\n💙 *Descargado por Hatsune Miku Bot*`
-            };
-            
-            await conn.sendMessage(m.chat, docMessage, { quoted: m });
-            await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
-        }
+        const docMessage = {
+            document: { url: audioUrl },
+            mimetype: 'audio/mpeg',
+            fileName: `${(title || 'tiktok_audio').replace(/[^\w\s]/gi, '').substring(0, 50)}.mp3`,
+            caption: `🎵 *Audio de TikTok*\n\n📝 *Título:* ${title || 'Audio TikTok'}\n👤 *Autor:* ${author || 'Desconocido'}\n\n💙 *Descargado por Hatsune Miku Bot*`
+        };
+
+        await conn.sendMessage(m.chat, docMessage, { quoted: m });
+        await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
         
     } catch (error) {
         console.error('Error en TikTok MP3:', error);

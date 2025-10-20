@@ -39,13 +39,11 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
         
         try {
-            const audioBuffer = await getBuffer(dlUrl)
-            if (audioBuffer && audioBuffer.byteLength && audioBuffer.length) {
-                await conn.sendMessage(m.chat, { audio: audioBuffer, fileName: `${(data.data.title || 'song').replace(/[/\\?%*:|"<>]/g, '')}.mp3`, mimetype: 'audio/mpeg' }, { quoted: m })
-            } else {
-                
-                await conn.sendMessage(m.chat, { text: `⚠️ No se pudo descargar el archivo directamente. Enlace de descarga: ${dlUrl}` }, { quoted: m })
-            }
+            await conn.sendMessage(m.chat, {
+                document: { url: dlUrl },
+                mimetype: 'audio/mpeg',
+                fileName: `${(data.data.title || 'song').replace(/[/\\?%*:|"<>]/g, '')}.mp3`
+            }, { quoted: m })
         } catch (errAudio) {
             console.error('Error descargando o enviando audio:', errAudio)
             try {

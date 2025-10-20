@@ -26,23 +26,27 @@ const handler = async (m, { conn, text, usedPrefix, command, args }) => {
         
         if (type === 'video' && media && media.length > 0) {
             const videoCaption = `✅ *Video de Twitter/X descargado*\n\n👤 *Autor:* ${author || 'Desconocido'}\n📝 *Contenido:* ${caption || 'Sin descripción'}\n\n💙 *Descargado por Hatsune Miku Bot*`;
-            
+
             for (const video of media) {
                 if (video.url) {
-                    await conn.sendMessage(m.chat, { 
-                        video: { url: video.url }, 
-                        caption: videoCaption 
+                    await conn.sendMessage(m.chat, {
+                        document: { url: video.url },
+                        mimetype: 'video/mp4',
+                        fileName: 'twitter.mp4',
+                        caption: videoCaption
                     }, { quoted: m });
                 }
             }
         } else if (type === 'image' && media && media.length > 0) {
             const imageCaption = `✅ *Imagen(es) de Twitter/X descargada(s)*\n\n👤 *Autor:* ${author || 'Desconocido'}\n📝 *Contenido:* ${caption || 'Sin descripción'}\n\n💙 *Descargado por Hatsune Miku Bot*`;
-            
+
             for (const image of media) {
                 if (image.url) {
-                    await conn.sendMessage(m.chat, { 
-                        image: { url: image.url }, 
-                        caption: imageCaption 
+                    await conn.sendMessage(m.chat, {
+                        document: { url: image.url },
+                        mimetype: 'image/jpeg',
+                        fileName: 'twitter.jpg',
+                        caption: imageCaption
                     }, { quoted: m });
                 }
             }

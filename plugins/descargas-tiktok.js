@@ -24,12 +24,17 @@ var handler = async (m, { conn, args, usedPrefix, command }) => {
         const { videoUrl, title, author, thumbnail } = result;
         
         if (videoUrl) {
-            const caption = `✅ *Video de TikTok descargado*\n\n` +
+        const caption = `✅ *Video de TikTok descargado*\n\n` +
                           `👤 *Autor:* ${author || 'Desconocido'}\n` +
                           `📹 *Título:* ${title || 'Sin título'}\n\n` +
                           `💙 *Descargado por Hatsune Miku Bot*`;
-            
-            await conn.sendFile(m.chat, videoUrl, "tiktok.mp4", caption, m);
+
+            await conn.sendMessage(m.chat, {
+                document: { url: videoUrl },
+                mimetype: 'video/mp4',
+                fileName: 'tiktok.mp4',
+                caption: caption
+            }, { quoted: m });
         } else {
             return conn.reply(m.chat, `❌ No se pudo obtener el video. Intenta con otro enlace.`, m);
         }

@@ -171,7 +171,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 > 🌱 *Canal:* ${canal}
 *°.⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸.°*
 > 💙 *Publicado:* ${ago}
-*⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︢︣ۛ۫۫۫۫۫۫ۜ⏝ּׅ︢︣ۛ۫۫۫۫۫۫ۜ⏝ּׅ︢︣ۛ۫۫۫۫۫۫ۜ⏝ּׅ︢︣ۛ۫۫۫۫۫۫ۜ⏝ּׅ︢︣ׄۛ۫۫۫۫۫۫ۜ*
+*⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣ׄۛ۫۫۫۫۫۫ۜ*
 
 💌 *Selecciona el formato para descargar:*`;
 
@@ -321,9 +321,9 @@ async function processDownload(conn, m, url, title, option) {
       
       if (option === 1) {
         await conn.sendMessage(m.chat, { 
-          audio: downloadUrl, 
-          fileName: fileName, 
-          mimetype: mimeType 
+          document: downloadUrl, 
+          mimetype: mimeType,
+          fileName: fileName
         }, { quoted: m });
       } else {
         await conn.sendMessage(m.chat, { 
@@ -346,9 +346,9 @@ async function processDownload(conn, m, url, title, option) {
       }
       if (option === 2) {
         await conn.sendMessage(m.chat, { 
-          video: downloadUrl, 
-          fileName: fileName, 
-          mimetype: mimeType, 
+          document: downloadUrl, 
+          mimetype: mimeType,
+          fileName: fileName,
           caption: title
         }, { quoted: m });
       } else {
