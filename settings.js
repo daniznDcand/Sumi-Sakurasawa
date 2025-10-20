@@ -107,26 +107,17 @@ global.axios = axios
 global.moment = moment
 
 
-global.APIs = {
-  zenzxz: {
-    url: 'https://api.zenzxz.my.id'
-  },
-  yupra: {
-    url: 'https://api.yupra.me'
-  },
-  vreden: {
-    url: 'https://api.vreden.my.id'
-  },
-  stellar: {
-    url: 'https://api.stellar.my.id'
-  }
+
+
+
+global.opts = {
+  ...global.opts,
+  autoread: true,  
+  queque: false 
 }
 
 
-global.apikey = 'tu_api_key_adonix'
-global.APIKeys = {
-  'https://mayapi.ooguy.com': 'tu_api_key_mayapi'
-}   
+ 
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 

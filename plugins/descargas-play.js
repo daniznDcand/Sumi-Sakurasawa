@@ -320,14 +320,14 @@ async function processDownload(conn, m, url, title, option) {
 
       
       if (option === 1) {
-        await conn.sendMessage(m.chat, { 
-          document: downloadUrl, 
+        await conn.sendMessage(m.chat, {
+          audio: { url: downloadUrl },
           mimetype: mimeType,
           fileName: fileName
         }, { quoted: m });
       } else {
-        await conn.sendMessage(m.chat, { 
-          document: downloadUrl, 
+        await conn.sendMessage(m.chat, {
+          document: downloadUrl,
           mimetype: mimeType,
           fileName: fileName
         }, { quoted: m });

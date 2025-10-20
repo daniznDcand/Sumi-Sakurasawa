@@ -124,7 +124,7 @@ if (typeof m.text !== 'string')
 m.text = ''
 
 if (opts['queque'] && m.text && !(isMods || isPrems)) {
-let queque = this.msgqueque, time = 1000 * 5
+let queque = this.msgqueque, time = 1000 * 1  
 const previousID = queque[queque.length - 1]
 queque.push(m.id || m.key.id)
 setInterval(async function () {
