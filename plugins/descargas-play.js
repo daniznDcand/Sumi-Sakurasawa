@@ -380,11 +380,35 @@ async function processDownload(conn, m, url, title, option) {
 
 
 async function apiAdonix(url) {
-  const apiURL = `https://apiadonix.kozow.com/download/ytmp4?apikey=${global.apikey}&url=${encodeURIComponent(url)}`
-  const res = await fetch(apiURL)
-  const data = await res.json()
-  if (!data.status || !data.data?.url) throw new Error('API Adonix no devolvió datos válidos')
-  return { url: data.data.url, title: data.data.title || 'Video sin título XD', fuente: 'Adonix' }
+  const apiURL = `https://api-adonix.ultraplus.click/download/ytmp4?apikey=${global.apikey}&url=${encodeURIComponent(url)}`
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 seconds timeout
+
+  try {
+    const res = await fetch(apiURL, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+
+    const contentType = res.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error('Respuesta no es JSON válida');
+    }
+
+    const data = await res.json();
+    if (!data.status || !data.data?.url) throw new Error('API Adonix no devolvió datos válidos');
+    return { url: data.data.url, title: data.data.title || 'Video sin título XD', fuente: 'Adonix' };
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
 }
 
 
@@ -397,21 +421,102 @@ async function apiJoseDev(url) {
 }
 
 
+async function apiMayAPI(url, type = 'mp4') {
+  const apiURL = `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=${type}&apikey=${global.APIKeys['https://mayapi.ooguy.com']}`
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000); 
+
+  try {
+    const res = await fetch(apiURL, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+
+    const contentType = res.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error('Respuesta no es JSON válida');
+    }
+
+    const data = await res.json();
+    if (!data.result?.url) throw new Error('API MayAPI no devolvió datos válidos');
+    return { url: data.result.url, title: data.result.title || 'Video sin título XD', fuente: 'MayAPI' };
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
+}
+
+
 async function apiAdonixAudio(url) {
   const apiURL = `https://apiadonix.kozow.com/download/ytmp3?apikey=${global.apikey}&url=${encodeURIComponent(url)}`
-  const res = await fetch(apiURL)
-  const data = await res.json()
-  if (!data.status || !data.data?.url) throw new Error('API Adonix (audio) no devolvió datos válidos')
-  return { url: data.data.url, title: data.data.title || 'Audio sin título XD', fuente: 'Adonix' }
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000); 
+
+  try {
+    const res = await fetch(apiURL, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+
+    const contentType = res.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error('Respuesta no es JSON válida');
+    }
+
+    const data = await res.json();
+    if (!data.status || !data.data?.url) throw new Error('API Adonix (audio) no devolvió datos válidos');
+    return { url: data.data.url, title: data.data.title || 'Audio sin título XD', fuente: 'Adonix' };
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
 }
 
 
 async function apiJoseDevAudio(url) {
   const apiURL = `https://api.sylphy.xyz/download/ytmp3?url=${encodeURIComponent(url)}&apikey=sylphy-fbb9`
-  const res = await fetch(apiURL)
-  const data = await res.json()
-  if (!data.status || !data.res?.url) throw new Error('API JoseDev (audio) no devolvió datos válidos')
-  return { url: data.res.url, title: data.res.title || 'Audio sin título XD', fuente: 'JoseDev' }
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000); 
+
+  try {
+    const res = await fetch(apiURL, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+    clearTimeout(timeoutId);
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    }
+
+    const contentType = res.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error('Respuesta no es JSON válida');
+    }
+
+    const data = await res.json();
+    if (!data.status || !data.res?.url) throw new Error('API JoseDev (audio) no devolvió datos válidos');
+    return { url: data.res.url, title: data.res.title || 'Audio sin título XD', fuente: 'JoseDev' };
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
 }
 
 
@@ -419,7 +524,13 @@ async function ytdl(url) {
   try {
     return await apiAdonix(url)
   } catch (e1) {
-    return await apiJoseDev(url)
+    try {
+      return await apiJoseDev(url)
+    } catch (e2) {
+     
+      console.log('🔄 Intentando fallback con MayAPI...');
+      return await apiMayAPI(url, 'mp4');
+    }
   }
 }
 
@@ -428,7 +539,14 @@ async function ytdlAudio(url) {
   try {
     return await apiAdonixAudio(url)
   } catch (e1) {
-    return await apiJoseDevAudio(url)
+    try {
+      return await apiJoseDevAudio(url)
+    } catch (e2) {
+      
+      console.log('🔄 Intentando fallback con y2mate...');
+      const result = await import('../lib/y2mate.js').then(m => m.yta(url));
+      return { url: result.link, title: result.title || 'Audio sin título', fuente: 'y2mate' };
+    }
   }
 }
 
