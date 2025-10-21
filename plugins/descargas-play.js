@@ -336,7 +336,7 @@ async function processDownload(conn, m, url, title, option) {
       }
     } else {
 
-      const videoResult = await ytdl(url);
+      const videoResult = await downloadVideo(url);
       fileName = `${title.replace(/[^\w\s]/gi, '')}.mp4`;
       mimeType = 'video/mp4';
       if (!videoResult || !videoResult.url) {
@@ -521,14 +521,14 @@ async function apiJoseDevAudio(url) {
 }
 
 
-async function ytdl(url) {
+async function downloadVideo(url) {
   try {
     return await apiAdonix(url)
   } catch (e1) {
     try {
       return await apiJoseDev(url)
     } catch (e2) {
-     
+
       console.log('🔄 Intentando fallback con MayAPI...');
       return await apiMayAPI(url, 'mp4');
     }
