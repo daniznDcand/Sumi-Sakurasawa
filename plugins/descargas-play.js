@@ -5,6 +5,7 @@ import fs from 'fs';
 import path from 'path';
 import stream from 'stream';
 import { promisify } from 'util';
+import ytdl from 'ytdl-core';
 
 const pipeline = promisify(stream.pipeline);
 
@@ -382,7 +383,7 @@ async function processDownload(conn, m, url, title, option) {
 async function apiAdonix(url) {
   const apiURL = `https://api-adonix.ultraplus.click/download/ytmp4?apikey=${global.apikey}&url=${encodeURIComponent(url)}`
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 seconds timeout
+  const timeoutId = setTimeout(() => controller.abort(), 15000); 
 
   try {
     const res = await fetch(apiURL, {
@@ -542,10 +543,27 @@ async function ytdlAudio(url) {
     try {
       return await apiJoseDevAudio(url)
     } catch (e2) {
-      
-      console.log('🔄 Intentando fallback con y2mate...');
-      const result = await import('../lib/y2mate.js').then(m => m.yta(url));
-      return { url: result.link, title: result.title || 'Audio sin título', fuente: 'y2mate' };
+      try {
+        
+        console.log('🔄 Intentando fallback con MayAPI...');
+        return await apiMayAPI(url, 'mp3');
+      } catch (e3) {
+        try {
+          
+          console.log('🔄 Intentando fallback con mnuuConverter...');
+          const result = await mnuuConverter(url, 'mp3');
+          if (result) {
+            return { url: result.url, title: result.title || 'Audio sin título', fuente: 'mnuu' };
+          } else {
+            throw new Error('mnuuConverter falló');
+          }
+        } catch (e4) {
+          // Last fallback to y2mate
+          console.log('🔄 Intentando fallback con y2mate...');
+          const result = await import('../lib/y2mate.js').then(m => m.yta(url));
+          return { url: result.link, title: result.title || 'Audio sin título', fuente: 'y2mate' };
+        }
+      }
     }
   }
 }
