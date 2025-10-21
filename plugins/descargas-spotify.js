@@ -13,14 +13,9 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
         if (!res.ok) throw `Error al obtener datos de la API, código de estado: ${res.status}`
 
-        const data = await res.json().catch((e) => { 
-            console.error('Error parsing JSON:', e)
-            throw "Error al analizar la respuesta JSON."
-        })
-
-        
-        const dlUrl = (data && data.data && (data.data.dl_url || data.data.dlUrl || data.data.url)) || data?.dl_url || data?.dlUrl || null
-        if (!dlUrl) throw "No se pudo obtener el enlace de descarga desde la API."
+        const data = await res.json()
+        const dlUrl = data?.data?.dl_url || data?.data?.dlUrl || data?.data?.url
+        if (!dlUrl) throw "No se pudo obtener el enlace de descarga."
 
         const info = `💙 Descargando *<${data.data.title || 'Desconocido'}>*\n\n> 💫 Artista » *${data.data.artist || 'Desconocido'}*\n> 💌 Album » *${data.data.album || 'Desconocido'}*\n> ⏲ Duracion » *${data.data.duration || 'N/A'}*\n> 🜸 Link » ${song.url}`
 
@@ -38,18 +33,11 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         }}}, { quoted: m })
 
         
-        try {
-            await conn.sendMessage(m.chat, {
-                document: { url: dlUrl },
-                mimetype: 'audio/mpeg',
-                fileName: `${(data.data.title || 'song').replace(/[/\\?%*:|"<>]/g, '')}.mp3`
-            }, { quoted: m })
-        } catch (errAudio) {
-            console.error('Error descargando o enviando audio:', errAudio)
-            try {
-                await conn.sendMessage(m.chat, { text: `⚠️ Error al descargar el audio. Enlace de descarga: ${dlUrl}` }, { quoted: m })
-            } catch (e) {}
-        }
+        await conn.sendMessage(m.chat, {
+            document: { url: dlUrl },
+            mimetype: 'audio/mpeg',
+            fileName: `${(data.data.title || 'song').replace(/[/\\?%*:|"<>]/g, '')}.mp3`
+        }, { quoted: m })
 
     } catch (e1) {
         m.reply(`${e1.message || e1}`)
@@ -102,31 +90,5 @@ function timestamp(time) {
     return minutes + ':' + (seconds < 10 ? '0' : '') + seconds
 }
 
-async function getBuffer(url, options) {
-    try {
-        options = options || {}
-        const res = await axios({
-            method: 'get',
-            url,
-            headers: {
-                DNT: 1,
-                'Upgrade-Insecure-Request': 1
-            },
-            ...options,
-            responseType: 'arraybuffer'
-        })
-        return res.data
-    } catch (err) {
-        return err
-    }
-}
 
-async function getTinyURL(text) {
-    try {
-        let response = await axios.get(`https://tinyurl.com/api-create.php?url=${text}`)
-        return response.data
-    } catch (error) {
-        return text
-    }
-}
 

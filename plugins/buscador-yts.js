@@ -1,26 +1,33 @@
 import yts from 'yt-search'
 
-var handler = async (m, { text, conn, args, command, usedPrefix }) => {
+const handler = async (m, { text, conn }) => {
+  if (!text) return conn.reply(m.chat, `💙 Por favor, ingresa una búsqueda de YouTube.`, m, global.rcanal)
 
-if (!text) return conn.reply(m.chat, `${emoji} Por favor, ingresa una busqueda de Youtube.`, m, global.rcanal)
+  conn.reply(m.chat, '💙 Buscando...', m, global.rcanal)
 
-conn.reply(m.chat, wait, m, global.rcanal)
+  try {
+    const results = await yts(text)
+    const videos = results.all.filter(v => v.type === 'video').slice(0, 5)
+    
+    if (!videos.length) {
+      return conn.reply(m.chat, '💙 No se encontraron resultados.', m, global.rcanal)
+    }
 
-let results = await yts(text)
-let tes = results.all
-let teks = results.all.map(v => {
-switch (v.type) {
-case 'video': return `💙 Resultados de la búsqueda para *<${text}>*
+    const teks = videos.map(v => 
+      `> ☁️ Título » *${v.title}*\n` +
+      `> 🍬 Canal » *${v.author.name}*\n` +
+      `> 🕝 Duración » *${v.timestamp}*\n` +
+      `> 📆 Subido » *${v.ago}*\n` +
+      `> 👀 Vistas » *${v.views}*\n` +
+      `> 🔗 Enlace » ${v.url}`
+    ).join('\n\n••••••••••••••••••••••••••••••••••••\n\n')
 
-> ☁️ Título » *${v.title}*
-> 🍬 Canal » *${v.author.name}*
-> 🕝 Duración » *${v.timestamp}*
-> 📆 Subido » *${v.ago}*
-> 👀 Vistas » *${v.views}*
-> 🔗 Enlace » ${v.url}`}}).filter(v => v).join('\n\n••••••••••••••••••••••••••••••••••••\n\n')
-
-conn.sendFile(m.chat, tes[0].thumbnail, 'yts.jpeg', teks, fkontak, m)
-
+    const finalText = `💙 Resultados de la búsqueda para *<${text}>*\n\n${teks}`
+    
+    conn.sendFile(m.chat, videos[0].thumbnail, 'yts.jpeg', finalText, m)
+  } catch (error) {
+    conn.reply(m.chat, '💙 Error en la búsqueda.', m, global.rcanal)
+  }
 }
 handler.help = ['ytsearch']
 handler.tags = ['buscador']
