@@ -6,6 +6,7 @@ import path from 'path';
 import stream from 'stream';
 import { promisify } from 'util';
 import ytdl from 'ytdl-core';
+import { fetchPlaylistVideos } from '../lib/playlist.js';
 
 const pipeline = promisify(stream.pipeline);
 
@@ -16,7 +17,20 @@ function extractYouTubeId(url) {
     /youtube\.com\/watch\?v=([a-zA-Z0-9\-\_]{11})/,
     /youtube\.com\/shorts\/([a-zA-Z0-9\-\_]{11})/
   ];
-  
+
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+function extractPlaylistId(url) {
+  const patterns = [
+    /youtube\.com\/playlist\?list=([a-zA-Z0-9\-\_]+)/,
+    /youtu\.be\/.*list=([a-zA-Z0-9\-\_]+)/
+  ];
+
   for (const pattern of patterns) {
     const match = url.match(pattern);
     if (match) return match[1];
@@ -29,22 +43,22 @@ async function mnuuConverter(url, format = 'mp3') {
   try {
     const videoId = extractYouTubeId(url);
     if (!videoId) throw new Error('URL de YouTube inválida');
-    
+
     console.log(`🔍 Intentando mnuu converter para ${format}...`);
-    
-    
+
+
     const timestamp = Math.floor(Date.now() / 1000);
-    
-    
+
+
     const baseUrls = [
       'https://www1.mnuu.nu',
-      'https://www2.mnuu.nu', 
+      'https://www2.mnuu.nu',
       'https://www3.mnuu.nu'
     ];
-    
+
     for (const baseUrl of baseUrls) {
       try {
-        
+
         const initUrl = `${baseUrl}/api/v1/init?v=${videoId}&f=${format}&t=${timestamp}`;
         const initResponse = await fetch(initUrl, {
           headers: {
@@ -52,29 +66,29 @@ async function mnuuConverter(url, format = 'mp3') {
             'Referer': 'https://mnuu.nu/'
           }
         });
-        
+
         if (!initResponse.ok) continue;
-        
+
         const initData = await initResponse.json();
         if (initData.error) continue;
-        
-        
+
+
         const convertResponse = await fetch(initData.convertURL, {
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
             'Referer': 'https://mnuu.nu/'
           }
         });
-        
+
         if (!convertResponse.ok) continue;
-        
+
         const convertData = await convertResponse.json();
         if (convertData.error) continue;
-        
-        
+
+
         let attempts = 0;
         const maxAttempts = 20;
-        
+
         while (attempts < maxAttempts) {
           try {
             const progressResponse = await fetch(convertData.progressURL, {
@@ -83,10 +97,10 @@ async function mnuuConverter(url, format = 'mp3') {
                 'Referer': 'https://mnuu.nu/'
               }
             });
-            
+
             if (progressResponse.ok) {
               const progressData = await progressResponse.json();
-              
+
               if (progressData.progress >= 3) {
                 console.log(`✅ mnuu converter exitosa`);
                 return {
@@ -96,25 +110,57 @@ async function mnuuConverter(url, format = 'mp3') {
                 };
               }
             }
-            
+
             await new Promise(resolve => setTimeout(resolve, 3000));
             attempts++;
           } catch (e) {
             attempts++;
           }
         }
-        
+
       } catch (error) {
         console.log(`❌ Error con ${baseUrl}: ${error.message}`);
         continue;
       }
     }
-    
+
     throw new Error('Todos los servidores mnuu fallaron');
-    
+
   } catch (error) {
     console.log(`❌ mnuu converter falló: ${error.message}`);
     return null;
+  }
+}
+
+async function handlePlaylist(conn, m, playlistId, user) {
+  try {
+    const videos = await fetchPlaylistVideos(playlistId);
+    if (!videos || videos.length === 0) {
+      return conn.reply(m.chat, 'No se pudieron obtener videos de la playlist.', m);
+    }
+
+    const maxVideos = 10;
+    const buttons = videos.slice(0, maxVideos).map((video, index) => [`${index + 1}. ${video.title.substring(0, 30)}...`, `playlist_video_${index}`]);
+
+    const infoText = `*Playlist encontrada*\n\nTotal de videos: ${videos.length}\nSelecciona un video para descargar:`;
+
+    const footer = '🌱 Hatsune Miku Bot - Playlist';
+
+    await conn.sendNCarousel(m.chat, infoText, footer, null, buttons, null, null, null, m);
+
+    if (!global.db.data.users[m.sender]) {
+      global.db.data.users[m.sender] = {};
+    }
+
+    global.db.data.users[m.sender].lastPlaylist = {
+      videos,
+      messageId: m.key.id,
+      timestamp: Date.now()
+    };
+
+  } catch (error) {
+    console.error('Error handling playlist:', error);
+    conn.reply(m.chat, 'Error al procesar la playlist.', m);
   }
 }
 
@@ -123,7 +169,13 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 
   try {
     if (!text.trim()) {
-      return conn.reply(m.chat, `💙 Ingresa el nombre de la música a descargar.\n\nEjemplo: ${usedPrefix}${command} Let you Down Cyberpunk`, m, rcanal);
+      return conn.reply(m.chat, `💙 Ingresa el nombre de la música a descargar o URL de playlist.\n\nEjemplo: ${usedPrefix}${command} Let you Down Cyberpunk\nO: ${usedPrefix}${command} https://youtube.com/playlist?list=...`, m, rcanal);
+    }
+
+    
+    const playlistId = extractPlaylistId(text);
+    if (playlistId) {
+      return await handlePlaylist(conn, m, playlistId, user);
     }
 
     const search = await yts(text);
@@ -136,7 +188,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       return m.reply('No se pudo obtener información del video.');
     }
 
-    const { 
+    const {
       title = 'Desconocido', 
       thumbnail = '', 
       timestamp = 'Desconocido', 
@@ -381,53 +433,48 @@ async function processDownload(conn, m, url, title, option) {
 
 
 const audioApis = [
-  { url: () => ogmp3.download(userVideoData.url, selectedQuality, 'audio'), extract: (data) => ({ data: data.result.download, isDirect: false }) },
-  { url: () => ytmp3(userVideoData.url), extract: (data) => ({ data, isDirect: true }) },
   {
-    url: () =>
-      fetch(`https://api.neoxr.eu/api/youtube?url=${userVideoData.url}&type=audio&quality=128kbps&apikey=GataDios`).then((res) => res.json()),
-    extract: (data) => ({ data: data.data.url, isDirect: false })
+    url: (videoUrl) => fetch(`${global.api.url}/dow/ytmp3?url=${encodeURIComponent(videoUrl)}&apikey=${global.api.key}`).then((res) => res.json()),
+    extract: (data) => ({ data: data.dl || data.url, isDirect: false })
   },
   {
-    url: () => fetch(`${global.APIs.stellar.url}/dow/ytmp3?url=${userVideoData.url}&key=GataDios`).then((res) => res.json()),
-    extract: (data) => ({ data: data?.data?.dl, isDirect: false })
+    url: (videoUrl) => fetch(`https://api.neoxr.eu/api/youtube?url=${encodeURIComponent(videoUrl)}&type=audio&quality=128kbps&apikey=GataDios`).then((res) => res.json()),
+    extract: (data) => ({ data: data.data?.url, isDirect: false })
   },
   {
-    url: () => fetch(`https://api.siputzx.my.id/api/d/ytmp4?url=${userVideoData.url}`).then((res) => res.json()),
+    url: (videoUrl) => fetch(`https://api.siputzx.my.id/api/d/ytmp3?url=${encodeURIComponent(videoUrl)}`).then((res) => res.json()),
     extract: (data) => ({ data: data.dl, isDirect: false })
   },
   {
-    url: () => fetch(`${apis}/download/ytmp3?url=${userVideoData.url}`).then((res) => res.json()),
-    extract: (data) => ({ data: data.status ? data.data.download.url : null, isDirect: false })
+    url: (videoUrl) => fetch(`https://api.zenkey.my.id/api/download/ytmp3?apikey=zenkey&url=${encodeURIComponent(videoUrl)}`).then((res) => res.json()),
+    extract: (data) => ({ data: data.result?.download?.url, isDirect: false })
   },
   {
-    url: () => fetch(`https://api.zenkey.my.id/api/download/ytmp3?apikey=zenkey&url=${userVideoData.url}`).then((res) => res.json()),
-    extract: (data) => ({ data: data.result.download.url, isDirect: false })
+    url: (videoUrl) => fetch(`https://exonity.tech/api/ytdlp2-faster?apikey=adminsepuh&url=${encodeURIComponent(videoUrl)}`).then((res) => res.json()),
+    extract: (data) => ({ data: data.result?.media?.mp3, isDirect: false })
   }
 ]
 
 const videoApis = [
-  { url: () => ogmp3.download(userVideoData.url, selectedQuality, 'video'), extract: (data) => ({ data: data.result.download, isDirect: false }) },
-  { url: () => ytmp4(userVideoData.url), extract: (data) => ({ data, isDirect: false }) },
   {
-    url: () => fetch(`https://api.siputzx.my.id/api/d/ytmp4?url=${userVideoData.url}`).then((res) => res.json()),
+    url: (videoUrl) => fetch(`${global.api.url}/dow/ytmp4?url=${encodeURIComponent(videoUrl)}&apikey=${global.api.key}`).then((res) => res.json()),
+    extract: (data) => ({ data: data.dl || data.data?.dl || data.url || data.download || data.link, isDirect: false })
+  },
+  {
+    url: (videoUrl) => fetch(`https://api.siputzx.my.id/api/d/ytmp4?url=${encodeURIComponent(videoUrl)}`).then((res) => res.json()),
     extract: (data) => ({ data: data.dl, isDirect: false })
   },
   {
-    url: () => fetch(`https://api.neoxr.eu/api/youtube?url=${userVideoData.url}&type=video&quality=720p&apikey=GataDios`).then((res) => res.json()),
-    extract: (data) => ({ data: data.data.url, isDirect: false })
+    url: (videoUrl) => fetch(`https://api.neoxr.eu/api/youtube?url=${encodeURIComponent(videoUrl)}&type=video&quality=720p&apikey=GataDios`).then((res) => res.json()),
+    extract: (data) => ({ data: data.data?.url, isDirect: false })
   },
   {
-    url: () => fetch(`${global.APIs.stellar.url}/dow/ytmp4?url=${userVideoData.url}&key=GataDios`).then((res) => res.json()),
-    extract: (data) => ({ data: data?.data?.dl, isDirect: false })
+    url: (videoUrl) => fetch(`https://api.zenkey.my.id/api/download/ytmp4?apikey=zenkey&url=${encodeURIComponent(videoUrl)}`).then((res) => res.json()),
+    extract: (data) => ({ data: data.result?.download?.url, isDirect: false })
   },
   {
-    url: () => fetch(`${apis}/download/ytmp4?url=${userVideoData.url}`).then((res) => res.json()),
-    extract: (data) => ({ data: data.status ? data.data.download.url : null, isDirect: false })
-  },
-  {
-    url: () => fetch(`https://exonity.tech/api/ytdlp2-faster?apikey=adminsepuh&url=${userVideoData.url}`).then((res) => res.json()),
-    extract: (data) => ({ data: data.result.media.mp4, isDirect: false })
+    url: (videoUrl) => fetch(`https://exonity.tech/api/ytdlp2-faster?apikey=adminsepuh&url=${encodeURIComponent(videoUrl)}`).then((res) => res.json()),
+    extract: (data) => ({ data: data.result?.media?.mp4, isDirect: false })
   }
 ]
 
@@ -479,6 +526,44 @@ async function ytdlAudio(url) {
 
 handler.before = async (m, { conn }) => {
   
+  // Manejar botones de playlist
+  if (m.text.startsWith('playlist_video_')) {
+    const user = global.db.data.users[m.sender];
+    if (!user || !user.lastPlaylist) {
+      return false;
+    }
+    
+    const videoIndex = parseInt(m.text.replace('playlist_video_', ''));
+    const video = user.lastPlaylist.videos[videoIndex];
+    
+    if (!video) {
+      return false;
+    }
+    
+    // Configurar el video seleccionado como última búsqueda
+    user.lastYTSearch = {
+      url: video.url,
+      title: video.title,
+      messageId: m.key.id,
+      timestamp: Date.now()
+    };
+    
+    // Mostrar opciones de descarga para el video seleccionado
+    const buttons = [
+      ['🎵 Audio', 'ytdl_audio_mp3'],
+      ['🎬 Video', 'ytdl_video_mp4'],
+      ['📁 MP3 Documento', 'ytdl_audio_doc'],
+      ['📁 MP4 Documento', 'ytdl_video_doc']
+    ];
+    
+    const infoText = `*Video seleccionado de playlist*\n\n> 💙 *Título:* ${video.title}\n> 🌱 *Canal:* ${video.channel}\n> 💙 *Duración:* ${video.duration}\n\n💌 *Selecciona el formato para descargar:*`;
+    
+    const footer = '🌱 Hatsune Miku Bot - Playlist Video';
+    
+    await conn.sendNCarousel(m.chat, infoText, footer, null, buttons, null, null, null, m);
+    
+    return true;
+  }
   
   const buttonPatterns = [
     /^ytdl_(audio|video)_(mp3|mp4|doc)$/,
