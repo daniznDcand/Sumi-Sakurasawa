@@ -380,192 +380,101 @@ async function processDownload(conn, m, url, title, option) {
 }
 
 
-async function apiAdonix(url) {
-  const apiURL = `https://api-adonix.ultraplus.click/download/ytmp4?apikey=${global.apikey}&url=${encodeURIComponent(url)}`
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000); 
-
-  try {
-    const res = await fetch(apiURL, {
-      signal: controller.signal,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      }
-    });
-    clearTimeout(timeoutId);
-
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-    }
-
-    const contentType = res.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      throw new Error('Respuesta no es JSON válida');
-    }
-
-    const data = await res.json();
-    if (!data.status || !data.data?.url) throw new Error('API Adonix no devolvió datos válidos');
-    return { url: data.data.url, title: data.data.title || 'Video sin título XD', fuente: 'Adonix' };
-  } catch (error) {
-    clearTimeout(timeoutId);
-    throw error;
+const audioApis = [
+  { url: () => ogmp3.download(userVideoData.url, selectedQuality, 'audio'), extract: (data) => ({ data: data.result.download, isDirect: false }) },
+  { url: () => ytmp3(userVideoData.url), extract: (data) => ({ data, isDirect: true }) },
+  {
+    url: () =>
+      fetch(`https://api.neoxr.eu/api/youtube?url=${userVideoData.url}&type=audio&quality=128kbps&apikey=GataDios`).then((res) => res.json()),
+    extract: (data) => ({ data: data.data.url, isDirect: false })
+  },
+  {
+    url: () => fetch(`${global.APIs.stellar.url}/dow/ytmp3?url=${userVideoData.url}&key=GataDios`).then((res) => res.json()),
+    extract: (data) => ({ data: data?.data?.dl, isDirect: false })
+  },
+  {
+    url: () => fetch(`https://api.siputzx.my.id/api/d/ytmp4?url=${userVideoData.url}`).then((res) => res.json()),
+    extract: (data) => ({ data: data.dl, isDirect: false })
+  },
+  {
+    url: () => fetch(`${apis}/download/ytmp3?url=${userVideoData.url}`).then((res) => res.json()),
+    extract: (data) => ({ data: data.status ? data.data.download.url : null, isDirect: false })
+  },
+  {
+    url: () => fetch(`https://api.zenkey.my.id/api/download/ytmp3?apikey=zenkey&url=${userVideoData.url}`).then((res) => res.json()),
+    extract: (data) => ({ data: data.result.download.url, isDirect: false })
   }
-}
+]
 
-
-async function apiJoseDev(url) {
-  const apiURL = `https://api.sylphy.xyz/download/ytmp4?url=${encodeURIComponent(url)}&apikey=sylphy-fbb9`
-  const res = await fetch(apiURL)
-  const data = await res.json()
-  if (!data.status || !data.res?.url) throw new Error('API JoseDev no devolvió datos válidos')
-  return { url: data.res.url, title: data.res.title || 'Video sin título XD', fuente: 'JoseDev' }
-}
-
-
-async function apiMayAPI(url, type = 'mp4') {
-  const apiURL = `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=${type}&apikey=${global.APIKeys['https://mayapi.ooguy.com']}`
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000); 
-
-  try {
-    const res = await fetch(apiURL, {
-      signal: controller.signal,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      }
-    });
-    clearTimeout(timeoutId);
-
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-    }
-
-    const contentType = res.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      throw new Error('Respuesta no es JSON válida');
-    }
-
-    const data = await res.json();
-    if (!data.result?.url) throw new Error('API MayAPI no devolvió datos válidos');
-    return { url: data.result.url, title: data.result.title || 'Video sin título XD', fuente: 'MayAPI' };
-  } catch (error) {
-    clearTimeout(timeoutId);
-    throw error;
+const videoApis = [
+  { url: () => ogmp3.download(userVideoData.url, selectedQuality, 'video'), extract: (data) => ({ data: data.result.download, isDirect: false }) },
+  { url: () => ytmp4(userVideoData.url), extract: (data) => ({ data, isDirect: false }) },
+  {
+    url: () => fetch(`https://api.siputzx.my.id/api/d/ytmp4?url=${userVideoData.url}`).then((res) => res.json()),
+    extract: (data) => ({ data: data.dl, isDirect: false })
+  },
+  {
+    url: () => fetch(`https://api.neoxr.eu/api/youtube?url=${userVideoData.url}&type=video&quality=720p&apikey=GataDios`).then((res) => res.json()),
+    extract: (data) => ({ data: data.data.url, isDirect: false })
+  },
+  {
+    url: () => fetch(`${global.APIs.stellar.url}/dow/ytmp4?url=${userVideoData.url}&key=GataDios`).then((res) => res.json()),
+    extract: (data) => ({ data: data?.data?.dl, isDirect: false })
+  },
+  {
+    url: () => fetch(`${apis}/download/ytmp4?url=${userVideoData.url}`).then((res) => res.json()),
+    extract: (data) => ({ data: data.status ? data.data.download.url : null, isDirect: false })
+  },
+  {
+    url: () => fetch(`https://exonity.tech/api/ytdlp2-faster?apikey=adminsepuh&url=${userVideoData.url}`).then((res) => res.json()),
+    extract: (data) => ({ data: data.result.media.mp4, isDirect: false })
   }
-}
-
-
-async function apiAdonixAudio(url) {
-  const apiURL = `https://apiadonix.kozow.com/download/ytmp3?apikey=${global.apikey}&url=${encodeURIComponent(url)}`
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000); 
-
-  try {
-    const res = await fetch(apiURL, {
-      signal: controller.signal,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      }
-    });
-    clearTimeout(timeoutId);
-
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-    }
-
-    const contentType = res.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      throw new Error('Respuesta no es JSON válida');
-    }
-
-    const data = await res.json();
-    if (!data.status || !data.data?.url) throw new Error('API Adonix (audio) no devolvió datos válidos');
-    return { url: data.data.url, title: data.data.title || 'Audio sin título XD', fuente: 'Adonix' };
-  } catch (error) {
-    clearTimeout(timeoutId);
-    throw error;
-  }
-}
-
-
-async function apiJoseDevAudio(url) {
-  const apiURL = `https://api.sylphy.xyz/download/ytmp3?url=${encodeURIComponent(url)}&apikey=sylphy-fbb9`
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000); 
-
-  try {
-    const res = await fetch(apiURL, {
-      signal: controller.signal,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      }
-    });
-    clearTimeout(timeoutId);
-
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-    }
-
-    const contentType = res.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      throw new Error('Respuesta no es JSON válida');
-    }
-
-    const data = await res.json();
-    if (!data.status || !data.res?.url) throw new Error('API JoseDev (audio) no devolvió datos válidos');
-    return { url: data.res.url, title: data.res.title || 'Audio sin título XD', fuente: 'JoseDev' };
-  } catch (error) {
-    clearTimeout(timeoutId);
-    throw error;
-  }
-}
+]
 
 
 async function downloadVideo(url) {
-  try {
-    return await apiAdonix(url)
-  } catch (e1) {
+  for (const api of videoApis) {
     try {
-      return await apiJoseDev(url)
-    } catch (e2) {
-
-      console.log('🔄 Intentando fallback con MayAPI...');
-      return await apiMayAPI(url, 'mp4');
+      const data = await api.url();
+      const result = api.extract(data);
+      if (result.data) {
+        return { url: result.data, title: 'Video sin título', fuente: 'API' };
+      }
+    } catch (error) {
+      console.log(`❌ API falló: ${error.message}`);
+      continue;
     }
   }
+  throw new Error('Todas las APIs de video fallaron');
 }
 
-
 async function ytdlAudio(url) {
-  try {
-    return await apiAdonixAudio(url)
-  } catch (e1) {
+  for (const api of audioApis) {
     try {
-      return await apiJoseDevAudio(url)
-    } catch (e2) {
-      try {
-        
-        console.log('🔄 Intentando fallback con MayAPI...');
-        return await apiMayAPI(url, 'mp3');
-      } catch (e3) {
-        try {
-          
-          console.log('🔄 Intentando fallback con mnuuConverter...');
-          const result = await mnuuConverter(url, 'mp3');
-          if (result) {
-            return { url: result.url, title: result.title || 'Audio sin título', fuente: 'mnuu' };
-          } else {
-            throw new Error('mnuuConverter falló');
-          }
-        } catch (e4) {
-          // Last fallback to y2mate
-          console.log('🔄 Intentando fallback con y2mate...');
-          const result = await import('../lib/y2mate.js').then(m => m.yta(url));
-          return { url: result.link, title: result.title || 'Audio sin título', fuente: 'y2mate' };
-        }
+      const data = await api.url();
+      const result = api.extract(data);
+      if (result.data) {
+        return { url: result.data, title: 'Audio sin título', fuente: 'API' };
       }
+    } catch (error) {
+      console.log(`❌ API falló: ${error.message}`);
+      continue;
     }
   }
+  
+  try {
+    console.log('🔄 Intentando fallback con mnuuConverter...');
+    const result = await mnuuConverter(url, 'mp3');
+    if (result) {
+      return { url: result.url, title: result.title || 'Audio sin título', fuente: 'mnuu' };
+    }
+  } catch (e) {
+    console.log(`❌ mnuuConverter falló: ${e.message}`);
+  }
+  
+  console.log('🔄 Intentando fallback con y2mate...');
+  const result = await import('../lib/y2mate.js').then(m => m.yta(url));
+  return { url: result.link, title: result.title || 'Audio sin título', fuente: 'y2mate' };
 }
 
 handler.before = async (m, { conn }) => {
