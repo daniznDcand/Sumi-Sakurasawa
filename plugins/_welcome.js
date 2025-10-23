@@ -62,15 +62,21 @@ export async function before(m, { conn, participants, groupMetadata }) {
 
 🎉 Bienvenido a *${groupMetadata?.subject || 'el grupo'}*
 
-🎤 Somos ya *${groupSize}* fanáticos de Miku que te reciben con mucha emoción.
+🎤 Somos ya *${groupSize}* fanáticos de Miku
+que te reciben con mucha emoción.
 
 💙 ${global.welcom1 || 'La música nos une'}
 
-✨ Prepárate para disfrutar y compartir momentos geniales aquí con nosotros.
+✨ Prepárate para disfrutar y compartir
+momentos geniales aquí con nosotros.
 
 📝 Para cualquier ayuda, escribe *#help*
 
-🎶 ¡Que la música te acompañe siempre!`
+🎶 ¡Que la música te acompañe siempre!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💙 Únete a nuestro canal oficial para más
+contenido exclusivo de Hatsune Miku 🎵`
 
       await sendSingleWelcome(m.chat, welcomeText, user, m)
       console.log('✅ Welcome enviado con botón de canal')
@@ -84,13 +90,18 @@ export async function before(m, { conn, participants, groupMetadata }) {
       const userName = user.split('@')[0]
       const byeText = `👋 ¡Hasta luego @${userName}!
 
-😢 Te extrañaremos en *${groupMetadata?.subject || 'el grupo'}*
+😢 Te extrañaremos en 
+*${groupMetadata?.subject || 'el grupo'}*
 
 🎤 ${global.welcom2 || 'Gracias por haber sido parte de nuestra comunidad'}
 
-🎵 La música de Miku seguirá sonando fuerte aquí para ti.
+🎵 La música de Miku seguirá sonando
+fuerte aquí para ti.
 
-✨ ¡Cuídate y hasta el próximo concierto!`
+✨ ¡Cuídate y hasta el próximo concierto!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━
+💙 Síguenos en nuestro canal oficial 🎵`
 
       await sendSingleWelcome(m.chat, byeText, user, m)
       console.log('✅ Goodbye enviado con botón de canal')
