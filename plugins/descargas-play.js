@@ -129,16 +129,15 @@ async function processDownload(conn, m, url, title, option) {
   await conn.reply(m.chat, `💙 Obteniendo ${downloadType}... ⚡`, m);
   
   try {
-    let downloadUrl;
+    const result = await downloadVideo(url);
+    if (!result?.url) {
+      throw new Error('No se pudo obtener el enlace de descarga');
+    }
+    
     let fileName = `${title.replace(/[^\w\s]/gi, '').substring(0, 50)}`;
+    const downloadUrl = result.url;
 
     if (option === 1 || option === 3) {
-      const audioResult = await downloadVideo(url, true);
-      if (!audioResult?.url) {
-        throw new Error('No se pudo obtener el enlace de audio');
-      }
-      
-      downloadUrl = audioResult.url;
       fileName += '.mp3';
       
       if (option === 1) {
@@ -156,12 +155,6 @@ async function processDownload(conn, m, url, title, option) {
         }, { quoted: m });
       }
     } else {
-      const videoResult = await downloadVideo(url, false);
-      if (!videoResult?.url) {
-        throw new Error('No se pudo obtener el enlace de video');
-      }
-      
-      downloadUrl = videoResult.url;
       fileName += '.mp4';
       
       if (option === 2) {
@@ -196,24 +189,23 @@ async function processDownload(conn, m, url, title, option) {
   }
 }
 
-async function downloadVideo(url, audioOnly = false) {
+async function downloadVideo(url) {
   const videoId = extractYouTubeId(url);
   if (!videoId) throw new Error('ID de video inválido');
 
   try {
-    const endpoint = audioOnly ? 'audio' : 'video';
-    const res = await fetch(`https://api.dreaded.site/api/ytdl/${endpoint}?url=${encodeURIComponent(url)}`);
+    const res = await fetch(`https://api.dreaded.site/api/ytdl/video?url=${encodeURIComponent(url)}`);
     const data = await res.json();
     
     if (data.success && data.result?.download?.url) {
-      console.log(`✅ ${audioOnly ? 'Audio' : 'Video'} descargado`);
+      console.log('✅ Descarga exitosa (144p)');
       return { url: data.result.download.url };
     }
   } catch (error) {
     console.log(`❌ Error: ${error.message}`);
   }
   
-  throw new Error(`No se pudo descargar el ${audioOnly ? 'audio' : 'video'}`);
+  throw new Error('No se pudo descargar');
 }
 
 handler.before = async (m, { conn }) => {
