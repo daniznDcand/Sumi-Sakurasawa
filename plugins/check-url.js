@@ -1,10 +1,10 @@
-import { AUDIO_CONFIG } from './menu-audios.js';
+import { AUDIO_URLS } from './download-audios.js';
 
 let handler = async (m, { conn, text }) => {
     if (!text) {
         
         let listaUrls = '🔗 *URLs DE AUDIOS CONFIGURADAS:*\n\n';
-        for (const [palabra, url] of Object.entries(AUDIO_CONFIG)) {
+        for (const [palabra, url] of Object.entries(AUDIO_URLS)) {
             listaUrls += `🔹 **${palabra}:** ${url}\n`;
         }
         listaUrls += '\n💡 Usa: `.checkurl depool` para verificar una URL específica';
@@ -12,7 +12,7 @@ let handler = async (m, { conn, text }) => {
     }
     
     const palabra = text.toLowerCase().trim();
-    const url = AUDIO_CONFIG[palabra];
+    const url = AUDIO_URLS[palabra];
     
     if (!url) {
         return conn.reply(m.chat, `❌ No existe configuración para "${palabra}"`, m);
