@@ -1,5 +1,3 @@
-//CREADO POR @gata_dios
- 
 let fila, columna, sopaNube, sopaPalabra, sopaDir, userSP, cambioLetra, coin = null
 let intentos = 0
 let handler = async (m, { conn, text, usedPrefix, command}) => {
@@ -10,7 +8,7 @@ await conn.reply(m.chat, `@${m.sender.split("@")[0]} Registrado en el juego.`, m
 }
   
 async function generarSopaDeLetras() {
-const LADO = 16 // Si es alto o bajo, puede dar error, deja como esta
+const LADO = 16 
 let sopaDeLetras = new Array(LADO);
   
 for (let i = 0; i < LADO; i++) {
@@ -34,7 +32,7 @@ while (!palabraAgregada) {
 filaInicial = Math.floor(Math.random() * LADO)
 columnaInicial = Math.floor(Math.random() * LADO)
 
-// Algoritmo para garantizar la palabra 
+
 let palabraEntra = true;
 for (let i = 0; i < PALABRA.length; i++) {
 if (DIRECCION === "horizontal" && (columnaInicial + i >= LADO)) {
@@ -52,7 +50,7 @@ break;
 }
 }
 
-// Si la palabra entra, agregar a la sopa de letras
+
 if (palabraEntra) {
 for (let i = 0; i < PALABRA.length; i++) {
 if (DIRECCION === "horizontal") {
@@ -69,12 +67,12 @@ palabraAgregada = true;
 }
 }
 
-// Diseño 
+ 
 const LETRAS_POSIBLES = "ⒶⒷⒸⒹⒺⒻⒼⒽⒾⒿⓀⓁⓜⓃⓄⓅⓆⓇⓈⓉⓊⓋⓌⓍⓎⓏ"
 const numerosUni = ["⓿", "❶", "❷", "❸", "❹", "❺", "❻", "❼", "❽", "❾", "❿", "⓫", "⓬", "⓭", "⓮", "⓯", "⓰", "⓱", "⓲", "⓳", "⓴"]
 let sopaDeLetrasConBordes = ""
 sopaDeLetrasConBordes += "     " + [...Array(LADO).keys()].map(num => numerosUni[num]).join(" ") + "\n"
-//sopaDeLetrasConBordes += "   *╭" + "┄".repeat(LADO) + '┄┄' + "╮*\n"
+
 
 for (let i = 0; i < LADO; i++) {
 let fila = numerosUni[i] + " "
@@ -90,7 +88,7 @@ fila += letraAleatoria + " "
 fila += ""
 sopaDeLetrasConBordes += fila + "\n"
 }
-//sopaDeLetrasConBordes += "   *╰" + "┄".repeat(LADO) + '┄┄' + "╯*"
+
 sopaDeLetrasConBordes = sopaDeLetrasConBordes.replace(/[a-zA-Z]/g, letra => LETRAS_POSIBLES[letra.charCodeAt() - 65] || letra)
 
 await m.reply(`☁️ *SOPA DE LETRAS* ☁️
@@ -110,7 +108,7 @@ sopaPalabra = PALABRA
 sopaDir = DIRECCION.replace(/([A-Z])/g, ' $1').toLowerCase().replace(/^./, str => str.toUpperCase())
 }
 
-// Condiciones del juego
+
 cambioLetra = sopaDir
 let tagUser = userSP + '@s.whatsapp.net'
 if (userSP != m.sender.split("@")[0]) {
@@ -123,11 +121,11 @@ generarSopaDeLetras()
 resetUserSP(sopaDir)
 
 async function resetUserSP() {
-await new Promise((resolve) => setTimeout(resolve, 2 * 60 * 1000)) // 2 min
+await new Promise((resolve) => setTimeout(resolve, 2 * 60 * 1000)) 
 if (intentos !== 0) {
 await conn.reply(m.chat, `*@${m.sender.split("@")[0]} Te queda un minuto!!* 😨`, m, { mentions: [m.sender] })
 }
-await new Promise((resolve) => setTimeout(resolve, 3 * 60 * 1000)) // 3 min
+await new Promise((resolve) => setTimeout(resolve, 3 * 60 * 1000)) 
 if (intentos !== 0) {
 await conn.reply( m.chat, `*@${m.sender.split("@")[0]} El tiempo se ha acabado!!* 😧\n\n*La palabra _"${sopaPalabra}"_ Se encontraba en la dirección _${sopaDir}_ De la fila _${fila}_ Y Columna _${columna}_*`, m, { mentions: [m.sender] })
 fila = null, columna = null, sopaNube = null, sopaPalabra = null, sopaDir = null, userSP = null, cambioLetra = null

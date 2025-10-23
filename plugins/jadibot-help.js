@@ -1,6 +1,6 @@
 import chalk from 'chalk'
 
-// Función para verificar si el socket está listo
+
 function isSocketReady(s) {
   try {
     if (!s) return false

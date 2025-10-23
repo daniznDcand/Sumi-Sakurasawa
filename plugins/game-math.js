@@ -1,10 +1,13 @@
 global.math = global.math ? global.math : {};
+
 const handler = async (m, {conn, args, usedPrefix, command}) => {
-  const mat =`${emoji} Por favor, ingresa la dificulta con la que desea jugar.
+  const emoji = '🧮';
+  const emoji2 = '⚠️';
+  const mat = `${emoji} Por favor, ingresa la dificultad con la que deseas jugar.
 
 *Dificultades Disponibles: ${Object.keys(modes).join(' | ')}*
-*Ejemplo de uso: ${usedPrefix}mates medium*
-`.trim();
+*Ejemplo de uso: ${usedPrefix}mates medium*`.trim();
+  
   if (args.length < 1) return await conn.reply(m.chat, mat, m);
 
   const mode = args[0].toLowerCase();
@@ -12,24 +15,54 @@ const handler = async (m, {conn, args, usedPrefix, command}) => {
 
   const id = m.chat;
   if (id in global.math) return conn.reply(m.chat, `${emoji2} Todavía hay un juego en proceso en este chat.`, global.math[id][0]);
+  
   const math = genMath(mode);
   global.math[id] = [
-    await conn.reply(m.chat, `${emoji} Cuanto es el resultado de ${math.str}?\n\n🕒 Tiempo: ${(math.time / 1000).toFixed(2)} segundos\n*${emoji2} Premio: ${math.bonus} XP*`, m),
+    await conn.reply(m.chat, `${emoji} ¿Cuánto es el resultado de *${math.str}*?\n\n🕒 Tiempo: ${(math.time / 1000).toFixed(2)} segundos\n💎 Premio: ${math.bonus} XP`, m),
     math, 4,
     setTimeout(() => {
       if (global.math[id]) {
-        conn.reply(m.chat, `${emoji} Se a finalizado el tiempo para responder.\n\n> ${emoji2} La respuesta es ${math.result}`, m),
-
+        conn.reply(m.chat, `${emoji2} Se ha finalizado el tiempo para responder.\n\n✅ La respuesta es: *${math.result}*`, global.math[id][0]);
         delete global.math[id];
       }
     }, math.time),
   ];
 };
+
+handler.before = async (m, {conn}) => {
+  const id = m.chat;
+  if (!global.math[id]) return;
+  
+  if (m.quoted && m.quoted.id === global.math[id][0].key.id) {
+    const math = global.math[id][1];
+    const userAnswer = parseFloat(m.text.trim());
+    
+    if (isNaN(userAnswer)) return;
+    
+    if (userAnswer === math.result) {
+      clearTimeout(global.math[id][3]);
+      delete global.math[id];
+      
+      global.db.data.users[m.sender].exp += math.bonus;
+      await conn.reply(m.chat, `✅ *¡Respuesta correcta!*\n\n💎 +${math.bonus} XP`, m);
+    } else {
+      if (global.math[id][2] > 0) {
+        global.math[id][2]--;
+        await conn.reply(m.chat, `❌ *Respuesta incorrecta*\n\n🔢 Intentos restantes: ${global.math[id][2]}`, m);
+      } else {
+        clearTimeout(global.math[id][3]);
+        await conn.reply(m.chat, `❌ *Se acabaron los intentos*\n\n✅ La respuesta correcta era: *${math.result}*`, m);
+        delete global.math[id];
+      }
+    }
+  }
+};
+
 handler.help = ['math <mode>'];
 handler.tags = ['game'];
-handler.command = ['matemáticas', 'mates', 'math']
-handler.group = true
-handler.register = true
+handler.command = ['matemáticas', 'mates', 'math'];
+handler.group = true;
+handler.register = true;
 
 export default handler;
 
@@ -62,7 +95,7 @@ function genMath(mode) {
     mode,
     time,
     bonus,
-    result,
+    result: Math.round(result * 100) / 100,
   };
 }
 

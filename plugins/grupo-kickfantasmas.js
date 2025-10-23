@@ -21,7 +21,7 @@ const handler = async (m, { conn, participants, isBotAdmin }) => {
   }
   
   let now = Date.now()
-  let threshold = 1000 * 60 * 60 * 24 * 7 // 7 días
+  let threshold = 1000 * 60 * 60 * 24 * 7 
   let ghosts = []
   
   console.log(`🔍 Buscando usuarios fantasmas... Total participantes: ${participants.length}`)
