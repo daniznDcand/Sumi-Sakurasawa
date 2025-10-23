@@ -134,7 +134,6 @@ async function processDownload(conn, m, url, title, option) {
     let mimeType;
 
     if (option === 1 || option === 3) {
-      
       const audioResult = await ytdlAudio(url);
       if (!audioResult?.url) {
         throw new Error('No se pudo obtener el enlace de audio');
@@ -158,7 +157,6 @@ async function processDownload(conn, m, url, title, option) {
         }, { quoted: m });
       }
     } else {
-      
       const videoResult = await downloadVideo(url);
       if (!videoResult?.url) {
         throw new Error('No se pudo obtener el enlace de video');
@@ -200,122 +198,43 @@ async function processDownload(conn, m, url, title, option) {
   }
 }
 
+async function ytdlAudio(url) {
+  const videoId = extractYouTubeId(url);
+  if (!videoId) throw new Error('ID de video inválido');
 
-const apis = [
-  {
-    name: 'API1',
-    audio: async (url) => {
-      const videoId = extractYouTubeId(url);
-      if (!videoId) throw new Error('ID de video inválido');
-      
-      const response = await fetch(`https://youtube-media-downloader.p.rapidapi.com/v2/video/details?videoId=${videoId}`, {
-        headers: {
-          'x-rapidapi-host': 'youtube-media-downloader.p.rapidapi.com',
-          'x-rapidapi-key': 'f9e54e5c6amsh8b4dfc0bfb94abap19bab2jsne8b65338207e'
-        }
-      });
-      
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = await response.json();
-      return data.audios?.[0]?.url;
-    },
-    video: async (url) => {
-      const videoId = extractYouTubeId(url);
-      if (!videoId) throw new Error('ID de video inválido');
-      
-      const response = await fetch(`https://youtube-media-downloader.p.rapidapi.com/v2/video/details?videoId=${videoId}`, {
-        headers: {
-          'x-rapidapi-host': 'youtube-media-downloader.p.rapidapi.com',
-          'x-rapidapi-key': 'f9e54e5c6amsh8b4dfc0bfb94abap19bab2jsne8b65338207e'
-        }
-      });
-      
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = await response.json();
-      return data.videos?.find(v => v.quality === '720p')?.url || data.videos?.[0]?.url;
+  try {
+    const res = await fetch(`https://api.dreaded.site/api/ytdl/audio?url=${encodeURIComponent(url)}`);
+    const data = await res.json();
+    if (data.success && data.result?.download?.url) {
+      console.log('✅ Audio descargado');
+      return { url: data.result.download.url };
     }
-  },
-  {
-    name: 'API2',
-    audio: async (url) => {
-      const response = await fetch(`https://api.cobalt.tools/api/json`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          url: url,
-          vCodec: 'h264',
-          vQuality: '720',
-          aFormat: 'mp3',
-          isAudioOnly: true
-        })
-      });
-      
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = await response.json();
-      return data.url;
-    },
-    video: async (url) => {
-      const response = await fetch(`https://api.cobalt.tools/api/json`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          url: url,
-          vCodec: 'h264',
-          vQuality: '720',
-          aFormat: 'mp3',
-          isAudioOnly: false
-        })
-      });
-      
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = await response.json();
-      return data.url;
-    }
+  } catch (error) {
+    console.log(`❌ Error: ${error.message}`);
   }
-];
-
-async function downloadVideo(url) {
-  for (const api of apis) {
-    try {
-      console.log(`🎬 Intentando descargar video con ${api.name}...`);
-      const videoUrl = await api.video(url);
-      if (videoUrl) {
-        console.log(`✅ Video descargado exitosamente con ${api.name}`);
-        return { url: videoUrl, title: 'Video', fuente: api.name };
-      }
-    } catch (error) {
-      console.log(`❌ Error con ${api.name}: ${error.message}`);
-      continue;
-    }
-  }
-  throw new Error('No se pudo descargar el video con ninguna API');
+  
+  throw new Error('No se pudo descargar el audio');
 }
 
-async function ytdlAudio(url) {
-  for (const api of apis) {
-    try {
-      console.log(`🎵 Intentando descargar audio con ${api.name}...`);
-      const audioUrl = await api.audio(url);
-      if (audioUrl) {
-        console.log(`✅ Audio descargado exitosamente con ${api.name}`);
-        return { url: audioUrl, title: 'Audio', fuente: api.name };
-      }
-    } catch (error) {
-      console.log(`❌ Error con ${api.name}: ${error.message}`);
-      continue;
+async function downloadVideo(url) {
+  const videoId = extractYouTubeId(url);
+  if (!videoId) throw new Error('ID de video inválido');
+
+  try {
+    const res = await fetch(`https://api.dreaded.site/api/ytdl/video?url=${encodeURIComponent(url)}`);
+    const data = await res.json();
+    if (data.success && data.result?.download?.url) {
+      console.log('✅ Video descargado');
+      return { url: data.result.download.url };
     }
+  } catch (error) {
+    console.log(`❌ Error: ${error.message}`);
   }
-  throw new Error('No se pudo descargar el audio con ninguna API');
+  
+  throw new Error('No se pudo descargar el video');
 }
 
 handler.before = async (m, { conn }) => {
-  // Check for button responses
   const buttonPatterns = [
     /ytdl_audio_mp3/,
     /ytdl_video_mp4/,
@@ -346,13 +265,11 @@ handler.before = async (m, { conn }) => {
   const currentTime = Date.now();
   const searchTime = user.lastYTSearch.timestamp || 0;
   
-
   if (currentTime - searchTime > 10 * 60 * 1000) {
     await conn.reply(m.chat, '⏰ La búsqueda ha expirado. Por favor realiza una nueva búsqueda.', m);
     return false; 
   }
   
-
   let option = null;
   if (m.text.includes('audio_mp3')) {
     option = 1; 
@@ -367,7 +284,6 @@ handler.before = async (m, { conn }) => {
   if (!option) {
     return false;
   }
-
 
   if (user.processingDownload) {
     await conn.reply(m.chat, '⏳ Ya hay una descarga en proceso. Espera un momento.', m);
@@ -386,7 +302,6 @@ handler.before = async (m, { conn }) => {
       option
     );
     
-   
     user.lastYTSearch = null;
     
   } catch (error) {
