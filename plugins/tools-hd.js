@@ -21,15 +21,20 @@ let handler = async (m, { conn, usedPrefix, command }) => {
     
     const form = new FormData()
     form.append('reqtype', 'fileupload')
-    form.append('fileToUpload', media, 'image.jpg')
+    form.append('fileToUpload', media, {
+      filename: 'image.jpg',
+      contentType: mime
+    })
 
     const catboxRes = await fetch('https://catbox.moe/user/api.php', {
       method: 'POST',
-      body: form
+      body: form,
+      headers: form.getHeaders()
     })
-    const catboxUrl = await catboxRes.text()
+    
+    const catboxUrl = (await catboxRes.text()).trim()
 
-    if (!catboxUrl || !catboxUrl.startsWith('https://')) throw new Error('No se pudo subir la imagen a Catbox')
+    if (!catboxUrl || !catboxUrl.startsWith('https://files.catbox.moe/')) throw new Error('No se pudo subir la imagen a Catbox')
 
     const res = await fetch(`https://api-adonix.ultraplus.click/canvas/hd?apikey=Adofreekey&url=${encodeURIComponent(catboxUrl)}`, {
       method: 'GET'
