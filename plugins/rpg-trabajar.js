@@ -79,6 +79,12 @@ const trabajo = [
    "🎶 Trabajas como musicóloga virtual y ganas",
    "💫 Vendiste melodías digitales y obtuviste",
    "✨ Reparas las máquinas de ritmo y recibes",
-   "💥 Trabajaste vendiendo fruna y ganaste"
+   "💥 Trabajaste vendiendo fruna y ganaste",
+   "🎤 Trabajas como entrenador de voces virtuales y ganas",
+   "🎵 Trabajas como editor de audio holográfico y ganas",
+   "🌟 Trabajas como diseñador de sonido para videojuegos y ganas",
+   "🎶 Trabajas como ingeniero de mezcla virtual y ganas",
+   "💫 Trabajas como consultor de música digital y ganas",
+   "🐰 Trabajas en la casa de DEPOOL y ganas"
 ] 
 
