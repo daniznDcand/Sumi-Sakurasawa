@@ -129,54 +129,44 @@ async function processDownload(conn, m, url, title, option) {
   await conn.reply(m.chat, `💙 Obteniendo ${downloadType}... ⚡`, m);
   
   try {
-    let downloadUrl;
+    const result = await downloadVideo(url);
+    if (!result?.url) {
+      throw new Error('No se pudo obtener el enlace de descarga');
+    }
+    
     let fileName = `${title.replace(/[^\w\s]/gi, '').substring(0, 50)}`;
-    let mimeType;
+    const downloadUrl = result.url;
 
     if (option === 1 || option === 3) {
-      const audioResult = await ytdlAudio(url);
-      if (!audioResult?.url) {
-        throw new Error('No se pudo obtener el enlace de audio');
-      }
-      
-      downloadUrl = audioResult.url;
       fileName += '.mp3';
-      mimeType = 'audio/mpeg';
-
+      
       if (option === 1) {
         await conn.sendMessage(m.chat, {
           audio: { url: downloadUrl },
-          mimetype: mimeType,
+          mimetype: 'audio/mpeg',
           fileName: fileName
         }, { quoted: m });
       } else {
         await conn.sendMessage(m.chat, {
           document: { url: downloadUrl },
-          mimetype: mimeType,
+          mimetype: 'audio/mpeg',
           fileName: fileName
         }, { quoted: m });
       }
     } else {
-      const videoResult = await downloadVideo(url);
-      if (!videoResult?.url) {
-        throw new Error('No se pudo obtener el enlace de video');
-      }
-      
-      downloadUrl = videoResult.url;
       fileName += '.mp4';
-      mimeType = 'video/mp4';
       
       if (option === 2) {
         await conn.sendMessage(m.chat, {
           video: { url: downloadUrl },
-          mimetype: mimeType,
+          mimetype: 'video/mp4',
           fileName: fileName,
           caption: `🎬 ${title}`
         }, { quoted: m });
       } else {
         await conn.sendMessage(m.chat, {
           document: { url: downloadUrl },
-          mimetype: mimeType,
+          mimetype: 'video/mp4',
           fileName: fileName,
           caption: `📁 ${title}`
         }, { quoted: m });
@@ -198,24 +188,6 @@ async function processDownload(conn, m, url, title, option) {
   }
 }
 
-async function ytdlAudio(url) {
-  const videoId = extractYouTubeId(url);
-  if (!videoId) throw new Error('ID de video inválido');
-
-  try {
-    const res = await fetch(`https://api.dreaded.site/api/ytdl/audio?url=${encodeURIComponent(url)}`);
-    const data = await res.json();
-    if (data.success && data.result?.download?.url) {
-      console.log('✅ Audio descargado');
-      return { url: data.result.download.url };
-    }
-  } catch (error) {
-    console.log(`❌ Error: ${error.message}`);
-  }
-  
-  throw new Error('No se pudo descargar el audio');
-}
-
 async function downloadVideo(url) {
   const videoId = extractYouTubeId(url);
   if (!videoId) throw new Error('ID de video inválido');
@@ -224,14 +196,14 @@ async function downloadVideo(url) {
     const res = await fetch(`https://api.dreaded.site/api/ytdl/video?url=${encodeURIComponent(url)}`);
     const data = await res.json();
     if (data.success && data.result?.download?.url) {
-      console.log('✅ Video descargado');
+      console.log('✅ Descarga exitosa');
       return { url: data.result.download.url };
     }
   } catch (error) {
     console.log(`❌ Error: ${error.message}`);
   }
   
-  throw new Error('No se pudo descargar el video');
+  throw new Error('No se pudo descargar');
 }
 
 handler.before = async (m, { conn }) => {
