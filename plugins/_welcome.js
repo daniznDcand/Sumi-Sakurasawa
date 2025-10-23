@@ -42,11 +42,10 @@ export async function before(m, { conn, participants, groupMetadata }) {
 
         console.log('📤 Enviando welcome con imagen y botón de canal...')
         
-        const buttons = [
-          ['🎵 Ver Canal', canalUrl]
-        ];
+        const buttons = [];
+        const urls = [['🎵 Ver Canal', canalUrl]];
         
-        await conn.sendNCarousel(jid, text, '💙 Hatsune Miku Bot', ppBuffer, buttons, null, null, null, quoted, [user])
+        await conn.sendNCarousel(jid, text, '💙 Hatsune Miku Bot', ppBuffer, buttons, null, urls, null, quoted, [user])
 
       } catch (err) {
         console.log('sendSingleWelcome error:', err)
