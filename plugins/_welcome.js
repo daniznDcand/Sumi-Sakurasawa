@@ -2,39 +2,10 @@ import fetch from 'node-fetch'
 
 export async function before(m, { conn, participants, groupMetadata }) {
   try {
-    
-    if (m.message?.interactiveResponseMessage || m.message?.templateButtonReplyMessage || m.message?.buttonsResponseMessage) {
-      let buttonId = null
-      
-      if (m.message.templateButtonReplyMessage) {
-        buttonId = m.message.templateButtonReplyMessage.selectedId
-      } else if (m.message.buttonsResponseMessage) {
-        buttonId = m.message.buttonsResponseMessage.selectedButtonId
-      } else if (m.message.interactiveResponseMessage) {
-        try {
-          const paramsJson = m.message.interactiveResponseMessage.nativeFlowResponseMessage?.paramsJson
-          if (paramsJson) {
-            const params = JSON.parse(paramsJson)
-            buttonId = params.id
-          }
-        } catch (e) {}
-      }
-      
-      if (buttonId === 'ver_canal_button') {
-        console.log('🎵 Botón de canal detectado en welcome')
-        const canalUrl = 'https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
-        await conn.reply(m.chat, `🎵 *¡Únete a nuestro canal oficial!*\n\n${canalUrl}\n\n💙 ¡Te esperamos para más contenido de Miku!`, m)
-        return true
-      }
-    }
-    
     if (!m.messageStubType || !m.isGroup) return true
-    
-    
     if (m._welcProcessed) return true
     m._welcProcessed = true
 
-    
     if (!global.db) global.db = { data: { chats: {} } }
     if (!global.db.data) global.db.data = { chats: {} }
     if (!global.db.data.chats) global.db.data.chats = {}
@@ -44,16 +15,11 @@ export async function before(m, { conn, participants, groupMetadata }) {
     if (chat.welcome === undefined) chat.welcome = true
     if (!chat.welcome) return true
 
-    
     const canalUrl = 'https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
-    const channelId = global.canalIdM?.[0] || '120363315369913363@newsletter'
-    const channelName = global.canalNombreM?.[0] || '💙HATSUNE MIKU CHANNEL💙'
     const groupSize = (participants || []).length
 
-    
     const sendSingleWelcome = async (jid, text, user, quoted) => {
       try {
-        
         let ppBuffer = null
         try {
           const ppUrl = await conn.profilePictureUrl(user, 'image').catch(() => null)
@@ -65,7 +31,6 @@ export async function before(m, { conn, participants, groupMetadata }) {
           console.log('Error obteniendo foto de perfil:', e)
         }
 
-       
         if (!ppBuffer) {
           try {
             const defaultResponse = await fetch('https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg')
@@ -75,28 +40,20 @@ export async function before(m, { conn, participants, groupMetadata }) {
           }
         }
 
-       
-        console.log('📤 Enviando welcome con imagen GRANDE...')
-        await conn.sendMessage(jid, {
-          image: ppBuffer,
-          caption: text,
-          mentions: [user]
-        }, { quoted })
-
-      
-        console.log('🎵 Enviando botón del canal con rcanal completo...')
-        return await conn.sendMessage(jid, {
-          text: '🎵 *¡Únete a nuestro canal oficial para más!* 💙'
-        }, { quoted, ...global.rcanal })
+        console.log('📤 Enviando welcome con imagen y botón de canal...')
+        
+        const buttons = [
+          ['🎵 Ver Canal', canalUrl]
+        ];
+        
+        await conn.sendNCarousel(jid, text, '💙 Hatsune Miku Bot', ppBuffer, buttons, null, null, null, quoted, [user])
 
       } catch (err) {
         console.log('sendSingleWelcome error:', err)
-        
         return await conn.reply(jid, `${text}\n\n🎵 *Ver Canal:* ${canalUrl}`, quoted, { mentions: [user] })
       }
     }
 
-    
     if (m.messageStubType === 27) {
       if (!m.messageStubParameters || !m.messageStubParameters[0]) return true
       
@@ -114,16 +71,13 @@ export async function before(m, { conn, participants, groupMetadata }) {
 
 📝 Para cualquier ayuda, escribe *#help*
 
-🎶 ¡Que la música te acompañe siempre!
-
-https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o`
+🎶 ¡Que la música te acompañe siempre!`
 
       await sendSingleWelcome(m.chat, welcomeText, user, m)
-      console.log('✅ Welcome: Imagen grande + botón canal separado enviados')
+      console.log('✅ Welcome enviado con botón de canal')
       return true
     }
 
-    
     if (m.messageStubType === 28 || m.messageStubType === 32) {
       if (!m.messageStubParameters || !m.messageStubParameters[0]) return true
       
@@ -137,12 +91,10 @@ https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o`
 
 🎵 La música de Miku seguirá sonando fuerte aquí para ti.
 
-✨ ¡Cuídate y hasta el próximo concierto!
-
-https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o`
+✨ ¡Cuídate y hasta el próximo concierto!`
 
       await sendSingleWelcome(m.chat, byeText, user, m)
-      console.log('✅ Goodbye: Imagen grande + botón canal separado enviados')
+      console.log('✅ Goodbye enviado con botón de canal')
       return true
     }
 
@@ -152,4 +104,3 @@ https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o`
     return true
   }
 }
-
