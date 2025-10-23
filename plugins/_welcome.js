@@ -74,7 +74,7 @@ momentos geniales aquí con nosotros.
 
 🎶 ¡Que la música te acompañe siempre!
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 💙 Únete a nuestro canal oficial para más
 contenido exclusivo de Hatsune Miku 🎵`
 
@@ -100,7 +100,7 @@ fuerte aquí para ti.
 
 ✨ ¡Cuídate y hasta el próximo concierto!
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 💙 Síguenos en nuestro canal oficial 🎵`
 
       await sendSingleWelcome(m.chat, byeText, user, m)
