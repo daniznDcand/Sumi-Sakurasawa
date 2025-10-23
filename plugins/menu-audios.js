@@ -95,6 +95,7 @@ let handler = async (m, { conn, usedPrefix }) => {
 │ ➤ 🎶 _Usted está detenido_
 │ ➤ 🎶 _No me hables_
 │ ➤ 🎶 _No chu_
+│ ➤ 🎶 _Nochupala_
 │ ➤ 🎶 _El pepe_
 │ ➤ 🎶 _Pokémon_
 │ ➤ 🎶 _No me hagas usar esto_

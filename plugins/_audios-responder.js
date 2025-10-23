@@ -84,6 +84,7 @@ const audioMap = {
   'usted está detenido': 'usted esta detenido.mp3',
   'no me hables': 'no me hables.mp3',
   'no chu': 'no chu.mp3',
+  'nochupala': 'nochupala.mp3',
   'el pepe': 'el pepe.mp3',
   'pokémon': 'pokemon.mp3',
   'no me hagas usar esto': 'no me hagas usar esto.mp3',
