@@ -18,36 +18,49 @@ let handler = async (m, { conn, usedPrefix, command }) => {
     conn.reply(m.chat, `♻️ *Procesando imagen...*`, m, ctxWarn)  
 
     const media = await quoted.download()
-    
-    const form = new FormData()
-    form.append('reqtype', 'fileupload')
-    form.append('fileToUpload', media, {
-      filename: 'image.jpg',
-      contentType: mime
-    })
+    const base64 = media.toString('base64')
 
-    const catboxRes = await fetch('https://catbox.moe/user/api.php', {
-      method: 'POST',
-      body: form,
-      headers: form.getHeaders()
-    })
-    
-    const catboxUrl = (await catboxRes.text()).trim()
-
-    if (!catboxUrl || !catboxUrl.startsWith('https://files.catbox.moe/')) throw new Error('No se pudo subir la imagen a Catbox')
-
-    const res = await fetch(`https://api-adonix.ultraplus.click/canvas/hd?apikey=Adofreekey&url=${encodeURIComponent(catboxUrl)}`, {
-      method: 'GET'
-    })
-    const json = await res.json()
-
-    if (!json?.status || !json?.url) throw new Error(json?.message || 'API no respondió')
-
-    const imageRes = await fetch(json.url, { method: 'GET' })
-    const resultBuffer = await imageRes.arrayBuffer()
+   
+    let resultBuffer
+    try {
+      const res = await fetch('https://api.ryzendesu.vip/api/ai/enhance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: base64 })
+      })
+      const json = await res.json()
+      
+      if (json?.status && json?.image) {
+        resultBuffer = Buffer.from(json.image, 'base64')
+      } else throw new Error('API 1 falló')
+    } catch {
+     
+      const form = new FormData()
+      form.append('file', media, 'image.jpg')
+      
+      const uploadRes = await fetch('https://telegra.ph/upload', {
+        method: 'POST',
+        body: form
+      })
+      const uploadJson = await uploadRes.json()
+      
+      if (!uploadJson?.[0]?.src) throw new Error('No se pudo subir la imagen')
+      
+      const imageUrl = 'https://telegra.ph' + uploadJson[0].src
+      
+      const res = await fetch(`https://api.betabotz.eu.org/api/tools/remini?url=${encodeURIComponent(imageUrl)}&apikey=beta-Itachi09`, {
+        method: 'GET'
+      })
+      const json = await res.json()
+      
+      if (!json?.status || !json?.url) throw new Error('API no respondió')
+      
+      const imageRes = await fetch(json.url)
+      resultBuffer = Buffer.from(await imageRes.arrayBuffer())
+    }
 
     await conn.sendMessage(m.chat, {
-      image: Buffer.from(resultBuffer),
+      image: resultBuffer,
       caption: `✨ *Imagen Mejorada HD*\n💫 *Itsuki-Nakano*`
     }, { quoted: m })
 
