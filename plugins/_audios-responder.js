@@ -148,23 +148,19 @@ export async function before(m) {
   
   const text = m.text.toLowerCase().trim()
   
-  for (const [palabra, archivo] of Object.entries(audioMap)) {
-    if (text === palabra || text.includes(palabra)) {
-      const audioFile = path.join(audiosPath, archivo)
-      
-      if (fs.existsSync(audioFile)) {
-        try {
-          const buffer = fs.readFileSync(audioFile)
-          await this.sendMessage(m.chat, {
-            audio: buffer,
-            mimetype: 'audio/mp4',
-            ptt: true,
-            fileName: 'audio.mp3'
-          }, { quoted: m })
-        } catch (e) {
-          console.error('Error enviando audio:', e)
-        }
-        break
+  // Buscar coincidencia exacta primero
+  if (audioMap[text]) {
+    const audioFile = path.join(audiosPath, audioMap[text])
+    
+    if (fs.existsSync(audioFile)) {
+      try {
+        const buffer = fs.readFileSync(audioFile)
+        await this.sendFile(m.chat, buffer, 'audio.mp3', '', m, true, {
+          type: 'audioMessage',
+          ptt: true
+        })
+      } catch (e) {
+        console.error('Error enviando audio:', e)
       }
     }
   }
