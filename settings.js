@@ -65,6 +65,24 @@ global.api = {
 
 global.playlistApiKey = 'f9e54e5c6amsh8b4dfc0bfb94abap19bab2jsne8b65338207e'
 
+
+global.apikey = 'adonix-key'
+global.APIKeys = {
+  'https://api.xteam.xyz': 'YOUR_XTEAM_KEY',
+  'https://api.lolhuman.xyz': 'API_KEY',
+  'https://api.betabotz.eu.org': 'API_KEY',
+  'https://mayapi.ooguy.com': 'may-f53d1d49'
+}
+
+global.APIs = {
+  ryzen: 'https://api.ryzendesu.vip',
+  xteam: 'https://api.xteam.xyz',
+  lol: 'https://api.lolhuman.xyz',
+  delirius: 'https://delirius-apiofc.vercel.app',
+  siputzx: 'https://api.siputzx.my.id',
+  mayapi: 'https://mayapi.ooguy.com'
+}
+
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
 global.gp1 = 'https://chat.whatsapp.com/FQ78boTUpJ7Ge3oEtn8pRE?mode=ac_t'
