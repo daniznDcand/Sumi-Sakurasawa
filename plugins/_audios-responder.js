@@ -149,7 +149,7 @@ export async function before(m) {
   
   const text = m.text.toLowerCase().trim()
   
-  // Buscar coincidencia exacta primero
+
   if (audioMap[text]) {
     const audioFile = path.join(audiosPath, audioMap[text])
     
@@ -157,11 +157,21 @@ export async function before(m) {
       try {
         const buffer = fs.readFileSync(audioFile)
         const mimetype = audioFile.endsWith('.m4a') ? 'audio/mp4' : 'audio/mpeg'
-        await this.sendFile(m.chat, buffer, 'audio.mp3', '', m, true, {
-          type: 'audioMessage',
-          ptt: true,
-          mimetype
-        })
+        
+        try {
+          await this.sendFile(m.chat, buffer, 'audio.mp3', '', m, true, {
+            type: 'audioMessage',
+            ptt: true,
+            mimetype
+          })
+        } catch (err) {
+         
+          await this.sendMessage(m.chat, {
+            audio: buffer,
+            mimetype,
+            ptt: true
+          }, { quoted: m })
+        }
       } catch (e) {
         console.error('Error enviando audio:', e)
       }
