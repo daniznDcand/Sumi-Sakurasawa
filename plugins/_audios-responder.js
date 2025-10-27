@@ -155,11 +155,13 @@ export async function before(m) {
     
     if (fs.existsSync(audioFile)) {
       try {
-        await this.sendMessage(m.chat, {
-          audio: fs.readFileSync(audioFile),
-          mimetype: 'audio/mp4',
-          ptt: true
-        }, { quoted: m })
+        const buffer = fs.readFileSync(audioFile)
+        const mimetype = audioFile.endsWith('.m4a') ? 'audio/mp4' : 'audio/mpeg'
+        await this.sendFile(m.chat, buffer, 'audio.mp3', '', m, true, {
+          type: 'audioMessage',
+          ptt: true,
+          mimetype
+        })
       } catch (e) {
         console.error('Error enviando audio:', e)
       }
