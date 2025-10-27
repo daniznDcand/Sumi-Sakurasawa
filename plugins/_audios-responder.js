@@ -138,7 +138,8 @@ const audioMap = {
   'en caso de una investigación': 'En caso de una investigación.mp3',
   'buen día grupo': 'Buen día grupo.mp3',
   '🙌': 'Buen día grupo.mp3',
-  'las reglas del grupo': 'Las reglas del grupo.mp3'
+  'las reglas del grupo': 'Las reglas del grupo.mp3',
+  'miku': 'miku.mp3'
 }
 
 export async function before(m) {

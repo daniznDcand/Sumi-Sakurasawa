@@ -139,6 +139,7 @@ let handler = async (m, { conn, usedPrefix }) => {
 │ ➤ 🎶 _En caso de una investigación_
 │ ➤ 🎶 _Buen día grupo_
 │ ➤ 🎶 _Las reglas del grupo_
+│ ➤ 🎶 _Miku_
 │ 
 ╰━━━━━━━━━━━━━━━━━━━━━╯
 
