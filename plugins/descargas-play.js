@@ -130,7 +130,8 @@ async function processDownload(conn, m, url, title, option) {
   await conn.reply(m.chat, `💙 Obteniendo ${downloadType}... ⚡`, m);
   
   try {
-    const result = await downloadAudio(url);
+    const isVideo = option === 2 || option === 4;
+    const result = isVideo ? await downloadVideo(url) : await downloadAudio(url);
     
     if (!result?.url) {
       throw new Error('No se pudo obtener el enlace de descarga');
@@ -191,20 +192,45 @@ async function processDownload(conn, m, url, title, option) {
   }
 }
 
+async function downloadVideo(url) {
+  const videoId = extractYouTubeId(url);
+  if (!videoId) throw new Error('URL inválida');
+
+  try {
+    console.log('🔄 Descargando video con ytdl-core...');
+    const info = await ytdl.getInfo(url);
+    const videoFormats = ytdl.filterFormats(info.formats, 'videoandaudio');
+    
+    if (videoFormats.length > 0) {
+      const bestVideo = videoFormats.find(f => f.qualityLabel === '360p') || videoFormats[0];
+      console.log('✅ Video encontrado');
+      return { url: bestVideo.url };
+    }
+  } catch (error) {
+    console.log(`❌ ytdl-core falló: ${error.message}`);
+  }
+
+  throw new Error('No se pudo descargar el video. Intenta más tarde.');
+}
+
 async function downloadAudio(url) {
+  const videoId = extractYouTubeId(url);
+  if (!videoId) throw new Error('URL inválida');
+
   try {
     console.log('🔄 Descargando con ytdl-core...');
     const info = await ytdl.getInfo(url);
-    const format = ytdl.chooseFormat(info.formats, { quality: 'highestaudio', filter: 'audioonly' });
+    const audioFormats = ytdl.filterFormats(info.formats, 'audioonly');
     
-    if (format && format.url) {
-      console.log('✅ Descarga exitosa');
-      return { url: format.url };
+    if (audioFormats.length > 0) {
+      const bestAudio = audioFormats[0];
+      console.log('✅ Audio encontrado');
+      return { url: bestAudio.url };
     }
   } catch (error) {
-    console.log(`❌ Error: ${error.message}`);
+    console.log(`❌ ytdl-core falló: ${error.message}`);
   }
-  
+
   throw new Error('No se pudo descargar. Intenta más tarde.');
 }
 
