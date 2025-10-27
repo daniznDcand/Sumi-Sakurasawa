@@ -1,6 +1,10 @@
 import fetch from "node-fetch";
 import yts from 'yt-search';
 import ytdl from '@distube/ytdl-core';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execPromise = promisify(exec);
 
 function extractYouTubeId(url) {
   const patterns = [
@@ -196,42 +200,40 @@ async function downloadVideo(url) {
   const videoId = extractYouTubeId(url);
   if (!videoId) throw new Error('URL inválida');
 
+  // Método 1: yt-dlp
   try {
-    console.log('🔄 Descargando video con ytdl-core...');
-    const info = await ytdl.getInfo(url);
-    const videoFormats = ytdl.filterFormats(info.formats, 'videoandaudio');
-    
-    if (videoFormats.length > 0) {
-      const bestVideo = videoFormats.find(f => f.qualityLabel === '360p') || videoFormats[0];
-      console.log('✅ Video encontrado');
-      return { url: bestVideo.url };
+    console.log('🔄 Usando yt-dlp para video...');
+    const { stdout } = await execPromise(`yt-dlp -f "best[height<=360]" --get-url "${url}"`);
+    const downloadUrl = stdout.trim();
+    if (downloadUrl) {
+      console.log('✅ Video descargado');
+      return { url: downloadUrl };
     }
   } catch (error) {
-    console.log(`❌ ytdl-core falló: ${error.message}`);
+    console.log(`❌ yt-dlp falló: ${error.message}`);
   }
 
-  throw new Error('No se pudo descargar el video. Intenta más tarde.');
+  throw new Error('No se pudo descargar el video. Instala yt-dlp: pip install yt-dlp');
 }
 
 async function downloadAudio(url) {
   const videoId = extractYouTubeId(url);
   if (!videoId) throw new Error('URL inválida');
 
+  // Método 1: yt-dlp
   try {
-    console.log('🔄 Descargando con ytdl-core...');
-    const info = await ytdl.getInfo(url);
-    const audioFormats = ytdl.filterFormats(info.formats, 'audioonly');
-    
-    if (audioFormats.length > 0) {
-      const bestAudio = audioFormats[0];
-      console.log('✅ Audio encontrado');
-      return { url: bestAudio.url };
+    console.log('🔄 Usando yt-dlp...');
+    const { stdout } = await execPromise(`yt-dlp -f bestaudio --get-url "${url}"`);
+    const downloadUrl = stdout.trim();
+    if (downloadUrl) {
+      console.log('✅ Descarga exitosa');
+      return { url: downloadUrl };
     }
   } catch (error) {
-    console.log(`❌ ytdl-core falló: ${error.message}`);
+    console.log(`❌ yt-dlp falló: ${error.message}`);
   }
 
-  throw new Error('No se pudo descargar. Intenta más tarde.');
+  throw new Error('No se pudo descargar. Instala yt-dlp: pip install yt-dlp');
 }
 
 
