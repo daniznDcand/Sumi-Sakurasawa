@@ -62,11 +62,11 @@ if (!global._subbotSessionErrorHandlerInstalled) {
 
 
 const RESOURCE_LIMITS = {
-  MAX_RAM_MB: 4096,        
-  MAX_STORAGE_MB: 6144,    
-  MAX_SUBBOTS: 50,         
-  CLEANUP_INTERVAL: 20000, 
-  DELETE_TIMEOUT: 300000  
+  MAX_RAM_MB: 2048,        
+  MAX_STORAGE_MB: 4096,    
+  MAX_SUBBOTS: 15,         
+  CLEANUP_INTERVAL: 30000, 
+  DELETE_TIMEOUT: 180000  
 }
 
 
@@ -242,9 +242,9 @@ if (isFromSubBot && (command === 'code')) {
 }
 
 
-const MAX_CONNECTIONS = 25 
+const MAX_CONNECTIONS = 15 
 const MAX_CONNECTIONS_PER_USER = 2 
-const MEMORY_LIMIT_MB = 1000 
+const MEMORY_LIMIT_MB = 800 
 
 try {
   
@@ -443,7 +443,7 @@ try {
   console.log('🔍 Opciones usadas:', Object.keys(cleanConnectionOptions))
   throw new Error(`Error en configuración de socket: ${error.message}`)
 }
-sock.maxReconnectAttempts = 8  
+sock.maxReconnectAttempts = 5  
 sock.lastActivity = Date.now()
 sock.sessionStartTime = sessionStartTime
 sock.subreloadHandler = (reload) => creloadHandler(reload)
@@ -612,16 +612,12 @@ console.log(chalk.yellow(`🔄 Intento de reconexión ${sock.reconnectAttempts}/
 
 
 
-const baseWait = 10000   
-const maxWait = 8 * 60 * 1000  
-const backoffLimit = 6 
-const exponentialBackoff = Math.min(maxWait, baseWait * Math.pow(2.0, Math.min(sock.reconnectAttempts - 1, backoffLimit))) // Factor 2.0 en lugar de 1.2
+const baseWait = 5000
+const waitTime = baseWait * sock.reconnectAttempts
+const maxWait = 60000
+const totalWait = Math.min(waitTime, maxWait)
 
-
-const jitter = Math.random() * 5000 
-const totalWait = exponentialBackoff + jitter
-
-console.log(chalk.blue(`⏳ Esperando ${Math.round(totalWait/1000)}s antes de reconectar (intento ${sock.reconnectAttempts}). Base: ${Math.round(exponentialBackoff/1000)}s + Jitter: ${Math.round(jitter/1000)}s`))
+console.log(chalk.blue(`⏳ Esperando ${Math.round(totalWait/1000)}s antes de reconectar (intento ${sock.reconnectAttempts})`))
 await new Promise(resolve => setTimeout(resolve, totalWait))
 
 try {
@@ -1198,7 +1194,7 @@ try {
           sock.errorCount = 0
         }
       }
-    }, 90000)   
+    }, 120000)   
   }
 } catch (e) {
   console.error('Error configurando keep-alive:', e.message)
@@ -1240,7 +1236,7 @@ try {
       } catch (e) {
         console.error('Error en monitor de inactividad:', e.message)
       }
-    }, 2 * 60 * 1000)  
+    }, 3 * 60 * 1000)  
   }
 } catch (e) {
   console.error('Error configurando monitor de inactividad:', e.message)
@@ -1275,7 +1271,7 @@ try {
       } catch (e) {
         console.error('Error en heartbeat personalizado:', e.message)
       }
-    }, 60000)  
+    }, 90000)  
   }
 } catch (e) {
   console.error('Error configurando heartbeat personalizado:', e.message)

@@ -4,9 +4,8 @@ import path from 'path'
 
 let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   
-  // Verificar que este comando solo se ejecute desde SubBots
   if (!conn.isSubBot) {
-    return // No hacer nada si no es un SubBot
+    return false
   }
   
   console.log(`🤖 SubBot ${conn.user?.id} ejecutando comando: ${command}`)

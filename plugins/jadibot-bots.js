@@ -34,8 +34,20 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
     }
 
     
-    const activeConnections = global.conns.filter(c => c && c.user && isSocketReady(c))
-    const inactiveConnections = global.conns.filter(c => c && c.user && !isSocketReady(c))
+    const activeConnections = global.conns.filter(c => {
+      try {
+        return c && c.user && c.user.jid && c.ws && c.ws.socket && c.ws.socket.readyState === 1
+      } catch (e) {
+        return false
+      }
+    })
+    const inactiveConnections = global.conns.filter(c => {
+      try {
+        return c && c.user && c.user.jid && (!c.ws || !c.ws.socket || c.ws.socket.readyState !== 1)
+      } catch (e) {
+        return false
+      }
+    })
     const totalBots = activeConnections.length + inactiveConnections.length
     
     if (totalBots === 0) {
@@ -49,12 +61,20 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
     const userPhone = cleanPhoneNumber(m.sender)
     
     
-    const userActiveConnections = activeConnections.filter(c => 
-      c.user && cleanPhoneNumber(c.user.jid) === userPhone
-    )
-    const userInactiveConnections = inactiveConnections.filter(c => 
-      c.user && cleanPhoneNumber(c.user.jid) === userPhone
-    )
+    const userActiveConnections = activeConnections.filter(c => {
+      try {
+        return c && c.user && c.user.jid && cleanPhoneNumber(c.user.jid) === userPhone
+      } catch (e) {
+        return false
+      }
+    })
+    const userInactiveConnections = inactiveConnections.filter(c => {
+      try {
+        return c && c.user && c.user.jid && cleanPhoneNumber(c.user.jid) === userPhone
+      } catch (e) {
+        return false
+      }
+    })
 
     
     let statusText = `┌─「 🤖 *HATSUNE MIKU - SUBBOTS* 」\n`

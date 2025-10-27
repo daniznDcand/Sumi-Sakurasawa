@@ -49,7 +49,7 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
 
     helpText += `⚡ *CARACTERÍSTICAS ULTRA-PERSISTENTES:*\n\n`
     helpText += `🔄 *Reconexión Inteligente:*\n`
-    helpText += `├ ✅ Hasta 25 intentos automáticos\n`
+    helpText += `├ ✅ Hasta 5 intentos automáticos\n`
     helpText += `├ ✅ Detección proactiva de desconexiones\n`
     helpText += `├ ✅ Exponential backoff para estabilidad\n`
     helpText += `└ ✅ Monitoreo continuo cada 15 segundos\n\n`
@@ -57,7 +57,7 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
     helpText += `🧠 *Gestión Inteligente de Memoria:*\n`
     helpText += `├ ✅ Limpieza automática de caché\n`
     helpText += `├ ✅ Garbage collection optimizado\n`
-    helpText += `├ ✅ Límite de 25 conexiones simultáneas\n`
+    helpText += `├ ✅ Límite de 15 conexiones simultáneas\n`
     helpText += `└ ✅ Máximo 2 SubBots por usuario\n\n`
     
     helpText += `💚 *Keep-Alive Optimizado:*\n`
@@ -68,9 +68,9 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
 
     helpText += `🛡️ *LÍMITES Y PROTECCIONES:*\n\n`
     helpText += `📊 *Límites del Servidor:*\n`
-    helpText += `├ 🔸 Máximo 25 SubBots simultáneos\n`
+    helpText += `├ 🔸 Máximo 15 SubBots simultáneos\n`
     helpText += `├ 🔸 Máximo 2 SubBots por usuario\n`
-    helpText += `├ 🔸 Límite de memoria: 1000MB\n`
+    helpText += `├ 🔸 Límite de memoria: 800MB\n`
     helpText += `└ 🔸 Limpieza automática de conexiones muertas\n\n`
     
     helpText += `⚠️ *Gestión de Recursos:*\n`
@@ -97,9 +97,9 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
       helpText += `├ Memoria actual: ${memUsage}MB (Crítico)\n`
       helpText += `├ SubBots activos: ${activeConnections.length}/${totalBots}\n`
       helpText += `└ 💡 Considera eliminar SubBots inactivos\n\n`
-    } else if (activeConnections.length >= 20) {
+    } else if (activeConnections.length >= 12) {
       helpText += `⚠️ *SERVIDOR OCUPADO*\n`
-      helpText += `├ SubBots activos: ${activeConnections.length}/25\n`
+      helpText += `├ SubBots activos: ${activeConnections.length}/15\n`
       helpText += `└ 💡 Pocos slots disponibles\n\n`
     } else {
       helpText += `✅ *SERVIDOR DISPONIBLE*\n`

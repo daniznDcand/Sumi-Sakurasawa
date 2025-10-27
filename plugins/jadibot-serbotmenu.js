@@ -20,7 +20,7 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
     conn && conn.user && conn.ws && conn.ws.socket && conn.ws.socket.readyState === 1
   ).map((conn) => conn)])]
   const subBotsCount = subBots.length
-  const maxSubBots = 50 
+  const maxSubBots = 15 
   
   if (subBotsCount >= maxSubBots) {
     return m.reply(`💙 No se han encontrado espacios para *Sub-Bots* disponibles. (${subBotsCount}/${maxSubBots})`)
