@@ -60,15 +60,15 @@ export async function before(m, { conn, participants, groupMetadata }) {
       const userName = user.split('@')[0]
       const welcomeText = `👋 ¡Hola @${userName}!
 
-🎉 Bienvenido a *${groupMetadata?.subject || 'el grupo'}*
+🎉Bienvenido a *${groupMetadata?.subject || 'el grupo'}*
 
-🎤 Somos *${groupSize}* miembros
+🎤Somos *${groupSize}* miembros
 
-💙 ${global.welcom1 || 'La música nos une'}
+💙${global.welcom1 || 'La música nos une'}
 
-📝 Ayuda: *#help*
+📝Ayuda: *#help*
 
-🎵 Únete a nuestro canal oficial`
+🎵Únete a nuestro canal oficial`
 
       await sendSingleWelcome(m.chat, welcomeText, user, m)
       console.log('✅ Welcome enviado con botón de canal')
@@ -82,11 +82,11 @@ export async function before(m, { conn, participants, groupMetadata }) {
       const userName = user.split('@')[0]
       const byeText = `👋 ¡Hasta luego @${userName}!
 
-😢 Te extrañaremos en *${groupMetadata?.subject || 'el grupo'}*
+😢Te extrañaremos en *${groupMetadata?.subject || 'el grupo'}*
 
-🎤 ${global.welcom2 || 'Gracias por ser parte de la comunidad'}
+🎤${global.welcom2 || 'Gracias por ser parte de la comunidad'}
 
-💙 Síguenos en nuestro canal oficial 🎵`
+💙Síguenos en nuestro canal oficial🎵`
 
       await sendSingleWelcome(m.chat, byeText, user, m)
       console.log('✅ Goodbye enviado con botón de canal')
