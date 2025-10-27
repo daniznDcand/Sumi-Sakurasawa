@@ -1,5 +1,6 @@
 import fetch from "node-fetch";
 import yts from 'yt-search';
+import ytdl from '@distube/ytdl-core';
 
 function extractYouTubeId(url) {
   const patterns = [
@@ -129,7 +130,8 @@ async function processDownload(conn, m, url, title, option) {
   await conn.reply(m.chat, `💙 Obteniendo ${downloadType}... ⚡`, m);
   
   try {
-    const result = await downloadVideo(url);
+    const result = await downloadAudio(url);
+    
     if (!result?.url) {
       throw new Error('No se pudo obtener el enlace de descarga');
     }
@@ -189,24 +191,24 @@ async function processDownload(conn, m, url, title, option) {
   }
 }
 
-async function downloadVideo(url) {
-  const videoId = extractYouTubeId(url);
-  if (!videoId) throw new Error('ID de video inválido');
-
+async function downloadAudio(url) {
   try {
-    const res = await fetch(`https://api.dreaded.site/api/ytdl/video?url=${encodeURIComponent(url)}`);
-    const data = await res.json();
+    console.log('🔄 Descargando con ytdl-core...');
+    const info = await ytdl.getInfo(url);
+    const format = ytdl.chooseFormat(info.formats, { quality: 'highestaudio', filter: 'audioonly' });
     
-    if (data.success && data.result?.download?.url) {
-      console.log('✅ Descarga exitosa (144p)');
-      return { url: data.result.download.url };
+    if (format && format.url) {
+      console.log('✅ Descarga exitosa');
+      return { url: format.url };
     }
   } catch (error) {
     console.log(`❌ Error: ${error.message}`);
   }
   
-  throw new Error('No se pudo descargar');
+  throw new Error('No se pudo descargar. Intenta más tarde.');
 }
+
+
 
 handler.before = async (m, { conn }) => {
   const buttonPatterns = [
