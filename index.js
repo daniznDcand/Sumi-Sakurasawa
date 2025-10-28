@@ -193,8 +193,25 @@ if (!fs.existsSync(`./${sessions}/creds.json`)) {
         } while (!await isValidPhoneNumber(phoneNumber))
         rl.close()
         addNumber = phoneNumber.replace(/\D/g, '')
+        
+        const waitForConnection = () => {
+          return new Promise((resolve) => {
+            if (conn.ws?.socket?.readyState === 1) {
+              resolve()
+            } else {
+              const checkInterval = setInterval(() => {
+                if (conn.ws?.socket?.readyState === 1) {
+                  clearInterval(checkInterval)
+                  resolve()
+                }
+              }, 500)
+            }
+          })
+        }
+        
         setTimeout(async () => {
           try {
+            await waitForConnection()
             let codeBot = await conn.requestPairingCode(addNumber)
             codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot
             console.log(chalk.bold.white(chalk.bgCyan(` ${BRAND_EMOJI} Código:`)), chalk.bold.cyan(codeBot))
