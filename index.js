@@ -183,6 +183,15 @@ if (!fs.existsSync(`./${sessions}/creds.json`)) {
       let addNumber
       if (!!phoneNumber) {
         addNumber = phoneNumber.replace(/[^0-9]/g, '')
+        setTimeout(async () => {
+          try {
+            let codeBot = await conn.requestPairingCode(addNumber)
+            codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot
+            console.log(chalk.bold.white(chalk.bgCyan(` ${BRAND_EMOJI} Código:`)), chalk.bold.cyan(codeBot))
+          } catch (error) {
+            console.error('Error requesting pairing code:', error)
+          }
+        }, 3000)
       } else {
         do {
           phoneNumber = await question(chalk.bgBlack(mikuSecondary.bold(`[ ${BRAND_EMOJI} ]  Por favor, ingrese el número de WhatsApp.\n${chalk.bold.cyanBright('---> ')}`)))
