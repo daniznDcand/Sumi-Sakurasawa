@@ -41,7 +41,6 @@ const lidCache = new Map()
 let stopped = 'connecting'
 const sessions = global.sessions || 'Sessions'
 const jadi = global.jadi || 'JadiBots'
-let isWaitingForPairing = false
 
 
 const BRAND_NAME = 'Hatsune Miku'
@@ -177,8 +176,6 @@ const connectionOptions = {
 }
 
 global.conn = makeWASocket(connectionOptions)
-conn.ev.on("creds.update", saveCreds)
-
 if (!fs.existsSync(`./${sessions}/creds.json`)) {
   if (opcion === '2' || methodCode) {
     opcion = '2'
@@ -197,9 +194,13 @@ if (!fs.existsSync(`./${sessions}/creds.json`)) {
         rl.close()
         addNumber = phoneNumber.replace(/\D/g, '')
         setTimeout(async () => {
-          let codeBot = await conn.requestPairingCode(addNumber)
-          codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot
-          console.log(chalk.bold.white(chalk.bgCyan(` ${BRAND_EMOJI} Código:`)), chalk.bold.cyan(codeBot))
+          try {
+            let codeBot = await conn.requestPairingCode(addNumber)
+            codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot
+            console.log(chalk.bold.white(chalk.bgCyan(` ${BRAND_EMOJI} Código:`)), chalk.bold.cyan(codeBot))
+          } catch (error) {
+            console.error('Error requesting pairing code:', error)
+          }
         }, 3000)
       }
     }
@@ -320,9 +321,7 @@ async function connectionUpdate(update) {
   if (isNewLogin) conn.isInit = true
   const code = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode;
   if (code && code !== DisconnectReason.loggedOut && conn?.ws.socket == null) {
-    if (!isWaitingForPairing) {
-      await global.reloadHandler(true).catch(console.error);
-    }
+    await global.reloadHandler(true).catch(console.error);
     global.timestamp.connect = new Date
   }
   if (global.db.data == null) loadDatabase()
@@ -332,7 +331,6 @@ async function connectionUpdate(update) {
     }
   }
   if (connection === "open") {
-    isWaitingForPairing = false
     const userJid = jidNormalizedUser(conn.user.id)
     const userName = conn.user.name || conn.user.verifiedName || "Desconocido"
     await joinChannels(conn)
@@ -360,10 +358,6 @@ async function connectionUpdate(update) {
   }
   let reason = new Boom(lastDisconnect?.error)?.output?.statusCode
   if (connection === 'close') {
-    if (isWaitingForPairing) {
-      console.log(chalk.bold.yellow(`${brandTag} Esperando vinculación...`))
-      return
-    }
     if (reason === DisconnectReason.badSession) {
       console.log(chalk.bold.cyanBright(`\n${brandTag} Sin conexión, borra la sesión principal del Bot y conéctate nuevamente.`))
     } else if (reason === DisconnectReason.connectionClosed) {
@@ -384,14 +378,11 @@ async function connectionUpdate(update) {
       console.log(chalk.bold.yellowBright(`\n${brandTag} Conexión agotada, reconectando el Bot...`))
       await global.reloadHandler(true).catch(console.error)
     } else {
-      if (!isWaitingForPairing) {
-        console.log(chalk.bold.redBright(`\n${brandTag} Conexión cerrada, conéctese nuevamente.`))
-      }
+      console.log(chalk.bold.redBright(`\n${brandTag} Conexión cerrada, conéctese nuevamente.`))
     }
   }
 }
 process.on('uncaughtException', console.error)
-process.setMaxListeners(15)
 let isInit = true
 let handler = await import('./handler.js')
 global.reloadHandler = async function(restatConn) {
