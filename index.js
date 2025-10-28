@@ -37,6 +37,11 @@ const { CONNECTING } = ws
 const { chain } = lodash
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000
 
+const lidCache = new Map()
+let stopped = 'connecting'
+const sessions = global.sessions || 'Sessions'
+const jadi = global.jadi || 'JadiBots'
+
 
 const BRAND_NAME = 'Hatsune Miku'
 const BRAND_EMOJI = '💙🌱'
@@ -189,9 +194,13 @@ if (!fs.existsSync(`./${sessions}/creds.json`)) {
         rl.close()
         addNumber = phoneNumber.replace(/\D/g, '')
         setTimeout(async () => {
-          let codeBot = await conn.requestPairingCode(addNumber)
-          codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot
-          console.log(chalk.bold.white(chalk.bgCyan(` ${BRAND_EMOJI} Código:`)), chalk.bold.cyan(codeBot))
+          try {
+            let codeBot = await conn.requestPairingCode(addNumber)
+            codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot
+            console.log(chalk.bold.white(chalk.bgCyan(` ${BRAND_EMOJI} Código:`)), chalk.bold.cyan(codeBot))
+          } catch (error) {
+            console.error('Error requesting pairing code:', error)
+          }
         }, 3000)
       }
     }
@@ -307,6 +316,7 @@ async function processLidsInMessage(message, groupJid) {
 
 async function connectionUpdate(update) {
   const {connection, lastDisconnect, isNewLogin} = update
+  stopped = connection
   global.stopped = connection
   if (isNewLogin) conn.isInit = true
   const code = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode;
@@ -592,7 +602,7 @@ setInterval(async () => {
 setInterval(async () => {
   if (stopped === 'close' || !conn || !conn.user) return
   await purgeSession()
-  console.log(mikuPrimary.bold(`\n${brandTag} Archivos de la carpeta ${global.sessions} no necesarios han sido eliminados.`))
+  console.log(mikuPrimary.bold(`\n${brandTag} Archivos de la carpeta ${sessions} no necesarios han sido eliminados.`))
 }, 1000 * 60 * 10)
 setInterval(async () => {
   if (stopped === 'close' || !conn || !conn.user) return
