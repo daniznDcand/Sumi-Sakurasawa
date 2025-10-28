@@ -199,13 +199,9 @@ if (!fs.existsSync(`./${sessions}/creds.json`)) {
       if (pairingCode) {
         isWaitingForPairing = true
         setTimeout(async () => {
-          try {
-            let codeBot = await conn.requestPairingCode(pairingCode)
-            codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot
-            console.log(chalk.bold.white(chalk.bgCyan(` ${BRAND_EMOJI} Código:`)), chalk.bold.cyan(codeBot))
-          } catch (error) {
-            console.log(chalk.bold.yellow(`${brandTag} Esperando conexión para generar código...`))
-          }
+          let codeBot = await conn.requestPairingCode(pairingCode)
+          codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot
+          console.log(chalk.bold.white(chalk.bgCyan(` ${BRAND_EMOJI} Código:`)), chalk.bold.cyan(codeBot))
         }, 3000)
       }
     }
