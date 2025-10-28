@@ -41,6 +41,7 @@ const lidCache = new Map()
 let stopped = 'connecting'
 const sessions = global.sessions || 'Sessions'
 const jadi = global.jadi || 'JadiBots'
+let isWaitingForPairing = false
 
 
 const BRAND_NAME = 'Hatsune Miku'
@@ -196,6 +197,7 @@ if (!fs.existsSync(`./${sessions}/creds.json`)) {
         pairingCode = phoneNumber.replace(/\D/g, '')
       }
       if (pairingCode) {
+        isWaitingForPairing = true
         setTimeout(async () => {
           try {
             let codeBot = await conn.requestPairingCode(pairingCode)
@@ -324,7 +326,9 @@ async function connectionUpdate(update) {
   if (isNewLogin) conn.isInit = true
   const code = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode;
   if (code && code !== DisconnectReason.loggedOut && conn?.ws.socket == null) {
-    await global.reloadHandler(true).catch(console.error);
+    if (!isWaitingForPairing) {
+      await global.reloadHandler(true).catch(console.error);
+    }
     global.timestamp.connect = new Date
   }
   if (global.db.data == null) loadDatabase()
@@ -334,6 +338,7 @@ async function connectionUpdate(update) {
     }
   }
   if (connection === "open") {
+    isWaitingForPairing = false
     const userJid = jidNormalizedUser(conn.user.id)
     const userName = conn.user.name || conn.user.verifiedName || "Desconocido"
     await joinChannels(conn)
@@ -361,6 +366,10 @@ async function connectionUpdate(update) {
   }
   let reason = new Boom(lastDisconnect?.error)?.output?.statusCode
   if (connection === 'close') {
+    if (isWaitingForPairing) {
+      console.log(chalk.bold.yellow(`${brandTag} Esperando vinculación...`))
+      return
+    }
     if (reason === DisconnectReason.badSession) {
       console.log(chalk.bold.cyanBright(`\n${brandTag} Sin conexión, borra la sesión principal del Bot y conéctate nuevamente.`))
     } else if (reason === DisconnectReason.connectionClosed) {
@@ -381,11 +390,14 @@ async function connectionUpdate(update) {
       console.log(chalk.bold.yellowBright(`\n${brandTag} Conexión agotada, reconectando el Bot...`))
       await global.reloadHandler(true).catch(console.error)
     } else {
-      console.log(chalk.bold.redBright(`\n${brandTag} Conexión cerrada, conéctese nuevamente.`))
+      if (!isWaitingForPairing) {
+        console.log(chalk.bold.redBright(`\n${brandTag} Conexión cerrada, conéctese nuevamente.`))
+      }
     }
   }
 }
 process.on('uncaughtException', console.error)
+process.setMaxListeners(15)
 let isInit = true
 let handler = await import('./handler.js')
 global.reloadHandler = async function(restatConn) {
