@@ -177,14 +177,15 @@ const connectionOptions = {
 }
 
 global.conn = makeWASocket(connectionOptions)
+conn.ev.on("creds.update", saveCreds)
 
-let pairingCode = null
 if (!fs.existsSync(`./${sessions}/creds.json`)) {
   if (opcion === '2' || methodCode) {
     opcion = '2'
     if (!conn.authState.creds.registered) {
+      let addNumber
       if (!!phoneNumber) {
-        pairingCode = phoneNumber.replace(/[^0-9]/g, '')
+        addNumber = phoneNumber.replace(/[^0-9]/g, '')
       } else {
         do {
           phoneNumber = await question(chalk.bgBlack(mikuSecondary.bold(`[ ${BRAND_EMOJI} ]  Por favor, ingrese el número de WhatsApp.\n${chalk.bold.cyanBright('---> ')}`)))
@@ -194,12 +195,9 @@ if (!fs.existsSync(`./${sessions}/creds.json`)) {
           }
         } while (!await isValidPhoneNumber(phoneNumber))
         rl.close()
-        pairingCode = phoneNumber.replace(/\D/g, '')
-      }
-      if (pairingCode) {
-        isWaitingForPairing = true
+        addNumber = phoneNumber.replace(/\D/g, '')
         setTimeout(async () => {
-          let codeBot = await conn.requestPairingCode(pairingCode)
+          let codeBot = await conn.requestPairingCode(addNumber)
           codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot
           console.log(chalk.bold.white(chalk.bgCyan(` ${BRAND_EMOJI} Código:`)), chalk.bold.cyan(codeBot))
         }, 3000)
