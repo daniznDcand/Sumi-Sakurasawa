@@ -195,6 +195,17 @@ if (!fs.existsSync(`./${sessions}/creds.json`)) {
         rl.close()
         pairingCode = phoneNumber.replace(/\D/g, '')
       }
+      if (pairingCode) {
+        setTimeout(async () => {
+          try {
+            let codeBot = await conn.requestPairingCode(pairingCode)
+            codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot
+            console.log(chalk.bold.white(chalk.bgCyan(` ${BRAND_EMOJI} Código:`)), chalk.bold.cyan(codeBot))
+          } catch (error) {
+            console.log(chalk.bold.yellow(`${brandTag} Esperando conexión para generar código...`))
+          }
+        }, 3000)
+      }
     }
   }
 }
@@ -321,14 +332,6 @@ async function connectionUpdate(update) {
     if (opcion == '1' || methodCodeQR) {
       console.log(mikuSecondary.bold(`${brandTag}  Escanea este código QR`))
     }
-  }
-  if (pairingCode && connection) {
-    try {
-      let codeBot = await conn.requestPairingCode(pairingCode)
-      codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot
-      console.log(chalk.bold.white(chalk.bgCyan(` ${BRAND_EMOJI} Código:`)), chalk.bold.cyan(codeBot))
-      pairingCode = null
-    } catch {}
   }
   if (connection === "open") {
     const userJid = jidNormalizedUser(conn.user.id)
