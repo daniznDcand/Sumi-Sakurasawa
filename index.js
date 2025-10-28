@@ -176,22 +176,14 @@ const connectionOptions = {
 }
 
 global.conn = makeWASocket(connectionOptions)
+
+let pairingCode = null
 if (!fs.existsSync(`./${sessions}/creds.json`)) {
   if (opcion === '2' || methodCode) {
     opcion = '2'
     if (!conn.authState.creds.registered) {
-      let addNumber
       if (!!phoneNumber) {
-        addNumber = phoneNumber.replace(/[^0-9]/g, '')
-        setTimeout(async () => {
-          try {
-            let codeBot = await conn.requestPairingCode(addNumber)
-            codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot
-            console.log(chalk.bold.white(chalk.bgCyan(` ${BRAND_EMOJI} Código:`)), chalk.bold.cyan(codeBot))
-          } catch (error) {
-            console.error('Error requesting pairing code:', error)
-          }
-        }, 3000)
+        pairingCode = phoneNumber.replace(/[^0-9]/g, '')
       } else {
         do {
           phoneNumber = await question(chalk.bgBlack(mikuSecondary.bold(`[ ${BRAND_EMOJI} ]  Por favor, ingrese el número de WhatsApp.\n${chalk.bold.cyanBright('---> ')}`)))
@@ -201,16 +193,7 @@ if (!fs.existsSync(`./${sessions}/creds.json`)) {
           }
         } while (!await isValidPhoneNumber(phoneNumber))
         rl.close()
-        addNumber = phoneNumber.replace(/\D/g, '')
-        setTimeout(async () => {
-          try {
-            let codeBot = await conn.requestPairingCode(addNumber)
-            codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot
-            console.log(chalk.bold.white(chalk.bgCyan(` ${BRAND_EMOJI} Código:`)), chalk.bold.cyan(codeBot))
-          } catch (error) {
-            console.error('Error requesting pairing code:', error)
-          }
-        }, 3000)
+        pairingCode = phoneNumber.replace(/\D/g, '')
       }
     }
   }
@@ -338,6 +321,14 @@ async function connectionUpdate(update) {
     if (opcion == '1' || methodCodeQR) {
       console.log(mikuSecondary.bold(`${brandTag}  Escanea este código QR`))
     }
+  }
+  if (pairingCode && connection) {
+    try {
+      let codeBot = await conn.requestPairingCode(pairingCode)
+      codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot
+      console.log(chalk.bold.white(chalk.bgCyan(` ${BRAND_EMOJI} Código:`)), chalk.bold.cyan(codeBot))
+      pairingCode = null
+    } catch {}
   }
   if (connection === "open") {
     const userJid = jidNormalizedUser(conn.user.id)
