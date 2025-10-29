@@ -160,7 +160,7 @@ addNumber = phoneNumber.replace(/\D/g, '')
 setTimeout(async () => {
 let codeBot = await conn.requestPairingCode(addNumber)
 codeBot = codeBot.match(/.{1,4}/g)?.join("-") || codeBot
-console.log(chalk.bold.white(chalk.bgMagenta(`[ 💙🌱 ]  Código:`)), chalk.bold.white(chalk.white(codeBot)))
+console.log(chalk.bold.white(chalk.bgMagenta(`[ 💙🌱 ]  MIKU CODE:`)), chalk.bold.white(chalk.white(codeBot)))
 }, 3000)
 }}}}
 conn.isInit = false
@@ -263,7 +263,7 @@ const botPath = join(rutaJadiBot, gjbts)
 if (existsSync(botPath) && statSync(botPath).isDirectory()) {
 const readBotPath = readdirSync(botPath)
 if (readBotPath.includes(creds)) {
-yukiJadiBot({ pathMikuJadiBot: botPath, m: null, conn, args: '', usedPrefix: '/', command: 'serbot' })
+mikuJadiBot({ pathMikuJadiBot: botPath, m: null, conn, args: '', usedPrefix: '/', command: 'serbot' })
 }}}}}
 
 const pluginFolder = global.__dirname(join(__dirname, './plugins/index'))
