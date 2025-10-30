@@ -162,8 +162,9 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
       }
       chat.welcome = isEnable
       
-      // Mensaje específico para bienvenida
-      const welcomeMsg = isEnable ? 'welcome activado' : 'welcome desactivado'
+      
+      const welcomeStatus = isEnable ? 'activó' : 'desactivó'
+      const welcomeMsg = `💙 La función *bienvenida* se *${welcomeStatus}* para este chat\n\n${isEnable ? '✅ Ahora se enviará un mensaje de bienvenida cuando alguien se una al grupo' : '❌ Ya no se enviará mensaje de bienvenida'}`
       return conn.reply(m.chat, welcomeMsg, m, global.rcanal)
       break  
       
@@ -188,7 +189,7 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
       
       chat.audios = isEnable
       
-      // Mensaje específico para audios
+      
       const audioStatus = isEnable ? 'activaron' : 'desactivaron'
       const audioMsg = `🎵 Los *audios automáticos* se *${audioStatus}* para este chat\n\n${isEnable ? '✅ Ahora se enviarán audios automáticamente cuando escriban palabras específicas\n\n💡 Usa `menu2` para ver las palabras disponibles' : '🔇 Ya no se enviarán audios automáticamente por palabras'}`
       return conn.reply(m.chat, audioMsg, m, global.rcanal)
@@ -415,6 +416,8 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
   
   
   if (!isAll) chat[type] = isEnable;
+
+  conn.reply(m.chat, `💙 La función *${type}* se *${isEnable ? 'activó' : 'desactivó'}* ${isAll ? 'para este Bot' : isUser ? '' : 'para este chat'}`, m, global.rcanal);
 };
 
 handler.help = ['welcome', 'bienvenida', 'antiprivado', 'antiprivate', 'restrict', 'restringir', 'autolevelup', 'autonivel', 'antibot', 'antibots', 'autoaceptar', 'aceptarauto', 'autorechazar', 'rechazarauto', 'autoresponder', 'autorespond', 'antisubbots', 'antibot2', 'modoadmin', 'soloadmin', 'reaction', 'reaccion', 'nsfw', 'modohorny', 'antispam', 'jadibotmd', 'modejadibot', 'subbots', 'detect', 'avisos', 'antilink', 'antilink2', 'antifake', 'antiarabes', 'antitoxic', 'audios', 'enable', 'disable']
