@@ -161,6 +161,11 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
         throw false
       }
       chat.welcome = isEnable
+      
+      // Mensaje específico para bienvenida
+      const welcomeStatus = isEnable ? 'activó' : 'desactivó'
+      const welcomeMsg = `💙 La función *bienvenida* se *${welcomeStatus}* para este chat\n\n${isEnable ? '✅ Ahora se enviará un mensaje de bienvenida cuando alguien se una al grupo' : '❌ Ya no se enviará mensaje de bienvenida'}`
+      return conn.reply(m.chat, welcomeMsg, m, global.rcanal)
       break  
       
     case 'antiprivado':
@@ -184,6 +189,10 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
       
       chat.audios = isEnable
       
+      // Mensaje específico para audios
+      const audioStatus = isEnable ? 'activaron' : 'desactivaron'
+      const audioMsg = `🎵 Los *audios automáticos* se *${audioStatus}* para este chat\n\n${isEnable ? '✅ Ahora se enviarán audios automáticamente cuando escriban palabras específicas\n\n💡 Usa `menu2` para ver las palabras disponibles' : '🔇 Ya no se enviarán audios automáticamente por palabras'}`
+      return conn.reply(m.chat, audioMsg, m, global.rcanal)
       break
 
       case 'restrict':

@@ -2,6 +2,13 @@ import fetch from 'node-fetch'
 
 export async function before(m, { conn, participants, groupMetadata }) {
   try {
+    console.log('🔍 Evento detectado:', {
+      messageStubType: m.messageStubType,
+      isGroup: m.isGroup,
+      chat: m.chat,
+      processed: m._welcProcessed
+    })
+    
     if (!m.messageStubType || !m.isGroup) return true
     if (m._welcProcessed) return true
     m._welcProcessed = true
@@ -12,8 +19,19 @@ export async function before(m, { conn, participants, groupMetadata }) {
     if (!global.db.data.chats[m.chat]) global.db.data.chats[m.chat] = {}
 
     const chat = global.db.data.chats[m.chat]
-    if (chat.welcome === undefined) chat.welcome = true
-    if (!chat.welcome) return true
+    
+    // Asegurar que welcome esté activado por defecto
+    if (chat.welcome === undefined) {
+      chat.welcome = true
+    }
+    
+    console.log(`🔍 Estado welcome para ${m.chat}:`, chat.welcome)
+    
+    // Solo saltar si está explícitamente desactivado
+    if (chat.welcome === false) {
+      console.log('❌ Welcome desactivado, saltando...')
+      return true
+    }
 
     const canalUrl = 'https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
     const groupSize = (participants || []).length
@@ -54,10 +72,16 @@ export async function before(m, { conn, participants, groupMetadata }) {
     }
 
     if (m.messageStubType === 27) {
-      if (!m.messageStubParameters || !m.messageStubParameters[0]) return true
+      console.log('👋 Procesando entrada de usuario...')
+      if (!m.messageStubParameters || !m.messageStubParameters[0]) {
+        console.log('❌ No hay parámetros de usuario')
+        return true
+      }
       
       const user = m.messageStubParameters[0]
       const userName = user.split('@')[0]
+      console.log(`👤 Usuario que entra: ${userName}`)
+      
       const welcomeText = `👋 ¡Hola @${userName}!
 
 🎉Bienvenido a *${groupMetadata?.subject || 'el grupo'}*
@@ -70,16 +94,23 @@ export async function before(m, { conn, participants, groupMetadata }) {
 
 🎵Únete a nuestro canal oficial`
 
+      console.log('📤 Enviando mensaje de bienvenida...')
       await sendSingleWelcome(m.chat, welcomeText, user, m)
       console.log('✅ Welcome enviado con botón de canal')
       return true
     }
 
     if (m.messageStubType === 28 || m.messageStubType === 32) {
-      if (!m.messageStubParameters || !m.messageStubParameters[0]) return true
+      console.log('👋 Procesando salida de usuario...')
+      if (!m.messageStubParameters || !m.messageStubParameters[0]) {
+        console.log('❌ No hay parámetros de usuario para salida')
+        return true
+      }
       
       const user = m.messageStubParameters[0]
       const userName = user.split('@')[0]
+      console.log(`🚪 Usuario que sale: ${userName}`)
+      
       const byeText = `👋 ¡Hasta luego @${userName}!
 
 😢Te extrañaremos en *${groupMetadata?.subject || 'el grupo'}*
@@ -88,6 +119,7 @@ export async function before(m, { conn, participants, groupMetadata }) {
 
 💙Síguenos en nuestro canal oficial🎵`
 
+      console.log('📤 Enviando mensaje de despedida...')
       await sendSingleWelcome(m.chat, byeText, user, m)
       console.log('✅ Goodbye enviado con botón de canal')
       return true
