@@ -98,21 +98,6 @@ const qrOption = chalk.blueBright
 const textOption = chalk.cyan
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
 const question = (texto) => new Promise((resolver) => rl.question(texto, resolver))
-
-async function isValidPhoneNumber(number) {
-try {
-number = number.replace(/\s+/g, '')
-if (number.startsWith('+521')) {
-number = number.replace('+521', '+52')
-} else if (number.startsWith('+52') && number[4] === '1') {
-number = number.replace('+52 1', '+52')
-}
-const parsedNumber = phoneUtil.parseAndKeepRawInput(number)
-return phoneUtil.isValidNumber(parsedNumber)
-} catch (error) {
-return false
-}}
-
 let opcion
 if (methodCodeQR) {
 opcion = '1'
@@ -170,22 +155,17 @@ phoneNumber = phoneNumber.replace(/\D/g, '')
 if (!phoneNumber.startsWith('+')) {
 phoneNumber = `+${phoneNumber}`
 }} while (!await isValidPhoneNumber(phoneNumber))
-addNumber = phoneNumber.replace(/\D/g, '')
-}
 rl.close()
+addNumber = phoneNumber.replace(/\D/g, '')
 setTimeout(async () => {
-try {
 let codeBot = await conn.requestPairingCode(addNumber)
-codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot
-console.log(chalk.bold.white(chalk.bgMagenta(`\n[ 💙🌱 ]  CÓDIGO MIKU:`)), chalk.bold.yellow(codeBot))
-console.log(chalk.bold.cyan(`\n[ ℹ️ ]  Ingresa el código en WhatsApp > Dispositivos vinculados\n`))
-} catch (error) {
-console.log(chalk.bold.red(`[ ❌ ]  Error: ${error.message}`))
-}
+codeBot = codeBot.match(/.{1,4}/g)?.join("-") || codeBot
+console.log(chalk.bold.white(chalk.bgMagenta(`[ 💙🌱 ]  MIKU CODE:`)), chalk.bold.white(chalk.white(codeBot)))
 }, 3000)
 }}}}
 conn.isInit = false
 conn.well = false
+conn.logger.info(`[ 💙 ]  H E C H O\n`)
 if (!opts['test']) {
 if (global.db) setInterval(async () => {
 if (global.db.data) await global.db.write()
@@ -362,9 +342,23 @@ console.log(chalk.gray(`💙 Archivos de la carpeta TMP eliminados`))
 console.log(chalk.gray(`💙 Los archivos de la carpeta TMP no se pudieron eliminar`))
 }}, 30 * 1000) 
 _quickTest().catch(console.error)
+async function isValidPhoneNumber(number) {
+try {
+number = number.replace(/\s+/g, '')
+if (number.startsWith('+521')) {
+number = number.replace('+521', '+52')
+} else if (number.startsWith('+52') && number[4] === '1') {
+number = number.replace('+52 1', '+52')
+}
+const parsedNumber = phoneUtil.parseAndKeepRawInput(number)
+return phoneUtil.isValidNumber(parsedNumber)
+} catch (error) {
+return false
+}}
 
 async function joinChannels(sock) {
 for (const value of Object.values(global.ch)) {
 if (typeof value === 'string' && value.endsWith('@newsletter')) {
 await sock.newsletterFollow(value).catch(() => {})
 }}}
+
