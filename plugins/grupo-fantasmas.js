@@ -5,12 +5,11 @@ const delay = ms => new Promise(res => setTimeout(res, ms))
 var handler = async (m, { conn, text, participants, args, command }) => {
 
 let member = participants.map(u => u.id)
-if(!text) {
-var sum = member.length
-} else {
-var sum = text} 
-var total = 0
-var sider = []
+let isEliminar = text && text.toLowerCase().includes('eliminar')
+let sum = (!text || isEliminar) ? member.length : parseInt(text) || member.length
+let total = 0
+let sider = []
+
 for (let i = 0; i < sum; i++) {
 let users = m.isGroup ? participants.find(u => u.id == member[i]) : {}
 if ((typeof global.db.data.users[member[i]] == 'undefined' || global.db.data.users[member[i]].chat == 0) && !users.isAdmin && !users.isSuperAdmin) { 
@@ -23,14 +22,14 @@ total++
 sider.push(member[i])}}}
 if(total == 0) return conn.reply(m.chat, `${emoji} Este grupo es activo, no tiene fantasmas.`, m)
 
-if (text !== 'eliminar') {
-const listMsg = `${emoji} *${command === 'fantasmas' ? 'Revisión' : 'Eliminación'} de inactivos*\n\n${emoji2} *Lista de fantasmas*\n${sider.map(v => '@' + v.replace(/@.+/, '')).join('\n')}\n\n⚠️ *Total: ${total} usuarios*\n\n${command === 'fantasmas' ? '📝 *NOTA:* Esto no es al 100% acertado, el bot inicia el conteo de mensajes a partir de que se active en este número\n\n' : ''}💡 Para eliminarlos, presiona el botón de abajo:`
+if (!isEliminar) {
+const listMsg = `${emoji} *${command === 'fantasmas' ? 'Revisión' : 'Eliminación'} de inactivos*\n\n${emoji2} *Lista de fantasmas:*\n${sider.map(v => '• @' + v.replace(/@.+/, '')).join('\n')}\n\n⚠️ *Total: ${total} usuarios*\n\n${command === 'fantasmas' ? '📝 *NOTA:* Esto no es al 100% acertado, el bot inicia el conteo de mensajes a partir de que se active en este número\n\n' : ''}💡 Para eliminarlos, presiona el botón de abajo:`
 
 const buttons = [{
 name: 'quick_reply',
 buttonParamsJson: JSON.stringify({
 display_text: '🗑️ Eliminar Inactivos',
-id: `${m.prefix || '.'}${command} eliminar`
+id: `.${command} eliminar`
 })
 }]
 
