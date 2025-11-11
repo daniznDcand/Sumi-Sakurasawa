@@ -23,17 +23,40 @@ sider.push(member[i])}}}
 if(total == 0) return conn.reply(m.chat, `${emoji} Este grupo es activo, no tiene fantasmas.`, m)
 
 if (!isEliminar) {
-const listMsg = `${emoji} *${command === 'fantasmas' ? 'Revisión' : 'Eliminación'} de inactivos*\n\n${emoji2} *Lista de fantasmas:*\n${sider.map(v => '• @' + v.replace(/@.+/, '')).join('\n')}\n\n⚠️ *Total: ${total} usuarios*\n\n${command === 'fantasmas' ? '📝 *NOTA:* Esto no es al 100% acertado, el bot inicia el conteo de mensajes a partir de que se active en este número\n\n' : ''}💡 Para eliminarlos, presiona el botón de abajo:`
+let userList = []
+for (let jid of sider) {
+let participant = participants.find(u => u.id === jid)
+let name = participant ? (await conn.getName(jid)) : jid.split('@')[0]
+userList.push(`• ${name} (@${jid.split('@')[0]})`)
+}
 
-const buttons = [{
+const listMsg = `${emoji} *${command === 'fantasmas' ? 'Revisión' : 'Eliminación'} de inactivos*\n\n${emoji2} *Lista de fantasmas:*\n${userList.join('\n')}\n\n⚠️ *Total: ${total} usuarios*\n\n${command === 'fantasmas' ? '📝 *NOTA:* Esto no es al 100% acertado, el bot inicia el conteo de mensajes a partir de que se active en este número\n\n' : ''}💡 Presiona el botón de abajo para eliminarlos:`
+
+const interactiveMessage = {
+header: {
+title: '👻 Usuarios Fantasmas Detectados',
+hasMediaAttachment: false
+},
+body: { text: listMsg },
+footer: { text: '💙 Hatsune Miku Bot' },
+nativeFlowMessage: {
+buttons: [{
 name: 'quick_reply',
 buttonParamsJson: JSON.stringify({
 display_text: '🗑️ Eliminar Inactivos',
 id: `.${command} eliminar`
 })
 }]
+}
+}
 
-return await conn.sendButton(m.chat, listMsg, '💙 Hatsune Miku Bot', null, buttons, m, { mentions: sider })
+return await conn.relayMessage(m.chat, {
+viewOnceMessage: {
+message: {
+interactiveMessage
+}
+}
+}, { quoted: m })
 }
 
 await m.reply(`👻 *ELIMINANDO USUARIOS FANTASMAS* 👻\n\n⏳ _Iniciando proceso de eliminación..._\n_Cada eliminación tiene una pausa de 3 segundos._\n\n📋 Usuarios a eliminar: ${total}`, null, { mentions: sider })
