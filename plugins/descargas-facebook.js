@@ -23,41 +23,26 @@ const handler = async (m, { text, conn, args }) => {
     return conn.reply(m.chat, `${emoji2} No se encontraron resultados. Asegúrate de que el contenido sea público.`, m)
   }
 
-  let data = result.find(i => i.resolution === "720p (HD)") || 
-             result.find(i => i.resolution === "480p (SD)") || 
-             result.find(i => i.resolution === "360p (SD)") ||
-             result[0]
-
-  if (!data || !data.url) {
-    await m.react(error)
-    return conn.reply(m.chat, `${emoji2} No se pudo obtener el archivo. Intenta con otro enlace.`, m)
-  }
-
-  const mediaUrl = data.url
-  const isVideo = data.resolution && (data.resolution.includes('p') || mediaUrl.includes('.mp4') || mediaUrl.includes('video'))
-
   try {
-    const response = await fetch(mediaUrl, { 
-      method: 'HEAD',
-      timeout: 10000 
-    })
-    
-    if (!response.ok) {
-      throw new Error('URL no accesible')
-    }
+    for (let data of result) {
+      if (!data || !data.url) continue
 
-    if (isVideo) {
-      await conn.sendMessage(m.chat, { 
-        video: { url: mediaUrl }, 
-        caption: `💙 *Facebook Video*\n\n✨ Resolución: ${data.resolution || 'Auto'}\n\n🎵 Descargado por Hatsune Miku Bot`, 
-        fileName: 'facebook.mp4', 
-        mimetype: 'video/mp4' 
-      }, { quoted: m })
-    } else {
-      await conn.sendMessage(m.chat, { 
-        image: { url: mediaUrl }, 
-        caption: `💙 *Facebook Image*\n\n🎵 Descargado por Hatsune Miku Bot` 
-      }, { quoted: m })
+      const mediaUrl = data.url
+      const isVideo = data.resolution || mediaUrl.includes('.mp4') || mediaUrl.includes('video')
+
+      if (isVideo) {
+        await conn.sendMessage(m.chat, { 
+          video: { url: mediaUrl }, 
+          caption: `💙 *Facebook Video*\n\n✨ Resolución: ${data.resolution || 'Auto'}\n\n🎵 Descargado por Hatsune Miku Bot`, 
+          fileName: 'facebook.mp4', 
+          mimetype: 'video/mp4' 
+        }, { quoted: m })
+      } else {
+        await conn.sendMessage(m.chat, { 
+          image: { url: mediaUrl }, 
+          caption: `💙 *Facebook Image*\n\n🎵 Descargado por Hatsune Miku Bot` 
+        }, { quoted: m })
+      }
     }
     
     await m.react(done)
@@ -73,6 +58,6 @@ handler.tags = ['descargas']
 handler.command = ['facebook', 'fb']
 handler.group = true;
 handler.register = true;
-handler.coin = 2;
+handler.moneda = 2;
 
 export default handler
