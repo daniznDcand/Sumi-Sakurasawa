@@ -15,6 +15,9 @@ export async function before(m, { conn, participants, groupMetadata }) {
     if (chat.welcome === undefined) {
       chat.welcome = true
     }
+    if (chat.welcome === false && chat.welcome !== true) {
+      chat.welcome = true
+    }
     
     console.log(`🔍 Estado welcome para ${m.chat}:`, chat.welcome)
     
