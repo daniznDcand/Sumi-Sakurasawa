@@ -197,30 +197,21 @@ async function downloadVideo(url) {
 
   const apis = [
     { 
-      name: 'Ryzen', 
-      url: `https://api.ryzendesu.vip/api/downloader/ytmp4?url=${encodeURIComponent(url)}`,
-      extractor: data => data?.url
+      name: 'Adonix', 
+      url: `https://api-adonix.ultraplus.click/download/ytmp4?apikey=${global.apikey}&url=${encodeURIComponent(url)}`,
+      extractor: data => data?.data?.url
     },
     { 
-      name: 'Vreden', 
-      url: `https://api.vreden.my.id/api/ytmp4?url=${encodeURIComponent(url)}`,
-      extractor: data => data?.result?.download || data?.result?.url
-    },
-    { 
-      name: 'YT-DL', 
-      url: `https://api.agatz.xyz/api/ytmp4?url=${encodeURIComponent(url)}`,
-      extractor: data => data?.data?.download
+      name: 'MayAPI', 
+      url: `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=mp4&apikey=${global.APIKeys?.['https://mayapi.ooguy.com']}`,
+      extractor: data => data?.result?.url
     }
   ];
 
   for (const api of apis) {
     try {
       console.log(`🔄 ${api.name}...`);
-      const res = await fetch(api.url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
-      });
+      const res = await fetch(api.url);
       const data = await res.json();
       
       const videoUrl = api.extractor(data);
@@ -242,30 +233,21 @@ async function downloadAudio(url) {
 
   const apis = [
     { 
-      name: 'Ryzen', 
-      url: `https://api.ryzendesu.vip/api/downloader/ytmp3?url=${encodeURIComponent(url)}`,
-      extractor: data => data?.url
+      name: 'Adonix', 
+      url: `https://api-adonix.ultraplus.click/download/ytmp3?apikey=${global.apikey}&url=${encodeURIComponent(url)}`,
+      extractor: data => data?.data?.url
     },
     { 
-      name: 'Vreden', 
-      url: `https://api.vreden.my.id/api/ytmp3?url=${encodeURIComponent(url)}`,
-      extractor: data => data?.result?.download || data?.result?.url
-    },
-    { 
-      name: 'YT-DL', 
-      url: `https://api.agatz.xyz/api/ytmp3?url=${encodeURIComponent(url)}`,
-      extractor: data => data?.data?.download
+      name: 'MayAPI', 
+      url: `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=mp3&apikey=${global.APIKeys?.['https://mayapi.ooguy.com']}`,
+      extractor: data => data?.result?.url
     }
   ];
 
   for (const api of apis) {
     try {
       console.log(`🔄 ${api.name}...`);
-      const res = await fetch(api.url, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        }
-      });
+      const res = await fetch(api.url);
       const data = await res.json();
       
       const audioUrl = api.extractor(data);
