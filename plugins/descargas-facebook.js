@@ -34,7 +34,7 @@ const handler = async (m, { text, conn, args }) => {
   }
 
   const mediaUrl = data.url
-  const isVideo = data.resolution || mediaUrl.includes('.mp4') || mediaUrl.includes('video')
+  const isVideo = data.resolution && (data.resolution.includes('p') || mediaUrl.includes('.mp4') || mediaUrl.includes('video'))
 
   try {
     const response = await fetch(mediaUrl, { 
