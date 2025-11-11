@@ -59,8 +59,6 @@ interactiveMessage
 }, { quoted: m })
 }
 
-await m.reply(`👻 *ELIMINANDO USUARIOS FANTASMAS* 👻\n\n⏳ _Iniciando proceso de eliminación..._\n_Cada eliminación tiene una pausa de 3 segundos._\n\n📋 Usuarios a eliminar: ${total}`, null, { mentions: sider })
-
 let chat = global.db.data.chats[m.chat]
 let originalWelcome = chat.welcome
 chat.welcome = false
