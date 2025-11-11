@@ -1,30 +1,28 @@
-var handler = async (m, { conn,usedPrefix, command, text }) => {
+var handler = async (m, { conn, usedPrefix, command, text }) => {
+  let user
 
-if (isNaN(text) && !text.match(/@/g)){
+  if (m.mentionedJid && m.mentionedJid[0]) {
+    user = m.mentionedJid[0]
+  } else if (m.quoted) {
+    user = m.quoted.sender
+  } else if (text) {
+    let number = text.replace(/[^0-9]/g, '')
+    if (number.length >= 11 && number.length <= 13) {
+      user = number + '@s.whatsapp.net'
+    }
+  }
 
-} else if (isNaN(text)) {
-var number = text.split`@`[1]
-} else if (!isNaN(text)) {
-var number = text
-}
+  if (!user) {
+    return conn.reply(m.chat, `${emoji} Debes mencionar o responder a un usuario para degradarlo de administrador.`, m)
+  }
 
-if (!text && !m.quoted) return conn.reply(m.chat, `${emoji} Debes mencionar a un usuario para poder degradarlo de administrador.`, m)
-if (number.length > 13 || (number.length < 11 && number.length > 0)) return conn.reply(m.chat, `${emoji} Debes mencionar a un usuario para poder degradarlo de administrador.`, m)
-
-try {
-if (text) {
-var user = number + '@s.whatsapp.net'
-} else if (m.quoted.sender) {
-var user = m.quoted.sender
-} else if (m.mentionedJid) {
-var user = number + '@s.whatsapp.net'
-} 
-} catch (e) {
-} finally {
-conn.groupParticipantsUpdate(m.chat, [user], 'demote')
-conn.reply(m.chat, `${emoji2} Fue descartado como admin.`, m)
-}
-
+  try {
+    await conn.groupParticipantsUpdate(m.chat, [user], 'demote')
+    conn.reply(m.chat, `${emoji2} Fue descartado como admin.`, m)
+  } catch (e) {
+    console.error(e)
+    conn.reply(m.chat, `${emoji} Error al degradar al usuario. Verifica que sea administrador.`, m)
+  }
 }
 handler.help = ['demote']
 handler.tags = ['grupo']
