@@ -2,7 +2,14 @@ import { areJidsSameUser } from '@whiskeysockets/baileys'
 
 const delay = ms => new Promise(res => setTimeout(res, ms))
 
+const processingChats = new Set()
+
 var handler = async (m, { conn, text, participants, args, command }) => {
+
+if (processingChats.has(m.chat)) return
+if (text && text.toLowerCase().includes('eliminar')) {
+processingChats.add(m.chat)
+}
 
 let member = participants.map(u => u.id)
 let isEliminar = text && text.toLowerCase().includes('eliminar')
@@ -88,6 +95,7 @@ console.error(`❌ Error eliminando ${user}:`, e)
 }
 } finally {
 chat.welcome = originalWelcome
+processingChats.delete(m.chat)
 }
 
 await conn.reply(m.chat, `🏁 **PROCESO COMPLETADO**\n\n✅ Usuarios eliminados: ${eliminated}\n❌ Errores: ${errors}\n👻 Total procesados: ${total}`, m)
