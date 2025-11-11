@@ -178,6 +178,7 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
         throw false
       }
       chat.welcome = isEnable
+      console.log(`🔧 Welcome ${isEnable ? 'activado' : 'desactivado'} para ${m.chat}. Nuevo valor:`, chat.welcome)
       break  
       
     case 'antiprivado':
