@@ -76,19 +76,16 @@ let participant = participants.find(v => areJidsSameUser(v.id, user))
 if (!participant) continue
 
 if (participant.admin === 'admin' || participant.admin === 'superadmin') {
-await conn.reply(m.chat, `⚠️ No se puede eliminar a @${user.split('@')[0]} (es administrador)`, m, { mentions: [user] })
 continue
 }
 
 try {
 await conn.groupParticipantsUpdate(m.chat, [user], 'remove')
 eliminated++
-await conn.reply(m.chat, `✅ Usuario @${user.split('@')[0]} eliminado exitosamente`, m, { mentions: [user] })
 await delay(3000)
 } catch (e) {
 errors++
 console.error(`❌ Error eliminando ${user}:`, e)
-await conn.reply(m.chat, `❌ No se pudo eliminar a @${user.split('@')[0]}`, m, { mentions: [user] })
 }
 }
 } finally {
