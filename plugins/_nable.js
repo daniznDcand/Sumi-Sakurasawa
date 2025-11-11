@@ -7,7 +7,24 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
   let bot = global.db.data.settings[conn.user.jid] || {}
   let type = command.toLowerCase()
   let isAll = false, isUser = false
-  let isEnable = chat[type] || false
+  
+  const typeMap = {
+    'antilink': 'antiLink',
+    'antilink2': 'antiLink2',
+    'antibot': 'antiBot',
+    'antibots': 'antiBot',
+    'antibot2': 'antiBot2',
+    'antisubbots': 'antiBot2',
+    'autoaceptar': 'autoAceptar',
+    'aceptarauto': 'autoAceptar',
+    'autorechazar': 'autoRechazar',
+    'rechazarauto': 'autoRechazar',
+    'antiprivado': 'antiPrivate',
+    'antiprivate': 'antiPrivate'
+  }
+  
+  let dbKey = typeMap[type] || type
+  let isEnable = chat[dbKey] || bot[dbKey] || false
 
   
   const validFunctions = [
@@ -415,7 +432,11 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
   }
   
   
-  if (!isAll) chat[type] = isEnable;
+  if (isAll) {
+    bot[dbKey] = isEnable
+  } else {
+    chat[dbKey] = isEnable
+  }
 
   conn.reply(m.chat, `💙 La función *${type}* se *${isEnable ? 'activó' : 'desactivó'}* ${isAll ? 'para este Bot' : isUser ? '' : 'para este chat'}`, m, global.rcanal);
 };

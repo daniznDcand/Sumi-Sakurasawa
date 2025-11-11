@@ -2,9 +2,8 @@ import fetch from 'node-fetch'
 
 export async function before(m, { conn, participants, groupMetadata }) {
   try {
-    if (!m.messageStubType || !m.isGroup) return true
-    if (m._welcProcessed) return true
-    m._welcProcessed = true
+    if (!m.isGroup) return true
+    if (!m.messageStubType) return true
 
     if (!global.db) global.db = { data: { chats: {} } }
     if (!global.db.data) global.db.data = { chats: {} }
@@ -51,12 +50,12 @@ export async function before(m, { conn, participants, groupMetadata }) {
           }
         }
 
-        console.log('📤 Enviando welcome con imagen y botón de canal...')
+        console.log('📤 Enviando welcome con imagen ampliada y botón de canal...')
         
-        const buttons = [];
-        const urls = [['🎵 Ver Canal', canalUrl]];
+        const buttons = []
+        const urls = [['🎵 Ver Canal', canalUrl]]
         
-        await conn.sendNCarousel(jid, text, '💙 Hatsune Miku Bot', ppBuffer, buttons, null, urls, null, quoted, [user])
+        await conn.sendNCarousel(jid, text, '💙 Hatsune Miku Bot', ppBuffer, buttons, null, urls, null, quoted, [user], { width: 1024, height: 1024 })
 
       } catch (err) {
         console.log('sendSingleWelcome error:', err)
@@ -65,11 +64,19 @@ export async function before(m, { conn, participants, groupMetadata }) {
     }
 
     if (m.messageStubType === 27) {
-      if (!m.messageStubParameters || !m.messageStubParameters[0]) return true
+      console.log('🎉 Nuevo usuario detectado (tipo 27)')
       
-      const user = m.messageStubParameters[0]
-      const userName = user.split('@')[0]
-      const welcomeText = `👋 ¡Hola @${userName}!
+      const users = m.messageStubParameters || []
+      if (users.length === 0) {
+        console.log('⚠️ No hay usuarios en messageStubParameters')
+        return true
+      }
+      
+      for (const user of users) {
+        if (!user) continue
+        
+        const userName = user.split('@')[0]
+        const welcomeText = `👋 ¡Hola @${userName}!
 
 🎉Bienvenido a *${groupMetadata?.subject || 'el grupo'}*
 
@@ -81,17 +88,24 @@ export async function before(m, { conn, participants, groupMetadata }) {
 
 🎵Únete a nuestro canal oficial`
 
-      await sendSingleWelcome(m.chat, welcomeText, user, m)
-      console.log('✅ Welcome enviado con botón de canal')
+        await sendSingleWelcome(m.chat, welcomeText, user, m)
+        console.log(`✅ Welcome enviado a ${userName}`)
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
       return true
     }
 
     if (m.messageStubType === 28 || m.messageStubType === 32) {
-      if (!m.messageStubParameters || !m.messageStubParameters[0]) return true
+      console.log(`👋 Usuario salió (tipo ${m.messageStubType})`)
       
-      const user = m.messageStubParameters[0]
-      const userName = user.split('@')[0]
-      const byeText = `👋 ¡Hasta luego @${userName}!
+      const users = m.messageStubParameters || []
+      if (users.length === 0) return true
+      
+      for (const user of users) {
+        if (!user) continue
+        
+        const userName = user.split('@')[0]
+        const byeText = `👋 ¡Hasta luego @${userName}!
 
 😢Te extrañaremos en *${groupMetadata?.subject || 'el grupo'}*
 
@@ -99,8 +113,10 @@ export async function before(m, { conn, participants, groupMetadata }) {
 
 💙Síguenos en nuestro canal oficial🎵`
 
-      await sendSingleWelcome(m.chat, byeText, user, m)
-      console.log('✅ Goodbye enviado con botón de canal')
+        await sendSingleWelcome(m.chat, byeText, user, m)
+        console.log(`✅ Goodbye enviado a ${userName}`)
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
       return true
     }
 

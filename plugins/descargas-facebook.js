@@ -1,41 +1,70 @@
 import { igdl } from 'ruhend-scraper'
+import fetch from 'node-fetch'
 
 const handler = async (m, { text, conn, args }) => {
   if (!args[0]) {
     return conn.reply(m.chat, `${emoji} Por favor, ingresa un enlace de Facebook.`, m)
   }
 
-  let res;
+  await m.react(rwait)
+
+  let res
   try {
-    await m.react(rwait);
-    res = await igdl(args[0]);
+    res = await igdl(args[0])
   } catch (e) {
-    return conn.reply(m.chat, `${msm} Error al obtener datos. Verifica el enlace.`, m)
+    console.error('Error igdl:', e)
+    await m.react(error)
+    return conn.reply(m.chat, `${msm} Error al obtener datos. Verifica que el enlace sea válido y público.`, m)
   }
 
-  let result = res.data;
+  let result = res?.data
   if (!result || result.length === 0) {
-    return conn.reply(m.chat, `${emoji2} No se encontraron resultados.`, m)
+    await m.react(error)
+    return conn.reply(m.chat, `${emoji2} No se encontraron resultados. Asegúrate de que el contenido sea público.`, m)
   }
 
-  let data;
+  let data = result.find(i => i.resolution === "720p (HD)") || 
+             result.find(i => i.resolution === "480p (SD)") || 
+             result.find(i => i.resolution === "360p (SD)") ||
+             result[0]
+
+  if (!data || !data.url) {
+    await m.react(error)
+    return conn.reply(m.chat, `${emoji2} No se pudo obtener el archivo. Intenta con otro enlace.`, m)
+  }
+
+  const mediaUrl = data.url
+  const isVideo = data.resolution || mediaUrl.includes('.mp4') || mediaUrl.includes('video')
+
   try {
-    data = result.find(i => i.resolution === "720p (HD)") || result.find(i => i.resolution === "360p (SD)");
-  } catch (e) {
-    return conn.reply(m.chat, `${msm} Error al procesar los datos.`, m)
-  }
+    const response = await fetch(mediaUrl, { 
+      method: 'HEAD',
+      timeout: 10000 
+    })
+    
+    if (!response.ok) {
+      throw new Error('URL no accesible')
+    }
 
-  if (!data) {
-    return conn.reply(m.chat, `${emoji2} No se encontró una resolución adecuada.`, m)
-  }
-
-  let video = data.url;
-  try {
-    await conn.sendMessage(m.chat, { video: { url: video }, caption: `${emoji} Aqui tienes ฅ^•ﻌ•^ฅ.`, fileName: 'fb.mp4', mimetype: 'video/mp4' }, { quoted: m })
-    await m.react(done);
+    if (isVideo) {
+      await conn.sendMessage(m.chat, { 
+        video: { url: mediaUrl }, 
+        caption: `💙 *Facebook Video*\n\n✨ Resolución: ${data.resolution || 'Auto'}\n\n🎵 Descargado por Hatsune Miku Bot`, 
+        fileName: 'facebook.mp4', 
+        mimetype: 'video/mp4' 
+      }, { quoted: m })
+    } else {
+      await conn.sendMessage(m.chat, { 
+        image: { url: mediaUrl }, 
+        caption: `💙 *Facebook Image*\n\n🎵 Descargado por Hatsune Miku Bot` 
+      }, { quoted: m })
+    }
+    
+    await m.react(done)
   } catch (e) {
-    return conn.reply(m.chat, `${msm} Error al enviar el video.`, m)
-    await m.react(error);
+    console.error('Error al enviar:', e)
+    await m.react(error)
+    return conn.reply(m.chat, `${msm} Error al descargar el archivo. El enlace puede haber expirado o el contenido no está disponible.`, m)
   }
 }
 

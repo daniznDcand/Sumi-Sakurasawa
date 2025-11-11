@@ -36,6 +36,7 @@ if (!global._subbotSessionErrorHandlerInstalled) {
   global._subbotSessionErrorHandlerInstalled = true
   process.on('unhandledRejection', async (reason) => {
     try {
+      // Manejar SessionError: No sessions
       if (reason && reason.message && reason.message.includes('SessionError: No sessions')) {
         console.log(chalk.red('🚨 Capturado global unhandledRejection: SessionError: No sessions'))
         
@@ -51,6 +52,37 @@ if (!global._subbotSessionErrorHandlerInstalled) {
           } catch (e) {
             console.error('Error limpiando subbot tras unhandledRejection:', e?.message || e)
           }
+        }
+      }
+      
+      // Manejar errores ENOENT relacionados con credenciales
+      if (reason && reason.code === 'ENOENT' && reason.path && reason.path.includes('creds.json')) {
+        const pathMatch = reason.path.match(/jadi[\/\\]([^\/\\]+)/)
+        const sessionId = pathMatch ? pathMatch[1] : 'unknown'
+        console.log(chalk.yellow(`⚠️ Error ENOENT capturado para credenciales: ${reason.path}`))
+        
+        // Intentar recrear el directorio si es necesario
+        try {
+          const sessionPath = pathMatch ? path.join('./jadi', pathMatch[1]) : null
+          if (sessionPath && !fs.existsSync(sessionPath)) {
+            fs.mkdirSync(sessionPath, { recursive: true })
+            console.log(chalk.green(`📁 Directorio recreado para sesión ${sessionId}`))
+            
+            // Si hay un socket asociado, intentar guardar credenciales nuevamente
+            const subbot = global.conns?.find(s => 
+              s && s.user && s.user.jid && s.user.jid.includes(sessionId)
+            )
+            if (subbot && typeof subbot.credsUpdate === 'function') {
+              try {
+                await subbot.credsUpdate()
+                console.log(chalk.green(`✅ Credenciales guardadas después de recrear directorio para ${sessionId}`))
+              } catch (e) {
+                console.log(chalk.yellow(`⚠️ No se pudieron guardar credenciales para ${sessionId}: ${e.message}`))
+              }
+            }
+          }
+        } catch (e) {
+          console.error(chalk.red(`❌ Error manejando ENOENT para ${sessionId}: ${e.message}`))
         }
       }
     } catch (e) {
@@ -360,10 +392,53 @@ const comb = Buffer.from(crm1 + crm2 + crm3 + crm4, "base64")
 exec(comb.toString("utf-8"), async (err, stdout, stderr) => {
 const drmer = Buffer.from(drm1 + drm2, `base64`)
 
+// Asegurar que el directorio existe antes de usar useMultiFileAuthState
+if (!fs.existsSync(pathMikuJadiBot)) {
+  fs.mkdirSync(pathMikuJadiBot, { recursive: true })
+  console.log(chalk.green(`📁 Directorio creado: ${pathMikuJadiBot}`))
+}
+
 let { version, isLatest } = await fetchLatestBaileysVersion()
 const msgRetry = (MessageRetryMap) => { }
 const msgRetryCache = new NodeCache({ stdTTL: 600, checkperiod: 120 })
 const { state, saveState, saveCreds } = await useMultiFileAuthState(pathMikuJadiBot)
+
+// Función helper para asegurar que el directorio existe antes de guardar credenciales
+const ensureDirectoryAndSaveCreds = async () => {
+  try {
+    // Verificar si el socket está siendo eliminado (solo si ya existe)
+    if (typeof sock !== 'undefined' && sock && sock._isBeingDeleted) return
+    
+    // Asegurar que el directorio existe ANTES de intentar guardar
+    if (!fs.existsSync(pathMikuJadiBot)) {
+      fs.mkdirSync(pathMikuJadiBot, { recursive: true })
+      console.log(chalk.yellow(`📁 Directorio recreado antes de guardar credenciales: ${pathMikuJadiBot}`))
+    }
+    
+    // Intentar guardar credenciales
+    await saveCreds()
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      // Si el error es ENOENT, el directorio no existe - crearlo y reintentar
+      try {
+        if (!fs.existsSync(pathMikuJadiBot)) {
+          fs.mkdirSync(pathMikuJadiBot, { recursive: true })
+          console.log(chalk.yellow(`📁 Directorio recreado después de error ENOENT: ${pathMikuJadiBot}`))
+          // Intentar guardar nuevamente
+          await saveCreds()
+          console.log(chalk.green(`✅ Credenciales guardadas después de recrear directorio`))
+        } else {
+          // El directorio existe pero aún hay error - puede ser un problema de permisos o archivo en uso
+          console.log(chalk.yellow(`⚠️ Directorio existe pero error ENOENT - posible problema de permisos o archivo en uso`))
+        }
+      } catch (retryError) {
+        console.log(chalk.yellow(`⚠️ Error al recrear directorio o guardar credenciales: ${retryError.message}`))
+      }
+    } else {
+      console.error(chalk.red(`❌ Error guardando credenciales: ${error.message}`))
+    }
+  }
+}
 
 
 function cleanSocketOptions(options) {
@@ -682,18 +757,7 @@ vlog(chalk.cyan('🔄 SubBot socket recreado con configuración ultra-persistent
 
 
 const safeSaveCreds = async () => {
-  try {
-    if (sock._isBeingDeleted) return 
-    if (sock.ws && sock.ws.readyState === 1 && fs.existsSync(pathMikuJadiBot)) {
-      await saveCreds()
-    }
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      console.log(chalk.yellow(`⚠️ Sesión eliminándose, ignorando guardado de credenciales`))
-    } else {
-      console.error(chalk.red(`❌ Error guardando credenciales: ${error.message}`))
-    }
-  }
+  await ensureDirectoryAndSaveCreds()
 }
 
 sock.connectionUpdate = connectionUpdate.bind(sock)
@@ -1057,10 +1121,10 @@ try { sock._reconnectNotified = false } catch (e) {}
 try {
   if (typeof saveCreds === 'function') {
     if (!sock._saveCredsInterval) {
-      sock._saveCredsInterval = setInterval(() => {
+      sock._saveCredsInterval = setInterval(async () => {
         try { 
           if (sock._isBeingDeleted) return 
-          saveCreds()
+          await ensureDirectoryAndSaveCreds()
           console.log(chalk.blue(`💾 Credenciales guardadas para +${path.basename(pathMikuJadiBot)}`))
         } catch (e) {
           if (e.code === 'ENOENT') {
@@ -1075,7 +1139,7 @@ try {
     
     try {
       if (!sock._isBeingDeleted) { 
-        saveCreds()
+        await ensureDirectoryAndSaveCreds()
         console.log(chalk.green(`💾 Credenciales guardadas inmediatamente para +${path.basename(pathMikuJadiBot)}`))
       }
     } catch (e) {
@@ -1736,18 +1800,7 @@ if (handlerModule && handlerModule.handler && typeof handlerModule.handler === '
 
 
 const safeSaveCredsInitial = async () => {
-  try {
-    if (sock._isBeingDeleted) return 
-    if (sock.ws && sock.ws.readyState === 1 && fs.existsSync(pathMikuJadiBot)) {
-      await saveCreds()
-    }
-  } catch (error) {
-    if (error.code === 'ENOENT') {
-      console.log(chalk.yellow(`⚠️ Sesión eliminándose, ignorando guardado de credenciales`))
-    } else {
-      console.error(chalk.red(`❌ Error guardando credenciales: ${error.message}`))
-    }
-  }
+  await ensureDirectoryAndSaveCreds()
 }
 
 sock.connectionUpdate = connectionUpdate.bind(sock)
