@@ -195,14 +195,7 @@ async function downloadVideo(url) {
   const videoId = extractYouTubeId(url);
   if (!videoId) throw new Error('URL inválida');
 
-  const maykey = global.APIKeys?.['https://mayapi.ooguy.com'] || 'may-f53d1d49';
-
   const apis = [
-    { 
-      name: 'MayAPI', 
-      url: `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=mp4&apikey=${maykey}`,
-      extractor: data => data?.result?.url
-    },
     { 
       name: 'Ryzen', 
       url: `https://api.ryzendesu.vip/api/downloader/ytmp4?url=${encodeURIComponent(url)}`,
@@ -212,13 +205,22 @@ async function downloadVideo(url) {
       name: 'Vreden', 
       url: `https://api.vreden.my.id/api/ytmp4?url=${encodeURIComponent(url)}`,
       extractor: data => data?.result?.download || data?.result?.url
+    },
+    { 
+      name: 'YT-DL', 
+      url: `https://api.agatz.xyz/api/ytmp4?url=${encodeURIComponent(url)}`,
+      extractor: data => data?.data?.download
     }
   ];
 
   for (const api of apis) {
     try {
       console.log(`🔄 ${api.name}...`);
-      const res = await fetch(api.url);
+      const res = await fetch(api.url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+      });
       const data = await res.json();
       
       const videoUrl = api.extractor(data);
@@ -227,7 +229,7 @@ async function downloadVideo(url) {
         return { url: videoUrl };
       }
     } catch (error) {
-      console.log(`❌ ${api.name} falló`);
+      console.log(`❌ ${api.name} falló:`, error.message);
     }
   }
 
@@ -238,14 +240,7 @@ async function downloadAudio(url) {
   const videoId = extractYouTubeId(url);
   if (!videoId) throw new Error('URL inválida');
 
-  const maykey = global.APIKeys?.['https://mayapi.ooguy.com'] || 'may-f53d1d49';
-
   const apis = [
-    { 
-      name: 'MayAPI', 
-      url: `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=mp3&apikey=${maykey}`,
-      extractor: data => data?.result?.url
-    },
     { 
       name: 'Ryzen', 
       url: `https://api.ryzendesu.vip/api/downloader/ytmp3?url=${encodeURIComponent(url)}`,
@@ -255,13 +250,22 @@ async function downloadAudio(url) {
       name: 'Vreden', 
       url: `https://api.vreden.my.id/api/ytmp3?url=${encodeURIComponent(url)}`,
       extractor: data => data?.result?.download || data?.result?.url
+    },
+    { 
+      name: 'YT-DL', 
+      url: `https://api.agatz.xyz/api/ytmp3?url=${encodeURIComponent(url)}`,
+      extractor: data => data?.data?.download
     }
   ];
 
   for (const api of apis) {
     try {
       console.log(`🔄 ${api.name}...`);
-      const res = await fetch(api.url);
+      const res = await fetch(api.url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+      });
       const data = await res.json();
       
       const audioUrl = api.extractor(data);
@@ -270,14 +274,12 @@ async function downloadAudio(url) {
         return { url: audioUrl };
       }
     } catch (error) {
-      console.log(`❌ ${api.name} falló`);
+      console.log(`❌ ${api.name} falló:`, error.message);
     }
   }
 
   throw new Error('No se pudo descargar. Intenta más tarde.');
 }
-
-
 
 handler.before = async (m, { conn }) => {
   const buttonPatterns = [
