@@ -330,12 +330,6 @@ handler.before = async (m, { conn }) => {
     return false;
   }
 
-  if (user.processingDownload) {
-    await conn.reply(m.chat, '⏳ Ya hay una descarga en proceso. Espera un momento.', m);
-    return false;
-  }
-  
-  user.processingDownload = true;
   user.monedaDeducted = false;
 
   try {
@@ -352,8 +346,6 @@ handler.before = async (m, { conn }) => {
   } catch (error) {
     console.error(`❌ Error en descarga:`, error.message);
     await conn.reply(m.chat, `💙 Error al procesar la descarga: ${error.message}`, m);
-  } finally {
-    user.processingDownload = false;
   }
   
   return true;
