@@ -178,9 +178,6 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
         throw false
       }
       chat.welcome = isEnable
-      
-      const welcomeStatus = isEnable ? 'activó' : 'desactivó'
-      return conn.reply(m.chat, `✅ *Bienvenida ${welcomeStatus}*`, m)
       break  
       
     case 'antiprivado':
@@ -203,9 +200,6 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
       }
       
       chat.audios = isEnable
-      
-      const audioStatus = isEnable ? 'activaron' : 'desactivaron'
-      return conn.reply(m.chat, `✅ *Audios automáticos ${audioStatus}*`, m)
       break
 
       case 'restrict':
@@ -434,7 +428,7 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
     chat[dbKey] = isEnable
   }
 
-  conn.reply(m.chat, `💙 La función *${type}* se *${isEnable ? 'activó' : 'desactivó'}* ${isAll ? 'para este Bot' : isUser ? '' : 'para este chat'}`, m, global.rcanal);
+  conn.reply(m.chat, `💙 La función *${type}* se *${isEnable ? 'activó' : 'desactivó'}* ${isAll ? 'para este Bot' : isUser ? '' : 'para este chat'}`, m);
 };
 
 handler.help = ['welcome', 'bienvenida', 'antiprivado', 'antiprivate', 'restrict', 'restringir', 'autolevelup', 'autonivel', 'antibot', 'antibots', 'autoaceptar', 'aceptarauto', 'autorechazar', 'rechazarauto', 'autoresponder', 'autorespond', 'antisubbots', 'antibot2', 'modoadmin', 'soloadmin', 'reaction', 'reaccion', 'nsfw', 'modohorny', 'antispam', 'jadibotmd', 'modejadibot', 'subbots', 'detect', 'avisos', 'antilink', 'antilink2', 'antifake', 'antiarabes', 'antitoxic', 'audios', 'enable', 'disable']
