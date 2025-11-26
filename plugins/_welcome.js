@@ -44,7 +44,7 @@ export async function before(m, { conn, participants, groupMetadata }) {
 
         if (!ppBuffer) {
           try {
-            const defaultResponse = await fetch('https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg')
+            const defaultResponse = await fetch('https://i.pinimg.com/originals/73/69/6e/73696e022df7cd5cb3d999c6875361dd.gif')
             ppBuffer = await defaultResponse.buffer()
           } catch (e) {
             ppBuffer = null
@@ -77,17 +77,19 @@ export async function before(m, { conn, participants, groupMetadata }) {
         if (!user) continue
         
         const userName = user.split('@')[0]
-        const welcomeText = `👋 ¡Hola @${userName}!
+        const welcomeText = `╭━━━━━━━━━━━━━━━━━╮
+┃  💙 *BIENVENID@* 💙  ┃
+╰━━━━━━━━━━━━━━━━━╯
 
-🎉Bienvenido a *${groupMetadata?.subject || 'el grupo'}*
+✨ Hola *@${userName}*
 
-🎤Somos *${groupSize}* miembros
-
-💙${global.welcom1 || 'La música nos une'}
-
-📝Ayuda: *#help*
-
-🎵Únete a nuestro canal oficial`
+🎵 *Hatsune Miku Bot*
+━━━━━━━━━━━━━━━━━
+👥 Miembro #${groupSize}
+🤖 Usa *#help* para ver comandos
+🎮 Juegos, música y más
+💫 ¡Disfruta tu estadía!
+━━━━━━━━━━━━━━━━━`
 
         await sendSingleWelcome(m.chat, welcomeText, user, m)
         console.log(`✅ Welcome enviado a ${userName}`)
@@ -106,13 +108,15 @@ export async function before(m, { conn, participants, groupMetadata }) {
         if (!user) continue
         
         const userName = user.split('@')[0]
-        const byeText = `👋 ¡Hasta luego @${userName}!
+        const byeText = `╭━━━━━━━━━━━━━━━━━╮
+┃  👋 *HASTA PRONTO*  ┃
+╰━━━━━━━━━━━━━━━━━╯
 
-😢Te extrañaremos en *${groupMetadata?.subject || 'el grupo'}*
+💙 Adiós *@${userName}*
 
-🎤${global.welcom2 || 'Gracias por ser parte de la comunidad'}
-
-💙Síguenos en nuestro canal oficial🎵`
+✨ Gracias por estar aquí
+🎵 Siempre serás bienvenid@
+💫 ¡Vuelve pronto!`
 
         await sendSingleWelcome(m.chat, byeText, user, m)
         console.log(`✅ Goodbye enviado a ${userName}`)
