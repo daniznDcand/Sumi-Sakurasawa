@@ -44,7 +44,7 @@ export async function before(m, { conn, participants, groupMetadata }) {
 
         if (!ppBuffer) {
           try {
-            const defaultResponse = await fetch('https://i.pinimg.com/originals/73/69/6e/73696e022df7cd5cb3d999c6875361dd.gif')
+            const defaultResponse = await fetch('https://server.wallpaperalchemy.com/storage/wallpapers/287/hatsune-miku-4k-anime-wallpaper.png')
             ppBuffer = await defaultResponse.buffer()
           } catch (e) {
             ppBuffer = null
@@ -54,7 +54,7 @@ export async function before(m, { conn, participants, groupMetadata }) {
         console.log('📤 Enviando welcome con imagen ampliada y botón de canal...')
         
         const buttons = []
-        const urls = [['🎵 Ver Canal', canalUrl]]
+        const urls = [['🎵 Ir Canal 💙', canalUrl]]
         
         await conn.sendNCarousel(jid, text, '💙 Hatsune Miku Bot', ppBuffer, buttons, null, urls, null, quoted, [user], { width: 1024, height: 1024 })
 
@@ -78,7 +78,7 @@ export async function before(m, { conn, participants, groupMetadata }) {
         
         const userName = user.split('@')[0]
         const welcomeText = `╭━━━━━━━━━━━━━━━━━╮
-┃  💙 *BIENVENID@* 💙  ┃
+┃  💙 *BIENVENID@* 💙     ┃
 ╰━━━━━━━━━━━━━━━━━╯
 
 ✨ Hola *@${userName}*
@@ -109,7 +109,7 @@ export async function before(m, { conn, participants, groupMetadata }) {
         
         const userName = user.split('@')[0]
         const byeText = `╭━━━━━━━━━━━━━━━━━╮
-┃  👋 *HASTA PRONTO*  ┃
+┃  👋 *HASTA PRONTO*   ┃
 ╰━━━━━━━━━━━━━━━━━╯
 
 💙 Adiós *@${userName}*
