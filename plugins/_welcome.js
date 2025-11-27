@@ -78,7 +78,7 @@ export async function before(m, { conn, participants, groupMetadata }) {
         
         const userName = user.split('@')[0]
         const welcomeText = `╭━━━━━━━━━━━━━━━━━╮
-┃  💙 *BIENVENID@* 💙     ┃
+┃  💙 *BIENVENID@* 💙       ┃
 ╰━━━━━━━━━━━━━━━━━╯
 
 ✨ Hola *@${userName}*
@@ -109,7 +109,7 @@ export async function before(m, { conn, participants, groupMetadata }) {
         
         const userName = user.split('@')[0]
         const byeText = `╭━━━━━━━━━━━━━━━━━╮
-┃  👋 *HASTA PRONTO*   ┃
+┃  👋 *HASTA PRONTO*     ┃
 ╰━━━━━━━━━━━━━━━━━╯
 
 💙 Adiós *@${userName}*

@@ -37,27 +37,30 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
       ['ℹ️ Info Bot', 'menu_info']
     ]
 
-    const text = `╭━━━━━━━━━━━━━━━━━━━╮
-┃ 🎤 *HATSUNE MIKU BOT* 🎤 ┃
-╰━━━━━━━━━━━━━━━━━━━╯
+    const text = `╔═══════════════════════╗
+║  🎤 *HATSUNE MIKU BOT* 🎤  ║
+╚═══════════════════════╝
 
-🌸 ¡Konnichiwa, @${userId.split('@')[0]}! 🌸
+✨ ¡Konnichiwa, *@${userId.split('@')[0]}*! ✨
 
-┏━━━━━━━━━━━━━━━━┓
-┃ 💙 *Estado:* ${(conn.user.jid == global.conn.user.jid ? 'Principal ⚡️' : 'Sub-Bot 🔌')}
-┃ ⏰ *Activo:* ${uptime}
-┃ 👥 *Usuarios:* ${totalreg}
-┃ 📊 *Comandos:* ${totalCommands}
-┗━━━━━━━━━━━━━━━━┛
+╭─────────────────────╮
+│ 💙 *Estado:* ${(conn.user.jid == global.conn.user.jid ? 'Principal ⚡️' : 'Sub-Bot 🔌')}
+│ ⏰ *Activo:* ${uptime}
+│ 👥 *Usuarios:* ${totalreg}
+│ 📊 *Comandos:* ${totalCommands}
+╰─────────────────────╯
 
-🎵 *Selecciona una categoría:*
-Usa los botones de abajo o escribe el comando directamente.
-📣 También puedes usar \`.menucompleto\` para ver todos los comandos
+🎵 *¡Explora mis funciones!*
+━━━━━━━━━━━━━━━━━━━━━
+✨ Usa los botones de abajo
+🎯 O escribe el comando directamente
+📱 Prueba \`.menucompleto\` para ver todo
+━━━━━━━━━━━━━━━━━━━━━
 
-💙 ¡Disfruta de la experiencia Miku! ✨`
+💙 ¡Disfruta de la experiencia Miku! 🎶`
     
     const footer = '🌱 Powered by (ㅎㅊDEPOOLㅊㅎ)'
-    const menuGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+    const menuGif = 'https://wallpapers-clan.com/wp-content/uploads/2025/04/hatsune-miku-cherry-blossoms-pc-desktop-laptop-wallpaper-cover.jpg'
 
     try {
       return await conn.sendNCarousel(m.chat, text, footer, menuGif, buttons, null, null, null, m)
@@ -118,7 +121,7 @@ Usa los botones de abajo o escribe el comando directamente.
 ⬅️ *O toca el botón para volver al menú principal*`
     
     const footer = '🎵 Módulo de Descargas - Hatsune Miku Bot'
-    const descargasGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+    const descargasGif = 'https://wallpapers-clan.com/wp-content/uploads/2025/04/hatsune-miku-cherry-blossoms-pc-desktop-laptop-wallpaper-cover.jpg'
 
     try {
       return await conn.sendNCarousel(m.chat, text, footer, descargasGif, buttons, null, null, null, m)
@@ -172,7 +175,7 @@ Usa los botones de abajo o escribe el comando directamente.
 💙 *Escribe cualquier comando para usarlo*
 ⬅️ *O toca el botón para volver al menú principal*`
     
-    const herramientasGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+    const herramientasGif = 'https://wallpapers-clan.com/wp-content/uploads/2025/04/hatsune-miku-cherry-blossoms-pc-desktop-laptop-wallpaper-cover.jpg'
 
     try {
       return await conn.sendMessage(m.chat, {
@@ -229,7 +232,7 @@ Usa los botones de abajo o escribe el comando directamente.
 💙 *Escribe cualquier comando para usarlo*
 ⬅️ *O toca el botón para volver al menú principal*`
     
-    const buscadoresGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+    const buscadoresGif = 'https://wallpapers-clan.com/wp-content/uploads/2025/04/hatsune-miku-cherry-blossoms-pc-desktop-laptop-wallpaper-cover.jpg'
 
     try {
       return await conn.sendNCarousel(m.chat, text, '🔍 Módulo de Buscadores - Hatsune Miku Bot', buscadoresGif, buttons, null, null, null, m)
@@ -265,7 +268,7 @@ Usa los botones de abajo o escribe el comando directamente.
 💙 *Escribe cualquier comando para usarlo*
 ⬅️ *O toca el botón para volver al menú principal*`
     
-    const juegosGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+    const juegosGif = 'https://wallpapers-clan.com/wp-content/uploads/2025/04/hatsune-miku-cherry-blossoms-pc-desktop-laptop-wallpaper-cover.jpg'
 
     try {
       return await conn.sendNCarousel(m.chat, text, '🎮 Módulo de Juegos - Hatsune Miku Bot', juegosGif, buttons, null, null, null, m)
@@ -332,7 +335,7 @@ Usa los botones de abajo o escribe el comando directamente.
 💙 *Escribe cualquier comando para usarlo*
 ⬅️ *O toca el botón para volver al menú principal*`
 
-    const animeGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+    const animeGif = 'https://wallpapers-clan.com/wp-content/uploads/2025/04/hatsune-miku-cherry-blossoms-pc-desktop-laptop-wallpaper-cover.jpg'
 
     try {
       return await conn.sendNCarousel(m.chat, text, '🎌 Módulo de Anime - Hatsune Miku Bot', animeGif, buttons, null, null, null, m)
@@ -367,7 +370,7 @@ _(Solo para administradores)_
 💙 *Escribe cualquier comando para usarlo*
 ⬅️ *Escribe* \`menu\` *para volver al menú principal*`
 
-    const gruposGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+    const gruposGif = 'https://wallpapers-clan.com/wp-content/uploads/2025/04/hatsune-miku-cherry-blossoms-pc-desktop-laptop-wallpaper-cover.jpg'
 
     try {
       return await conn.sendMessage(m.chat, {
@@ -405,7 +408,7 @@ _(Solo para administradores)_
 💙 *Escribe cualquier comando para usarlo*
 ⬅️ *Escribe* \`menu\` *para volver al menú principal*`
 
-    const infoGif = 'https://media.tenor.com/aGsOxo7R4l0AAAPo/miku-channelcastation.mp4'
+    const infoGif = 'https://wallpapers-clan.com/wp-content/uploads/2025/04/hatsune-miku-cherry-blossoms-pc-desktop-laptop-wallpaper-cover.jpg'
 
     try {
       return await conn.sendMessage(m.chat, {
