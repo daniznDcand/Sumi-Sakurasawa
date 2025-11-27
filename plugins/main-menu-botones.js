@@ -41,7 +41,7 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
 ║🎤 *HATSUNE MIKU BOT* 🎤║
 ╚══════════════════╝
 
-✨ ¡Konnichiwa, *@${userId.split('@')[0]}*! ✨
+✨!Ohayo, *@${userId.split('@')[0]}*! ✨
 
 ╭───────────────╮
 │ 💙 *Estado:* ${(conn.user.jid == global.conn.user.jid ? 'Principal ⚡️' : 'Sub-Bot 🔌')}
