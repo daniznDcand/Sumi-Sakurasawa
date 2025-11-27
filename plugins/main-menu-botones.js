@@ -88,37 +88,82 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
       ['⬅️ Volver al Menú', 'menu']
     ]
 
-    const text = `📥 *MENÚ DE DESCARGAS*
+    const text = `┏━━━━━━━━━━━━━┓
+┃ 📥 *DESCARGAS* ┃
+┗━━━━━━━━━━━━━┛
 
-🎵 ═══ *MÚSICA Y VIDEOS* ═══ 🎵
-🎼 \`.play [nombre]\` - YouTube Music/Video
-🛒 \`.spotify [nombre]\` - Spotify Music
-🔗 \`.mp3 [url]\` - URL a MP3
-🎞 \`.mp4 [url]\` - URL a MP4
+🎵 ━━ *MÚSICA Y VIDEOS* ━━
 
-📱 ═══ *REDES SOCIALES* ═══ 📱
-🎬 \`.tiktok [url]\` - Videos TikTok
-🎵 \`.tiktokmp3 [url]\` - TikTok Audio
-📸 \`.tiktokimg [url]\` - TikTok Imágenes
-🔄 \`.ttrandom\` - TikTok Random
-📸 \`.instagram [url]\` - Posts/Reels IG
-💙 \`.facebook [url]\` - Videos Facebook
-🐦 \`.twitter [url]\` - Videos Twitter/X
-📌 \`.pinvideo [url]\` - Videos Pinterest
+🎼 \`.play [nombre]\`
+   → YouTube Music/Video
 
-📁 ═══ *ARCHIVOS Y REPOS* ═══ 📁
-💾 \`.mediafire [url]\` - MediaFire
-☁️ \`.mega [url]\` - MEGA
-📱 \`.apk [nombre]\` - APKs y ModAPKs
-🛠️ \`.npmjs [package]\` - NPM Packages
-🗂️ \`.gitclone [repo]\` - Clonar Repositorios
+🛒 \`.spotify [nombre]\`
+   → Spotify Music
 
-🔞 ═══ *CONTENIDO ADULTO* ═══ 🔞
-🔞 \`.xnxxdl [url]\` - XNXX Videos
-🔞 \`.xvideosdl [url]\` - XVideos
+🔗 \`.mp3 [url]\` | \`.mp4 [url]\`
+   → Convertir URL a MP3/MP4
 
-💙 *Escribe cualquier comando para usarlo*
-⬅️ *O toca el botón para volver al menú principal*`
+━━━━━━━━━━━━━━━━━━━━━
+
+📱 ━━ *REDES SOCIALES* ━━
+
+🎬 \`.tiktok [url]\`
+   → Videos TikTok
+
+🎵 \`.tiktokmp3 [url]\`
+   → TikTok Audio
+
+📸 \`.tiktokimg [url]\`
+   → TikTok Imágenes
+
+🔄 \`.ttrandom\`
+   → TikTok Random
+
+📸 \`.instagram [url]\`
+   → Posts/Reels IG
+
+💙 \`.facebook [url]\`
+   → Videos Facebook
+
+🐦 \`.twitter [url]\`
+   → Videos Twitter/X
+
+📌 \`.pinvideo [url]\`
+   → Videos Pinterest
+
+━━━━━━━━━━━━━━━━━━━━━
+
+📁 ━━ *ARCHIVOS Y REPOS* ━━
+
+💾 \`.mediafire [url]\`
+   → Descargar MediaFire
+
+☁️ \`.mega [url]\`
+   → Descargar MEGA
+
+📱 \`.apk [nombre]\`
+   → APKs y ModAPKs
+
+🛠️ \`.npmjs [package]\`
+   → NPM Packages
+
+🗂️ \`.gitclone [repo]\`
+   → Clonar Repositorios
+
+━━━━━━━━━━━━━━━━━━━━━
+
+🔞 ━━ *CONTENIDO ADULTO* ━━
+
+🔞 \`.xnxxdl [url]\`
+   → XNXX Videos
+
+🔞 \`.xvideosdl [url]\`
+   → XVideos
+
+━━━━━━━━━━━━━━━━━━━━━
+
+💙 *Usa los comandos o el botón*
+⬅️ *para volver al menú principal*`
     
     const footer = '🎵 Módulo de Descargas - Hatsune Miku Bot'
     const descargasGif = 'https://wallpapers-clan.com/wp-content/uploads/2025/04/hatsune-miku-cherry-blossoms-pc-desktop-laptop-wallpaper-cover.jpg'
@@ -135,67 +180,116 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
       ['⬅️ Volver al Menú', 'menu']
     ]
 
-    const text = `🛠️ *HERRAMIENTAS ÚTILES*
+    const text = `┏━━━━━━━━━━━━━━━┓
+┃ 🛠️ *HERRAMIENTAS* ┃
+┗━━━━━━━━━━━━━━━┛
 
-🔒 ═══ *UTILIDADES WEB* ═══ 🧷
-🌤️ \`.clima [ciudad]\` - Ver clima
-🈵 \`.translate [texto]\` - Traductor
-📷 \`.ss [url]\` - Screenshot web
-🔍 \`.google [búsqueda]\` - Buscar en Google
-💮 \`.wikipedia [tema]\` - Wikipedia
-🔍 \`.ip [dirección]\` - Info de IP
+🌐 ━━ *UTILIDADES WEB* ━━
 
-🎨 ═══ *EDICIÓN Y STICKERS* ═══ 🎨
-✨ \`.hd\` - Mejorar calidad imagen
-🌟 \`.s\` - Crear sticker
-🖼️ \`.toimg\` - Sticker a imagen
-🎭 \`.emojimix\` - Mezclar emojis
-📝 \`.ttp [texto]\` - Texto a sticker
-💬 \`.qc [texto]\` - Quote creator
-⏲ \`.brat [texto]\` - Brat video
-🏷️ \`.wm [pack|autor]\` - Marca de agua
+🌤️ \`.clima [ciudad]\`
+   → Ver clima actual
 
-🔧 ═══ *CONVERSORES* ═══ 🔧
-🎵 \`.tomp3\` - Video a MP3
-🎬 \`.tovideo\` - Audio a video
-🎞️ \`.togif\` - Video a GIF
-🔗 \`.tourl\` - Subir archivos
-☁️ \`.catbox\` - Subir a Catbox
-📷 \`.ibb\` - Subir a ImgBB
-🗣️ \`.tts [texto]\` - Texto a voz
+🈵 \`.translate [texto]\`
+   → Traductor
 
-🔍 ═══ *DETECCIÓN Y ANÁLISIS* ═══ 🔍
-🎵 \`.shazam\` - Reconocer música
-🎶 \`.whatmusic\` - Identificar canción
-🕵️ \`.detectar\` - Detectar persona
-📋 \`.todoc\` - Convertir a documento
-📏 \`.tamaño\` - Tamaño de archivo
-🔤 \`.letra [canción]\` - Letras de música
+📷 \`.ss [url]\`
+   → Screenshot web
 
-💙 *Escribe cualquier comando para usarlo*
-⬅️ *O toca el botón para volver al menú principal*`
+🔍 \`.google [búsqueda]\`
+   → Buscar en Google
+
+💮 \`.wikipedia [tema]\`
+   → Consultar Wikipedia
+
+🔍 \`.ip [dirección]\`
+   → Información de IP
+
+━━━━━━━━━━━━━━━━━━━━━
+
+🎨 ━━ *EDICIÓN Y STICKERS* ━━
+
+✨ \`.hd\`
+   → Mejorar calidad imagen
+
+🌟 \`.s\`
+   → Crear sticker
+
+🖼️ \`.toimg\`
+   → Sticker a imagen
+
+🎭 \`.emojimix\`
+   → Mezclar emojis
+
+📝 \`.ttp [texto]\`
+   → Texto a sticker
+
+💬 \`.qc [texto]\`
+   → Quote creator
+
+⏲ \`.brat [texto]\`
+   → Brat video
+
+🏷️ \`.wm [pack|autor]\`
+   → Marca de agua
+
+━━━━━━━━━━━━━━━━━━━━━
+
+🔧 ━━ *CONVERSORES* ━━
+
+🎵 \`.tomp3\`
+   → Video a MP3
+
+🎬 \`.tovideo\`
+   → Audio a video
+
+🎞️ \`.togif\`
+   → Video a GIF
+
+🔗 \`.tourl\`
+   → Subir archivos
+
+☁️ \`.catbox\`
+   → Subir a Catbox
+
+📷 \`.ibb\`
+   → Subir a ImgBB
+
+🗣️ \`.tts [texto]\`
+   → Texto a voz
+
+━━━━━━━━━━━━━━━━━━━━━
+
+🔍 ━━ *DETECCIÓN Y ANÁLISIS* ━━
+
+🎵 \`.shazam\`
+   → Reconocer música
+
+🎶 \`.whatmusic\`
+   → Identificar canción
+
+🕵️ \`.detectar\`
+   → Detectar persona
+
+📋 \`.todoc\`
+   → Convertir a documento
+
+📏 \`.tamaño\`
+   → Tamaño de archivo
+
+🔤 \`.letra [canción]\`
+   → Letras de música
+
+━━━━━━━━━━━━━━━━━━━━━
+
+💙 *Usa los comandos o el botón*
+⬅️ *para volver al menú principal*`
     
     const herramientasGif = 'https://wallpapers-clan.com/wp-content/uploads/2025/04/hatsune-miku-cherry-blossoms-pc-desktop-laptop-wallpaper-cover.jpg'
 
     try {
-      return await conn.sendMessage(m.chat, {
-        video: { url: herramientasGif },
-        caption: text,
-        footer: '🔧 Módulo de Herramientas - Hatsune Miku Bot',
-        gifPlayback: true,
-        templateButtons: buttons.map((btn, index) => ({
-          index: index + 1,
-          quickReplyButton: {
-            displayText: btn[0],
-            id: btn[1]
-          }
-        }))
-      }, { quoted: m })
+      return await conn.sendNCarousel(m.chat, text, '🔧 Módulo de Herramientas - Hatsune Miku Bot', herramientasGif, buttons, null, null, null, m)
     } catch (error) {
-      
-      return await conn.sendMessage(m.chat, {
-        text: text
-      }, { quoted: m })
+      return await conn.sendMessage(m.chat, { text: text }, { quoted: m })
     }
   }
 
@@ -204,33 +298,73 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
       ['⬅️ Volver al Menú', 'menu']
     ]
 
-    const text = `🔍 *BUSCADORES Y CONSULTAS*
+    const text = `┏━━━━━━━━━━━━━┓
+┃ 🔍 *BUSCADORES* ┃
+┗━━━━━━━━━━━━━┛
 
-🌐 ═══ *BUSCADORES GENERALES* ═══ 🌐
-🔍 \`.google [búsqueda]\` - Buscar en Google
-📊 \`.wikipedia [tema]\` - Consultar Wikipedia
-🎵 \`.yts [música]\` - Buscar en YouTube
-📱 \`.npmjs [package]\` - Buscar NPM packages
-📚 \`.githubsearch [repo]\` - Buscar repositorios
+🌐 ━━ *BUSCADORES GENERALES* ━━
 
-🎌 ═══ *ANIME Y ENTRETENIMIENTO* ═══ 🎌
-🎭 \`.infoanime [nombre]\` - Info de anime
-🎬 \`.cuevanasearch [película]\` - Buscar películas
-🔍 \`.tiktoksearch [término]\` - Buscar TikToks
-🐦 \`.tweetposts [usuario]\` - Posts de Twitter
+🔍 \`.google [búsqueda]\`
+   → Buscar en Google
 
-📸 ═══ *IMÁGENES* ═══ 📸
-🖼️ \`.imagen [búsqueda]\` - Buscar imágenes
-📸 \`.pinterest [término]\` - Buscar en Pinterest
+📊 \`.wikipedia [tema]\`
+   → Consultar Wikipedia
 
-🔞 ═══ *CONTENIDO ADULTO* ═══ 🔞
-🔞 \`.pornhubsearch [término]\` - Buscar PornHub
-🔞 \`.xnxxsearch [término]\` - Buscar XNXX
-🔞 \`.xvideos [término]\` - Buscar XVideos
-🔞 \`.hentaisearch [término]\` - Buscar Hentai
+🎵 \`.yts [música]\`
+   → Buscar en YouTube
 
-💙 *Escribe cualquier comando para usarlo*
-⬅️ *O toca el botón para volver al menú principal*`
+📱 \`.npmjs [package]\`
+   → Buscar NPM packages
+
+📚 \`.githubsearch [repo]\`
+   → Buscar repositorios
+
+━━━━━━━━━━━━━━━━━━━━━
+
+🎌 ━━ *ANIME Y ENTRETENIMIENTO* ━━
+
+🎭 \`.infoanime [nombre]\`
+   → Info de anime
+
+🎬 \`.cuevanasearch [película]\`
+   → Buscar películas
+
+🔍 \`.tiktoksearch [término]\`
+   → Buscar TikToks
+
+🐦 \`.tweetposts [usuario]\`
+   → Posts de Twitter
+
+━━━━━━━━━━━━━━━━━━━━━
+
+📸 ━━ *IMÁGENES* ━━
+
+🖼️ \`.imagen [búsqueda]\`
+   → Buscar imágenes
+
+📸 \`.pinterest [término]\`
+   → Buscar en Pinterest
+
+━━━━━━━━━━━━━━━━━━━━━
+
+🔞 ━━ *CONTENIDO ADULTO* ━━
+
+🔞 \`.pornhubsearch [término]\`
+   → Buscar PornHub
+
+🔞 \`.xnxxsearch [término]\`
+   → Buscar XNXX
+
+🔞 \`.xvideos [término]\`
+   → Buscar XVideos
+
+🔞 \`.hentaisearch [término]\`
+   → Buscar Hentai
+
+━━━━━━━━━━━━━━━━━━━━━
+
+💙 *Usa los comandos o el botón*
+⬅️ *para volver al menú principal*`
     
     const buscadoresGif = 'https://wallpapers-clan.com/wp-content/uploads/2025/04/hatsune-miku-cherry-blossoms-pc-desktop-laptop-wallpaper-cover.jpg'
 
@@ -247,26 +381,54 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
       ['⬅️ Volver al Menú', 'menu']
     ]
 
-    const text = `🎮 *CENTRO DE JUEGOS*
+    const text = `┏━━━━━━━━━┓
+┃ 🎮 *JUEGOS* ┃
+┗━━━━━━━━━┛
 
-🕹️ ═══ *JUEGOS CLÁSICOS* ═══ 🕹️
-⭕ \`.ttt\` - Tres en raya (TicTacToe)
-✂️ \`.ppt\` - Piedra/Papel/Tijera
-🎪 \`.ahorcado\` - Juego del ahorcado
-🔤 \`.sopa\` - Sopa de letras
-🗑️ \`.delttt\` - Eliminar juego TTT
+🕹️ ━━ *JUEGOS CLÁSICOS* ━━
 
-🎰 ═══ *CASINO & APUESTAS* ═══ 🎰
-🎲 \`.casino [cantidad]\` - Apostar dinero
-💰 \`.apostar [cantidad]\` - Apostar
+⭕ \`.ttt\`
+   → Tres en raya (TicTacToe)
 
-⚔️ ═══ *COMPETITIVO* ═══ ⚔️
-🥊 \`.pvp [@usuario]\` - PvP contra usuario
-🧠 \`.math\` - Quiz matemático
-📊 \`.matematicas\` - Desafío matemático
+✂️ \`.ppt\`
+   → Piedra/Papel/Tijera
 
-💙 *Escribe cualquier comando para usarlo*
-⬅️ *O toca el botón para volver al menú principal*`
+🎪 \`.ahorcado\`
+   → Juego del ahorcado
+
+🔤 \`.sopa\`
+   → Sopa de letras
+
+🗑️ \`.delttt\`
+   → Eliminar juego TTT
+
+━━━━━━━━━━━━━━━━━━━━━
+
+🎰 ━━ *CASINO & APUESTAS* ━━
+
+🎲 \`.casino [cantidad]\`
+   → Apostar dinero
+
+💰 \`.apostar [cantidad]\`
+   → Apostar
+
+━━━━━━━━━━━━━━━━━━━━━
+
+⚔️ ━━ *COMPETITIVO* ━━
+
+🥊 \`.pvp [@usuario]\`
+   → PvP contra usuario
+
+🧠 \`.math\`
+   → Quiz matemático
+
+📊 \`.matematicas\`
+   → Desafío matemático
+
+━━━━━━━━━━━━━━━━━━━━━
+
+💙 *Usa los comandos o el botón*
+⬅️ *para volver al menú principal*`
     
     const juegosGif = 'https://wallpapers-clan.com/wp-content/uploads/2025/04/hatsune-miku-cherry-blossoms-pc-desktop-laptop-wallpaper-cover.jpg'
 
@@ -285,55 +447,92 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
       ['⬅️ Volver al Menú', 'menu']
     ]
 
-    const text = `🎌 *ANIME & REACCIONES*
+    const text = `┏━━━━━━━━┓
+┃ 🎌 *ANIME* ┃
+┗━━━━━━━━┛
 
-😊 ═══ *REACCIONES POSITIVAS* ═══ 😊
-🤗 \`.hug [@usuario]\` - Dar abrazo
-😘 \`.kiss [@usuario]\` - Dar beso  
-🤲 \`.pat [@usuario]\` - Acariciar
-😊 \`.happy [@usuario]\` - Estar feliz
-😍 \`.love [@usuario]\` - Demostrar amor
-☕ \`.coffee [@usuario]\` - Tomar café
-👋 \`.hello [@usuario]\` - Saludar
-🫵 \`.poke [@usuario]\` - Picar
+😊 ━━ *REACCIONES POSITIVAS* ━━
 
-💃 ═══ *ACCIONES* ═══ 💃
-💃 \`.dance\` - Bailar
-🍽️ \`.eat\` - Comer
-😴 \`.sleep\` - Dormir
-🤔 \`.think\` - Pensar
-🏃 \`.run\` - Correr
-🚬 \`.smoke\` - Fumar
-👏 \`.clap\` - Aplaudir
-🤮 \`.drunk\` - Estar borracho
+🤗 \`.hug [@usuario]\`
+   → Dar abrazo
 
-🤣 ═══ *EMOCIONES* ═══ 😢
-😢 \`.cry\` - Llorar
-😞 \`.sad\` - Estar triste
-😠 \`.angry\` - Estar enojado
-😳 \`.blush\` - Sonrojarse
-😎 \`.bored\` - Estar aburrido
-😨 \`.scared\` - Estar asustado
-😊 \`.shy\` - Estar tímido
-😤 \`.pout\` - Hacer pucheros
+😘 \`.kiss [@usuario]\`
+   → Dar beso
 
-⚔️ ═══ *ACCIONES AGRESIVAS* ═══ ⚔️
-👊 \`.punch [@usuario]\` - Golpear
-👋 \`.slap [@usuario]\` - Abofetear
-🗡️ \`.kill [@usuario]\` - Eliminar
-🦷 \`.bite [@usuario]\` - Morder
-👅 \`.lick [@usuario]\` - Lamer
-🤤 \`.seduce [@usuario]\` - Seducir
+🤲 \`.pat [@usuario]\`
+   → Acariciar
 
-🎨 ═══ *PERSONAJES ANIME* ═══ 🎨
-🎎 \`.waifu\` - Imagen waifu random
-👫 \`.ppcp\` - Fotos de perfil parejas
+😊 \`.happy [@usuario]\`
+   → Estar feliz
+
+😍 \`.love [@usuario]\`
+   → Demostrar amor
+
+☕ \`.coffee [@usuario]\`
+   → Tomar café
+
+👋 \`.hello [@usuario]\`
+   → Saludar
+
+🫵 \`.poke [@usuario]\`
+   → Picar
+
+━━━━━━━━━━━━━━━━━━━━━
+
+💃 ━━ *ACCIONES* ━━
+
+💃 \`.dance\` | 🍽️ \`.eat\` | 😴 \`.sleep\`
+🤔 \`.think\` | 🏃 \`.run\` | 🚬 \`.smoke\`
+👏 \`.clap\` | 🤮 \`.drunk\`
+
+━━━━━━━━━━━━━━━━━━━━━
+
+😢 ━━ *EMOCIONES* ━━
+
+😢 \`.cry\` | 😞 \`.sad\` | 😠 \`.angry\`
+😳 \`.blush\` | 😎 \`.bored\` | 😨 \`.scared\`
+😊 \`.shy\` | 😤 \`.pout\`
+
+━━━━━━━━━━━━━━━━━━━━━
+
+⚔️ ━━ *ACCIONES AGRESIVAS* ━━
+
+👊 \`.punch [@usuario]\`
+   → Golpear
+
+👋 \`.slap [@usuario]\`
+   → Abofetear
+
+🗡️ \`.kill [@usuario]\`
+   → Eliminar
+
+🦷 \`.bite [@usuario]\`
+   → Morder
+
+👅 \`.lick [@usuario]\`
+   → Lamer
+
+🤤 \`.seduce [@usuario]\`
+   → Seducir
+
+━━━━━━━━━━━━━━━━━━━━━
+
+🎨 ━━ *PERSONAJES ANIME* ━━
+
+🎎 \`.waifu\`
+   → Imagen waifu random
+
+👫 \`.ppcp\`
+   → Fotos de perfil parejas
+
 🎭 \`.akira\` | \`.naruto\` | \`.sasuke\`
 🌸 \`.sakura\` | \`.hinata\` | \`.mikasa\`
 🎵 \`.hatsunemiku\` | \`.nezuko\` | \`.emilia\`
 
-💙 *Escribe cualquier comando para usarlo*
-⬅️ *O toca el botón para volver al menú principal*`
+━━━━━━━━━━━━━━━━━━━━━
+
+💙 *Usa los comandos o el botón*
+⬅️ *para volver al menú principal*`
 
     const animeGif = 'https://wallpapers-clan.com/wp-content/uploads/2025/04/hatsune-miku-cherry-blossoms-pc-desktop-laptop-wallpaper-cover.jpg'
 
@@ -348,27 +547,56 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
   }
 
   if (menuCommand === 'menu_grupos') {
-    const text = `👥 *GESTIÓN DE GRUPOS*
-_(Solo para administradores)_
+    const text = `┏━━━━━━━━━┓
+┃ 👥 *GRUPOS* ┃
+┗━━━━━━━━━┛
 
-👑 ═══ *ADMINISTRACIÓN* ═══ 👑
-🦵 \`.kick [@usuario]\` - Eliminar
-➕ \`.add [número]\` - Invitar
-👑 \`.promote [@usuario]\` - Dar admin
-👤 \`.demote [@usuario]\` - Quitar admin
+⚠️ *Solo para administradores*
 
-📢 ═══ *COMUNICACIÓN* ═══ 📢
-👻 \`.hidetag [texto]\` - Mencionar todos
-📣 \`.admins\` - Llamar admins
-📢 \`.invocar\` - Mencionar todos
+👑 ━━ *ADMINISTRACIÓN* ━━
 
-⚙️ ═══ *CONFIGURACIÓN* ═══ ⚙️
-🔓 \`.group open/close\` - Abrir/cerrar
-🔗 \`.link\` - Ver enlace
-🔄 \`.revoke\` - Cambiar enlace
+🦵 \`.kick [@usuario]\`
+   → Eliminar miembro
 
-💙 *Escribe cualquier comando para usarlo*
-⬅️ *Escribe* \`menu\` *para volver al menú principal*`
+➕ \`.add [número]\`
+   → Invitar usuario
+
+👑 \`.promote [@usuario]\`
+   → Dar admin
+
+👤 \`.demote [@usuario]\`
+   → Quitar admin
+
+━━━━━━━━━━━━━━━━━━━━━
+
+📢 ━━ *COMUNICACIÓN* ━━
+
+👻 \`.hidetag [texto]\`
+   → Mencionar todos
+
+📣 \`.admins\`
+   → Llamar admins
+
+📢 \`.invocar\`
+   → Mencionar todos
+
+━━━━━━━━━━━━━━━━━━━━━
+
+⚙️ ━━ *CONFIGURACIÓN* ━━
+
+🔓 \`.group open/close\`
+   → Abrir/cerrar grupo
+
+🔗 \`.link\`
+   → Ver enlace del grupo
+
+🔄 \`.revoke\`
+   → Cambiar enlace
+
+━━━━━━━━━━━━━━━━━━━━━
+
+💙 *Usa los comandos*
+⬅️ *Escribe* \`menu\` *para volver*`
 
     const gruposGif = 'https://wallpapers-clan.com/wp-content/uploads/2025/04/hatsune-miku-cherry-blossoms-pc-desktop-laptop-wallpaper-cover.jpg'
 
@@ -387,26 +615,54 @@ _(Solo para administradores)_
   }
 
   if (menuCommand === 'menu_info') {
-    const text = `ℹ️ *INFORMACIÓN DEL BOT*
+    const text = `┏━━━━━━━━━━┓
+┃ ℹ️ *INFO BOT* ┃
+┗━━━━━━━━━━┛
 
-🤖 ═══ *DATOS DEL BOT* ═══ 🤖
-📡 \`.ping\` - Velocidad de respuesta
-⏱️ \`.uptime\` - Tiempo activo
-📊 \`.status\` - Estado completo
-ℹ️ \`.infobot\` - Info detallada
+🤖 ━━ *DATOS DEL BOT* ━━
 
-🔗 ═══ *ENLACES & COMUNIDAD* ═══ 🔗
-💻 \`.script\` - Código fuente
-🔗 \`.links\` - Enlaces oficiales
-👥 \`.staff\` - Desarrolladores
+📡 \`.ping\`
+   → Velocidad de respuesta
 
-🤖 ═══ *SUBBOTS* ═══ 🤖
-🤖 \`.serbot\` - Crear SubBot
-📱 \`.qr\` - Código QR
-🤖 \`.bots\` - Lista SubBots
+⏱️ \`.uptime\`
+   → Tiempo activo
 
-💙 *Escribe cualquier comando para usarlo*
-⬅️ *Escribe* \`menu\` *para volver al menú principal*`
+📊 \`.status\`
+   → Estado completo
+
+ℹ️ \`.infobot\`
+   → Info detallada
+
+━━━━━━━━━━━━━━━━━━━━━
+
+🔗 ━━ *ENLACES & COMUNIDAD* ━━
+
+💻 \`.script\`
+   → Código fuente
+
+🔗 \`.links\`
+   → Enlaces oficiales
+
+👥 \`.staff\`
+   → Desarrolladores
+
+━━━━━━━━━━━━━━━━━━━━━
+
+🤖 ━━ *SUBBOTS* ━━
+
+🤖 \`.serbot\`
+   → Crear SubBot
+
+📱 \`.qr\`
+   → Código QR
+
+🤖 \`.bots\`
+   → Lista SubBots
+
+━━━━━━━━━━━━━━━━━━━━━
+
+💙 *Usa los comandos*
+⬅️ *Escribe* \`menu\` *para volver*`
 
     const infoGif = 'https://wallpapers-clan.com/wp-content/uploads/2025/04/hatsune-miku-cherry-blossoms-pc-desktop-laptop-wallpaper-cover.jpg'
 
