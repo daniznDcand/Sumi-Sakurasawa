@@ -20,7 +20,9 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
     'autorechazar': 'autoRechazar',
     'rechazarauto': 'autoRechazar',
     'antiprivado': 'antiPrivate',
-    'antiprivate': 'antiPrivate'
+    'antiprivate': 'antiPrivate',
+    'antimencion': 'antiMencion',
+    'antimencionar': 'antiMencion'
   }
   
   let dbKey = typeMap[type] || type
@@ -41,7 +43,8 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
     'antilink', 'antilink2',
     'antifake',
     'antiarabes', 'antiarab',
-    'antitoxic', 'antitoxics', 
+    'antitoxic', 'antitoxics',
+    'antimencion', 'antimencionar',
     'autolevelup', 'autonivel',
     'antispam',
     'antiprivado', 'antiprivate',
@@ -68,34 +71,59 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
       isEnable = true
     } else {
       const funcionesDisponibles = [
-        '💙 **FUNCIONES DISPONIBLES PARA ACTIVAR:**\n',
-        '┌─⊷ **GRUPO**',
-        '│ • welcome/bienvenida - Mensaje de bienvenida',
-        '│ • antibot/antibots - Anti bots',
-        '│ • autoaceptar - Auto aceptar usuarios',
-        '│ • autorechazar - Auto rechazar usuarios',
-        '│ • autoresponder - Respuestas automáticas',
-        '│ • antisubbots/antibot2 - Anti sub-bots',
-        '│ • modoadmin/soladmin - Solo administradores',
-        '│ • reaction/reaccion - Reacciones automáticas',
-        '│ • nsfw/modohorny - Contenido NSFW',
-        '│ • detect/avisos - Detectar cambios del grupo',
-        '│ • antilink - Anti enlaces',
-        '│ • antifake - Anti números falsos',
-        '│ • antiarabes - Anti números árabes/spam',
-        '│ • antitoxic - Anti lenguaje tóxico/ofensivo',
-        '│ • autolevelup/autonivel - Subir nivel automático',
-        '│ • antispam - Anti spam',
-        '│ • audios - Audios automáticos por palabras',
-        '├─⊷ **BOT GLOBAL**',
-        '│ • antiprivado/antiprivate - Anti chat privado',
-        '│ • restrict/restringir - Modo restricción',
-        '│ • jadibotmd/modejadibot - Modo jadibot',
-        '│ • subbots - Sub-bots',
-        '└─────────────────',
+        '🎵 *⊱ ──── ≪ °❈° ≫ ──── ⊰* 🎵',
+        '💙 *𝐇𝐀𝐓𝐒𝐔𝐍𝐄 𝐌𝐈𝐊𝐔 - 𝐅𝐔𝐍𝐂𝐈𝐎𝐍𝐄𝐒* 💙',
+        '🎵 *⊱ ──── ≪ °❈° ≫ ──── ⊰* 🎵\n',
+        '🎤 *『 𝐆𝐑𝐔𝐏𝐎 』*\n',
+        '🌸 *welcome/bienvenida* ✨',
+        '  └─ Mensaje de bienvenida\n',
+        '🤖 *antibot/antibots* 🔧',
+        '  └─ Anti bots\n',
+        '✅ *autoaceptar* 👥',
+        '  └─ Auto aceptar usuarios\n',
+        '❌ *autorechazar* 🚫',
+        '  └─ Auto rechazar usuarios\n',
+        '💬 *autoresponder* 📝',
+        '  └─ Respuestas automáticas\n',
+        '🚫 *antisubbots/antibot2* 🤖',
+        '  └─ Anti sub-bots\n',
+        '👑 *modoadmin/soladmin* 👑',
+        '  └─ Solo administradores\n',
+        '😊 *reaction/reaccion* 💖',
+        '  └─ Reacciones automáticas\n',
+        '🔞 *nsfw/modohorny* 🔥',
+        '  └─ Contenido NSFW\n',
+        '👁️ *detect/avisos* 📢',
+        '  └─ Detectar cambios del grupo\n',
+        '🔗 *antilink* 🚫',
+        '  └─ Anti enlaces\n',
+        '🎭 *antifake* 👤',
+        '  └─ Anti números falsos\n',
+        '🕌 *antiarabes* 🇸🇦',
+        '  └─ Anti números árabes/spam\n',
+        '🚫 *antitoxic* 💢',
+        '  └─ Anti lenguaje tóxico/ofensivo\n',
+        '🚫 *antimencion/antimencionar* 📱',
+        '  └─ Anti estado/bio (elimina automáticamente)\n',
+        '⬆️ *autolevelup/autonivel* 📈',
+        '  └─ Subir nivel automático\n',
+        '🚫 *antispam* 📨',
+        '  └─ Anti spam\n',
+        '🔊 *audios* 🎵',
+        '  └─ Audios automáticos por palabras\n',
+        '🎤 *『 𝐁𝐎𝐓 𝐆𝐋𝐎𝐁𝐀𝐋 』*\n',
+        '🚫 *antiprivado/antiprivate* 📵',
+        '  └─ Anti chat privado\n',
+        '🔒 *restrict/restringir* ⚡',
+        '  └─ Modo restricción\n',
+        '🤖 *jadibotmd/modejadibot* 📱',
+        '  └─ Modo jadibot\n',
+        '🤖 *subbots* 👥',
+        '  └─ Sub-bots\n',
+        '🎵 *⊱ ──── ≪ °❈° ≫ ──── ⊰* 🎵',
         '',
-        `> Uso: *${usedPrefix}enable [función]*`,
-        `> Ejemplo: *${usedPrefix}enable antilink*`
+        `💙 *𝐔𝐒𝐎:* ${usedPrefix}enable [función]`,
+        `🌸 *𝐄𝐉𝐄𝐌𝐏𝐋𝐎:* ${usedPrefix}enable antilink`
       ].join('\n')
       
       return conn.reply(m.chat, funcionesDisponibles, m)
@@ -112,34 +140,59 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
       isEnable = false
     } else {
       const funcionesDisponibles = [
-        '💙 **FUNCIONES DISPONIBLES PARA DESACTIVAR:**\n',
-        '┌─⊷ **GRUPO**',
-        '│ • welcome/bienvenida - Mensaje de bienvenida',
-        '│ • antibot/antibots - Anti bots',
-        '│ • autoaceptar - Auto aceptar usuarios',
-        '│ • autorechazar - Auto rechazar usuarios',
-        '│ • autoresponder - Respuestas automáticas',
-        '│ • antisubbots/antibot2 - Anti sub-bots',
-        '│ • modoadmin/soladmin - Solo administradores',
-        '│ • reaction/reaccion - Reacciones automáticas',
-        '│ • nsfw/modohorny - Contenido NSFW',
-        '│ • detect/avisos - Detectar cambios del grupo',
-        '│ • antilink - Anti enlaces',
-        '│ • antifake - Anti números falsos',
-        '│ • antiarabes - Anti números árabes/spam',
-        '│ • antitoxic - Anti lenguaje tóxico/ofensivo',
-        '│ • autolevelup/autonivel - Subir nivel automático',
-        '│ • antispam - Anti spam',
-        '│ • audios - Audios automáticos por palabras',
-        '├─⊷ **BOT GLOBAL**',
-        '│ • antiprivado/antiprivate - Anti chat privado',
-        '│ • restrict/restringir - Modo restricción',
-        '│ • jadibotmd/modejadibot - Modo jadibot',
-        '│ • subbots - Sub-bots',
-        '└─────────────────',
+        '🎵 *⊱ ──── ≪ °❈° ≫ ──── ⊰* 🎵',
+        '💙 *𝐇𝐀𝐓𝐒𝐔𝐍𝐄 𝐌𝐈𝐊𝐔 - 𝐃𝐄𝐒𝐀𝐂𝐓𝐈𝐕𝐀𝐑 𝐅𝐔𝐍𝐂𝐈𝐎𝐍𝐄𝐒* 💙',
+        '🎵 *⊱ ──── ≪ °❈° ≫ ──── ⊰* 🎵\n',
+        '🎤 *『 𝐆𝐑𝐔𝐏𝐎 』*\n',
+        '🌸 *welcome/bienvenida* ✨',
+        '  └─ Mensaje de bienvenida\n',
+        '🤖 *antibot/antibots* 🔧',
+        '  └─ Anti bots\n',
+        '✅ *autoaceptar* 👥',
+        '  └─ Auto aceptar usuarios\n',
+        '❌ *autorechazar* 🚫',
+        '  └─ Auto rechazar usuarios\n',
+        '💬 *autoresponder* 📝',
+        '  └─ Respuestas automáticas\n',
+        '🚫 *antisubbots/antibot2* 🤖',
+        '  └─ Anti sub-bots\n',
+        '👑 *modoadmin/soladmin* 👑',
+        '  └─ Solo administradores\n',
+        '😊 *reaction/reaccion* 💖',
+        '  └─ Reacciones automáticas\n',
+        '🔞 *nsfw/modohorny* 🔥',
+        '  └─ Contenido NSFW\n',
+        '👁️ *detect/avisos* 📢',
+        '  └─ Detectar cambios del grupo\n',
+        '🔗 *antilink* 🚫',
+        '  └─ Anti enlaces\n',
+        '🎭 *antifake* 👤',
+        '  └─ Anti números falsos\n',
+        '🕌 *antiarabes* 🇸🇦',
+        '  └─ Anti números árabes/spam\n',
+        '🚫 *antitoxic* 💢',
+        '  └─ Anti lenguaje tóxico/ofensivo\n',
+        '🚫 *antimencion/antimencionar* 📱',
+        '  └─ Anti estado/bio (elimina automáticamente)\n',
+        '⬆️ *autolevelup/autonivel* 📈',
+        '  └─ Subir nivel automático\n',
+        '🚫 *antispam* 📨',
+        '  └─ Anti spam\n',
+        '🔊 *audios* 🎵',
+        '  └─ Audios automáticos por palabras\n',
+        '🎤 *『 𝐁𝐎𝐓 𝐆𝐋𝐎𝐁𝐀𝐋 』*\n',
+        '🚫 *antiprivado/antiprivate* 📵',
+        '  └─ Anti chat privado\n',
+        '🔒 *restrict/restringir* ⚡',
+        '  └─ Modo restricción\n',
+        '🤖 *jadibotmd/modejadibot* 📱',
+        '  └─ Modo jadibot\n',
+        '🤖 *subbots* 👥',
+        '  └─ Sub-bots\n',
+        '🎵 *⊱ ──── ≪ °❈° ≫ ──── ⊰* 🎵',
         '',
-        `> Uso: *${usedPrefix}disable [función]*`,
-        `> Ejemplo: *${usedPrefix}disable antilink*`
+        `💙 *𝐔𝐒𝐎:* ${usedPrefix}disable [función]`,
+        `🌸 *𝐄𝐉𝐄𝐌𝐏𝐋𝐎:* ${usedPrefix}disable antilink`
       ].join('\n')
       
       return conn.reply(m.chat, funcionesDisponibles, m)
@@ -390,7 +443,18 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
       }
       chat.antitoxic = isEnable
       break
-      
+
+    case 'antimencion':
+    case 'antimencionar':
+      if (m.isGroup) {
+        if (!(isAdmin || isOwner)) {
+          global.dfail('admin', m, conn)
+          throw false
+        }
+      }
+      chat.antiMencion = isEnable
+      break
+
     case 'autolevelup':
     case 'autonivel':
       if (m.isGroup) {
@@ -432,9 +496,9 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
   conn.reply(m.chat, `💙 La función *${type}* se *${isEnable ? 'activó' : 'desactivó'}* ${isAll ? 'para este Bot' : isUser ? '' : 'para este chat'}`, m, rcanal);
 };
 
-handler.help = ['welcome', 'bienvenida', 'antiprivado', 'antiprivate', 'restrict', 'restringir', 'autolevelup', 'autonivel', 'antibot', 'antibots', 'autoaceptar', 'aceptarauto', 'autorechazar', 'rechazarauto', 'autoresponder', 'autorespond', 'antisubbots', 'antibot2', 'modoadmin', 'soloadmin', 'reaction', 'reaccion', 'nsfw', 'modohorny', 'antispam', 'jadibotmd', 'modejadibot', 'subbots', 'detect', 'avisos', 'antilink', 'antilink2', 'antifake', 'antiarabes', 'antitoxic', 'audios', 'enable', 'disable']
+handler.help = ['welcome', 'bienvenida', 'antiprivado', 'antiprivate', 'restrict', 'restringir', 'autolevelup', 'autonivel', 'antibot', 'antibots', 'autoaceptar', 'aceptarauto', 'autorechazar', 'rechazarauto', 'autoresponder', 'autorespond', 'antisubbots', 'antibot2', 'modoadmin', 'soloadmin', 'reaction', 'reaccion', 'nsfw', 'modohorny', 'antispam', 'jadibotmd', 'modejadibot', 'subbots', 'detect', 'avisos', 'antilink', 'antilink2', 'antifake', 'antiarabes', 'antitoxic', 'antimencion', 'antimencionar', 'audios', 'enable', 'disable']
 handler.tags = ['nable'];
-handler.command = ['welcome', 'bienvenida', 'antiprivado', 'antiprivate', 'restrict', 'restringir', 'autolevelup', 'autonivel', 'antibot', 'antibots', 'autoaceptar', 'aceptarauto', 'autorechazar', 'rechazarauto', 'autoresponder', 'autorespond', 'antisubbots', 'antibot2', 'modoadmin', 'soloadmin', 'reaction', 'reaccion', 'nsfw', 'modohorny', 'antispam', 'jadibotmd', 'modejadibot', 'subbots', 'detect', 'avisos', 'antilink', 'antilink2', 'antifake', 'antiarabes', 'antitoxic', 'audios', 'enable', 'disable']
+handler.command = ['welcome', 'bienvenida', 'antiprivado', 'antiprivate', 'restrict', 'restringir', 'autolevelup', 'autonivel', 'antibot', 'antibots', 'autoaceptar', 'aceptarauto', 'autorechazar', 'rechazarauto', 'autoresponder', 'autorespond', 'antisubbots', 'antibot2', 'modoadmin', 'soloadmin', 'reaction', 'reaccion', 'nsfw', 'modohorny', 'antispam', 'jadibotmd', 'modejadibot', 'subbots', 'detect', 'avisos', 'antilink', 'antilink2', 'antifake', 'antiarabes', 'antitoxic', 'antimencion', 'antimencionar', 'audios', 'enable', 'disable']
 
 export default handler
 
