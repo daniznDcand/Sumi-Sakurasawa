@@ -573,19 +573,19 @@ handler.before = async function (m, { conn }) {
         const premiumImage = 'https://wallpapers-clan.com/wp-content/uploads/2025/04/hatsune-miku-cherry-blossoms-pc-desktop-laptop-wallpaper-cover.jpg'
 
         const premiumButtons = [
-            { buttonId: 'buy_premium_miku', buttonText: { displayText: '🎵 Hatsune Miku Premium - 5000' }, type: 1 },
-            { buttonId: 'buy_premium_luka', buttonText: { displayText: '🎼 Luka Megurine Premium - 4500' }, type: 1 },
-            { buttonId: 'buy_premium_rin', buttonText: { displayText: '🎶 Rin & Len Premium - 4000' }, type: 1 },
+            { buttonId: 'buy_premium_miku', buttonText: { displayText: '💙 Brazilian Miku - 5000' }, type: 1 },
+            { buttonId: 'buy_premium_luka', buttonText: { displayText: '🖤 Inabakumori - 4500' }, type: 1 },
+            { buttonId: 'buy_premium_rin', buttonText: { displayText: '☢️ Cyberpunk Edgerunners - 4000' }, type: 1 },
             { buttonId: 'shop_back', buttonText: { displayText: '⬅️ Volver' }, type: 1 }
         ]
 
         let premiumMessage = `💎 *WAIFU PREMIUM* 💎\n\n💰 *Monedas:* ${coins}`
 
-        premiumMessage += `\n\n🎵 *Miku Premium*\n💰 5000 coins\n• Animaciones únicas\n• +100% EXP\n• Regeneración HP\n• Canales premium`
+        premiumMessage += `\n\n💙 *Brazilian Miku*\n💰 5000 coins\n• Waifu Legendaria Única\n• Animaciones especiales\n• +100% EXP\n• Regeneración automática`
 
-        premiumMessage += `\n\n🎼 *Luka Premium*\n💰 4500 coins\n• Voz especial\n• +50% ataque\n• Protección robos\n• Efectos únicos`
+        premiumMessage += `\n\n🖤 *Inabakumori*\n💰 4500 coins\n• Waifu Legendaria Única\n• Poderes misteriosos\n• +50% ataque\n• Protección contra robos`
 
-        premiumMessage += `\n\n🎶 *Rin & Len Premium*\n💰 4000 coins\n• Pareja inseparable\n• +75% defensa\n• Doble turno\n• Animaciones sincronizadas`
+        premiumMessage += `\n\n☢️ *Cyberpunk Edgerunners*\n💰 4000 coins\n• Waifu Legendaria Única\n• Estilo cyberpunk\n• +75% defensa\n• Efectos futuristas`
 
         const premiumButtonMessage = {
             image: { url: premiumImage },
@@ -729,18 +729,18 @@ handler.before = async function (m, { conn }) {
                 break
             case 'buy_premium_miku':
                 finalPrice = 5000
-                itemDescription = 'Hatsune Miku Premium (personaje único con beneficios exclusivos)'
-                rewards = [{ type: 'premium_waifu', name: 'Hatsune Miku Premium' }]
+                itemDescription = '💙Brazilian Miku💛 (Waifu Legendaria única)'
+                rewards = [{ type: 'premium_waifu', name: '💙Brazilian Miku💛' }]
                 break
             case 'buy_premium_luka':
                 finalPrice = 4500
-                itemDescription = 'Luka Megurine Premium (voz especial + bono ataque)'
-                rewards = [{ type: 'premium_waifu', name: 'Luka Megurine Premium' }]
+                itemDescription = '🖤Inabakumori🖤 (Waifu Legendaria única)'
+                rewards = [{ type: 'premium_waifu', name: '🖤Inabakumori🖤' }]
                 break
             case 'buy_premium_rin':
                 finalPrice = 4000
-                itemDescription = 'Rin & Len Premium (pareja inseparable + bono defensa)'
-                rewards = [{ type: 'premium_waifu', name: 'Rin & Len Premium' }]
+                itemDescription = '☢️Cyberpunk Edgerunners💫 (Waifu Legendaria única)'
+                rewards = [{ type: 'premium_waifu', name: '☢️Cyberpunk Edgerunners💫' }]
                 break
             case 'buy_rpg_potion':
                 finalPrice = 100
@@ -836,15 +836,28 @@ handler.before = async function (m, { conn }) {
             } else if (reward.type === 'discount') {
                 successMessage += `💰 ${reward.percentage}% descuento${reward.duration ? ` ${reward.duration}h` : ''}\n`
             } else if (reward.type === 'premium_waifu') {
-                const premiumWaifu = {
-                    name: reward.name,
-                    rarity: 'premium',
-                    obtainedAt: new Date().toISOString(),
-                    obtainedFrom: 'tienda_premium',
-                    benefits: ['exp_boost', 'special_effects', 'unique_abilities']
-                };
-                db.users[userId].characters.push(premiumWaifu);
-                successMessage += `💎 ${reward.name}\n`
+                // Buscar la waifu legendaria en el array principal
+                const legendWaifu = waifuList.find(w => w.name === reward.name && w.rarity === 'Legendaria');
+                if (legendWaifu) {
+                    const premiumWaifu = {
+                        name: legendWaifu.name,
+                        rarity: legendWaifu.rarity,
+                        obtainedAt: new Date().toISOString(),
+                        obtainedFrom: 'tienda_premium',
+                        img: legendWaifu.img
+                    };
+                    db.users[userId].characters.push(premiumWaifu);
+                    successMessage += `💎 ${legendWaifu.name}\n`
+
+                    // Agregar a la lista de imágenes para mostrar
+                    waifuImages.push({
+                        name: legendWaifu.name,
+                        img: legendWaifu.img,
+                        rarity: legendWaifu.rarity
+                    });
+                } else {
+                    successMessage += `❌ Error: Waifu ${reward.name} no encontrada\n`
+                }
             } else if (reward.type === 'rpg_item') {
                 if (!user.rpgData) {
                     user.rpgData = { level: 1, hp: 100, maxHp: 100, attack: 20, defense: 10, exp: 0, wins: 0, losses: 0, lastAdventure: 0 };
