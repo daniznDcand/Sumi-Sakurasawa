@@ -515,7 +515,8 @@ handler.before = async function (m, { conn }) {
         buttonId = m.message.buttonsResponseMessage.selectedButtonId
     }
 
-    const user = global.db.data.users[m.sender]
+    const userId = m.sender
+    const user = global.db.data.users[userId]
     const coins = user.coin || 0
 
     if (buttonId === 'shop_limited') {
