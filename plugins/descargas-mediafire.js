@@ -29,6 +29,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 }
 
 handler.command = /^(mediafire|mediafiredl|dlmediafire|mf)$/i;
+handler.register = true;
 export default handler;
 
 async function mediafireDl(url) {

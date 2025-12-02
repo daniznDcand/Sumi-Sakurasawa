@@ -37,6 +37,7 @@ handler.help = ['clap']
 handler.tags = ['anime']
 handler.command = ['clap', 'aplaudir', 'aplauso', 'aplausos', 'aplaudimiento']
 handler.group = true
+handler.register = true;
 
 export default handler
 

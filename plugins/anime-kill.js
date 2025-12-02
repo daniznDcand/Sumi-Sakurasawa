@@ -38,5 +38,5 @@ handler.help = ['kill']
 handler.tags = ['anime']
 handler.command = ['kill', 'matar', 'muere']
 handler.group = true
-
+handler.register = true;
 export default handler

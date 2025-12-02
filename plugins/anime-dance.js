@@ -38,6 +38,6 @@ handler.help = ['dance']
 handler.tags = ['anime']
 handler.command = ['dance', 'bailar','dancing']
 handler.group = true
-
+handler.register = true;
 export default handler
 

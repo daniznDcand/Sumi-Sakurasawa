@@ -39,6 +39,7 @@ await m.react('💙')
 handler.help = ['sticker']
 handler.tags = ['sticker']
 handler.command = ['s', 'sticker']
+handler.register = true
 
 export default handler
 

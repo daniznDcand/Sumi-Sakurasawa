@@ -37,6 +37,6 @@ handler.help = ['cuddle']
 handler.tags = ['anime']
 handler.command = ['cuddle', 'acurrucarse', 'acurrucarseconmigo']
 handler.group = true
-
+handler.register = true;
 export default handler
 

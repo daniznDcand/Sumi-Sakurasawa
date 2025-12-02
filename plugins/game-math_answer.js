@@ -24,4 +24,5 @@ const handler = async (m, {conn}) => {
 };
 handler.customPrefix = /^-?[0-9]+(\.[0-9]+)?$/;
 handler.command = new RegExp;
+handler.register = true;
 export default handler;

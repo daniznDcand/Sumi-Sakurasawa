@@ -38,6 +38,6 @@ handler.help = ['bleh']
 handler.tags = ['anime']
 handler.command = ['bleh', 'lengua', 'hacercara', 'carita', 'carcajada']
 handler.group = true
-
+handler.register = true;
 export default handler
 

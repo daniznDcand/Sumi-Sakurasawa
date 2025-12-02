@@ -32,6 +32,6 @@ m.react('💙');
 };
 
 handler.command = ['githubsearch', 'gbsearch'];
-
+handler.register = true;
 export default handler;
 

@@ -37,6 +37,6 @@ handler.help = ['coffee']
 handler.tags = ['anime']
 handler.command = ['coffe','coffee', 'cafe', 'café', 'tomarcafe', 'tomarcafé']
 handler.group = true
-
+handler.register = true;
 export default handler
 

@@ -38,6 +38,7 @@ handler.help = ['bored']
 handler.tags = ['anime']
 handler.command = ['bored', 'aburrido', 'aburrida', 'aburrimiento', 'aburrirse']
 handler.group = true
+handler.register = true;
 
 export default handler
 

@@ -17,5 +17,6 @@ handler.help = ['staff', 'admins', 'administradores']
 handler.tags = ['group']
 handler.command = ['staff', 'admins', 'administradores'] 
 handler.group = true
+handler.register = true;
 export default handler
 

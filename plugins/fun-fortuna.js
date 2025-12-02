@@ -75,6 +75,7 @@ ${randomEmoji} ${fortune}
 handler.help = ['fortuna', 'galleta', 'suerte']
 handler.tags = ['fun', 'entertainment']
 handler.command = /^(fortuna|galleta|suerte)$/i
+handler.register = true
 
 export default handler
 

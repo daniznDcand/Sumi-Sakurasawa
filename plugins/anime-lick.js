@@ -44,5 +44,5 @@ handler.help = ['lick']
 handler.tags = ['anime']
 handler.command = ['lick', 'lamer']
 handler.group = true
-
+handler.register = true;
 export default handler

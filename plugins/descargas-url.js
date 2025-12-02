@@ -60,5 +60,5 @@ handler.help = ['mp3 <url>', 'mp4 <url>']
 handler.tags = ['downloader']
 handler.command = ['mp3', 'mp4']
 handler.limit = true
-
+handler.register = true;
 export default handler

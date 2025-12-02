@@ -337,5 +337,6 @@ handler.before = async (m, { conn }) => {
 
 handler.command = handler.help = ['play'];
 handler.tags = ['downloader'];
+handler.register = true;
 
 export default handler;

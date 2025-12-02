@@ -37,5 +37,5 @@ handler.help = ['drunk']
 handler.tags = ['anime']
 handler.command = ['drunk', 'borracho', 'mareado', 'dizzy','tomar','beber']
 handler.group = true
-
+handler.register = true;
 export default handler

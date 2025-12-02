@@ -37,6 +37,7 @@ handler.help = ['angry']
 handler.tags = ['anime']
 handler.command = ['angry', 'enojado','molesto', 'enojada', 'molesta']
 handler.group = true
+handler.register = true;
 
 export default handler
 

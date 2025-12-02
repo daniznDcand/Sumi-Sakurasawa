@@ -34,6 +34,7 @@ m.react('🎤')
 };
 
 handler.command = ['google'];
+handler.register = true
 
 export default handler;
 

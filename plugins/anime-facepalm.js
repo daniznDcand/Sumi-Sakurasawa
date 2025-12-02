@@ -37,5 +37,5 @@ handler.help = ['facepalm']
 handler.tags = ['anime']
 handler.command = ['facepalm', 'palmada','decepcionar','frustrar','desilusionar','disgustar','defraudar','desengañar','desencantar','abatir']
 handler.group = true
-
+handler.register = true;
 export default handler

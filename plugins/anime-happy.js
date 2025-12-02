@@ -38,5 +38,5 @@ handler.help = ['happy']
 handler.tags = ['anime']
 handler.command = ['happy', 'feliz']
 handler.group = true
-
+handler.register = true;
 export default handler

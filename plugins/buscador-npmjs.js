@@ -15,12 +15,12 @@ let { objects } = await res.json()
 if (!objects.length) return conn.reply(m.chat, `${emoji2} No se encontró resultado de: ${text}`, m, global.rcanal)
 
 let txt = objects.map(({ package: pkg }) => {
-return `《✧》 Scraper  -  Search 《✧》
+return `《💙》 Scraper  -  Search 《💙》
 
-✦ Nombre: ${pkg.name}
-✦ Versión: V${pkg.version}
-✦ Enlace: ${pkg.links.npm}
-✦ Descripción: ${pkg.description}
+💙 Nombre: ${pkg.name}
+💙 Versión: V${pkg.version}
+💙 Enlace: ${pkg.links.npm}
+💙 Descripción: ${pkg.description}
 \n\n----------`
 }).join`\n\n`
 

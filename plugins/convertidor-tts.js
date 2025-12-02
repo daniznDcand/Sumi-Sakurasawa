@@ -16,7 +16,7 @@ const handler = async (m, {conn, args, usedPrefix, command}) => {
   } catch (e) {
     m.reply(e + '');
     text = args.join(' ');
-    if (!text) throw `🎤💙 ¡Konnichiwa! Por favor, proporciona un texto para que pueda cantarlo con mi voz virtual de Miku ✨\n\n🎵 Ejemplo: #tts ja ¡Hatsune Miku desu! 🎵`;
+    if (!text) throw `💙 ¡Konnichiwa! Por favor, proporciona un texto para que pueda cantarlo con mi voz virtual de Miku ✨\n\n🎵 Ejemplo: #tts ja ¡Hatsune Miku desu! 🎵`;
     res = await tts(text, defaultLang);
   } finally {
     if (res) conn.sendFile(m.chat, res, 'tts.opus', null, m, true);

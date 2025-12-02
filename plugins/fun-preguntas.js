@@ -1,6 +1,6 @@
 var handler = async (m, { conn, text, usedPrefix, command }) => {
 
-if (!text) return conn.reply(m.chat, `🎤💙 Por favor, hazme una pregunta para que pueda responderte con mi sabiduría virtual ✨`, m)
+if (!text) return conn.reply(m.chat, `💙 Por favor, hazme una pregunta para que pueda responderte con mi sabiduría virtual ✨`, m, rcanal)
 
 await m.react('❔')
 await delay(1000 * 1)
@@ -9,7 +9,7 @@ await delay(1000 * 1)
 await m.react('❔')
 await delay(1000 * 1)
 
-await conn.reply(m.chat, + dev + `\n\n🎤💙 *Pregunta Musical:* ` + text + `\n🎵✨ *Respuesta Virtual:* ` + res, m)
+await conn.reply(m.chat, + dev + `\n\n💙 *Pregunta Musical:* ` + text + `\n🎵✨ *Respuesta Virtual:* ` + res, m)
 
 }
 handler.help = ['pregunta']

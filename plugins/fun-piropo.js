@@ -2,7 +2,7 @@ const { generateWAMessageFromContent, proto } = (await import('@whiskeysockets/b
 
 var handler = async (m, { conn, text}) => {
 
-conn.sendMessage(m.chat, {text: `🎤💙 Buscando un hermoso piropo virtual para ti... ¡Espera un momentito! ✨`}, {quoted: m, rcanal})
+conn.sendMessage(m.chat, {text: `💙 Buscando un hermoso piropo virtual para ti... ¡Espera un momentito! ✨`}, {quoted: m, rcanal})
 
 conn.sendMessage(m.chat, {text: `*┏━🎵-💙-✨-🎤-💫-🌟-⚘-🎶-💙-✨-💙-✨-🎵-💫-🌟-━┓*\n\n🎵💙 *"${pickRandom(global.piropo)}"* 💙🎵\n\n*┗━🎵-💙-✨-🎤-💫-🌟-⚘-🎶-💙-✨-💙-✨-🎵-💫-🌟-━┛*`}, {quoted: m, rcanal})
 

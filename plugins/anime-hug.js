@@ -38,6 +38,7 @@ handler.help = ['hug']
 handler.tags = ['anime']
 handler.command = ['hug', 'abrazar','abrazos','abrazo','apapachar','apapacho','cariño','cariñoso','afecto','afectuoso','consuelo','consolar','reconfortar','mimar','mimos']
 handler.group = true
+handler.register = true
 
 export default handler
 

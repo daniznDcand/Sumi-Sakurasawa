@@ -1,3 +1,5 @@
+let restrictionCooldowns = new Map()
+
 export async function before(m, { conn, isBotAdmin, isAdmin, usedPrefix }) {
   if (m.isBaileys || m.fromMe || m.chat?.endsWith('@g.us')) return true
 
@@ -15,6 +17,17 @@ export async function before(m, { conn, isBotAdmin, isAdmin, usedPrefix }) {
   if (esComandoPermitido) return true
 
   if (!user.registered || !user.channelVerified) {
+    const userId = m.sender
+    const now = Date.now()
+    const lastMessage = restrictionCooldowns.get(userId) || 0
+    const cooldownTime = 5 * 60 * 1000
+
+    if (now - lastMessage < cooldownTime) {
+      return false
+    }
+
+    restrictionCooldowns.set(userId, now)
+
     const channel = 'https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
 
     const buttons = [

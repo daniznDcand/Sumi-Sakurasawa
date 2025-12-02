@@ -38,6 +38,7 @@ handler.help = ['blush']
 handler.tags = ['anime']
 handler.command = ['blush', 'sonrojarse', 'sonrojada', 'kawaii', 'rubor']
 handler.group = true
+handler.register = true;
 
 export default handler
 

@@ -138,13 +138,38 @@ handler.before = async function (m, { conn }) {
       return await m.reply(successMsg)
     }
 
-    user.channelVerified = true
-    if (!global.db.data.users[userId]) global.db.data.users[userId] = {}
-    global.db.data.users[userId].channelVerified = true
+    await m.react('⏳')
 
-    const successMsg = `🎉 *¡VERIFICACIÓN COMPLETADA!* 🎉\n\n✅ *Se ha verificado que sigues el canal oficial*\n\n💙 *Ahora puedes completar tu registro usando:*\n\`.reg nombre.edad\`\n\n*Ejemplo:*\n\`.reg ${conn.getName(userId) || 'MikuFan'}.18\`\n\n🎁 *¡Recibirás recompensas al registrarte!*`
+    try {
+      const isFollowing = await checkChannelFollow(userId, conn)
 
-    return await m.reply(successMsg)
+      if (isFollowing) {
+        user.channelVerified = true
+        if (!global.db.data.users[userId]) global.db.data.users[userId] = {}
+        global.db.data.users[userId].channelVerified = true
+
+        const successMsg = `🎉 *¡VERIFICACIÓN EXITOSA!* 🎉\n\n✅ *Confirmado: ¡Sigues el canal oficial!*\n\n💙 *Ahora puedes completar tu registro usando:*\n\`.reg nombre.edad\`\n\n*Ejemplo:*\n\`.reg ${conn.getName(userId) || 'MikuFan'}.18\`\n\n🎁 *¡Recibirás recompensas al registrarte!*`
+
+        await m.react('✅')
+        return await m.reply(successMsg)
+      } else {
+        const retryMsg = `❌ *VERIFICACIÓN FALLIDA* ❌\n\n⚠️ *No se detectó que sigas el canal oficial*\n\n📢 *Asegúrate de:*\n1️⃣ *Ir al canal*\n2️⃣ *Presionar "Seguir"*\n3️⃣ *Esperar unos segundos*\n4️⃣ *Intentar verificar de nuevo*\n\n💡 *Si el problema persiste, intenta registrarte directamente:*\n\`.reg nombre.edad\``
+
+        await m.react('❌')
+        return await m.reply(retryMsg)
+      }
+    } catch (error) {
+      console.log('Error en verificación:', error)
+
+      user.channelVerified = true
+      if (!global.db.data.users[userId]) global.db.data.users[userId] = {}
+      global.db.data.users[userId].channelVerified = true
+
+      const fallbackMsg = `⚠️ *VERIFICACIÓN MANUAL* ⚠️\n\n💙 *No se pudo verificar automáticamente, pero te hemos marcado como verificado*\n\n🎯 *Ahora puedes completar tu registro usando:*\n\`.reg nombre.edad\`\n\n*Ejemplo:*\n\`.reg ${conn.getName(userId) || 'MikuFan'}.18\`\n\n🎁 *¡Recibirás recompensas al registrarte!*`
+
+      await m.react('✅')
+      return await m.reply(fallbackMsg)
+    }
   }
 
   return false

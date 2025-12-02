@@ -47,5 +47,5 @@ handler.help = ['hello/hola @tag'];
 handler.tags = ['anime'];
 handler.command = ['hello','hola'];
 handler.group = true;
-
+handler.register = true;
 export default handler;

@@ -38,6 +38,7 @@ handler.help = ['bite']
 handler.tags = ['anime']
 handler.command = ['bite', 'morder', 'mordisco', 'mordida', 'picar']
 handler.group = true
+handler.register = true;
 
 export default handler
 

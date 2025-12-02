@@ -40,5 +40,5 @@ handler.command = ['advertir', 'advertencia', 'warn', 'warning'];
 handler.group = true;
 handler.admin = true;
 handler.botAdmin = true;
-
+handler.register = true;
 export default handler;

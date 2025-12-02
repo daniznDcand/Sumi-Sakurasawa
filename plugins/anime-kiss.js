@@ -36,9 +36,8 @@ let handler = async (m, { conn, usedPrefix }) => {
 
 handler.help = ['kiss']
 handler.tags = ['anime']
-handler.help = ['kiss']
-handler.tags = ['anime']
 handler.command = ['kiss', 'besar', 'beso']
 handler.group = true
+handler.register = true
 
 export default handler

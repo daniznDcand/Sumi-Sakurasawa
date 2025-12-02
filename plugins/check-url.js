@@ -50,5 +50,6 @@ let handler = async (m, { conn, text }) => {
 handler.help = ['checkurl'];
 handler.tags = ['test'];
 handler.command = ['checkurl', 'verificarurl'];
+handler.register = true;
 
 export default handler;

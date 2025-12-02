@@ -60,4 +60,5 @@ let handler = async (m, { conn, args }) => {
 handler.help = ['clima *<ciudad/país>*'];
 handler.tags = ['herramientas'];
 handler.command = ['clima', 'tiempo']
+handler.register = true
 export default handler;

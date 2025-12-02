@@ -33,6 +33,7 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
 handler.tags = ['+18']; 
 handler.help = ['pornhubsearch']; 
 handler.command = ['phsearch', 'pornhubsearch'];
+handler.register = true;
 export default handler;
 
 async function searchPornhub(search) {

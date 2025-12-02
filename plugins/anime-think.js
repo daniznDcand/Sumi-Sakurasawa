@@ -32,6 +32,6 @@ handler.help = ['think']
 handler.tags = ['anime']
 handler.command = ['think', 'pensar']
 handler.group = true
-
+handler.register = true;
 export default handler
 

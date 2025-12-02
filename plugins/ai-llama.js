@@ -17,5 +17,6 @@ let handler = async (m, { conn, command, text, usedPrefix }) => {
 }
 
 handler.command = ['llama', 'meta']
+handler.register = true;
 
 export default handler

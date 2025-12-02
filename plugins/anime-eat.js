@@ -37,5 +37,5 @@ handler.help = ['eat']
 handler.tags = ['anime']
 handler.command = ['eat', 'comer','almorzar','cenar','desayunar','food','comida','snack','tragar','devorar','digerir','masticar','engullir','zampar']
 handler.group = true
-
+handler.register = true;
 export default handler
