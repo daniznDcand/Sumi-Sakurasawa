@@ -27,35 +27,71 @@ let handler = async function (m, { conn, text, usedPrefix, command }) {
   let channel = 'https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
   let mikuImg = 'https://i.postimg.cc/QCzMhBR1/1757986334220.png'
 
-  if (user.registered === true) return m.reply(
-    `🌟 *¡Ya estás registrado en el mundo de Hatsune Miku!* 🌟\n\n💙 Si quieres eliminar tu registro, usa:\n*${usedPrefix}unreg*`
-  )
+  if (user.registered === true) {
+    await m.react('⏳')
+    const isStillFollowing = await checkChannelFollow(m.sender, conn)
 
-  if (!user.channelVerified) {
+    if (!isStillFollowing) {
+      user.channelVerified = false
+      user.registered = false
+
+      const buttons = [
+        {
+          buttonId: 'follow_channel_again',
+          buttonText: { displayText: '📢 Seguir Canal Nuevamente' },
+          type: 1
+        },
+        {
+          buttonId: 'check_follow_again',
+          buttonText: { displayText: '✅ Verificar y Registrarme' },
+          type: 1
+        }
+      ]
+
+      const unfollowMsg = `🚫 *ACCESO REVOCADO* 🚫\n\n⚠️ *Detectamos que dejaste de seguir nuestro canal oficial*\n\n💙 *Para continuar usando el bot:*\n\n1️⃣ *Sigue nuevamente el canal*\n2️⃣ *Verifica tu seguimiento*\n3️⃣ *Vuelve a registrarte*\n\n📢 *Canal oficial:*\n${channel}\n\n❌ *Tu registro anterior ha sido removido*`
+
+      await m.react('❌')
+      return await conn.sendMessage(m.chat, {
+        text: unfollowMsg,
+        buttons: buttons,
+        footer: '🌸 Sistema de Verificación - Hatsune Miku Bot'
+      }, { quoted: m })
+    }
+
+    return m.reply(
+      `🌟 *¡Ya estás registrado en el mundo de Hatsune Miku!* 🌟\n\n💙 Si quieres eliminar tu registro, usa:\n*${usedPrefix}unreg*`
+    )
+  }
+
+  await m.react('⏳')
+  const isFollowingChannel = await checkChannelFollow(m.sender, conn)
+
+  if (!isFollowingChannel) {
     const buttons = [
       {
-        buttonId: 'follow_channel',
-        buttonText: { displayText: '📢 Seguir Canal' },
+        buttonId: 'follow_channel_required',
+        buttonText: { displayText: '📢 Seguir Canal Oficial' },
         type: 1
       },
       {
-        buttonId: 'check_follow',
-        buttonText: { displayText: '✅ Verificar Seguimiento' },
+        buttonId: 'check_channel_follow',
+        buttonText: { displayText: '✅ Verificar y Registrarme' },
         type: 1
       }
     ]
 
-    const followMessage = `🚫 *REGISTRO REQUERIDO* 🚫\n\n💙 *Para usar el bot, debes:*\n\n1️⃣ *Seguir nuestro canal oficial*\n2️⃣ *Verificar tu seguimiento*\n3️⃣ *Completar el registro*\n\n📢 *Canal oficial:*\n${channel}\n\n🎯 *Después de seguir el canal, presiona "Verificar Seguimiento"*`
+    const channelRequiredMsg = `🚫 *CANAL OBLIGATORIO* 🚫\n\n💙 *Antes de registrarte, debes seguir nuestro canal oficial:*\n\n📢 *CANAL REQUERIDO:*\n${channel}\n\n🎯 *Instrucciones:*\n1️⃣ *Presiona "Seguir Canal Oficial"*\n2️⃣ *Ve a WhatsApp y presiona "Seguir"*\n3️⃣ *Vuelve aquí y presiona "Verificar y Registrarme"*\n\n⚠️ *No podrás registrarte hasta verificar que sigues el canal*\n\n🛡️ *Esta verificación es permanente - si dejas de seguir, pierdes el acceso*`
 
+    await m.react('❌')
     return await conn.sendMessage(m.chat, {
-      text: followMessage,
+      text: channelRequiredMsg,
       buttons: buttons,
-      footer: '🌸 Sistema de Verificación - Hatsune Miku Bot'
+      footer: '🌸 Verificación de Canal Obligatoria - Hatsune Miku Bot'
     }, { quoted: m })
   }
 
   if (!Reg.test(text)) return m.reply(
-    `🌸 *Registro Miku* 🌸\n\n*Formato correcto:*\n${usedPrefix + command} nombre.edad\n\n*Ejemplo:*\n${usedPrefix + command} ${name2}.18\n\n¡Haz tu registro para recibir tu tarjeta Miku!`
+    `🌸 *Registro Miku* 🌸\n\n*Formato correcto:*\n${usedPrefix + command} nombre.edad\n\n*Ejemplo:*\n${usedPrefix + command} ${name2}.18\n\n✅ *Ya verificamos que sigues el canal oficial*\n\n¡Completa tu registro para recibir tu tarjeta Miku!`
   )
 
   let [_, name, age] = text.match(Reg)
@@ -76,7 +112,7 @@ let handler = async function (m, { conn, text, usedPrefix, command }) {
 
   let sn = createHash('md5').update(m.sender).digest('hex').slice(0, 20)
 
-  let regbot = `\n🌟 *¡REGISTRO MIKU EXITOSO!* 🌟\n\n👤 *Nombre:* ${name}\n🎂 *Edad:* ${age} años\n🆔 *ID:* ${sn}\n\n💙 *¡Bienvenido/a al universo de Hatsune Miku!* 💙\n\n🎁 *Recompensas iniciales:*\n💰 +39 monedas\n✨ +300 XP\n🎟️ +20 tickets\n\n📢 *¡No olvides seguir nuestro canal para más actualizaciones!*`
+  let regbot = `\n🌟 *¡REGISTRO MIKU COMPLETADO!* 🌟\n\n👤 *Nombre:* ${name}\n🎂 *Edad:* ${age} años\n🆔 *ID:* ${sn}\n\n✅ *Canal oficial:* Verificado\n\n💙 *¡Bienvenido/a al universo de Hatsune Miku!* 💙\n\n🎁 *Recompensas iniciales:*\n💰 +39 monedas\n✨ +300 XP\n🎟️ +20 tickets\n\n🛡️ *Tu acceso está protegido mientras sigas el canal oficial*`
 
   await m.react('💙')
 
@@ -114,21 +150,14 @@ handler.before = async function (m, { conn }) {
     buttonId = m.message.buttonsResponseMessage.selectedButtonId
   }
 
-  if (buttonId === 'follow_channel') {
+  if (buttonId === 'follow_channel_required' || buttonId === 'follow_channel_again') {
     const channel = 'https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
-    const followMsg = `📢 *SIGUE NUESTRO CANAL OFICIAL* 📢\n\n💙 *Para continuar con el registro:*\n\n1️⃣ *Haz clic en el enlace:*\n${channel}\n\n2️⃣ *Presiona "Seguir" en el canal*\n\n3️⃣ *Vuelve aquí y presiona "Verificar Seguimiento"*\n\n🎯 *¡No podrás usar el bot hasta verificar!*`
+    const followMsg = `📢 *SIGUE NUESTRO CANAL OFICIAL* 📢\n\n💙 *Para ${buttonId === 'follow_channel_again' ? 'recuperar tu acceso' : 'registrarte'}:*\n\n1️⃣ *Haz clic en el enlace:*\n${channel}\n\n2️⃣ *Presiona "Seguir" en WhatsApp*\n\n3️⃣ *Vuelve aquí y presiona "Verificar y Registrarme"*\n\n🎯 *${buttonId === 'follow_channel_again' ? 'Tu acceso será restaurado' : 'Podrás completar tu registro'}*`
 
     return await m.reply(followMsg)
   }
 
-  if (buttonId === 'register_now') {
-    const name2 = (await conn.getName(m.sender)) || 'MikuFan'
-    const regMsg = `🌸 *REGISTRO MIKU* 🌸\n\n*Formato correcto:*\n.reg nombre.edad\n\n*Ejemplo:*\n.reg ${name2}.18\n\n¡Haz tu registro para recibir tu tarjeta Miku!`
-
-    return await m.reply(regMsg)
-  }
-
-  if (buttonId === 'check_follow') {
+  if (buttonId === 'check_channel_follow' || buttonId === 'check_follow_again') {
     const userId = m.sender
     const user = global.db.data.users[userId] || {}
 
