@@ -575,7 +575,7 @@ handler.before = async function (m, { conn }) {
         const premiumButtons = [
             { buttonId: 'buy_premium_miku', buttonText: { displayText: '💙 Brazilian Miku - 5000' }, type: 1 },
             { buttonId: 'buy_premium_luka', buttonText: { displayText: '🖤 Inabakumori - 4500' }, type: 1 },
-            { buttonId: 'buy_premium_rin', buttonText: { displayText: '☢️ Cyberpunk Edgerunners - 4000' }, type: 1 },
+            { buttonId: 'buy_premium_rin', buttonText: { displayText: '☢️ Cyberpunk Edgeruners - 4000' }, type: 1 },
             { buttonId: 'shop_back', buttonText: { displayText: '⬅️ Volver' }, type: 1 }
         ]
 
@@ -585,7 +585,7 @@ handler.before = async function (m, { conn }) {
 
         premiumMessage += `\n\n🖤 *Inabakumori*\n💰 4500 coins\n• Waifu Legendaria Única\n• Poderes misteriosos\n• +50% ataque\n• Protección contra robos`
 
-        premiumMessage += `\n\n☢️ *Cyberpunk Edgerunners*\n💰 4000 coins\n• Waifu Legendaria Única\n• Estilo cyberpunk\n• +75% defensa\n• Efectos futuristas`
+        premiumMessage += `\n\n☢️ *Cyberpunk Edgeruners*\n💰 4000 coins\n• Waifu Legendaria Única\n• Estilo cyberpunk\n• +75% defensa\n• Efectos futuristas`
 
         const premiumButtonMessage = {
             image: { url: premiumImage },
@@ -739,8 +739,8 @@ handler.before = async function (m, { conn }) {
                 break
             case 'buy_premium_rin':
                 finalPrice = 4000
-                itemDescription = '☢️Cyberpunk Edgerunners💫 (Waifu Legendaria única)'
-                rewards = [{ type: 'premium_waifu', name: '☢️Cyberpunk Edgerunners💫' }]
+                itemDescription = '☢️Cyberpunk Edgeruners💫 (Waifu Legendaria única)'
+                rewards = [{ type: 'premium_waifu', name: '☢️Cyberpunk Edgeruners💫' }]
                 break
             case 'buy_rpg_potion':
                 finalPrice = 100
@@ -802,7 +802,7 @@ handler.before = async function (m, { conn }) {
         let waifuImages = [];
 
         for (const reward of rewards) {
-            if (reward.type === 'waifu') {
+            if (reward.type === 'waifu' || reward.type === 'premium_waifu') {
                 hasWaifuReward = true;
                 const waifus = getRandomWaifus(reward.count, reward.rarity)
                 for (const waifu of waifus) {
