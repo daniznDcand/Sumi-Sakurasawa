@@ -312,29 +312,8 @@ continue
 fail("admin", m, this)
 continue
 }
-if (plugin.register && (!user.registered || !user.channelVerified)) {
-const channel = 'https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
-
-const buttons = [
-  {
-    buttonId: 'register_now',
-    buttonText: { displayText: '📝 Registrarse' },
-    type: 1
-  },
-  {
-    buttonId: 'follow_channel',
-    buttonText: { displayText: '📢 Seguir Canal' },
-    type: 1
-  }
-]
-
-const restrictMsg = `🚫 *ACCESO RESTRINGIDO* 🚫\n\n💙 *Este comando requiere registro completo:*\n\n${!user.channelVerified ? '❌ *Seguir el canal oficial*\n' : '✅ *Seguir canal oficial*\n'}${!user.registered ? '❌ *Completar registro*\n' : '✅ *Registro completado*\n'}\n📢 *Canal oficial:*\n${channel}\n\n🎯 *Usa los botones para completar los requisitos*`
-
-await this.sendMessage(m.chat, {
-  text: restrictMsg,
-  buttons: buttons,
-  footer: '🌸 Sistema de Verificación - Hatsune Miku Bot'
-}, { quoted: m })
+if (plugin.register && !user.registered) {
+await m.reply(`🚫 *ACCESO RESTRINGIDO* 🚫\n\n💙 *Este comando requiere registro*\n\n🎯 *Usa .reg nombre.edad para registrarte*\n\n*Ejemplo:*\n.reg ${m.name || 'MikuFan'}.18\n\n🌸 *¡Regístrate para acceder a todas las funciones!*`)
 
 continue
 }
