@@ -153,6 +153,10 @@ handler.before = async function (m, { conn }) {
     buttonId = m.message.buttonsResponseMessage.selectedButtonId
   }
 
+  if (!buttonId || !buttonId.startsWith('follow_channel') && !buttonId.startsWith('check_') && !buttonId.startsWith('proceed_to_register')) {
+    return false
+  }
+
   if (buttonId === 'follow_channel_required' || buttonId === 'follow_channel_again') {
     const channel = 'https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
     const followMsg = `📢 *SIGUE NUESTRO CANAL OFICIAL* 📢\n\n💙 *Para ${buttonId === 'follow_channel_again' ? 'recuperar tu acceso' : 'registrarte'}:*\n\n1️⃣ *Haz clic en el enlace:*\n${channel}\n\n2️⃣ *Presiona "Seguir" en WhatsApp*\n\n3️⃣ *Vuelve aquí y presiona "Verificar y Registrarme"*\n\n🎯 *${buttonId === 'follow_channel_again' ? 'Tu acceso será restaurado' : 'Podrás completar tu registro'}*`
@@ -174,22 +178,11 @@ handler.before = async function (m, { conn }) {
         if (!global.db.data.users[userId]) global.db.data.users[userId] = {}
         global.db.data.users[userId].channelVerified = true
 
-        const buttons = [
-          {
-            buttonId: 'proceed_to_register',
-            buttonText: { displayText: '📝 Proceder al Registro' },
-            type: 1
-          }
-        ]
-
-        const successMsg = `🎉 *¡VERIFICACIÓN EXITOSA!* 🎉\n\n✅ *Confirmado: ¡Sigues el canal oficial!*\n\n💙 *Ahora puedes completar tu registro*\n\n🎯 *Presiona el botón para continuar:*`
+        const name2 = (await conn.getName(userId)) || 'MikuFan'
+        const successMsg = `🎉 *¡VERIFICACIÓN EXITOSA!* 🎉\n\n✅ *Confirmado: ¡Sigues el canal oficial!*\n\n💙 *Ahora puedes completar tu registro usando:*\n\`.reg nombre.edad\`\n\n*Ejemplo:*\n\`.reg ${name2}.18\`\n\n🎁 *¡Recibirás recompensas al registrarte!*`
 
         await m.react('✅')
-        return await conn.sendMessage(m.chat, {
-          text: successMsg,
-          buttons: buttons,
-          footer: '🌸 Registro Disponible - Hatsune Miku Bot'
-        }, { quoted: m })
+        return await m.reply(successMsg)
       } else {
         const buttons = [
           {
@@ -220,22 +213,11 @@ handler.before = async function (m, { conn }) {
       if (!global.db.data.users[userId]) global.db.data.users[userId] = {}
       global.db.data.users[userId].channelVerified = true
 
-      const buttons = [
-        {
-          buttonId: 'proceed_to_register',
-          buttonText: { displayText: '📝 Proceder al Registro' },
-          type: 1
-        }
-      ]
-
-      const fallbackMsg = `⚠️ *VERIFICACIÓN MANUAL* ⚠️\n\n💙 *No se pudo verificar automáticamente, pero te hemos marcado como verificado*\n\n🎯 *Puedes proceder al registro:*`
+      const name2 = (await conn.getName(userId)) || 'MikuFan'
+      const fallbackMsg = `⚠️ *VERIFICACIÓN MANUAL* ⚠️\n\n💙 *No se pudo verificar automáticamente, pero te hemos marcado como verificado*\n\n🎯 *Ahora puedes completar tu registro usando:*\n\`.reg nombre.edad\`\n\n*Ejemplo:*\n\`.reg ${name2}.18\`\n\n🎁 *¡Recibirás recompensas al registrarte!*`
 
       await m.react('✅')
-      return await conn.sendMessage(m.chat, {
-        text: fallbackMsg,
-        buttons: buttons,
-        footer: '🌸 Registro Disponible - Hatsune Miku Bot'
-      }, { quoted: m })
+      return await m.reply(fallbackMsg)
     }
   }
 
@@ -253,22 +235,11 @@ handler.before = async function (m, { conn }) {
         if (!global.db.data.users[userId]) global.db.data.users[userId] = {}
         global.db.data.users[userId].channelVerified = true
 
-        const buttons = [
-          {
-            buttonId: 'proceed_to_register',
-            buttonText: { displayText: '📝 Registrarme Nuevamente' },
-            type: 1
-          }
-        ]
-
-        const successMsg = `🎉 *¡ACCESO RESTAURADO!* 🎉\n\n✅ *Confirmado: ¡Sigues el canal oficial!*\n\n💙 *Tu acceso ha sido restaurado*\n\n🎯 *Presiona el botón para registrarte:*`
+        const name2 = (await conn.getName(userId)) || 'MikuFan'
+        const successMsg = `🎉 *¡ACCESO RESTAURADO!* 🎉\n\n✅ *Confirmado: ¡Sigues el canal oficial!*\n\n💙 *Tu acceso ha sido restaurado*\n\n🎯 *Ahora puedes registrarte nuevamente usando:*\n\`.reg nombre.edad\`\n\n*Ejemplo:*\n\`.reg ${name2}.18\``
 
         await m.react('✅')
-        return await conn.sendMessage(m.chat, {
-          text: successMsg,
-          buttons: buttons,
-          footer: '🌸 Registro Disponible - Hatsune Miku Bot'
-        }, { quoted: m })
+        return await m.reply(successMsg)
       } else {
         const buttons = [
           {
@@ -299,31 +270,14 @@ handler.before = async function (m, { conn }) {
       if (!global.db.data.users[userId]) global.db.data.users[userId] = {}
       global.db.data.users[userId].channelVerified = true
 
-      const buttons = [
-        {
-          buttonId: 'proceed_to_register',
-          buttonText: { displayText: '📝 Proceder al Registro' },
-          type: 1
-        }
-      ]
-
-      const fallbackMsg = `⚠️ *VERIFICACIÓN MANUAL* ⚠️\n\n💙 *Acceso restaurado manualmente*\n\n🎯 *Puedes proceder al registro:*`
+      const name2 = (await conn.getName(userId)) || 'MikuFan'
+      const fallbackMsg = `⚠️ *VERIFICACIÓN MANUAL* ⚠️\n\n💙 *Acceso restaurado manualmente*\n\n🎯 *Puedes registrarte nuevamente usando:*\n\`.reg nombre.edad\`\n\n*Ejemplo:*\n\`.reg ${name2}.18\``
 
       await m.react('✅')
-      return await conn.sendMessage(m.chat, {
-        text: fallbackMsg,
-        buttons: buttons,
-        footer: '🌸 Registro Disponible - Hatsune Miku Bot'
-      }, { quoted: m })
+      return await m.reply(fallbackMsg)
     }
   }
 
-  if (buttonId === 'proceed_to_register') {
-    const name2 = (await conn.getName(m.sender)) || 'MikuFan'
-    const regMsg = `🌸 *REGISTRO MIKU* 🌸\n\n✅ *Verificación de canal completada*\n\n*Formato correcto:*\n.reg nombre.edad\n\n*Ejemplo:*\n.reg ${name2}.18\n\n¡Completa tu registro para recibir tu tarjeta Miku!`
-
-    return await m.reply(regMsg)
-  }
 
   return false
 }
