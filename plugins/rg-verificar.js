@@ -141,8 +141,15 @@ let handler = async function (m, { conn, text, usedPrefix, command }) {
   }, { quoted: m })
 }
 
+let processedMessages = new Set()
+
 handler.before = async function (m, { conn }) {
   if (!m.message) return false
+
+  const messageKey = m.key?.id
+  if (messageKey && processedMessages.has(messageKey)) {
+    return false
+  }
 
   let buttonId = null
 
@@ -153,8 +160,16 @@ handler.before = async function (m, { conn }) {
     buttonId = m.message.buttonsResponseMessage.selectedButtonId
   }
 
-  if (!buttonId || !buttonId.startsWith('follow_channel') && !buttonId.startsWith('check_') && !buttonId.startsWith('proceed_to_register')) {
+  if (!buttonId || !buttonId.startsWith('follow_channel') && !buttonId.startsWith('check_')) {
     return false
+  }
+
+  if (messageKey) {
+    processedMessages.add(messageKey)
+
+    setTimeout(() => {
+      processedMessages.delete(messageKey)
+    }, 30000)
   }
 
   if (buttonId === 'follow_channel_required' || buttonId === 'follow_channel_again') {

@@ -14,6 +14,8 @@ clearTimeout(this)
 resolve()
 }, ms))
 
+let processedButtonMessages = new Set()
+
 export async function handler(chatUpdate) {
 this.msgqueque = this.msgqueque || []
 this.uptime = this.uptime || Date.now()
@@ -25,6 +27,19 @@ let m = chatUpdate.messages[chatUpdate.messages.length - 1]
 if (!m) {
 return
 }
+
+const messageKey = m.key?.id
+if (messageKey && (m.message?.buttonsResponseMessage || m.message?.templateButtonReplyMessage)) {
+  if (processedButtonMessages.has(messageKey)) {
+    return
+  }
+  processedButtonMessages.add(messageKey)
+
+  setTimeout(() => {
+    processedButtonMessages.delete(messageKey)
+  }, 30000)
+}
+
 if (global.db.data == null) await global.loadDatabase()
 try {
 m = smsg(this, m) || m
