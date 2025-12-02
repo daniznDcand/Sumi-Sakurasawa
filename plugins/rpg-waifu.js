@@ -505,8 +505,8 @@ let handler = async (m, { conn }) => {
     message += `💡 ¿Qué deseas hacer con este personaje?`;
 
     const buttons = [
-        { buttonId: `waifu_claim_${userId}`, buttonText: { displayText: '💚 Reclamar Personaje' }, type: 1 },
-        { buttonId: `waifu_sell_${userId}`, buttonText: { displayText: `💰 Vender por ${sellPrice} cebollines` }, type: 1 }
+        { buttonId: `waifu_claim_${userId.split('@')[0]}`, buttonText: { displayText: '💚 Reclamar Personaje' }, type: 1 },
+        { buttonId: `waifu_sell_${userId.split('@')[0]}`, buttonText: { displayText: `💰 Vender por ${sellPrice} cebollines` }, type: 1 }
     ];
 
     const buttonMessage = {

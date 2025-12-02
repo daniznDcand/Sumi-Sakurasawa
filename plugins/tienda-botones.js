@@ -101,21 +101,7 @@ let handler = async (m, { conn, usedPrefix, command }) => {
 
     const coins = user.coin || 0
 
-    let shopMessage = `🏪 *TIENDA PREMIUM HATSUNE MIKU* 🏪\n\n`
-    shopMessage += `💰 *Tus monedas:* ${coins} cebollines\n\n`
-    shopMessage += `━━━━━━━━━━━━━━━━━━━━━\n\n`
-    shopMessage += `🎯 *¡Bienvenido a la tienda más exclusiva!*\n\n`
-    shopMessage += `✨ Descubre ofertas increíbles\n`
-    shopMessage += `💎 Waifu premium con beneficios únicos\n`
-    shopMessage += `⚔️ Items para potenciar tu aventura\n`
-    shopMessage += `🎨 Personaliza tu experiencia\n\n`
-    shopMessage += `━━━━━━━━━━━━━━━━━━━━━\n\n`
-    shopMessage += `💡 *Selecciona una categoría:*\n\n`
-    shopMessage += `• ⏰ *Ofertas Limitadas* - Descuentos temporales\n`
-    shopMessage += `• 💎 *Waifu Premium* - Personajes exclusivos\n`
-    shopMessage += `• ⚔️ *Items RPG* - Mejoras de combate\n`
-    shopMessage += `• 🎨 *Cosméticos* - Personalización\n\n`
-    shopMessage += `━━━━━━━━━━━━━━━━━━━━━`
+    let shopMessage = `🏪 *TIENDA PREMIUM* 🏪\n\n💰 *Monedas:* ${coins}\n\n🎯 *Categorías:*`
 
     const buttonMessage = {
         image: { url: shopImage },
@@ -164,41 +150,23 @@ handler.before = async function (m, { conn }) {
             { buttonId: 'shop_back', buttonText: { displayText: '⬅️ Volver' }, type: 1 }
         ]
 
-        let limitedMessage = `⏰ *OFERTAS LIMITADAS* ⏰\n\n`
-        limitedMessage += `💰 *Tus monedas:* ${coins} cebollines\n\n`
+        let limitedMessage = `⏰ *OFERTAS LIMITADAS* ⏰\n\n💰 *Monedas:* ${coins}`
 
         if (discountInfo.active) {
-            limitedMessage += `🎉 *¡DESCUENTO DEL ${discountInfo.discount}% ACTIVO!*\n`
-            limitedMessage += `⏱️ *Tiempo restante:* ${discountInfo.timeLeft}\n\n`
+            limitedMessage += `\n🎉 *${discountInfo.discount}% OFF* (${discountInfo.timeLeft})`
         }
 
-        limitedMessage += `━━━━━━━━━━━━━━━━━━━━━\n\n`
-        limitedMessage += `🎁 *PACK BÁSICO*\n`
-        limitedMessage += `💰 Precio: ${pack1Price} coins ${discountInfo.active ? `(antes: 500)` : ''}\n`
-        limitedMessage += `• 3 Waifu aleatorias garantizadas\n`
-        limitedMessage += `• 1000 EXP extra\n`
-        limitedMessage += `• Bono: 10% descuento tienda\n\n`
-        limitedMessage += `💎 *PACK PREMIUM*\n`
-        limitedMessage += `💰 Precio: ${pack2Price} coins ${discountInfo.active ? `(antes: 1200)` : ''}\n`
-        limitedMessage += `• 1 Waifu rara garantizada\n`
-        limitedMessage += `• 5 Pócimas de salud\n`
-        limitedMessage += `• 2500 EXP extra\n`
-        limitedMessage += `• Bono: 25% descuento tienda\n\n`
-        limitedMessage += `👑 *PACK LEGENDARIO*\n`
-        limitedMessage += `💰 Precio: ${pack3Price} coins ${discountInfo.active ? `(antes: 2500)` : ''}\n`
-        limitedMessage += `• 1 Waifu legendaria garantizada\n`
-        limitedMessage += `• Set completo de equipo\n`
-        limitedMessage += `• 10000 EXP extra\n`
-        limitedMessage += `• Bono: 50% descuento tienda (24h)\n\n`
-        limitedMessage += `━━━━━━━━━━━━━━━━━━━━━\n\n`
+        limitedMessage += `\n\n🎁 *Pack Básico*\n💰 ${pack1Price} coins\n• 3 Waifu aleatorias\n• +1000 EXP\n• 10% descuento tienda`
 
-        if (discountInfo.active) {
-            limitedMessage += `⚠️ *¡Aprovecha el descuento antes de que termine!*\n\n`
-        } else {
-            limitedMessage += `⚠️ *Próximo descuento: 14:00-17:00 (15%) y 20:00-23:00 (25%)*\n\n`
+        limitedMessage += `\n\n💎 *Pack Premium*\n💰 ${pack2Price} coins\n• 1 Waifu rara\n• 5 Pócimas salud\n• +2500 EXP\n• 25% descuento tienda`
+
+        limitedMessage += `\n\n👑 *Pack Legendario*\n💰 ${pack3Price} coins\n• 1 Waifu legendaria\n• Equipo completo\n• +10000 EXP\n• 50% descuento 24h`
+
+        if (!discountInfo.active) {
+            limitedMessage += `\n\n⚠️ *Descuentos: 14-17h (15%) y 20-23h (25%)*`
         }
 
-        limitedMessage += `🎲 *Las waifu son completamente aleatorias!*`
+        limitedMessage += `\n\n🎲 *Waifu completamente aleatorias*`
 
         const limitedButtonMessage = {
             image: { url: limitedOffersImage },
@@ -221,27 +189,13 @@ handler.before = async function (m, { conn }) {
             { buttonId: 'shop_back', buttonText: { displayText: '⬅️ Volver' }, type: 1 }
         ]
 
-        let premiumMessage = `💎 *WAIFU PREMIUM* 💎\n\n`
-        premiumMessage += `💰 *Tus monedas:* ${coins} cebollines\n\n`
-        premiumMessage += `━━━━━━━━━━━━━━━━━━━━━\n\n`
-        premiumMessage += `🎵 *HATSUNE MIKU PREMIUM*\n`
-        premiumMessage += `• Personaje único con animaciones\n`
-        premiumMessage += `• Bono experiencia: +100%\n`
-        premiumMessage += `• Regeneración automática de HP\n`
-        premiumMessage += `• Acceso a canales premium\n`
-        premiumMessage += `• Marco especial en perfil\n\n`
-        premiumMessage += `🎼 *LUKA MEGURINE PREMIUM*\n`
-        premiumMessage += `• Voz especial en comandos\n`
-        premiumMessage += `• Bono ataque: +50%\n`
-        premiumMessage += `• Protección contra robos\n`
-        premiumMessage += `• Efectos visuales únicos\n\n`
-        premiumMessage += `🎶 *RIN & LEN PREMIUM*\n`
-        premiumMessage += `• Pareja inseparable\n`
-        premiumMessage += `• Bono defensa: +75%\n`
-        premiumMessage += `• Habilidad especial: doble turno\n`
-        premiumMessage += `• Animaciones sincronizadas\n\n`
-        premiumMessage += `━━━━━━━━━━━━━━━━━━━━━\n\n`
-        premiumMessage += `✨ *¡Waifu exclusivas con beneficios únicos!*`
+        let premiumMessage = `💎 *WAIFU PREMIUM* 💎\n\n💰 *Monedas:* ${coins}`
+
+        premiumMessage += `\n\n🎵 *Miku Premium*\n💰 5000 coins\n• Animaciones únicas\n• +100% EXP\n• Regeneración HP\n• Canales premium`
+
+        premiumMessage += `\n\n🎼 *Luka Premium*\n💰 4500 coins\n• Voz especial\n• +50% ataque\n• Protección robos\n• Efectos únicos`
+
+        premiumMessage += `\n\n🎶 *Rin & Len Premium*\n💰 4000 coins\n• Pareja inseparable\n• +75% defensa\n• Doble turno\n• Animaciones sincronizadas`
 
         const premiumButtonMessage = {
             image: { url: premiumImage },
@@ -265,23 +219,15 @@ handler.before = async function (m, { conn }) {
             { buttonId: 'shop_back', buttonText: { displayText: '⬅️ Volver' }, type: 1 }
         ]
 
-        let rpgMessage = `⚔️ *ITEMS RPG* ⚔️\n\n`
-        rpgMessage += `💰 *Tus monedas:* ${coins} cebollines\n\n`
-        rpgMessage += `━━━━━━━━━━━━━━━━━━━━━\n\n`
-        rpgMessage += `🧪 *POCIÓN DE SALUD*\n`
-        rpgMessage += `• Restaura 50 HP\n`
-        rpgMessage += `• Uso inmediato\n\n`
-        rpgMessage += `💉 *MEGA POCION*\n`
-        rpgMessage += `• Restaura HP completo\n`
-        rpgMessage += `• Efecto inmediato\n\n`
-        rpgMessage += `⚔️ *POCIÓN DE FUERZA*\n`
-        rpgMessage += `• +3 Ataque permanente\n`
-        rpgMessage += `• Efecto acumulable\n\n`
-        rpgMessage += `🛡️ *POCIÓN DE DEFENSA*\n`
-        rpgMessage += `• +2 Defensa permanente\n`
-        rpgMessage += `• Protección mejorada\n\n`
-        rpgMessage += `━━━━━━━━━━━━━━━━━━━━━\n\n`
-        rpgMessage += `🎮 *Potencia tus aventuras con estos items!*`
+        let rpgMessage = `⚔️ *ITEMS RPG* ⚔️\n\n💰 *Monedas:* ${coins}`
+
+        rpgMessage += `\n\n🧪 *Poción Salud*\n💰 100 coins\n• +50 HP\n• Uso inmediato`
+
+        rpgMessage += `\n\n💉 *Mega Poción*\n💰 250 coins\n• HP completo\n• Efecto inmediato`
+
+        rpgMessage += `\n\n⚔️ *Poción Fuerza*\n💰 500 coins\n• +3 Ataque permanente\n• Acumulable`
+
+        rpgMessage += `\n\n🛡️ *Poción Defensa*\n💰 400 coins\n• +2 Defensa permanente\n• Protección mejorada`
 
         const rpgButtonMessage = {
             image: { url: rpgImage },
@@ -304,20 +250,13 @@ handler.before = async function (m, { conn }) {
             { buttonId: 'shop_back', buttonText: { displayText: '⬅️ Volver' }, type: 1 }
         ]
 
-        let cosmeticMessage = `🎨 *COSMÉTICOS* 🎨\n\n`
-        cosmeticMessage += `💰 *Tus monedas:* ${coins} cebollines\n\n`
-        cosmeticMessage += `━━━━━━━━━━━━━━━━━━━━━\n\n`
-        cosmeticMessage += `🎨 *MARCO MIKU*\n`
-        cosmeticMessage += `• Marco exclusivo de Miku\n`
-        cosmeticMessage += `• Efecto brillante\n\n`
-        cosmeticMessage += `🌸 *MARCO SAKURA*\n`
-        cosmeticMessage += `• Pétalos animados\n`
-        cosmeticMessage += `• Diseño floral único\n\n`
-        cosmeticMessage += `👑 *TÍTULO VIP*\n`
-        cosmeticMessage += `• Prefijo especial en mensajes\n`
-        cosmeticMessage += `• Reconocimiento premium\n\n`
-        cosmeticMessage += `━━━━━━━━━━━━━━━━━━━━━\n\n`
-        cosmeticMessage += `✨ *Personaliza tu experiencia de juego!*`
+        let cosmeticMessage = `🎨 *COSMÉTICOS* 🎨\n\n💰 *Monedas:* ${coins}`
+
+        cosmeticMessage += `\n\n🎨 *Marco Miku*\n💰 300 coins\n• Marco exclusivo\n• Efectos brillantes`
+
+        cosmeticMessage += `\n\n🌸 *Marco Sakura*\n💰 250 coins\n• Pétalos animados\n• Diseño floral`
+
+        cosmeticMessage += `\n\n👑 *Título VIP*\n💰 500 coins\n• Prefijo especial\n• Reconocimiento premium`
 
         const cosmeticButtonMessage = {
             image: { url: cosmeticImage },
@@ -342,21 +281,7 @@ handler.before = async function (m, { conn }) {
 
         const coins = user.coin || 0
 
-        let shopMessage = `🏪 *TIENDA PREMIUM HATSUNE MIKU* 🏪\n\n`
-        shopMessage += `💰 *Tus monedas:* ${coins} cebollines\n\n`
-        shopMessage += `━━━━━━━━━━━━━━━━━━━━━\n\n`
-        shopMessage += `🎯 *¡Bienvenido a la tienda más exclusiva!*\n\n`
-        shopMessage += `✨ Descubre ofertas increíbles\n`
-        shopMessage += `💎 Waifu premium con beneficios únicos\n`
-        shopMessage += `⚔️ Items para potenciar tu aventura\n`
-        shopMessage += `🎨 Personaliza tu experiencia\n\n`
-        shopMessage += `━━━━━━━━━━━━━━━━━━━━━\n\n`
-        shopMessage += `💡 *Selecciona una categoría:*\n\n`
-        shopMessage += `• ⏰ *Ofertas Limitadas* - Descuentos temporales\n`
-        shopMessage += `• 💎 *Waifu Premium* - Personajes exclusivos\n`
-        shopMessage += `• ⚔️ *Items RPG* - Mejoras de combate\n`
-        shopMessage += `• 🎨 *Cosméticos* - Personalización\n\n`
-        shopMessage += `━━━━━━━━━━━━━━━━━━━━━`
+        let shopMessage = `🏪 *TIENDA PREMIUM* 🏪\n\n💰 *Monedas:* ${coins}\n\n🎯 *Categorías:*`
 
         const buttonMessage = {
             image: { url: shopImage },
@@ -475,17 +400,13 @@ handler.before = async function (m, { conn }) {
             db.users[userId] = { name: 'Usuario', characters: [] };
         }
 
-        let successMessage = `✅ *¡COMPRA EXITOSA!* ✅\n\n`
-        successMessage += `🛍️ *Producto:* ${itemDescription}\n`
+        let successMessage = `✅ *COMPRA EXITOSA* ✅\n\n🛍️ ${itemDescription}\n`
         if (discountInfo.active && buttonId.includes('limited')) {
-            successMessage += `💰 *Precio original:* ${basePrice} cebollines\n`
-            successMessage += `🎉 *Precio con descuento:* ${finalPrice} cebollines (${discountInfo.discount}% OFF)\n`
+            successMessage += `💰 ${basePrice} → ${finalPrice} coins (${discountInfo.discount}% OFF)\n`
         } else {
-            successMessage += `💰 *Precio:* ${finalPrice} cebollines\n`
+            successMessage += `💰 ${finalPrice} coins\n`
         }
-        successMessage += `💳 *Saldo restante:* ${user.coin} cebollines\n\n`
-
-        successMessage += `🎁 *Recompensas obtenidas:*\n`
+        successMessage += `💳 Saldo: ${user.coin} coins\n\n🎁 *Recompensas:*\n`
 
         for (const reward of rewards) {
             if (reward.type === 'waifu') {
@@ -502,9 +423,9 @@ handler.before = async function (m, { conn }) {
                             obtainedAt: new Date().toISOString(),
                             obtainedFrom: 'tienda_pack'
                         });
-                        successMessage += `💙 ${waifu.name} (${waifu.rarity})\n`
+                        successMessage += `💙 ${waifu.name} (${waifu.rarity.charAt(0).toUpperCase()})\n`
                     } else {
-                        successMessage += `💙 ${waifu.name} (${waifu.rarity}) - ¡Ya la tienes!\n`
+                        successMessage += `💙 ${waifu.name} (${waifu.rarity.charAt(0).toUpperCase()}) ✓\n`
                     }
                 }
             } else if (reward.type === 'exp') {
@@ -514,11 +435,11 @@ handler.before = async function (m, { conn }) {
                 user.rpgData.exp += reward.amount;
                 successMessage += `⭐ +${reward.amount} EXP\n`
             } else if (reward.type === 'potion') {
-                successMessage += `🧪 +${reward.count} Pócimas de salud\n`
+                successMessage += `🧪 +${reward.count} pócimas\n`
             } else if (reward.type === 'equipment') {
-                successMessage += `⚔️ Set completo de equipo RPG\n`
+                successMessage += `⚔️ Equipo completo\n`
             } else if (reward.type === 'discount') {
-                successMessage += `💰 ${reward.percentage}% descuento en tienda${reward.duration ? ` (${reward.duration}h)` : ''}\n`
+                successMessage += `💰 ${reward.percentage}% descuento${reward.duration ? ` ${reward.duration}h` : ''}\n`
             } else if (reward.type === 'premium_waifu') {
                 const premiumWaifu = {
                     name: reward.name,
@@ -528,7 +449,7 @@ handler.before = async function (m, { conn }) {
                     benefits: ['exp_boost', 'special_effects', 'unique_abilities']
                 };
                 db.users[userId].characters.push(premiumWaifu);
-                successMessage += `💎 ${reward.name} (Premium)\n`
+                successMessage += `💎 ${reward.name}\n`
             } else if (reward.type === 'rpg_item') {
                 if (!user.rpgData) {
                     user.rpgData = { level: 1, hp: 100, maxHp: 100, attack: 20, defense: 10, exp: 0, wins: 0, losses: 0, lastAdventure: 0 };
@@ -537,17 +458,17 @@ handler.before = async function (m, { conn }) {
                 if (reward.effect === 'heal') {
                     const healAmount = Math.min(reward.amount, user.rpgData.maxHp - user.rpgData.hp);
                     user.rpgData.hp += healAmount;
-                    successMessage += `❤️ +${healAmount} HP restaurado\n`
+                    successMessage += `❤️ +${healAmount} HP\n`
                 } else if (reward.effect === 'fullheal') {
                     const fullHealAmount = user.rpgData.maxHp - user.rpgData.hp;
                     user.rpgData.hp = user.rpgData.maxHp;
-                    successMessage += `💚 HP completamente restaurado (+${fullHealAmount})\n`
+                    successMessage += `💚 HP completo (+${fullHealAmount})\n`
                 } else if (reward.effect === 'attack') {
                     user.rpgData.attack += reward.amount;
-                    successMessage += `⚔️ +${reward.amount} Ataque permanente\n`
+                    successMessage += `⚔️ +${reward.amount} ATK\n`
                 } else if (reward.effect === 'defense') {
                     user.rpgData.defense += reward.amount;
-                    successMessage += `🛡️ +${reward.amount} Defensa permanente\n`
+                    successMessage += `🛡️ +${reward.amount} DEF\n`
                 }
             } else if (reward.type === 'cosmetic') {
                 successMessage += `🎨 ${reward.item.replace('_', ' ').toUpperCase()}\n`
@@ -556,7 +477,7 @@ handler.before = async function (m, { conn }) {
 
         saveDatabase(db);
 
-        successMessage += `\n🎉 ¡Gracias por tu compra! Disfruta de tus nuevas recompensas.`
+        successMessage += `\n🎉 ¡Compra completada!`
 
         return await m.reply(successMessage)
     }
