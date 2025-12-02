@@ -1,4 +1,44 @@
 import { promises as fs } from 'fs';
+import fs_sync from 'fs';
+import path from 'path';
+
+const dbPath = path.join(process.cwd(), 'src', 'database');
+const databaseFilePath = path.join(dbPath, 'waifudatabase.json');
+
+const SELL_PRICES = {
+    'común': 10,
+    'rara': 50,
+    'épica': 100,
+    'ultra rara': 200,
+    'Legendaria': 500
+};
+
+function loadDatabase() {
+    try {
+        if (!fs_sync.existsSync(dbPath)) {
+            fs_sync.mkdirSync(dbPath, { recursive: true });
+        }
+        if (!fs_sync.existsSync(databaseFilePath)) {
+            const data = { users: {} };
+            fs_sync.writeFileSync(databaseFilePath, JSON.stringify(data, null, 2));
+            return data;
+        }
+        return JSON.parse(fs_sync.readFileSync(databaseFilePath, 'utf-8'));
+    } catch (error) {
+        console.error('Error DB:', error);
+        return { users: {} };
+    }
+}
+
+function saveDatabase(data) {
+    try {
+        fs_sync.writeFileSync(databaseFilePath, JSON.stringify(data, null, 2));
+        return true;
+    } catch (error) {
+        console.error('Error saving:', error);
+        return false;
+    }
+}
 
 global.db = global.db || {};
 global.db.waifu = global.db.waifu || {
@@ -454,20 +494,31 @@ let handler = async (m, { conn }) => {
         'Legendaria': '1%'
     };
 
-    
+
+    const sellPrice = SELL_PRICES[selectedWaifu.rarity] || 10;
+
     let message = `🎲 WAIFU GACHA 🎲\n\n`;
     message += `👤 Invocador: @${userId.split('@')[0]}\n`;
     message += `${rarityColors[selectedWaifu.rarity]} Rareza: ${selectedWaifu.rarity.toUpperCase()} (${rarityProbs[selectedWaifu.rarity]})\n`;
     message += `💫 ¡Felicidades! Obtuviste a:\n`;
-    message += `💙 ${selectedWaifu.name}\n`;
-    message += `\n💫 Usa .save o .c para guardar tu waifu!`;
+    message += `💙 ${selectedWaifu.name}\n\n`;
+    message += `💡 ¿Qué deseas hacer con este personaje?`;
 
-   
-    await conn.sendMessage(m.chat, { 
+    const buttons = [
+        { buttonId: `waifu_claim_${userId}`, buttonText: { displayText: '💚 Reclamar Personaje' }, type: 1 },
+        { buttonId: `waifu_sell_${userId}`, buttonText: { displayText: `💰 Vender por ${sellPrice} cebollines` }, type: 1 }
+    ];
+
+    const buttonMessage = {
         image: { url: selectedWaifu.img },
         caption: message,
+        footer: '🎮 Sistema de Personajes - Hatsune Miku Bot',
+        buttons: buttons,
+        headerType: 4,
         mentions: [userId]
-    });
+    };
+
+    await conn.sendMessage(m.chat, buttonMessage);
 
     
     global.db.waifu.cooldowns[userId] = currentTime;
@@ -480,6 +531,138 @@ handler.command = /^(rw|rollwaifu|gacha)$/i
 handler.register = true
 handler.group = true
 handler.cooldown = 900000
+
+handler.before = async function (m, { conn }) {
+    if (!m.message) return false;
+
+    let buttonId = null;
+
+    if (m.message.templateButtonReplyMessage) {
+        buttonId = m.message.templateButtonReplyMessage.selectedId;
+    }
+    if (m.message.buttonsResponseMessage) {
+        buttonId = m.message.buttonsResponseMessage.selectedButtonId;
+    }
+    if (m.message.listResponseMessage) {
+        buttonId = m.message.listResponseMessage.singleSelectReply?.selectedRowId;
+    }
+    if (m.message.interactiveResponseMessage) {
+        try {
+            const paramsJson = m.message.interactiveResponseMessage.nativeFlowResponseMessage?.paramsJson;
+            if (paramsJson) {
+                const params = JSON.parse(paramsJson);
+                buttonId = params.id;
+            }
+        } catch (e) {}
+    }
+
+    if (buttonId && (buttonId.startsWith('waifu_claim_') || buttonId.startsWith('waifu_sell_'))) {
+        const userId = buttonId.split('_')[2] + '@s.whatsapp.net';
+        let userName = 'Usuario';
+
+        try {
+            userName = (await conn.getName(userId)) || 'Usuario';
+        } catch {}
+
+        if (!global.db.waifu.waifus[userId]) {
+            return await m.reply('❌ No tienes ningún personaje disponible.');
+        }
+
+        const currentWaifu = global.db.waifu.waifus[userId];
+        const action = buttonId.startsWith('waifu_claim_') ? 'claim' : 'sell';
+
+        try {
+            if (action === 'claim') {
+                let db = loadDatabase();
+
+                if (!db.users[userId]) {
+                    db.users[userId] = {
+                        name: userName,
+                        characters: []
+                    };
+                }
+
+                const exists = db.users[userId].characters.find(
+                    char => char.name === currentWaifu.name && char.rarity === currentWaifu.rarity
+                );
+
+                if (exists) {
+                    delete global.db.waifu.waifus[userId];
+                    return await m.reply(`💙 Ya tienes a *${currentWaifu.name}* (${currentWaifu.rarity}) en tu colección.`);
+                }
+
+                db.users[userId].characters.push({
+                    name: currentWaifu.name,
+                    rarity: currentWaifu.rarity,
+                    obtainedAt: new Date().toISOString()
+                });
+
+                if (!saveDatabase(db)) {
+                    return await m.reply('❌ Error al guardar en base de datos.');
+                }
+
+                delete global.db.waifu.waifus[userId];
+
+                const rarityColors = {
+                    'común': '⚪',
+                    'rara': '🔵',
+                    'épica': '🟣',
+                    'ultra rara': '🟡',
+                    'Legendaria': '🔴'
+                };
+
+                const emoji = rarityColors[currentWaifu.rarity] || '💙';
+
+                let msg = `✅ ¡PERSONAJE RECLAMADO! ✅\n\n`;
+                msg += `${emoji} *${currentWaifu.name}*\n`;
+                msg += `💎 *${currentWaifu.rarity.toUpperCase()}*\n`;
+                msg += `👤 ${userName}\n`;
+                msg += `📊 Total: *${db.users[userId].characters.length}* personajes\n\n`;
+                msg += `🔍 Usa *.col* para ver tu colección`;
+
+                return await m.reply(msg);
+
+            } else if (action === 'sell') {
+                const sellPrice = SELL_PRICES[currentWaifu.rarity] || 10;
+
+                if (!global.db.data.users[userId]) {
+                    global.db.data.users[userId] = {};
+                }
+                if (!global.db.data.users[userId].coin) {
+                    global.db.data.users[userId].coin = 0;
+                }
+                global.db.data.users[userId].coin += sellPrice;
+
+                delete global.db.waifu.waifus[userId];
+
+                const rarityColors = {
+                    'común': '⚪',
+                    'rara': '🔵',
+                    'épica': '🟣',
+                    'ultra rara': '🟡',
+                    'Legendaria': '🔴'
+                };
+
+                const emoji = rarityColors[currentWaifu.rarity] || '💙';
+
+                let msg = `💰 ¡PERSONAJE VENDIDO! 💰\n\n`;
+                msg += `${emoji} *${currentWaifu.name}*\n`;
+                msg += `💎 *${currentWaifu.rarity.toUpperCase()}*\n`;
+                msg += `💵 *Recibiste:* ${sellPrice} cebollines\n`;
+                msg += `💳 *Total cebollines:* ${global.db.data.users[userId].coin}\n\n`;
+                msg += `🏪 Usa *.tiendarpg* para gastar tus cebollines`;
+
+                return await m.reply(msg);
+            }
+
+        } catch (error) {
+            console.error('Error en waifu button handler:', error);
+            return await m.reply(`❌ Error: ${error.message}`);
+        }
+    }
+
+    return false;
+}
 
 export default handler
 
@@ -508,7 +691,7 @@ regalarWaifuHandler.command = /^(regalarwaifu)$/i;
 regalarWaifuHandler.register = true;
 regalarWaifuHandler.group = true;
 
-// Comando: .subastawaifu cantidad
+
 let subasta = {};
 let subastarWaifuHandler = async (m, { conn, args }) => {
     const userId = m.sender;
@@ -519,13 +702,13 @@ let subastarWaifuHandler = async (m, { conn, args }) => {
     if (subasta[userId]) return m.reply('Ya tienes una subasta activa. Espera a que termine.');
     subasta[userId] = { waifu, cantidad, puja: 0, mejorPostor: null, timeout: null };
     m.reply(`🔨 Subasta iniciada por @${userId.split('@')[0]}: ${waifu.name}\nPrecio inicial: ${cantidad} monedas\nUsa .pujarwaifu <cantidad> para pujar.`, null, { mentions: [userId] });
-    // Finaliza subasta en 1 minuto
+    
     subasta[userId].timeout = setTimeout(() => {
         if (subasta[userId].mejorPostor) {
-            // Transferir waifu y monedas
+            
             global.db.waifu.waifus[subasta[userId].mejorPostor] = waifu;
             delete global.db.waifu.waifus[userId];
-            // Resta monedas al ganador (asume global.db.data.users)
+            
             global.db.data.users[subasta[userId].mejorPostor].money -= subasta[userId].puja;
             global.db.data.users[userId].money += subasta[userId].puja;
             conn.reply(m.chat, `🏆 Subasta finalizada. Ganador: @${subasta[userId].mejorPostor.split('@')[0]} por ${subasta[userId].puja} monedas.`, null, { mentions: [subasta[userId].mejorPostor] });
@@ -543,7 +726,7 @@ subastarWaifuHandler.command = /^(subastawaifu)$/i;
 subastarWaifuHandler.register = true;
 subastarWaifuHandler.group = true;
 
-// Comando: .pujarwaifu cantidad
+
 let pujarWaifuHandler = async (m, { conn, args }) => {
     const userId = m.sender;
     const cantidad = parseInt(args[0]);
