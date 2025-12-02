@@ -12,14 +12,15 @@ async function checkChannelFollow(userId, conn) {
 
     const chat = await Promise.race([
       conn.newsletterMetadata(channelJid),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 3000))
     ]).catch(() => null)
 
-    if (!chat) return false
+    if (!chat || !chat.subscribers) return false
 
-    const subscribers = chat.subscribers || []
-    return subscribers.some(sub => sub.id === userId)
+    const subscribers = Array.isArray(chat.subscribers) ? chat.subscribers : []
+    return subscribers.some(sub => sub && (sub.id === userId || sub.jid === userId))
   } catch (error) {
+    console.error('Error verificando canal:', error.message)
     return false
   }
 }
@@ -141,66 +142,26 @@ handler.before = async function (m, { conn }) {
 
   if (buttonId === 'follow_channel_required' || buttonId === 'follow_channel_again') {
     const channel = 'https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
-    const followMsg = `📢 *SIGUE NUESTRO CANAL OFICIAL* 📢\n\n💙 *Para ${buttonId === 'follow_channel_again' ? 'recuperar tu acceso' : 'registrarte'}:*\n\n1️⃣ *Haz clic en el enlace:*\n${channel}\n\n2️⃣ *Presiona "Seguir" en WhatsApp*\n\n3️⃣ *Vuelve aquí y presiona "Verificar y Registrarme"*\n\n🎯 *${buttonId === 'follow_channel_again' ? 'Tu acceso será restaurado' : 'Podrás completar tu registro'}*`
+    const followMsg = `📢 *SIGUE NUESTRO CANAL OFICIAL* 📢\n\n💙 *Para ${buttonId === 'follow_channel_again' ? 'recuperar tu acceso' : 'registrarte'}:*\n\n1️⃣ *Haz clic en el enlace:*\n${channel}\n\n2️⃣ *Presiona "Seguir" en WhatsApp*\n\n3️⃣ *Vuelve aquí y presiona "Ya Seguí el Canal"*\n\n🎯 *${buttonId === 'follow_channel_again' ? 'Tu acceso será restaurado' : 'Podrás completar tu registro'}*`
 
     return await m.reply(followMsg)
   }
 
-  if (buttonId === 'check_channel_status') {
+  if (buttonId === 'confirm_channel_followed') {
     const userId = m.sender
     const user = global.db.data.users[userId] || {}
 
     await m.react('⏳')
 
-    try {
-      const isFollowing = await checkChannelFollow(userId, conn)
+    user.channelVerified = true
+    if (!global.db.data.users[userId]) global.db.data.users[userId] = {}
+    global.db.data.users[userId].channelVerified = true
 
-      if (isFollowing) {
-        user.channelVerified = true
-        if (!global.db.data.users[userId]) global.db.data.users[userId] = {}
-        global.db.data.users[userId].channelVerified = true
+    const name2 = (await conn.getName(userId)) || 'MikuFan'
+    const successMsg = `🎉 *¡CANAL CONFIRMADO!* 🎉\n\n✅ *Gracias por seguir nuestro canal oficial*\n\n💙 *Ahora puedes completar tu registro usando:*\n\`.reg nombre.edad\`\n\n*Ejemplo:*\n\`.reg ${name2}.18\`\n\n🎁 *¡Recibirás recompensas al registrarte!*`
 
-        const name2 = (await conn.getName(userId)) || 'MikuFan'
-        const successMsg = `🎉 *¡VERIFICACIÓN EXITOSA!* 🎉\n\n✅ *Confirmado: ¡Sigues el canal oficial!*\n\n💙 *Ahora puedes completar tu registro usando:*\n\`.reg nombre.edad\`\n\n*Ejemplo:*\n\`.reg ${name2}.18\`\n\n🎁 *¡Recibirás recompensas al registrarte!*`
-
-        await m.react('✅')
-        return await m.reply(successMsg)
-      } else {
-        const buttons = [
-          {
-            buttonId: 'follow_channel_required',
-            buttonText: { displayText: '📢 Seguir Canal Oficial' },
-            type: 1
-          },
-          {
-            buttonId: 'check_channel_status',
-            buttonText: { displayText: '🔍 Verificar Estado' },
-            type: 1
-          }
-        ]
-
-        const retryMsg = `❌ *VERIFICACIÓN FALLIDA* ❌\n\n⚠️ *No se detectó que sigas el canal oficial*\n\n📢 *Asegúrate de:*\n1️⃣ *Ir al canal*\n2️⃣ *Presionar "Seguir"*\n3️⃣ *Esperar 5-10 segundos*\n4️⃣ *Presionar "Verificar Estado" de nuevo*\n\n💡 *Si sigues teniendo problemas, contacta al soporte*`
-
-        await m.react('❌')
-        return await conn.sendMessage(m.chat, {
-          text: retryMsg,
-          buttons: buttons,
-          footer: '🌸 Intenta Verificar de Nuevo - Hatsune Miku Bot'
-        }, { quoted: m })
-      }
-    } catch (error) {
-      console.error('Error en verificación de canal:', error.message)
-
-      user.channelVerified = true
-      if (!global.db.data.users[userId]) global.db.data.users[userId] = {}
-      global.db.data.users[userId].channelVerified = true
-
-      const name2 = (await conn.getName(userId)) || 'MikuFan'
-      const fallbackMsg = `⚠️ *VERIFICACIÓN MANUAL* ⚠️\n\n💙 *No se pudo verificar automáticamente, pero te hemos marcado como verificado*\n\n🎯 *Ahora puedes completar tu registro usando:*\n\`.reg nombre.edad\`\n\n*Ejemplo:*\n\`.reg ${name2}.18\`\n\n🎁 *¡Recibirás recompensas al registrarte!*`
-
-      await m.react('✅')
-      return await m.reply(fallbackMsg)
-    }
+    await m.react('✅')
+    return await m.reply(successMsg)
   }
 
   if (buttonId === 'check_follow_again') {
@@ -209,55 +170,15 @@ handler.before = async function (m, { conn }) {
 
     await m.react('⏳')
 
-    try {
-      const isFollowing = await checkChannelFollow(userId, conn)
+    user.channelVerified = true
+    if (!global.db.data.users[userId]) global.db.data.users[userId] = {}
+    global.db.data.users[userId].channelVerified = true
 
-      if (isFollowing) {
-        user.channelVerified = true
-        if (!global.db.data.users[userId]) global.db.data.users[userId] = {}
-        global.db.data.users[userId].channelVerified = true
+    const name2 = (await conn.getName(userId)) || 'MikuFan'
+    const successMsg = `🎉 *¡ACCESO RESTAURADO!* 🎉\n\n✅ *Gracias por seguir nuevamente nuestro canal*\n\n💙 *Tu acceso ha sido restaurado*\n\n🎯 *Puedes registrarte nuevamente usando:*\n\`.reg nombre.edad\`\n\n*Ejemplo:*\n\`.reg ${name2}.18\``
 
-        const name2 = (await conn.getName(userId)) || 'MikuFan'
-        const successMsg = `🎉 *¡ACCESO RESTAURADO!* 🎉\n\n✅ *Confirmado: ¡Sigues el canal oficial!*\n\n💙 *Tu acceso ha sido restaurado*\n\n🎯 *Ahora puedes registrarte nuevamente usando:*\n\`.reg nombre.edad\`\n\n*Ejemplo:*\n\`.reg ${name2}.18\``
-
-        await m.react('✅')
-        return await m.reply(successMsg)
-      } else {
-        const buttons = [
-          {
-            buttonId: 'follow_channel_again',
-            buttonText: { displayText: '📢 Seguir Canal Nuevamente' },
-            type: 1
-          },
-          {
-            buttonId: 'check_follow_again',
-            buttonText: { displayText: '🔍 Verificar Estado' },
-            type: 1
-          }
-        ]
-
-        const retryMsg = `❌ *VERIFICACIÓN FALLIDA* ❌\n\n⚠️ *Aún no se detecta que sigas el canal oficial*\n\n📢 *Debes:*\n1️⃣ *Seguir el canal nuevamente*\n2️⃣ *Esperar 5-10 segundos*\n3️⃣ *Verificar estado otra vez*\n\n❌ *Tu acceso permanece bloqueado*`
-
-        await m.react('❌')
-        return await conn.sendMessage(m.chat, {
-          text: retryMsg,
-          buttons: buttons,
-          footer: '🌸 Acceso Aún Bloqueado - Hatsune Miku Bot'
-        }, { quoted: m })
-      }
-    } catch (error) {
-      console.error('Error en re-verificación:', error.message)
-
-      user.channelVerified = true
-      if (!global.db.data.users[userId]) global.db.data.users[userId] = {}
-      global.db.data.users[userId].channelVerified = true
-
-      const name2 = (await conn.getName(userId)) || 'MikuFan'
-      const fallbackMsg = `⚠️ *VERIFICACIÓN MANUAL* ⚠️\n\n💙 *Acceso restaurado manualmente*\n\n🎯 *Puedes registrarte nuevamente usando:*\n\`.reg nombre.edad\`\n\n*Ejemplo:*\n\`.reg ${name2}.18\``
-
-      await m.react('✅')
-      return await m.reply(fallbackMsg)
-    }
+    await m.react('✅')
+    return await m.reply(successMsg)
   }
 
 

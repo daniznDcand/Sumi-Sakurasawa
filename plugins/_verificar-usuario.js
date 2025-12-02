@@ -37,13 +37,13 @@ export async function before(m, { conn, isBotAdmin, isAdmin, usedPrefix }) {
         type: 1
       },
       {
-        buttonId: 'check_channel_status',
-        buttonText: { displayText: '🔍 Verificar Estado' },
+        buttonId: 'confirm_channel_followed',
+        buttonText: { displayText: '✅ Ya Seguí el Canal' },
         type: 1
       }
     ]
 
-    const restrictMsg = `🚫 *BOT RESTRINGIDO* 🚫\n\n💙 *Para usar comandos necesitas:*\n\n1️⃣ *Seguir el canal oficial*\n2️⃣ *Verificar seguimiento*\n3️⃣ *Usar .reg para registrarte*\n\n📢 *Canal:*\n${channel}\n\n🎯 *Comienza aquí:*`
+    const restrictMsg = `🚫 *BOT RESTRINGIDO* 🚫\n\n💙 *Para usar comandos necesitas:*\n\n1️⃣ *Seguir el canal oficial*\n2️⃣ *Confirmar que lo seguiste*\n3️⃣ *Usar .reg para registrarte*\n\n📢 *Canal:*\n${channel}\n\n🎯 *Comienza aquí:*`
 
     await conn.sendMessage(m.chat, {
       text: restrictMsg,

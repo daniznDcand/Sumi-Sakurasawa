@@ -74,6 +74,8 @@ if (!("commands" in user) || !isNumber(user.commands)) user.commands = 0
 if (!("afk" in user) || !isNumber(user.afk)) user.afk = -1
 if (!("afkReason" in user)) user.afkReason = ""
 if (!("warn" in user) || !isNumber(user.warn)) user.warn = 0
+if (!("registered" in user)) user.registered = false
+if (!("channelVerified" in user)) user.channelVerified = false
 } else global.db.data.users[m.sender] = {
 name: m.name,
 exp: 0,
@@ -93,7 +95,9 @@ bannedReason: "",
 commands: 0,
 afk: -1,
 afkReason: "",
-warn: 0
+warn: 0,
+registered: false,
+channelVerified: false
 }
 const chat = global.db.data.chats[m.chat]
 if (typeof chat !== "object") global.db.data.chats[m.chat] = {}
