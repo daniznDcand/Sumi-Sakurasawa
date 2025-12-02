@@ -5,7 +5,8 @@ export async function before(m, { conn, isBotAdmin, isAdmin, usedPrefix }) {
 
   const comandosPermitidos = [
     'reg', 'register', 'registrar', 'verify', 'verificar',
-    'menu', 'help', 'start', 'info', 'infobot'
+    'menu', 'help', 'ayuda', 'start', 'ping', 'p', 'info', 'infobot',
+    'estado', 'status', 'uptime', 'speed', 'speedtest'
   ]
 
   const comando = m.text?.slice(1)?.split(' ')?.[0]?.toLowerCase() || ''
