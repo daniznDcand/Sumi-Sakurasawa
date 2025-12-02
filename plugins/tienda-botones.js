@@ -479,7 +479,7 @@ let handler = async (m, { conn, usedPrefix, command }) => {
     const user = global.db.data.users[m.sender]
     const userId = m.sender
 
-    const shopImage = 'https://i.imgur.com/9QyJzKj.jpg'
+    const shopImage = 'https://i.pinimg.com/564x/fe/50/3d/fe503deb95faf6a5ca62d3c0cc5a4ccb.jpg'
 
     const buttons = [
         { buttonId: 'shop_limited', buttonText: { displayText: '⏰ OFERTAS LIMITADAS' }, type: 1 },
