@@ -15,15 +15,20 @@ const SELL_PRICES = {
 
 function loadDatabase() {
     try {
+        console.log('Loading waifu database from:', databaseFilePath);
         if (!fs_sync.existsSync(dbPath)) {
+            console.log('Creating database directory:', dbPath);
             fs_sync.mkdirSync(dbPath, { recursive: true });
         }
         if (!fs_sync.existsSync(databaseFilePath)) {
+            console.log('Creating new waifu database file');
             const data = { users: {} };
             fs_sync.writeFileSync(databaseFilePath, JSON.stringify(data, null, 2));
             return data;
         }
-        return JSON.parse(fs_sync.readFileSync(databaseFilePath, 'utf-8'));
+        const data = JSON.parse(fs_sync.readFileSync(databaseFilePath, 'utf-8'));
+        console.log('Loaded waifu database with', Object.keys(data.users || {}).length, 'users');
+        return data;
     } catch (error) {
         console.error('Error DB:', error);
         return { users: {} };
@@ -448,6 +453,11 @@ for (const waifu of waifuList) {
 let handler = async (m, { conn }) => {
     const userId = m.sender;
     const currentTime = Date.now();
+
+    // Debug: Verificar que la base de datos existe y se carga
+    console.log('RW Command - Checking database...');
+    console.log('Database path:', databaseFilePath);
+    console.log('Database exists:', fs_sync.existsSync(databaseFilePath));
     
     
     if (global.db.waifu.cooldowns[userId]) {
@@ -588,13 +598,15 @@ handler.before = async function (m, { conn }) {
 
                 if (exists) {
                     delete global.db.waifu.waifus[userId];
-                    return await m.reply(`💙 Ya tienes a *${currentWaifu.name}* (${currentWaifu.rarity}) en tu colección.`);
+                    console.log(`User ${userId} already has ${currentWaifu.name} (${currentWaifu.rarity})`);
+                    return await m.reply(`💙 Ya tienes a *${currentWaifu.name}* (${currentWaifu.rarity}) en tu colección.\n\n🔍 Usa *.col* para ver todas tus waifus guardadas en la base de datos.`);
                 }
 
                 db.users[userId].characters.push({
                     name: currentWaifu.name,
                     rarity: currentWaifu.rarity,
-                    obtainedAt: new Date().toISOString()
+                    obtainedAt: new Date().toISOString(),
+                    obtainedFrom: 'rw'
                 });
 
                 if (!saveDatabase(db)) {
@@ -618,8 +630,10 @@ handler.before = async function (m, { conn }) {
                 msg += `💎 *${currentWaifu.rarity.toUpperCase()}*\n`;
                 msg += `👤 ${userName}\n`;
                 msg += `📊 Total: *${db.users[userId].characters.length}* personajes\n\n`;
-                msg += `🔍 Usa *.col* para ver tu colección`;
+                msg += `🔍 Usa *.col* para ver tu colección completa\n`;
+                msg += `📁 Guardado en: waifudatabase.json`;
 
+                console.log(`Waifu claimed: ${currentWaifu.name} (${currentWaifu.rarity}) for user ${userId}`);
                 return await m.reply(msg);
 
             } else if (action === 'sell') {
