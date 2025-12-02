@@ -16,7 +16,7 @@ export async function before(m, { conn, isBotAdmin, isAdmin, usedPrefix }) {
 
   if (esComandoPermitido) return true
 
-  if (!user || !user.registered || !user.channelVerified) {
+  if (!user || !user.registered) {
     const userId = m.sender
     const now = Date.now()
     const lastMessage = restrictionCooldowns.get(userId) || 0
@@ -28,29 +28,9 @@ export async function before(m, { conn, isBotAdmin, isAdmin, usedPrefix }) {
 
     restrictionCooldowns.set(userId, now)
 
-    const channel = 'https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
+    const restrictMsg = `🚫 *BOT RESTRINGIDO* 🚫\n\n💙 *Para usar comandos necesitas registrarte*\n\n🎯 *Usa .reg nombre.edad*\n\n*Ejemplo:*\n.reg ${m.name || 'MikuFan'}.18\n\n🌸 *¡Regístrate para acceder a todas las funciones!*`
 
-    const buttons = [
-      {
-        buttonId: 'follow_channel_required',
-        buttonText: { displayText: '📢 Seguir Canal Oficial' },
-        type: 1
-      },
-      {
-        buttonId: 'confirm_channel_followed',
-        buttonText: { displayText: '✅ Ya Seguí el Canal' },
-        type: 1
-      }
-    ]
-
-    const restrictMsg = `🚫 *BOT RESTRINGIDO* 🚫\n\n💙 *Para usar comandos necesitas:*\n\n1️⃣ *Seguir el canal oficial*\n2️⃣ *Confirmar que lo seguiste*\n3️⃣ *Usar .reg para registrarte*\n\n📢 *Canal:*\n${channel}\n\n🎯 *Comienza aquí:*`
-
-    await conn.sendMessage(m.chat, {
-      text: restrictMsg,
-      buttons: buttons,
-      footer: '🌸 Verificación Obligatoria - Hatsune Miku'
-    }, { quoted: m })
-
+    await m.reply(restrictMsg)
     return false
   }
 
