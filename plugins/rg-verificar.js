@@ -30,46 +30,13 @@ let handler = async function (m, { conn, text, usedPrefix, command }) {
   let channel = 'https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
   let mikuImg = 'https://i.postimg.cc/QCzMhBR1/1757986334220.png'
 
-  if (user.registered === true) {
-    await m.react('⏳')
-    const isStillFollowing = await checkChannelFollow(m.sender, conn)
-
-    if (!isStillFollowing) {
-      user.channelVerified = false
-      user.registered = false
-
-      const buttons = [
-        {
-          buttonId: 'follow_channel_again',
-          buttonText: { displayText: '📢 Seguir Canal Nuevamente' },
-          type: 1
-        },
-        {
-          buttonId: 'check_follow_again',
-          buttonText: { displayText: '🔍 Verificar Estado' },
-          type: 1
-        }
-      ]
-
-      const unfollowMsg = `🚫 *ACCESO REVOCADO* 🚫\n\n⚠️ *Detectamos que dejaste de seguir nuestro canal oficial*\n\n💙 *Para continuar usando el bot:*\n\n1️⃣ *Sigue nuevamente el canal*\n2️⃣ *Verifica tu seguimiento*\n3️⃣ *Vuelve a registrarte*\n\n📢 *Canal oficial:*\n${channel}\n\n❌ *Tu registro anterior ha sido removido*`
-
-      await m.react('❌')
-      return await conn.sendMessage(m.chat, {
-        text: unfollowMsg,
-        buttons: buttons,
-        footer: '🌸 Sistema de Verificación - Hatsune Miku Bot'
-      }, { quoted: m })
-    }
-
+  if (user.registered === true && user.channelVerified === true) {
     return m.reply(
       `🌟 *¡Ya estás registrado en el mundo de Hatsune Miku!* 🌟\n\n💙 Si quieres eliminar tu registro, usa:\n*${usedPrefix}unreg*`
     )
   }
 
-  await m.react('⏳')
-  const isFollowingChannel = await checkChannelFollow(m.sender, conn)
-
-  if (!isFollowingChannel) {
+  if (!user.channelVerified) {
     const buttons = [
       {
         buttonId: 'follow_channel_required',

@@ -3,7 +3,7 @@ let restrictionCooldowns = new Map()
 export async function before(m, { conn, isBotAdmin, isAdmin, usedPrefix }) {
   if (m.isBaileys || m.fromMe || m.chat?.endsWith('@g.us')) return true
 
-  const user = global.db.data.users[m.sender] || {}
+  const user = global.db.data.users[m.sender]
 
   const comandosPermitidos = [
     'reg', 'register', 'registrar', 'verify', 'verificar',
@@ -16,7 +16,7 @@ export async function before(m, { conn, isBotAdmin, isAdmin, usedPrefix }) {
 
   if (esComandoPermitido) return true
 
-  if (!user.registered || !user.channelVerified) {
+  if (!user || !user.registered || !user.channelVerified) {
     const userId = m.sender
     const now = Date.now()
     const lastMessage = restrictionCooldowns.get(userId) || 0
