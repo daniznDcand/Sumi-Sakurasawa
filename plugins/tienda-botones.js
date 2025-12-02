@@ -479,7 +479,7 @@ let handler = async (m, { conn, usedPrefix, command }) => {
     const user = global.db.data.users[m.sender]
     const userId = m.sender
 
-    const shopImage = 'https://wallpapers-clan.com/wp-content/uploads/2025/04/hatsune-miku-cherry-blossoms-pc-desktop-laptop-wallpaper-cover.jpg'
+    const shopImage = 'https://i.imgur.com/9QyJzKj.jpg'
 
     const buttons = [
         { buttonId: 'shop_limited', buttonText: { displayText: '⏰ OFERTAS LIMITADAS' }, type: 1 },
@@ -490,7 +490,41 @@ let handler = async (m, { conn, usedPrefix, command }) => {
 
     const coins = user.coin || 0
 
-    let shopMessage = `🏪 *TIENDA PREMIUM* 🏪\n\n💰 *Monedas:* ${coins}\n\n🎯 *Categorías:*`
+    let shopMessage = `🏪 *TIENDA PREMIUM HATSUNE MIKU* 🏪\n\n`
+    shopMessage += `╭━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╮\n`
+    shopMessage += `│         💰 *TU SALDO* 💰         │\n`
+    shopMessage += `│                                   │\n`
+    shopMessage += `│  💎 Monedas: ${coins.toLocaleString()} cebollines │\n`
+    shopMessage += `╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`
+
+    shopMessage += `🎯 *CATEGORÍAS DISPONIBLES* 🎯\n\n`
+
+    shopMessage += `⏰ *OFERTAS LIMITADAS*\n`
+    shopMessage += `├─ Packs con descuento temporal\n`
+    shopMessage += `├─ Waifus aleatorias + bonus EXP\n`
+    shopMessage += `└─ Equipos completos con precio especial\n\n`
+
+    shopMessage += `💎 *WAIFU PREMIUM*\n`
+    shopMessage += `├─ Waifus Legendarias únicas\n`
+    shopMessage += `├─ Personajes exclusivos del RW\n`
+    shopMessage += `└─ Beneficios especiales permanentes\n\n`
+
+    shopMessage += `⚔️ *ITEMS RPG*\n`
+    shopMessage += `├─ Pócimas de salud y fuerza\n`
+    shopMessage += `├─ Equipos y armas mejoradas\n`
+    shopMessage += `└─ Bonus para aventuras\n\n`
+
+    shopMessage += `🎨 *COSMÉTICOS*\n`
+    shopMessage += `├─ Marcos exclusivos para perfil\n`
+    shopMessage += `├─ Títulos VIP personalizados\n`
+    shopMessage += `└─ Efectos visuales únicos\n\n`
+
+    shopMessage += `💡 *¿CÓMO COMPRAR?*\n`
+    shopMessage += `├─ Presiona el botón de la categoría\n`
+    shopMessage += `├─ Elige el producto que deseas\n`
+    shopMessage += `└─ ¡Disfruta de tu compra!\n\n`
+
+    shopMessage += `🎮 *SISTEMA RPG INTEGRADO* 🎮`
 
     const buttonMessage = {
         image: { url: shopImage },
@@ -836,8 +870,17 @@ handler.before = async function (m, { conn }) {
             } else if (reward.type === 'discount') {
                 successMessage += `💰 ${reward.percentage}% descuento${reward.duration ? ` ${reward.duration}h` : ''}\n`
             } else if (reward.type === 'premium_waifu') {
+                console.log('Processing premium waifu:', reward.name);
+                console.log('Searching for waifu with name:', reward.name, 'and rarity: Legendaria');
+
                 // Buscar la waifu legendaria en el array principal
                 const legendWaifu = waifuList.find(w => w.name === reward.name && w.rarity === 'Legendaria');
+                console.log('Legend waifu found:', legendWaifu ? legendWaifu.name : 'NOT FOUND');
+
+                // Debug: mostrar todas las waifus legendarias disponibles
+                const legendarias = waifuList.filter(w => w.rarity === 'Legendaria');
+                console.log('Available legendary waifus:', legendarias.map(w => w.name));
+
                 if (legendWaifu) {
                     const premiumWaifu = {
                         name: legendWaifu.name,
@@ -847,6 +890,7 @@ handler.before = async function (m, { conn }) {
                         img: legendWaifu.img
                     };
                     db.users[userId].characters.push(premiumWaifu);
+                    console.log('Premium waifu saved to database:', premiumWaifu.name);
                     successMessage += `💎 ${legendWaifu.name}\n`
 
                     // Agregar a la lista de imágenes para mostrar
@@ -855,7 +899,9 @@ handler.before = async function (m, { conn }) {
                         img: legendWaifu.img,
                         rarity: legendWaifu.rarity
                     });
+                    console.log('Waifu added to images array, total images:', waifuImages.length);
                 } else {
+                    console.log('ERROR: Premium waifu not found in waifuList');
                     successMessage += `❌ Error: Waifu ${reward.name} no encontrada\n`
                 }
             } else if (reward.type === 'rpg_item') {
@@ -883,7 +929,9 @@ handler.before = async function (m, { conn }) {
             }
         }
 
-        saveDatabase(db);
+        console.log('Saving database after purchase...');
+        const saveResult = saveDatabase(db);
+        console.log('Database save result:', saveResult);
 
         successMessage += `\n🎉 ¡Compra completada!`
 
