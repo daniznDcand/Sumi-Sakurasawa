@@ -664,7 +664,7 @@ handler.before = async function (m, { conn }) {
                 msg += `💎 *${currentWaifu.rarity.toUpperCase()}*\n`;
                 msg += `💵 *Recibiste:* ${sellPrice} cebollines\n`;
                 msg += `💳 *Total cebollines:* ${global.db.data.users[userId].coin}\n\n`;
-                msg += `🏪 Usa *.tiendarpg* para gastar tus cebollines`;
+                msg += `🏪 Usa *.tienda* para gastar tus cebollines`;
 
                 return await m.reply(msg);
             }
