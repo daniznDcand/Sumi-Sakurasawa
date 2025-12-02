@@ -30,9 +30,26 @@ export async function before(m, { conn, isBotAdmin, isAdmin, usedPrefix }) {
 
     const channel = 'https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
 
-    const restrictMsg = `🚫 *ACCESO RESTRINGIDO* 🚫\n\n💙 *Para usar el bot, necesitas estar registrado*\n\n📝 *Comando de registro:*\n\`.reg nombre.edad\`\n\n*Ejemplo:*\n\`.reg ${conn.getName(userId) || 'MikuFan'}.18\`\n\n📢 *El registro incluye verificación del canal oficial*`
+    const buttons = [
+      {
+        buttonId: 'follow_channel_required',
+        buttonText: { displayText: '📢 Seguir Canal Oficial' },
+        type: 1
+      },
+      {
+        buttonId: 'check_channel_status',
+        buttonText: { displayText: '🔍 Verificar Estado' },
+        type: 1
+      }
+    ]
 
-    await m.reply(restrictMsg)
+    const restrictMsg = `🚫 *ACCESO RESTRINGIDO* 🚫\n\n💙 *Para usar el bot, necesitas:*\n\n1️⃣ *Seguir el canal oficial*\n2️⃣ *Verificar tu seguimiento*\n3️⃣ *Completar el registro*\n\n📢 *Canal oficial:*\n${channel}\n\n🎯 *Presiona los botones para comenzar:*`
+
+    await conn.sendMessage(m.chat, {
+      text: restrictMsg,
+      buttons: buttons,
+      footer: '🌸 Sistema de Verificación - Hatsune Miku Bot'
+    }, { quoted: m })
 
     return false
   }

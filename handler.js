@@ -14,7 +14,7 @@ clearTimeout(this)
 resolve()
 }, ms))
 
-let processedButtonMessages = new Set()
+let processedButtonMessages = new Map()
 
 export async function handler(chatUpdate) {
 this.msgqueque = this.msgqueque || []
@@ -30,14 +30,18 @@ return
 
 const messageKey = m.key?.id
 if (messageKey && (m.message?.buttonsResponseMessage || m.message?.templateButtonReplyMessage)) {
-  if (processedButtonMessages.has(messageKey)) {
+  const now = Date.now()
+  const lastProcessed = processedButtonMessages.get(messageKey)
+
+  if (lastProcessed && (now - lastProcessed) < 5000) {
     return
   }
-  processedButtonMessages.add(messageKey)
+
+  processedButtonMessages.set(messageKey, now)
 
   setTimeout(() => {
     processedButtonMessages.delete(messageKey)
-  }, 30000)
+  }, 10000)
 }
 
 if (global.db.data == null) await global.loadDatabase()
