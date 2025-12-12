@@ -14,21 +14,34 @@ let handler = async function (m, { conn, text, usedPrefix, command }) {
 
   if (user.registered === true) {
     return m.reply(
-      `🌟 *¡Ya estás registrado en el mundo de Hatsune Miku!* 🌟\n\n💙 Si quieres eliminar tu registro, usa:\n*${usedPrefix}unreg*`
+      `🌟 *¡YA ESTÁS REGISTRADO EN MIKU BOT!* 🌟\n\n` +
+      `💙 *Nombre:* ${user.name || 'Sin nombre'}\n` +
+      `🎂 *Edad:* ${user.age || 'No especificada'} años\n` +
+      `📅 *Registrado el:* ${new Date(user.regTime).toLocaleDateString()}\n\n` +
+      `🧧 *Consejo:* Si quieres eliminar tu registro, usa:\n*${usedPrefix}unreg*\n\n` +
+      `📢 *Únete a nuestro canal:*\n${channel}`
     )
   }
 
-  if (!Reg.test(text)) return m.reply(
-    `🌸 *Registro Miku* 🌸\n\n*Formato correcto:*\n${usedPrefix + command} nombre.edad\n\n*Ejemplo:*\n${usedPrefix + command} ${name2}.18\n\n¡Completa tu registro para recibir tu tarjeta Miku!`
-  )
+  if (!Reg.test(text)) {
+    return m.reply(
+      `🌸 *📝 REGISTRO MIKU BOT* 🌸\n\n` +
+      `*Formato requerido:*\n` +
+      `*${usedPrefix + command} nombre.edad*\n\n` +
+      `*Ejemplo práctico:*\n` +
+      `*${usedPrefix + command} ${name2}.18*\n\n` +
+      `💡 *Consejo:* Completa tu registro para desbloquear todos los comandos y recibir tu tarjeta Miku personalizada.\n\n` +
+      `📢 *Únete a nuestro canal:*\n${channel}`
+    )
+  }
 
   let [_, name, age] = text.match(Reg)
-  if (!name) return m.reply('🌸 El nombre no puede estar vacío. Intenta de nuevo.')
-  if (!age) return m.reply('🌸 La edad no puede estar vacía. Intenta de nuevo.')
-  if (name.length >= 30) return m.reply('🌸 El nombre es muy largo. Usa menos de 30 caracteres.')
+  if (!name) return m.reply('❌ *Error*: El nombre no puede estar vacío. Por favor, inténtalo de nuevo.')
+  if (!age) return m.reply('❌ *Error*: La edad no puede estar vacía. Por favor, inténtalo de nuevo.')
+  if (name.length >= 30) return m.reply('❌ *Error*: El nombre es demasiado largo. Por favor, usa menos de 30 caracteres.')
   age = parseInt(age)
-  if (age > 100) return m.reply('🌸 ¡Esa edad es demasiado alta! Usa una edad real.')
-  if (age < 10) return m.reply('🌸 ¡Eres muy peque para usar el bot!')
+  if (age > 100) return m.reply('❌ *Error*: La edad debe ser un número real. Por favor, ingresa una edad válida.')
+  if (age < 10) return m.reply('❌ *Error*: Debes tener al menos 10 años para usar este bot.')
 
   user.name = name.trim() + ' ✨'
   user.age = age
@@ -40,30 +53,35 @@ let handler = async function (m, { conn, text, usedPrefix, command }) {
 
   let sn = createHash('md5').update(m.sender).digest('hex').slice(0, 20)
 
-  let regbot = `\n🌟 *¡REGISTRO MIKU COMPLETADO!* 🌟\n\n👤 *Nombre:* ${name}\n🎂 *Edad:* ${age} años\n🆔 *ID:* ${sn}\n\n💙 *¡Bienvenido/a al universo de Hatsune Miku!* 💙\n\n🎁 *Recompensas iniciales:*\n💰 +39 monedas\n✨ +300 XP\n🎟️ +20 tickets\n\n🎮 *¡Ahora puedes usar todos los comandos del bot!*`
+  let regbot = `💙 *¡REGISTRO EXITOSO!* 🎵\n\n` +
+  `🎤 *¡BIENVENID@ A HATSUNE MIKU BOT!* 💙\n\n` +
+  `👤 *Nombre:* ${name}\n` +
+  `🎂 *Edad:* ${age} años\n` +
+  `🆔 *ID:* ${sn}\n\n` +
+  `✨ *¡Disfruta de tu estadía en el mundo de Hatsune Miku!* ✨\n\n` +
+  `🎁 *Recompensas por registro:*\n` +
+  `💰 +39 monedas\n` +
+  `⭐ +300 XP\n` +
+  `🎟️ +20 tickets\n\n` +
+  `💙 *¡Ahora puedes usar todos los comandos del bot!*`
 
   await m.react('💙')
-
-  let thumbBuffer = null
-  try {
-    const res = await fetch(mikuImg)
-    thumbBuffer = Buffer.from(await res.arrayBuffer())
-  } catch {}
-
-  await conn.sendMessage(m.chat, {
-    text: regbot,
+  
+  let mikuRegisterImage = 'https://i.pinimg.com/736x/76/ec/16/76ec1693791a33594059d478ae9206f7.jpg' 
+  
+  await conn.sendFile(m.chat, mikuRegisterImage, 'miku_register.jpg', regbot, m, false, {
+    mentions: [m.sender],
     contextInfo: {
       externalAdReply: {
-        title: '🌸 Registro en Hatsune Miku Bot 🌸',
-        body: '¡Tu tarjeta Miku está lista! 🎤',
-        thumbnail: thumbBuffer,
-        sourceUrl: channel,
+        title: '💙 ¡Bienvenid@ a Hatsune Miku Bot!',
+        body: '¡Disfruta de la mejor experiencia musical!',
+        thumbnail: await (await fetch('https://i.pinimg.com/736x/76/ec/16/76ec1693791a33594059d478ae9206f7.jpg')).buffer(),
         mediaType: 1,
         showAdAttribution: true,
         renderLargerThumbnail: true
       }
     }
-  }, { quoted: m })
+  })
 }
 
 handler.help = ['reg']
