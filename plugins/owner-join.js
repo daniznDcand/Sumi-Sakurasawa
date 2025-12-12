@@ -1,7 +1,7 @@
 let linkRegex = /https:\/\/chat\.whatsapp\.com\/([0-9A-Za-z]{20,24})/i;
 let pendingJoins = new Map(); 
 
-let handler = async (m, { conn, text, isOwner }) => {
+let handler = async (m, { conn, text, isOwner, command }) => {
    
     if (m.message?.buttonsResponseMessage) {
         const buttonId = m.message.buttonsResponseMessage.selectedButtonId;
@@ -9,6 +9,16 @@ let handler = async (m, { conn, text, isOwner }) => {
             return handleButtonResponse(conn, m, m.sender, buttonId, m);
         }
     }
+
+    
+    if (m.messageStubType === 20) { 
+        const groupJid = m.key.remoteJid;
+        console.log('Mensaje de unión detectado para el grupo:', groupJid);
+        return; 
+    }
+
+    
+    if (!/^invite|join$/i.test(command)) return; 
 
     if (!text) return m.reply(`${emoji} Debes enviar una invitación para que *${botname}* se una al grupo.`);
 
@@ -20,8 +30,10 @@ let handler = async (m, { conn, text, isOwner }) => {
     const requesterName = m.pushName || 'Usuario';
 
     if (isOwner) {
+     
         await handleGroupJoin(conn, m, code, groupJid);
     } else {
+        
         const requestId = Date.now().toString();
         pendingJoins.set(requestId, { code, groupJid, requester, requesterName });
         
@@ -35,6 +47,7 @@ let handler = async (m, { conn, text, isOwner }) => {
             { buttonId: `reject_${requestId}`, buttonText: { displayText: '❌ Rechazar' }, type: 1 }
         ];
 
+       
         await conn.sendMessage(suittag + '@s.whatsapp.net', {
             text: approvalMessage,
             mentions: [requester],
@@ -65,10 +78,12 @@ async function handleButtonResponse(conn, m, from, buttonId, message) {
             await handleGroupJoin(conn, m, code, groupJid, requester, requesterName);
         } else {
             await m.reply('❌ *Rechazado*: La solicitud de unión ha sido rechazada.');
-            await conn.sendMessage(requester, {
-                text: `❌ *Solicitud rechazada*\n\n` +
-                      `El propietario ha rechazado tu solicitud para unir el bot al grupo.`
-            });
+            if (requester) {
+                await conn.sendMessage(requester, {
+                    text: `❌ *Solicitud rechazada*\n\n` +
+                          `El propietario ha rechazado tu solicitud para unir el bot al grupo.`
+                });
+            }
         }
     } catch (error) {
         console.error('Error al procesar la solicitud:', error);
@@ -81,10 +96,13 @@ async function handleButtonResponse(conn, m, from, buttonId, message) {
 
 async function handleGroupJoin(conn, m, code, groupJid, requester, requesterName) {
     try {
-      
-        await conn.groupAcceptInvite(code);
+        console.log('Intentando unirse al grupo con código:', code);
         
-      
+        
+        await conn.groupAcceptInvite(code);
+        console.log('Invitación aceptada exitosamente');
+        
+        
         if (m) {
             await m.reply(`${emoji} Me he unido exitosamente al grupo.`);
         }
@@ -106,6 +124,8 @@ async function handleGroupJoin(conn, m, code, groupJid, requester, requesterName
             `📱 *WhatsApp:* +51988514570 (Solo consultas importantes)\n\n` +
             `¡Disfruta de tu estadía en el grupo! 💙`;
 
+        console.log('Enviando mensaje de bienvenida al grupo:', groupJid);
+        
         
         await conn.sendMessage(groupJid, {
             video: { 
@@ -113,10 +133,12 @@ async function handleGroupJoin(conn, m, code, groupJid, requester, requesterName
             },
             caption: welcomeMessage,
             gifPlayback: false,
-            mentions: [requester || m?.sender]
+            mentions: requester ? [requester] : []
         });
 
-       
+        console.log('Mensaje de bienvenida enviado correctamente');
+
+    
         if (requester) {
             await conn.sendMessage(requester, {
                 text: `✅ *¡Solicitud aprobada!*\n\n` +
@@ -125,7 +147,7 @@ async function handleGroupJoin(conn, m, code, groupJid, requester, requesterName
         }
 
     } catch (err) {
-        console.error('Error al unirse al grupo:', err);
+        console.error('Error en handleGroupJoin:', err);
         const errorMsg = `❌ Error al unirse al grupo: ${err.message}`;
         if (m) await m.reply(errorMsg);
         if (requester) {
@@ -136,15 +158,13 @@ async function handleGroupJoin(conn, m, code, groupJid, requester, requesterName
 }
 
 
-handler.before = async function(m, { conn }) {
-    if (m.message?.buttonsResponseMessage) {
-        const buttonId = m.message.buttonsResponseMessage.selectedButtonId;
-        if (buttonId && (buttonId.startsWith('approve_') || buttonId.startsWith('reject_'))) {
-            await handleButtonResponse(conn, m, m.sender, buttonId, m);
-            return true;
-        }
+handler.event = 'group-participants-update';
+handler.participant = async function(participants, action, { conn, isOwner }) {
+    
+    if (action === 'add' && participants.includes(conn.user.jid)) {
+        console.log('El bot fue agregado a un grupo');
+        
     }
-    return false; 
 };
 
 handler.help = ['invite'];
