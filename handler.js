@@ -177,6 +177,16 @@ for (const name in global.plugins) {
 const plugin = global.plugins[name]
 if (!plugin) continue
 if (plugin.disabled) continue
+
+
+if (m.isGroup && chat?.isBanned && !isROwner) {
+  const allowWhileBanned = new Set([
+    'grupo-banchat.js',
+    'grupo-unbanchat.js'
+  ])
+  if (!allowWhileBanned.has(name)) continue
+}
+
 const __filename = join(___dirname, name)
 if (typeof plugin.all === "function") {
 try {
