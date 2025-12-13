@@ -32,6 +32,48 @@ function saveDatabase(data) {
     }
 }
 
+function getOrCreateWaifuUser(db, userId, fallbackName = 'Usuario') {
+    if (!db.users) db.users = {};
+    if (!db.users[userId]) {
+        db.users[userId] = { name: fallbackName, characters: [] };
+    }
+    if (!Array.isArray(db.users[userId].characters)) db.users[userId].characters = [];
+    if (!db.users[userId].name) db.users[userId].name = fallbackName;
+    return db.users[userId];
+}
+
+function getButtonIdFromMessage(m) {
+    try {
+        if (!m || !m.message) return null;
+
+        if (m.message.templateButtonReplyMessage) {
+            return m.message.templateButtonReplyMessage.selectedId;
+        }
+        if (m.message.buttonsResponseMessage) {
+            return m.message.buttonsResponseMessage.selectedButtonId;
+        }
+        if (m.message.listResponseMessage) {
+            return m.message.listResponseMessage.singleSelectReply?.selectedRowId;
+        }
+        if (m.message.interactiveResponseMessage) {
+            const paramsJson = m.message.interactiveResponseMessage.nativeFlowResponseMessage?.paramsJson;
+            if (paramsJson) {
+                const params = JSON.parse(paramsJson);
+                return params.id || null;
+            }
+        }
+        if (m.message.buttonResponseMessage) {
+            return m.message.buttonResponseMessage.selectedButtonId;
+        }
+        if (m.message.selectionResponseMessage) {
+            return m.message.selectionResponseMessage.selectedRowId;
+        }
+        return null;
+    } catch {
+        return null;
+    }
+}
+
 const waifuList = [
 
     {
@@ -490,14 +532,9 @@ let handler = async (m, { conn, usedPrefix, command }) => {
 
     const coins = user.coin || 0
 
-    let shopMessage = `🏪 *TIENDA PREMIUM HATSUNE MIKU* 🏪\n\n`
-    shopMessage += `╭━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╮\n`
-    shopMessage += `│         💰 *TU SALDO* 💰         │\n`
-    shopMessage += `│                                   │\n`
-    shopMessage += `│  💎 Monedas: ${coins.toLocaleString()} cebollines │\n`
-    shopMessage += `╰━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━╯\n\n`
-
-    shopMessage += `🎯 *CATEGORÍAS DISPONIBLES* 🎯\n\n`
+    let shopMessage = `🏪 *TIENDA PREMIUM* 🏪\n\n`
+    shopMessage += `💰 *Tu saldo:* ${coins.toLocaleString()} cebollines\n\n`
+    shopMessage += `🎯 *Categorías:*\n`
 
     shopMessage += `⏰ *OFERTAS LIMITADAS*\n`
     shopMessage += `├─ Packs con descuento temporal\n`
@@ -540,14 +577,7 @@ let handler = async (m, { conn, usedPrefix, command }) => {
 handler.before = async function (m, { conn }) {
     if (!m.message) return false
 
-    let buttonId = null
-
-    if (m.message.templateButtonReplyMessage) {
-        buttonId = m.message.templateButtonReplyMessage.selectedId
-    }
-    if (m.message.buttonsResponseMessage) {
-        buttonId = m.message.buttonsResponseMessage.selectedButtonId
-    }
+    let buttonId = getButtonIdFromMessage(m)
 
     const userId = m.sender
     const user = global.db.data.users[userId]
@@ -820,9 +850,7 @@ handler.before = async function (m, { conn }) {
         user.coin -= finalPrice
 
         let db = loadDatabase();
-        if (!db.users[userId]) {
-            db.users[userId] = { name: 'Usuario', characters: [] };
-        }
+        const waifuUser = getOrCreateWaifuUser(db, userId, user?.name || user?.username || 'Usuario');
 
         let successMessage = `✅ *COMPRA EXITOSA* ✅\n\n🛍️ ${itemDescription}\n`
         if (discountInfo.active && buttonId.includes('limited')) {
@@ -836,26 +864,26 @@ handler.before = async function (m, { conn }) {
         let waifuImages = [];
 
         for (const reward of rewards) {
-            if (reward.type === 'waifu' || reward.type === 'premium_waifu') {
+            if (reward.type === 'waifu') {
                 hasWaifuReward = true;
                 const waifus = getRandomWaifus(reward.count, reward.rarity)
                 for (const waifu of waifus) {
-                    const exists = db.users[userId].characters.find(
+                    const exists = waifuUser.characters.find(
                         char => char.name === waifu.name && char.rarity === waifu.rarity
                     );
 
                     if (!exists) {
-                        db.users[userId].characters.push({
+                        waifuUser.characters.push({
                             name: waifu.name,
                             rarity: waifu.rarity,
-                            obtainedAt: new Date().toISOString(),
-                            obtainedFrom: 'tienda_pack'
+                            obtainedAt: new Date().toISOString()
                         });
                         successMessage += `💙 ${waifu.name} (${waifu.rarity.charAt(0).toUpperCase()})\n`
-                        waifuImages.push({ name: waifu.name, img: waifu.img, rarity: waifu.rarity });
                     } else {
                         successMessage += `💙 ${waifu.name} (${waifu.rarity.charAt(0).toUpperCase()}) ✓\n`
                     }
+
+                    waifuImages.push({ name: waifu.name, img: waifu.img, rarity: waifu.rarity });
                 }
             } else if (reward.type === 'exp') {
                 if (!user.rpgData) {
@@ -873,33 +901,38 @@ handler.before = async function (m, { conn }) {
                 console.log('Processing premium waifu:', reward.name);
                 console.log('Searching for waifu with name:', reward.name, 'and rarity: Legendaria');
 
-                // Buscar la waifu legendaria en el array principal
+                
                 const legendWaifu = waifuList.find(w => w.name === reward.name && w.rarity === 'Legendaria');
                 console.log('Legend waifu found:', legendWaifu ? legendWaifu.name : 'NOT FOUND');
 
-                // Debug: mostrar todas las waifus legendarias disponibles
+                
                 const legendarias = waifuList.filter(w => w.rarity === 'Legendaria');
                 console.log('Available legendary waifus:', legendarias.map(w => w.name));
 
                 if (legendWaifu) {
-                    const premiumWaifu = {
-                        name: legendWaifu.name,
-                        rarity: legendWaifu.rarity,
-                        obtainedAt: new Date().toISOString(),
-                        obtainedFrom: 'tienda_premium',
-                        img: legendWaifu.img
-                    };
-                    db.users[userId].characters.push(premiumWaifu);
-                    console.log('Premium waifu saved to database:', premiumWaifu.name);
-                    successMessage += `💎 ${legendWaifu.name}\n`
+                    hasWaifuReward = true;
 
-                    // Agregar a la lista de imágenes para mostrar
+                    const exists = waifuUser.characters.find(
+                        char => char.name === legendWaifu.name && char.rarity === legendWaifu.rarity
+                    );
+
+                    if (!exists) {
+                        waifuUser.characters.push({
+                            name: legendWaifu.name,
+                            rarity: legendWaifu.rarity,
+                            obtainedAt: new Date().toISOString()
+                        });
+                        console.log('Premium waifu saved to database:', legendWaifu.name);
+                        successMessage += `💎 ${legendWaifu.name}\n`
+                    } else {
+                        successMessage += `💎 ${legendWaifu.name} ✓\n`
+                    }
+
                     waifuImages.push({
                         name: legendWaifu.name,
                         img: legendWaifu.img,
                         rarity: legendWaifu.rarity
                     });
-                    console.log('Waifu added to images array, total images:', waifuImages.length);
                 } else {
                     console.log('ERROR: Premium waifu not found in waifuList');
                     successMessage += `❌ Error: Waifu ${reward.name} no encontrada\n`
@@ -935,12 +968,12 @@ handler.before = async function (m, { conn }) {
 
         successMessage += `\n🎉 ¡Compra completada!`
 
-        // Si hay waifus compradas, mostrar mensaje especial con imágenes
+       
         if (hasWaifuReward && waifuImages.length > 0) {
-            // Enviar mensaje de texto primero
+            
             await m.reply(successMessage);
 
-            // Mostrar cada waifu obtenida con su imagen (similar al .rw)
+          
             for (const waifu of waifuImages) {
                 const rarityColors = {
                     'común': '⚪',
