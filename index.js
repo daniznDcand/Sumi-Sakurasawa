@@ -197,8 +197,15 @@ console.log(chalk.green.bold(`[ 💙 ]  Conectado a: ${userName}`))
 }
 let reason = new Boom(lastDisconnect?.error)?.output?.statusCode
 if (connection === "close") {
-if ([401, 440, 428, 405].includes(reason)) {
-console.log(chalk.red(`→ (${code}) › Cierra la session Principal.`))
+
+if (reason === DisconnectReason.loggedOut || reason === 401) {
+  console.log(chalk.red(`→ (${reason}) › Sesión del Bot Principal cerrada (LoggedOut). No se intentará reconectar automáticamente.`))
+  console.log(chalk.red('→ Debes volver a vincular el Bot Principal (borra/renueva creds.json si corresponde).'))
+  return
+}
+
+if ([440, 428, 405].includes(reason)) {
+  console.log(chalk.red(`→ (${reason}) › Conexión del Bot Principal cerrada. Intentando reconectar...`))
 }
 console.log(chalk.yellow("→ Reconectando el Bot Principal..."))
 await global.reloadHandler(true).catch(console.error)
