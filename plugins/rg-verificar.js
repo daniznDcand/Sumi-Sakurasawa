@@ -70,17 +70,7 @@ let handler = async function (m, { conn, text, usedPrefix, command }) {
   let mikuRegisterImage = 'https://i.pinimg.com/736x/76/ec/16/76ec1693791a33594059d478ae9206f7.jpg' 
   
   await conn.sendFile(m.chat, mikuRegisterImage, 'miku_register.jpg', regbot, m, false, {
-    mentions: [m.sender],
-    contextInfo: {
-      externalAdReply: {
-        title: '💙 ¡Bienvenid@ a Hatsune Miku Bot!',
-        body: '¡Disfruta de la mejor experiencia musical!',
-        thumbnail: await (await fetch('https://i.pinimg.com/736x/76/ec/16/76ec1693791a33594059d478ae9206f7.jpg')).buffer(),
-        mediaType: 1,
-        showAdAttribution: true,
-        renderLargerThumbnail: true
-      }
-    }
+    mentions: [m.sender]
   })
 }
 
