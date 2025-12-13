@@ -108,21 +108,21 @@ async function handleGroupJoin(conn, m, code, groupJid, requester, requesterName
         }
 
         
-        const welcomeMessage = `🎵 *¡HATSUNE MIKU HA LLEGADO!* 🎵\n\n` +
-            `✨ *¡Hola a todos!* Soy Hatsune Miku, tu asistente virtual favorita.\n\n` +
-            `💙 *Características:*\n` +
-            `• Sistema de RPG y economía\n` +
-            `• Juegos y entretenimiento\n` +
-            `• Stickers personalizados\n` +
-            `• Descarga de música y videos\n` +
-            `• Y mucho más!\n\n` +
-            `📌 *Comandos disponibles:*\n` +
-            `- .menu - Muestra el menú de comandos\n` +
-            `- .ayuda - Muestra la ayuda\n` +
-            `- .reg - Regístrate para empezar\n\n` +
+        const welcomeMessage = `💙 *Konnichiwa~!* Soy *Hatsune Miku* 💙\n\n` +
+            `✨ Gracias por invitarme a este grupo.\n` +
+            `Desde ahora estaré aquí para ayudarte, animar el chat y traer un poquito de magia musical. 🎶\n\n` +
+            `🌟 *¿Qué puedo hacer?*\n` +
+            `• RPG y economía (misiones, progreso y recompensas)\n` +
+            `• Juegos y diversión para el grupo\n` +
+            `• Stickers y funciones creativas\n` +
+            `• Música, videos y utilidades\n\n` +
+            `📌 *Comandos rápidos para empezar*\n` +
+            `- .menu  → Ver el menú\n` +
+            `- .ayuda → Guía de comandos\n` +
+            `- .reg   → Registrarte\n\n` +
             `👨‍💻 *Creador:* DEPOOL\n` +
-            `📱 *WhatsApp:* +51988514570 (Solo consultas importantes)\n\n` +
-            `¡Disfruta de tu estadía en el grupo! 💙`;
+            `📱 *Contacto:* +51988514570 (solo consultas importantes)\n\n` +
+            `💙 ¡Encantada de estar aquí! ¿Listos para comenzar?`;
 
         const targetGroupJid = joinedGroupJid || groupJid;
         console.log('Enviando mensaje de bienvenida al grupo:', targetGroupJid);
