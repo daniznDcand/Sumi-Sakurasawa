@@ -99,7 +99,7 @@ async function handleGroupJoin(conn, m, code, groupJid, requester, requesterName
         console.log('Intentando unirse al grupo con código:', code);
         
         
-        await conn.groupAcceptInvite(code);
+        const joinedGroupJid = await conn.groupAcceptInvite(code);
         console.log('Invitación aceptada exitosamente');
         
         
@@ -124,10 +124,13 @@ async function handleGroupJoin(conn, m, code, groupJid, requester, requesterName
             `📱 *WhatsApp:* +51988514570 (Solo consultas importantes)\n\n` +
             `¡Disfruta de tu estadía en el grupo! 💙`;
 
-        console.log('Enviando mensaje de bienvenida al grupo:', groupJid);
+        const targetGroupJid = joinedGroupJid || groupJid;
+        console.log('Enviando mensaje de bienvenida al grupo:', targetGroupJid);
+        
+        await new Promise(resolve => setTimeout(resolve, 1500));
         
         
-        await conn.sendMessage(groupJid, {
+        await conn.sendMessage(targetGroupJid, {
             video: { 
                 url: 'https://i.imgur.com/4ZubNrq.mp4' 
             },
