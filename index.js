@@ -161,8 +161,8 @@ setTimeout(async () => {
 let codeBot = await conn.requestPairingCode(addNumber)
 const rawPairingCode = String(codeBot || '').replace(/\s|-/g, '')
 const formattedPairingCode = rawPairingCode.match(/.{1,4}/g)?.join("-") || rawPairingCode
-console.log(chalk.bold.white(chalk.bgMagenta(`[ 💙🌱 ]  MIKU CODE:`)), chalk.bold.white(chalk.white(rawPairingCode)))
-console.log(chalk.gray(`(Referencia) ${formattedPairingCode}`))
+console.log(chalk.bold.white(chalk.bgMagenta(`[ 💙🌱 ]  MIKU CODE:`)), chalk.bold.white(chalk.white(formattedPairingCode)))
+console.log(chalk.gray(`(Sin guiones) ${rawPairingCode}`))
 }, 3000)
 }}}}
 conn.isInit = false
