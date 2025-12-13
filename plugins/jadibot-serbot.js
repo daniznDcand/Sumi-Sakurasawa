@@ -36,7 +36,7 @@ if (!global._subbotSessionErrorHandlerInstalled) {
   global._subbotSessionErrorHandlerInstalled = true
   process.on('unhandledRejection', async (reason) => {
     try {
-      // Manejar SessionError: No sessions
+      
       if (reason && reason.message && reason.message.includes('SessionError: No sessions')) {
         console.log(chalk.red('🚨 Capturado global unhandledRejection: SessionError: No sessions'))
         
@@ -55,20 +55,20 @@ if (!global._subbotSessionErrorHandlerInstalled) {
         }
       }
       
-      // Manejar errores ENOENT relacionados con credenciales
+     
       if (reason && reason.code === 'ENOENT' && reason.path && reason.path.includes('creds.json')) {
-        const pathMatch = reason.path.match(/jadi[\/\\]([^\/\\]+)/)
+        const pathMatch = reason.path.match(/JadiBots[\/\\]([^\/\\]+)/)
         const sessionId = pathMatch ? pathMatch[1] : 'unknown'
         console.log(chalk.yellow(`⚠️ Error ENOENT capturado para credenciales: ${reason.path}`))
         
-        // Intentar recrear el directorio si es necesario
+        
         try {
-          const sessionPath = pathMatch ? path.join('./jadi', pathMatch[1]) : null
+          const sessionPath = pathMatch ? path.join(`./${global.jadi}`, pathMatch[1]) : null
           if (sessionPath && !fs.existsSync(sessionPath)) {
             fs.mkdirSync(sessionPath, { recursive: true })
             console.log(chalk.green(`📁 Directorio recreado para sesión ${sessionId}`))
             
-            // Si hay un socket asociado, intentar guardar credenciales nuevamente
+            
             const subbot = global.conns?.find(s => 
               s && s.user && s.user.jid && s.user.jid.includes(sessionId)
             )
@@ -205,7 +205,7 @@ function checkResourceLimits() {
     }
     
     
-    const jadiPath = path.join(process.cwd(), 'jadi')
+    const jadiPath = path.join(process.cwd(), global.jadi)
     if (fs.existsSync(jadiPath)) {
       const stats = fs.statSync(jadiPath)
       const sizeGB = stats.size / (1024 * 1024 * 1024)
@@ -337,7 +337,7 @@ return m.reply(`💙 No se han encontrado espacios para *Sub-Bots* disponibles.`
 }
 let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender
 let id = `${who.split`@`[0]}`
-let pathMikuJadiBot = path.join(`./${'jadi'}/`, id)
+let pathMikuJadiBot = path.join(`./${global.jadi}/`, id)
 if (!fs.existsSync(pathMikuJadiBot)){
 fs.mkdirSync(pathMikuJadiBot, { recursive: true })
 }

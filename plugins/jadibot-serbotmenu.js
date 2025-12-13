@@ -280,7 +280,7 @@ handler.before = async function (m, { conn, usedPrefix }) {
         
         
         const { mikuJadiBot } = await import('./jadibot-serbot.js')
-        const pathMikuJadiBot = `./jadi/${m.sender.split('@')[0]}`
+        const pathMikuJadiBot = `./${global.jadi}/${m.sender.split('@')[0]}`
         const fs = await import('fs')
         
         if (!fs.existsSync(pathMikuJadiBot)) {
@@ -301,11 +301,11 @@ handler.before = async function (m, { conn, usedPrefix }) {
         user.Subs = Date.now()
         return true
         
-      } else if (buttonId === '') {
+      } else if (buttonId === 'serbot_qr') {
         
         
         const { mikuJadiBot } = await import('./jadibot-serbot.js')
-        const pathMikuJadiBot = `./jadi/${m.sender.split('@')[0]}`
+        const pathMikuJadiBot = `./${global.jadi}/${m.sender.split('@')[0]}`
         const fs = await import('fs')
         
         if (!fs.existsSync(pathMikuJadiBot)) {
