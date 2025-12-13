@@ -1,5 +1,8 @@
 import axios from 'axios'
 
+const waitMsg = global.wait || '⏳ Espere un momento...'
+const errorMsg = global.eror || global.error || '❌ Ocurrió un error, intenta otra vez.'
+
 const query = [
   'phonk%20meme',
   'phonk%20funny',
@@ -19,12 +22,12 @@ let handler = async (m, {
     usedPrefix,
     command
 }) => {
- m.reply(wait)
+ m.reply(waitMsg)
 tiktoks(`${query.getRandom()}`).then(a => {
 let cap = a.title
 conn.sendMessage(m.chat, {video: {url: a.no_watermark}, caption: cap}, {quoted: m})
 }).catch(err => {
-m.reply(eror)
+m.reply(errorMsg)
 })
 }
 handler.help = ['tiktokrandom']
