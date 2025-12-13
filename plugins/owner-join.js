@@ -132,7 +132,7 @@ async function handleGroupJoin(conn, m, code, groupJid, requester, requesterName
         
         await conn.sendMessage(targetGroupJid, {
             video: { 
-                url: 'https://i.imgur.com/4ZubNrq.mp4' 
+                url: 'https://files.catbox.moe/tbjgoj.mp4' 
             },
             caption: welcomeMessage,
             gifPlayback: false,
