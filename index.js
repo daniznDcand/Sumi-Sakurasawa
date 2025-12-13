@@ -102,12 +102,12 @@ let opcion
 if (methodCodeQR) {
 opcion = '1'
 }
-if (!methodCodeQR && !methodCode && !fs.existsSync(`./${sessions}/creds.json`)) {
+if (!methodCodeQR && !methodCode && !fs.existsSync(`./${global.sessions}/creds.json`)) {
 do {
 opcion = await question(colors("Seleccione una opción:\n") + qrOption("1. Con código QR\n") + textOption("2. Con código de texto de 8 dígitos\n--> "))
 if (!/^[1-2]$/.test(opcion)) {
 console.log(chalk.bold.redBright(`No se permiten numeros que no sean 1 o 2, tampoco letras o símbolos especiales.`))
-}} while (opcion !== '1' && opcion !== '2' || fs.existsSync(`./${sessions}/creds.json`))
+}} while (opcion !== '1' && opcion !== '2' || fs.existsSync(`./${global.sessions}/creds.json`))
 }
 console.info = () => {}
 const connectionOptions = {
@@ -141,7 +141,7 @@ maxIdleTimeMs: 60000,
 global.conn = makeWASocket(connectionOptions)
 conn.ev.on("creds.update", saveCreds)
 
-if (!fs.existsSync(`./${sessions}/creds.json`)) {
+if (!fs.existsSync(`./${global.sessions}/creds.json`)) {
 if (opcion === '2' || methodCode) {
 opcion = '2'
 if (!conn.authState.creds.registered) {
@@ -159,8 +159,10 @@ rl.close()
 addNumber = phoneNumber.replace(/\D/g, '')
 setTimeout(async () => {
 let codeBot = await conn.requestPairingCode(addNumber)
-codeBot = codeBot.match(/.{1,4}/g)?.join("-") || codeBot
-console.log(chalk.bold.white(chalk.bgMagenta(`[ 💙🌱 ]  MIKU CODE:`)), chalk.bold.white(chalk.white(codeBot)))
+const rawPairingCode = String(codeBot || '').replace(/\s|-/g, '')
+const formattedPairingCode = rawPairingCode.match(/.{1,4}/g)?.join("-") || rawPairingCode
+console.log(chalk.bold.white(chalk.bgMagenta(`[ 💙🌱 ]  MIKU CODE:`)), chalk.bold.white(chalk.white(rawPairingCode)))
+console.log(chalk.gray(`(Referencia) ${formattedPairingCode}`))
 }, 3000)
 }}}}
 conn.isInit = false
