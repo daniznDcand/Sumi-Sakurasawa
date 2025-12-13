@@ -1,6 +1,16 @@
 import axios from 'axios'
 
-const query = ['story%20wa','story%20sad','video%20fun','story%20wa%20galau','story%20wa%20sindiran','story%20wa%20bahagia','story%20wa%20lirik%20lagu%20overlay','story%20wa%20lirik%20lagu','video%20viral']
+const query = [
+  'phonk%20meme',
+  'phonk%20funny',
+  'phonk%20risa',
+  'meme%20phonk',
+  'risa%20phonk',
+  'funny%20phonk',
+  'memes%20phonk',
+  'phonk%20edit%20meme',
+  'sigma%20phonk%20meme'
+]
 
 let handler = async (m, {
     conn,
