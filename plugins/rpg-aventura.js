@@ -10,6 +10,39 @@ const RPG_CONFIG = {
   bossChance: 0.05 
 }
 
+const BOSS_IMAGES = {
+  '🐉 Dragón Anciano': 'https://files.catbox.moe/08cwr0.jpg',
+  '👹 Demonio Supremo': 'https://files.catbox.moe/2cqu1i.jpg',
+  '🔥 Fénix Ardiente': 'https://files.catbox.moe/apn7le.jpg',
+  '⚡ Titán del Trueno': 'https://files.catbox.moe/zy94fx.jpg'
+}
+
+function clamp(n, min, max) {
+  return Math.min(max, Math.max(min, n))
+}
+
+function getExpNeeded(level) {
+  return Math.floor(90 * Math.pow(level, 1.45) + 110)
+}
+
+function scaleEnemy(enemy, level, isBoss) {
+  const lvl = Math.max(1, level || 1)
+  const base = isBoss ? 1.18 : 1.10
+  const factor = Math.pow(base, lvl - 1)
+
+  const hp = Math.floor(enemy.hp * factor)
+  const attack = Math.floor(enemy.attack * factor)
+
+  const minR = Math.floor(enemy.reward[0] * factor)
+  const maxR = Math.floor(enemy.reward[1] * factor)
+  return {
+    ...enemy,
+    hp,
+    attack,
+    reward: [Math.max(1, minR), Math.max(Math.max(2, minR + 1), maxR)]
+  }
+}
+
 
 const ENEMIES = {
   common: [
@@ -114,14 +147,28 @@ let handler = async (m, { conn, usedPrefix, command }) => {
   }
   
   
-  const isBoss = Math.random() < RPG_CONFIG.bossChance
+  const bossChance = clamp(RPG_CONFIG.bossChance + (user.rpgData.level - 1) * 0.002, 0.05, 0.12)
+  const isBoss = Math.random() < bossChance
   const enemyList = isBoss ? ENEMIES.boss : ENEMIES.common
-  const enemy = enemyList[Math.floor(Math.random() * enemyList.length)]
+  const enemyBase = enemyList[Math.floor(Math.random() * enemyList.length)]
+  const enemy = scaleEnemy(enemyBase, user.rpgData.level, isBoss)
   
   
   const battleEnemy = {
     ...enemy,
     hp: enemy.hp
+  }
+
+  if (isBoss) {
+    const bossTitle = battleEnemy.name
+    const bossImage = BOSS_IMAGES[bossTitle]
+    const bossText = `👑 *¡JEFE ENCONTRADO!* 👑\n\n🆚 *Enemigo:* ${battleEnemy.name}\n❤️ HP: ${battleEnemy.hp} | ⚔️ ATK: ${battleEnemy.attack}`
+    if (bossImage) {
+      await conn.sendMessage(m.chat, { image: { url: bossImage }, caption: bossText }, { quoted: m })
+    } else {
+      await m.reply(bossText)
+    }
+    await setTimeout(800)
   }
   
   let battleLog = []
@@ -183,19 +230,25 @@ let handler = async (m, { conn, usedPrefix, command }) => {
     const totalReward = baseReward + bossBonus
     
     user.coin = (user.coin || 0) + totalReward
-    user.rpgData.exp += isBoss ? 50 : 25
+
+    const baseExp = isBoss ? 65 : 30
+    const expGain = Math.floor(baseExp + (user.rpgData.level * (isBoss ? 6 : 3)))
+    user.rpgData.exp += expGain
     user.rpgData.wins += 1
     
    
-    const expNeeded = user.rpgData.level * 100
-    if (user.rpgData.exp >= expNeeded) {
+    let leveledUp = false
+    while (user.rpgData.exp >= getExpNeeded(user.rpgData.level)) {
+      user.rpgData.exp -= getExpNeeded(user.rpgData.level)
       user.rpgData.level += 1
-      user.rpgData.exp = 0
-      user.rpgData.maxHp += 20
+      user.rpgData.maxHp += 25
       user.rpgData.hp = user.rpgData.maxHp
-      user.rpgData.attack += 5
-      user.rpgData.defense += 3
-      
+      user.rpgData.attack += 6
+      user.rpgData.defense += 4
+      leveledUp = true
+    }
+
+    if (leveledUp) {
       battleLog.push(`🎉 *¡SUBISTE DE NIVEL!* 🎉`)
       battleLog.push(`📊 *Nivel:* ${user.rpgData.level}`)
       battleLog.push(`❤️ *HP Máximo:* ${user.rpgData.maxHp}`)
@@ -207,7 +260,7 @@ let handler = async (m, { conn, usedPrefix, command }) => {
     battleLog.push(`🎉 *¡VICTORIA!* 🎉`)
     battleLog.push(`💰 *Recompensa:* ${totalReward} monedas ${bossBonus > 0 ? `(+${bossBonus} bonus jefe)` : ''}`)
     battleLog.push(`💳 *Saldo:* ${user.coin} monedas`)
-    battleLog.push(`⭐ *EXP:* +${isBoss ? 50 : 25} (${user.rpgData.exp}/${user.rpgData.level * 100})`)
+    battleLog.push(`⭐ *EXP:* +${expGain} (${user.rpgData.exp}/${getExpNeeded(user.rpgData.level)})`)
     
   } else {
     user.rpgData.losses += 1

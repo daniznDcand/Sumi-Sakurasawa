@@ -16,7 +16,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         await conn.reply(m.chat, `🎵 *Extrayendo audio del video TikTok...*\n\n⏳ Esto puede tomar unos segundos...`, m);
         
         const result = await downloadAudioFromMultipleAPIs(tiktokUrl);
-        
+
         if (!result || !result.audioUrl) {
             await conn.sendMessage(m.chat, { react: { text: "❌", key: m.key } });
             return conn.reply(m.chat, `❌ No se pudo extraer el audio del video.\n\n💡 *Posibles causas:*\n• El video es privado\n• No tiene audio original\n• Video eliminado\n• Restricciones regionales`, m);
@@ -26,12 +26,22 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
         await conn.reply(m.chat, `✅ *Audio extraído exitosamente!*\n\n🎵 *Título:* ${title || 'Audio TikTok'}\n👤 *Autor:* ${author || 'Desconocido'}\n\n📤 Enviando archivo de audio...`, m);
 
-        
-        const audioMessage = {
-            audio: { url: audioUrl },
+        const audioBuffer = await getFileBuffer(audioUrl, {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Referer': 'https://www.tiktok.com/'
+        }, 25_000);
+
+        if (!audioBuffer || !Buffer.isBuffer(audioBuffer) || audioBuffer.length < 1024) {
+            throw new Error('No se pudo descargar el audio (buffer inválido)')
+        }
+
+        const safeName = `${(title || 'tiktok_audio').replace(/[^\w\s]/gi, '').substring(0, 50)}.mp3`
+
+        const docMessage = {
+            document: audioBuffer,
             mimetype: 'audio/mpeg',
-            fileName: `${(title || 'tiktok_audio').replace(/[^\w\s]/gi, '').substring(0, 50)}.mp3`,
-            ptt: false,
+            fileName: safeName,
+            caption: `🎵 *Audio de TikTok*\n\n📝 *Título:* ${title || 'Audio TikTok'}\n👤 *Autor:* ${author || 'Desconocido'}\n\n💙 *Descargado por Hatsune Miku Bot*`,
             contextInfo: {
                 externalAdReply: {
                     showAdAttribution: true,
@@ -43,14 +53,6 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
                     thumbnail: thumbnail ? await getImageBuffer(thumbnail) : null
                 }
             }
-        };
-        
-        
-        const docMessage = {
-            document: { url: audioUrl },
-            mimetype: 'audio/mpeg',
-            fileName: `${(title || 'tiktok_audio').replace(/[^\w\s]/gi, '').substring(0, 50)}.mp3`,
-            caption: `🎵 *Audio de TikTok*\n\n📝 *Título:* ${title || 'Audio TikTok'}\n👤 *Autor:* ${author || 'Desconocido'}\n\n💙 *Descargado por Hatsune Miku Bot*`
         };
 
         await conn.sendMessage(m.chat, docMessage, { quoted: m });
@@ -72,6 +74,33 @@ handler.coin = 2
 
 export default handler
 
+async function getFileBuffer(url, headers = {}, timeoutMs = 20000) {
+    if (!url || !url.startsWith('http')) return null
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), timeoutMs)
+    try {
+        const res = await fetch(url, {
+            headers: {
+                ...headers
+            },
+            redirect: 'follow',
+            signal: controller.signal
+        })
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+
+        const ab = await res.arrayBuffer()
+        const buf = Buffer.from(ab)
+
+        if (buf.length > 25 * 1024 * 1024) {
+            throw new Error('El audio es demasiado pesado para enviar')
+        }
+
+        return buf
+    } finally {
+        clearTimeout(timeout)
+    }
+}
 
 function validateTikTokUrl(url) {
     try {
@@ -100,7 +129,6 @@ function validateTikTokUrl(url) {
         return null;
     }
 }
-
 
 async function downloadAudioFromMultipleAPIs(url) {
     const apis = [
@@ -147,7 +175,6 @@ async function downloadAudioFromMultipleAPIs(url) {
     return null;
 }
 
-
 async function tiktokAudioTikWM(url) {
     try {
         const apiUrl = `https://www.tikwm.com/api/?url=${encodeURIComponent(url)}&hd=1`;
@@ -183,7 +210,6 @@ async function tiktokAudioTikWM(url) {
         throw new Error(`TikWM: ${error.message}`);
     }
 }
-
 
 async function tiktokAudioTiklyDown(url) {
     try {
@@ -221,7 +247,6 @@ async function tiktokAudioTiklyDown(url) {
     }
 }
 
-
 async function tiktokAudioDouyin(url) {
     try {
         const apiUrl = `https://api.douyin.wtf/api?url=${encodeURIComponent(url)}&minimal=false`;
@@ -253,7 +278,6 @@ async function tiktokAudioDouyin(url) {
         throw new Error(`DouyinWTF: ${error.message}`);
     }
 }
-
 
 async function tiktokAudioLiveSave(url) {
     try {
@@ -291,7 +315,6 @@ async function tiktokAudioLiveSave(url) {
     }
 }
 
-
 async function tiktokAudioTikWMAlt(url) {
     try {
         const apiUrl = `https://tikwm.com/api/?url=${encodeURIComponent(url)}`;
@@ -323,7 +346,6 @@ async function tiktokAudioTikWMAlt(url) {
         throw new Error(`TikWM-Alt: ${error.message}`);
     }
 }
-
 
 async function getImageBuffer(url) {
     try {
