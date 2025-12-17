@@ -849,8 +849,8 @@ handler.before = async function (m, { conn }) {
 
         user.coin -= finalPrice
 
-        let db = loadDatabase();
-        const waifuUser = getOrCreateWaifuUser(db, userId, user?.name || user?.username || 'Usuario');
+        if (!user.waifu) user.waifu = { characters: [], pending: null, cooldown: 0 }
+        if (!Array.isArray(user.waifu.characters)) user.waifu.characters = []
 
         let successMessage = `✅ *COMPRA EXITOSA* ✅\n\n🛍️ ${itemDescription}\n`
         if (discountInfo.active && buttonId.includes('limited')) {
@@ -868,15 +868,16 @@ handler.before = async function (m, { conn }) {
                 hasWaifuReward = true;
                 const waifus = getRandomWaifus(reward.count, reward.rarity)
                 for (const waifu of waifus) {
-                    const exists = waifuUser.characters.find(
+                    const exists = user.waifu.characters.find(
                         char => char.name === waifu.name && char.rarity === waifu.rarity
                     );
 
                     if (!exists) {
-                        waifuUser.characters.push({
+                        user.waifu.characters.push({
                             name: waifu.name,
                             rarity: waifu.rarity,
-                            obtainedAt: new Date().toISOString()
+                            obtainedAt: new Date().toISOString(),
+                            obtainedFrom: 'tienda'
                         });
                         successMessage += `💙 ${waifu.name} (${waifu.rarity.charAt(0).toUpperCase()})\n`
                     } else {
@@ -912,15 +913,16 @@ handler.before = async function (m, { conn }) {
                 if (legendWaifu) {
                     hasWaifuReward = true;
 
-                    const exists = waifuUser.characters.find(
+                    const exists = user.waifu.characters.find(
                         char => char.name === legendWaifu.name && char.rarity === legendWaifu.rarity
                     );
 
                     if (!exists) {
-                        waifuUser.characters.push({
+                        user.waifu.characters.push({
                             name: legendWaifu.name,
                             rarity: legendWaifu.rarity,
-                            obtainedAt: new Date().toISOString()
+                            obtainedAt: new Date().toISOString(),
+                            obtainedFrom: 'tienda'
                         });
                         console.log('Premium waifu saved to database:', legendWaifu.name);
                         successMessage += `💎 ${legendWaifu.name}\n`
@@ -962,9 +964,7 @@ handler.before = async function (m, { conn }) {
             }
         }
 
-        console.log('Saving database after purchase...');
-        const saveResult = saveDatabase(db);
-        console.log('Database save result:', saveResult);
+        console.log('Saving waifus in global.db.data.users (database.json) after purchase...');
 
         successMessage += `\n🎉 ¡Compra completada!`
 

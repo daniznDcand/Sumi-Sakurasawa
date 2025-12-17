@@ -454,14 +454,21 @@ let handler = async (m, { conn }) => {
     const userId = m.sender;
     const currentTime = Date.now();
 
-    // Debug: Verificar que la base de datos existe y se carga
+    if (!global.db.data) global.db.data = {}
+    if (!global.db.data.users) global.db.data.users = {}
+    if (!global.db.data.users[userId]) global.db.data.users[userId] = {}
+    const user = global.db.data.users[userId]
+    if (!user.waifu) user.waifu = { characters: [], pending: null, cooldown: 0 }
+    if (!Array.isArray(user.waifu.characters)) user.waifu.characters = []
+
+    
     console.log('RW Command - Checking database...');
     console.log('Database path:', databaseFilePath);
     console.log('Database exists:', fs_sync.existsSync(databaseFilePath));
     
     
-    if (global.db.waifu.cooldowns[userId]) {
-        const timeDiff = currentTime - global.db.waifu.cooldowns[userId];
+    if (user.waifu.cooldown) {
+        const timeDiff = currentTime - user.waifu.cooldown;
         if (timeDiff < 900000) {
             const remainingTime = 900000 - timeDiff;
             const minutes = Math.floor(remainingTime / 60000);
@@ -531,8 +538,8 @@ let handler = async (m, { conn }) => {
     await conn.sendMessage(m.chat, buttonMessage);
 
     
-    global.db.waifu.cooldowns[userId] = currentTime;
-    global.db.waifu.waifus[userId] = selectedWaifu;
+    user.waifu.cooldown = currentTime
+    user.waifu.pending = selectedWaifu
 }
 
 handler.help = ['rw']
@@ -574,46 +581,40 @@ handler.before = async function (m, { conn }) {
             userName = (await conn.getName(userId)) || 'Usuario';
         } catch {}
 
-        if (!global.db.waifu.waifus[userId]) {
+        if (!global.db.data) global.db.data = {}
+        if (!global.db.data.users) global.db.data.users = {}
+        if (!global.db.data.users[userId]) global.db.data.users[userId] = {}
+        const user = global.db.data.users[userId]
+        if (!user.waifu) user.waifu = { characters: [], pending: null, cooldown: 0 }
+        if (!Array.isArray(user.waifu.characters)) user.waifu.characters = []
+
+        if (!user.waifu.pending) {
             return await m.reply('❌ No tienes ningún personaje disponible.');
         }
 
-        const currentWaifu = global.db.waifu.waifus[userId];
+        const currentWaifu = user.waifu.pending;
         const action = buttonId.startsWith('waifu_claim_') ? 'claim' : 'sell';
 
         try {
             if (action === 'claim') {
-                let db = loadDatabase();
-
-                if (!db.users[userId]) {
-                    db.users[userId] = {
-                        name: userName,
-                        characters: []
-                    };
-                }
-
-                const exists = db.users[userId].characters.find(
+                const exists = user.waifu.characters.find(
                     char => char.name === currentWaifu.name && char.rarity === currentWaifu.rarity
                 );
 
                 if (exists) {
-                    delete global.db.waifu.waifus[userId];
+                    user.waifu.pending = null
                     console.log(`User ${userId} already has ${currentWaifu.name} (${currentWaifu.rarity})`);
                     return await m.reply(`💙 Ya tienes a *${currentWaifu.name}* (${currentWaifu.rarity}) en tu colección.\n\n🔍 Usa *.col* para ver todas tus waifus guardadas en la base de datos.`);
                 }
 
-                db.users[userId].characters.push({
+                user.waifu.characters.push({
                     name: currentWaifu.name,
                     rarity: currentWaifu.rarity,
                     obtainedAt: new Date().toISOString(),
                     obtainedFrom: 'rw'
                 });
 
-                if (!saveDatabase(db)) {
-                    return await m.reply('❌ Error al guardar en base de datos.');
-                }
-
-                delete global.db.waifu.waifus[userId];
+                user.waifu.pending = null
 
                 const rarityColors = {
                     'común': '⚪',
@@ -629,9 +630,9 @@ handler.before = async function (m, { conn }) {
                 msg += `${emoji} *${currentWaifu.name}*\n`;
                 msg += `💎 *${currentWaifu.rarity.toUpperCase()}*\n`;
                 msg += `👤 ${userName}\n`;
-                msg += `📊 Total: *${db.users[userId].characters.length}* personajes\n\n`;
+                msg += `📊 Total: *${user.waifu.characters.length}* personajes\n\n`;
                 msg += `🔍 Usa *.col* para ver tu colección completa\n`;
-                msg += `📁 Guardado en: waifudatabase.json`;
+                
 
                 console.log(`Waifu claimed: ${currentWaifu.name} (${currentWaifu.rarity}) for user ${userId}`);
                 return await m.reply(msg);
@@ -639,15 +640,10 @@ handler.before = async function (m, { conn }) {
             } else if (action === 'sell') {
                 const sellPrice = SELL_PRICES[currentWaifu.rarity] || 10;
 
-                if (!global.db.data.users[userId]) {
-                    global.db.data.users[userId] = {};
-                }
-                if (!global.db.data.users[userId].coin) {
-                    global.db.data.users[userId].coin = 0;
-                }
-                global.db.data.users[userId].coin += sellPrice;
+                if (!user.coin) user.coin = 0
+                user.coin += sellPrice
 
-                delete global.db.waifu.waifus[userId];
+                user.waifu.pending = null
 
                 const rarityColors = {
                     'común': '⚪',
@@ -663,7 +659,7 @@ handler.before = async function (m, { conn }) {
                 msg += `${emoji} *${currentWaifu.name}*\n`;
                 msg += `💎 *${currentWaifu.rarity.toUpperCase()}*\n`;
                 msg += `💵 *Recibiste:* ${sellPrice} cebollines\n`;
-                msg += `💳 *Total cebollines:* ${global.db.data.users[userId].coin}\n\n`;
+                msg += `💳 *Total cebollines:* ${user.coin}\n\n`;
                 msg += `🏪 Usa *.tienda* para gastar tus cebollines`;
 
                 return await m.reply(msg);
@@ -684,18 +680,28 @@ export default handler
 
 
 
-// --- FUNCIONES PARA REGALAR Y SUBASTAR WAIFUS ---
 
-// Comando: .regalarwaifu @usuario
 let regalarWaifuHandler = async (m, { conn, args, participants }) => {
     const userId = m.sender;
     const mentionedJid = (m.mentionedJid && m.mentionedJid[0]) || args[0];
     if (!mentionedJid) return m.reply('Debes mencionar a quién quieres regalar tu waifu.');
-    if (!global.db.waifu.waifus[userId]) return m.reply('No tienes ninguna waifu para regalar.');
+    if (!global.db.data) global.db.data = {}
+    if (!global.db.data.users) global.db.data.users = {}
+    if (!global.db.data.users[userId]) global.db.data.users[userId] = {}
+    const fromUser = global.db.data.users[userId]
+    if (!fromUser.waifu) fromUser.waifu = { characters: [], pending: null, cooldown: 0 }
+    if (!Array.isArray(fromUser.waifu.characters)) fromUser.waifu.characters = []
+
+    if (!fromUser.waifu.pending) return m.reply('No tienes ninguna waifu para regalar.');
     if (userId === mentionedJid) return m.reply('No puedes regalarte una waifu a ti mismo.');
-    // Transferencia
-    global.db.waifu.waifus[mentionedJid] = global.db.waifu.waifus[userId];
-    delete global.db.waifu.waifus[userId];
+
+    if (!global.db.data.users[mentionedJid]) global.db.data.users[mentionedJid] = {}
+    const toUser = global.db.data.users[mentionedJid]
+    if (!toUser.waifu) toUser.waifu = { characters: [], pending: null, cooldown: 0 }
+    if (!Array.isArray(toUser.waifu.characters)) toUser.waifu.characters = []
+
+    toUser.waifu.pending = fromUser.waifu.pending
+    fromUser.waifu.pending = null
     m.reply(`🎁 Has regalado tu waifu a @${mentionedJid.split('@')[0]}!`, null, { mentions: [mentionedJid] });
 };
 
@@ -709,7 +715,14 @@ regalarWaifuHandler.group = true;
 let subasta = {};
 let subastarWaifuHandler = async (m, { conn, args }) => {
     const userId = m.sender;
-    const waifu = global.db.waifu.waifus[userId];
+    if (!global.db.data) global.db.data = {}
+    if (!global.db.data.users) global.db.data.users = {}
+    if (!global.db.data.users[userId]) global.db.data.users[userId] = {}
+    const user = global.db.data.users[userId]
+    if (!user.waifu) user.waifu = { characters: [], pending: null, cooldown: 0 }
+    if (!Array.isArray(user.waifu.characters)) user.waifu.characters = []
+
+    const waifu = user.waifu.pending
     if (!waifu) return m.reply('No tienes ninguna waifu para subastar.');
     const cantidad = parseInt(args[0]);
     if (isNaN(cantidad) || cantidad <= 0) return m.reply('Debes indicar una cantidad válida para la subasta.');
@@ -719,12 +732,22 @@ let subastarWaifuHandler = async (m, { conn, args }) => {
     
     subasta[userId].timeout = setTimeout(() => {
         if (subasta[userId].mejorPostor) {
+
+            const winnerId = subasta[userId].mejorPostor
+            if (!global.db.data.users[winnerId]) global.db.data.users[winnerId] = {}
+            const winner = global.db.data.users[winnerId]
+            if (!winner.waifu) winner.waifu = { characters: [], pending: null, cooldown: 0 }
+            if (!Array.isArray(winner.waifu.characters)) winner.waifu.characters = []
+
+           
+            winner.waifu.pending = waifu
+            user.waifu.pending = null
+
             
-            global.db.waifu.waifus[subasta[userId].mejorPostor] = waifu;
-            delete global.db.waifu.waifus[userId];
-            
-            global.db.data.users[subasta[userId].mejorPostor].money -= subasta[userId].puja;
-            global.db.data.users[userId].money += subasta[userId].puja;
+            if (!winner.coin) winner.coin = 0
+            if (!user.coin) user.coin = 0
+            winner.coin -= subasta[userId].puja;
+            user.coin += subasta[userId].puja;
             conn.reply(m.chat, `🏆 Subasta finalizada. Ganador: @${subasta[userId].mejorPostor.split('@')[0]} por ${subasta[userId].puja} monedas.`, null, { mentions: [subasta[userId].mejorPostor] });
         } else {
             conn.reply(m.chat, '⏰ Subasta finalizada sin postores.', null, { mentions: [userId] });
@@ -754,7 +777,7 @@ let pujarWaifuHandler = async (m, { conn, args }) => {
     }
     if (!found) return m.reply('No hay subastas activas.');
     if (isNaN(cantidad) || cantidad <= found.puja || cantidad < found.cantidad) return m.reply(`Debes pujar más de ${found.puja || found.cantidad} monedas.`);
-    if (!global.db.data.users[userId] || global.db.data.users[userId].money < cantidad) return m.reply('No tienes suficientes monedas.');
+    if (!global.db.data?.users?.[userId] || (global.db.data.users[userId].coin || 0) < cantidad) return m.reply('No tienes suficientes monedas.');
     found.puja = cantidad;
     found.mejorPostor = userId;
     m.reply(`Nueva puja: @${userId.split('@')[0]} ofrece ${cantidad} monedas.`, null, { mentions: [userId] });

@@ -40,30 +40,21 @@ let handler = async (m, { conn }) => {
     } catch {}
 
 
-    if (!global.db) global.db = {};
-    if (!global.db.waifu) global.db.waifu = { waifus: {} };
+    if (!global.db.data) global.db.data = {}
+    if (!global.db.data.users) global.db.data.users = {}
+    if (!global.db.data.users[userId]) global.db.data.users[userId] = {}
+    const user = global.db.data.users[userId]
+    if (!user.waifu) user.waifu = { characters: [], pending: null, cooldown: 0 }
+    if (!Array.isArray(user.waifu.characters)) user.waifu.characters = []
 
     try {
 
-        let currentWaifu = null;
-        let waifuKey = null;
+        let currentWaifu = user.waifu.pending
 
-
-        const waifuKeys = Object.keys(global.db.waifu.waifus);
-
-        if (waifuKeys.length === 0) {
-            return m.reply('💙 No hay personajes disponibles. Usa .rw para generar uno.');
-        }
-
-
-        if (global.db.waifu.waifus[userId]) {
-            currentWaifu = global.db.waifu.waifus[userId];
-            waifuKey = userId;
-        }
-
-        else if (waifuKeys.length > 0) {
-            waifuKey = waifuKeys[0];
-            currentWaifu = global.db.waifu.waifus[waifuKey];
+        if (!currentWaifu && global.db?.waifu?.waifus?.[userId]) {
+            currentWaifu = global.db.waifu.waifus[userId]
+            user.waifu.pending = currentWaifu
+            try { delete global.db.waifu.waifus[userId] } catch {}
         }
 
         if (!currentWaifu || !currentWaifu.name) {
@@ -71,41 +62,24 @@ let handler = async (m, { conn }) => {
         }
 
 
-        let db = loadDatabase();
-
-
-
-        if (!db.users[userId]) {
-            db.users[userId] = {
-                name: userName,
-                characters: []
-            };
-        }
-
-
-        const exists = db.users[userId].characters.find(
+        const exists = user.waifu.characters.find(
             char => char.name === currentWaifu.name && char.rarity === currentWaifu.rarity
         );
 
         if (exists) {
-            delete global.db.waifu.waifus[waifuKey];
+            user.waifu.pending = null
             return m.reply(`💙 Ya tienes a *${currentWaifu.name}* (${currentWaifu.rarity}) en tu colección.`);
         }
 
 
-        db.users[userId].characters.push({
+        user.waifu.characters.push({
             name: currentWaifu.name,
             rarity: currentWaifu.rarity,
-            obtainedAt: new Date().toISOString()
+            obtainedAt: new Date().toISOString(),
+            obtainedFrom: 'save'
         });
 
-
-        if (!saveDatabase(db)) {
-            return m.reply('❌ Error al guardar en base de datos.');
-        }
-
-
-        delete global.db.waifu.waifus[waifuKey];
+        user.waifu.pending = null
 
 
         const rarityEmojis = {
@@ -119,7 +93,7 @@ let handler = async (m, { conn }) => {
         msg += `${emoji} *${currentWaifu.name}*\n`;
         msg += `💎 *${currentWaifu.rarity.toUpperCase()}*\n`;
         msg += `👤 ${userName}\n`;
-        msg += `📊 Total: *${db.users[userId].characters.length}* personajes\n\n`;
+        msg += `📊 Total: *${user.waifu.characters.length}* personajes\n\n`;
         msg += `🔍 Usa *.col* para ver tu colección`;
 
         return m.reply(msg);
