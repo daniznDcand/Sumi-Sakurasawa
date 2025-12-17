@@ -2,8 +2,13 @@ import fetch from 'node-fetch'
 
 export async function before(m, { conn, participants, groupMetadata }) {
   try {
+    if (conn?.isSubBot) return true
     if (!m.isGroup) return true
     if (!m.messageStubType) return true
+
+    const msgTs = (m?.messageTimestamp ? Number(m.messageTimestamp) : 0) * 1000
+    const now = Date.now()
+    if (msgTs && (now - msgTs) > 2 * 60 * 1000) return true
 
     if (!global.db) global.db = { data: { chats: {} } }
     if (!global.db.data) global.db.data = { chats: {} }
@@ -29,8 +34,18 @@ export async function before(m, { conn, participants, groupMetadata }) {
     const canalUrl = 'https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
     const groupSize = (participants || []).length
 
+    global.__welcomeThrottle = global.__welcomeThrottle || new Map()
+    const shouldSendWelcome = (jid, user) => {
+      const key = `${jid}|${user}`
+      const last = global.__welcomeThrottle.get(key) || 0
+      if (Date.now() - last < 10 * 60 * 1000) return false
+      global.__welcomeThrottle.set(key, Date.now())
+      return true
+    }
+
     const sendSingleWelcome = async (jid, text, user, quoted) => {
       try {
+        if (!shouldSendWelcome(jid, user)) return
         let ppBuffer = null
         try {
           const ppUrl = await conn.profilePictureUrl(user, 'image').catch(() => null)
