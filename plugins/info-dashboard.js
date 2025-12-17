@@ -1,7 +1,12 @@
 let handler = async (m, { conn, command }) => {
 
     if (command == 'dash' || command == 'dashboard' || command == 'views') {
-        let stats = Object.entries(db.data.stats).map(([key, val]) => {
+        const all = /\ball\b/i.test(m.text || '')
+        const botId = conn?.user?.jid
+        const byBot = (!all && botId && global.db?.data?.statsByBot && global.db.data.statsByBot[botId]) ? global.db.data.statsByBot[botId] : null
+        const sourceStats = byBot || (global.db?.data?.stats || {})
+
+        let stats = Object.entries(sourceStats).map(([key, val]) => {
             let name = Array.isArray(plugins[key]?.help) ? plugins[key]?.help?.join(' , ') : plugins[key]?.help || key 
 
             if (/exec/.test(name)) return
@@ -13,7 +18,8 @@ let handler = async (m, { conn, command }) => {
             return `⬡ *Comando* : *${name}*\n⬡ *Usos* : ${total}`
         }).join('\n\n')
 
-        conn.reply(m.chat, handlers, m, fake)
+        if (!handlers) handlers = 'Sin datos de uso aún.'
+        conn.reply(m.chat, handlers, m)
     }
 
     if (command == 'database' || command == 'usuarios' || command == 'user') {

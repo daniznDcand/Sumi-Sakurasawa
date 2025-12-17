@@ -219,27 +219,28 @@ return [regex.exec(m.text), regex]
 [[[], new RegExp]]).find(prefix => prefix[1])
 if (typeof plugin.before === "function") {
 if (await plugin.before.call(this, m, {
-match,
-conn: this,
-participants,
-groupMetadata,
-userGroup,
-botGroup,
-isROwner,
-isOwner,
-isRAdmin,
-isAdmin,
-isBotAdmin,
-isPrems,
-chatUpdate,
-__dirname: ___dirname,
-__filename,
-user,
-chat,
-settings
+  match,
+  conn: this,
+  participants,
+  groupMetadata,
+  userGroup,
+  botGroup,
+  isROwner,
+  isOwner,
+  isRAdmin,
+  isAdmin,
+  isBotAdmin,
+  isPrems,
+  chatUpdate,
+  __dirname: ___dirname,
+  __filename,
+  user,
+  chat,
+  settings
 })) {
-continue
-}}
+  continue
+  }
+}
 if (typeof plugin !== "function") {
 continue
 }
@@ -251,6 +252,7 @@ let _args = noPrefix.trim().split(" ").slice(1)
 let text = _args.join(" ")
 command = (command || "").toLowerCase()
 const fail = plugin.fail || global.dfail
+
 const isAccept = plugin.command instanceof RegExp ?
 plugin.command.test(command) :
 Array.isArray(plugin.command) ?
@@ -276,7 +278,23 @@ global.db.data.chats[m.chat].primaryBot = null
 
 if (!isAccept) continue
 m.plugin = name
-if (isAccept) { global.db.data.users[m.sender].commands = (global.db.data.users[m.sender].commands || 0) + 1 }
+if (isAccept) {
+global.db.data.users[m.sender].commands = (global.db.data.users[m.sender].commands || 0) + 1
+try {
+if (!global.db.data.stats) global.db.data.stats = {}
+if (!global.db.data.stats[name]) global.db.data.stats[name] = { total: 0 }
+if (typeof global.db.data.stats[name].total !== 'number') global.db.data.stats[name].total = 0
+global.db.data.stats[name].total += 1
+
+if (!global.db.data.statsByBot) global.db.data.statsByBot = {}
+const botId = this.user?.jid || 'unknown'
+if (!global.db.data.statsByBot[botId]) global.db.data.statsByBot[botId] = {}
+if (!global.db.data.statsByBot[botId][name]) global.db.data.statsByBot[botId][name] = { total: 0 }
+if (typeof global.db.data.statsByBot[botId][name].total !== 'number') global.db.data.statsByBot[botId][name].total = 0
+global.db.data.statsByBot[botId][name].total += 1
+} catch (e) {
+}
+}
 if (chat) {
 const botId = this.user.jid
 const primaryBotId = chat.primaryBot

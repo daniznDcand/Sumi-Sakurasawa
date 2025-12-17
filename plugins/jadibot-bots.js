@@ -77,115 +77,26 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
     })
 
     
-    let statusText = `┌─「 🤖 *HATSUNE MIKU - SUBBOTS* 」\n`
-    statusText += `├ 📊 *Estado del Servidor*\n`
-    statusText += `├ 💾 Memoria RAM: ${memUsage}MB\n`
-    statusText += `├ 🟢 SubBots Activos: ${activeConnections.length}\n`
-    statusText += `├ 🔴 SubBots Inactivos: ${inactiveConnections.length}\n`
-    statusText += `├ ⚡ Total SubBots: ${totalBots}\n`
-    statusText += `└────────────────────\n\n`
+    let statusText = `🤖 *SUBBOTS*\n\n`
+    statusText += `📊 Total: *${totalBots}*\n`
+    statusText += `✅ Activos: *${activeConnections.length}*\n`
+    statusText += `❌ Inactivos: *${inactiveConnections.length}*\n\n`
 
-    
-    if (userActiveConnections.length > 0 || userInactiveConnections.length > 0) {
-      statusText += `👤 *TUS SUBBOTS:*\n\n`
-      
-      if (userActiveConnections.length > 0) {
-        statusText += `🟢 *Activos (${userActiveConnections.length}):*\n`
-        userActiveConnections.forEach((bot, index) => {
-          const botPhone = cleanPhoneNumber(bot.user.jid)
-          const uptime = bot.sessionStartTime ? 
-            msToTime(Date.now() - bot.sessionStartTime) : 'N/A'
-          const reconnects = bot.reconnectAttempts || 0
-          const pingTime = bot.lastPingTime ? `${bot.lastPingTime}ms` : 'N/A'
-          
-          statusText += `├ ${index + 1}. 📱 +${botPhone}\n`
-          statusText += `├   ⏰ Uptime: ${uptime}\n`
-          statusText += `├   🔄 Reconexiones: ${reconnects}\n`
-          statusText += `├   📡 Ping: ${pingTime}\n`
-          statusText += `└ ┈ ┈ ┈ ┈ ┈ ┈ ┈ ┈ ┈ ┈\n`
-        })
-      }
-      
-      if (userInactiveConnections.length > 0) {
-        statusText += `\n🔴 *Inactivos (${userInactiveConnections.length}):*\n`
-        userInactiveConnections.forEach((bot, index) => {
-          const botPhone = cleanPhoneNumber(bot.user.jid) || 'Desconocido'
-          const lastActivity = bot.lastActivity ? 
-            `${Math.round((Date.now() - bot.lastActivity) / 60000)}m` : 'N/A'
-          
-          statusText += `├ ${index + 1}. 📱 +${botPhone}\n`
-          statusText += `└   💤 Última actividad: ${lastActivity}\n`
-        })
-      }
+    const list = (args[0] === 'all' && isOwner) ? activeConnections : userActiveConnections
+    if (list.length > 0) {
+      statusText += `📋 ${args[0] === 'all' && isOwner ? '*SubBots activos (global):*' : '*Tus SubBots activos:*'}\n`
+      list.slice(0, 10).forEach((bot, index) => {
+        const botPhone = cleanPhoneNumber(bot.user?.jid) || 'Desconocido'
+        statusText += `${index + 1}. wa.me/${botPhone}\n`
+      })
+      if (list.length > 10) statusText += `... y ${list.length - 10} más\n`
       statusText += `\n`
     } else {
-      statusText += `👤 *TUS SUBBOTS:*\n`
-      statusText += `└ ❌ No tienes SubBots activos\n\n`
+      statusText += `📋 No hay SubBots activos para mostrar.\n\n`
     }
 
-    
-    if (isOwner || args[0] === 'all') {
-      statusText += `🌐 *ESTADÍSTICAS GLOBALES:*\n\n`
-      
-      if (activeConnections.length > 0) {
-        statusText += `🟢 *Top SubBots Activos:*\n`
-        const topBots = activeConnections
-          .sort((a, b) => (b.sessionStartTime || 0) - (a.sessionStartTime || 0))
-          .slice(0, 5)
-        
-        topBots.forEach((bot, index) => {
-          const botPhone = cleanPhoneNumber(bot.user.jid)
-          const uptime = bot.sessionStartTime ? 
-            msToTime(Date.now() - bot.sessionStartTime) : 'N/A'
-          const reconnects = bot.reconnectAttempts || 0
-          
-          statusText += `├ ${index + 1}. 📱 +${botPhone}\n`
-          statusText += `├   ⏰ ${uptime} | 🔄 ${reconnects}\n`
-          statusText += `└ ┈ ┈ ┈ ┈ ┈ ┈ ┈ ┈ ┈ ┈\n`
-        })
-        
-        if (activeConnections.length > 5) {
-          statusText += `└ ... y ${activeConnections.length - 5} SubBots más\n`
-        }
-      }
-      
-      if (inactiveConnections.length > 0) {
-        statusText += `\n💔 *SubBots Inactivos (${inactiveConnections.length}):*\n`
-        const recentInactive = inactiveConnections.slice(0, 3)
-        
-        recentInactive.forEach((bot, index) => {
-          const botPhone = cleanPhoneNumber(bot.user.jid) || 'Desconocido'
-          statusText += `├ ${index + 1}. 📱 +${botPhone}\n`
-        })
-        
-        if (inactiveConnections.length > 3) {
-          statusText += `└ ... y ${inactiveConnections.length - 3} más\n`
-        }
-      }
-      statusText += `\n`
-    }
-
-    
-    statusText += `🛠️ *COMANDOS DISPONIBLES:*\n`
-    statusText += `├ 📱 \`${usedPrefix}qr\` - Crear nuevo SubBot\n`
-    statusText += `├ 🗑️ \`${usedPrefix}deletebot\` - Eliminar SubBot\n`
-    statusText += `├ 📊 \`${usedPrefix}bots\` - Ver estado actual\n`
-    statusText += `├ 🌐 \`${usedPrefix}bots all\` - Ver todos (Owner)\n`
-    statusText += `└────────────────────\n\n`
-
-    
-    if (memUsage > 800) {
-      statusText += `⚠️ *SERVIDOR EN ALTA DEMANDA*\n`
-      statusText += `├ Memoria: ${memUsage}MB (Crítico)\n`
-      statusText += `└ Considera eliminar SubBots inactivos\n\n`
-    } else if (memUsage > 500) {
-      statusText += `⚠️ *Memoria moderada: ${memUsage}MB*\n`
-      statusText += `└ El servidor está trabajando bien\n\n`
-    }
-
-    
-    statusText += `⏰ *Actualizado:* ${new Date().toLocaleString('es-ES')}\n`
-    statusText += `💙 *Hatsune Miku Bot* - SubBot Manager`
+    statusText += `💡 \`${usedPrefix}bots\` | \`${usedPrefix}bots all\` (owner) | \`${usedPrefix}deletebot\`\n`
+    statusText += `⏰ ${new Date().toLocaleString('es-ES')}`
 
     
     const mikuImagePath = path.join(process.cwd(), 'src', 'miku-bots.jpg')

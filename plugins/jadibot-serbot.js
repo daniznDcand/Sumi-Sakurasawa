@@ -864,28 +864,18 @@ attempts++
 
   if (secret && m && conn) {
     try {
-      txtCode = await conn.sendMessage(m.chat, { text: rtx2 }, { quoted: m })
+      const oneMessage = `${rtx2}\n\n` +
+        `🔑 *CÓDIGO:* \`${secret}\`\n\n` +
+        `⏰ *Código válido por 30 segundos*\n\n` +
+        `💡 *Instrucciones:*\n` +
+        `1️⃣ Abre WhatsApp en tu dispositivo\n` +
+        `2️⃣ Ve a *Dispositivos vinculados*\n` +
+        `3️⃣ Toca *Vincular con código*\n` +
+        `4️⃣ Copia y pega el código\n\n` +
+        `🤖 *Una vez conectado, podrás usar todos los comandos*`
+      codeBot = await conn.sendMessage(m.chat, { text: oneMessage }, { quoted: m })
     } catch (e) {
-      console.error('Error enviando mensaje de código (rtx2):', e?.message || e)
-    }
-
-    try {
-      codeBot = await conn.sendMessage(m.chat, { text: secret }, { quoted: m })
-    } catch (e) {
-      console.error('Error enviando secret al chat:', e?.message || e)
-    }
-
-    try {
-      await conn.sendMessage(m.chat, {
-        text: `⏰ *Código válido por 30 segundos*\n\n💡 *Instrucciones:*\n` +
-          `1️⃣ Abre WhatsApp en tu dispositivo\n` +
-          `2️⃣ Ve a *Dispositivos vinculados*\n` +
-          `3️⃣ Toca *Vincular con código*\n` +
-          `4️⃣ Copia y pega: \`${secret}\`\n\n` +
-          `🤖 *Una vez conectado, podrás usar todos los comandos*`
-      }, { quoted: m })
-    } catch (e) {
-      console.error('Error enviando instrucciones de código:', e?.message || e)
+      console.error('Error enviando mensaje único de código:', e?.message || e)
     }
 
     console.log(chalk.green(`📱 Código generado para +${phoneNumber}: ${secret}`))
@@ -899,13 +889,6 @@ await m.reply(`❌ Error generando código de vinculación. Intente con .qr como
 }
 
 
-if (txtCode && txtCode.key) {
-  setTimeout(async () => {
-    try {
-      await conn.sendMessage(m.sender, { delete: txtCode.key })
-    } catch (e) {}
-  }, 45000)
-}
 if (codeBot && codeBot.key) {
   setTimeout(async () => {
     try {

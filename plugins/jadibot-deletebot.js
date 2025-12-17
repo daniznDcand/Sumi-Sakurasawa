@@ -57,7 +57,8 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
 
       if (!targetConnection) {
         
-        const sessionPath = path.join(process.cwd(), 'jadi', targetPhone)
+        const sessionRoot = global.jadi || 'jadi'
+        const sessionPath = path.join(process.cwd(), sessionRoot, targetPhone)
         if (fs.existsSync(sessionPath)) {
           try {
             fs.rmSync(sessionPath, { recursive: true, force: true })
@@ -91,7 +92,8 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
       }
       
      
-      const jadiDir = path.join(process.cwd(), 'jadi')
+      const sessionRoot = global.jadi || 'jadi'
+      const jadiDir = path.join(process.cwd(), sessionRoot)
       if (fs.existsSync(jadiDir)) {
         try {
           const sessionDirs = fs.readdirSync(jadiDir)
@@ -251,7 +253,8 @@ async function deleteSubBot(bot, phoneNumber, m, conn, usedPrefix, silent = fals
     }
 
    
-    const sessionPath = path.join(process.cwd(), 'jadi', phoneNumber)
+    const sessionRoot = global.jadi || 'jadi'
+    const sessionPath = path.join(process.cwd(), sessionRoot, phoneNumber)
     if (fs.existsSync(sessionPath)) {
       try {
         fs.rmSync(sessionPath, { recursive: true, force: true })
