@@ -139,6 +139,12 @@ const waifuList = [
         probability: 5,
         img: "https://qu.ax/ROZWw.png"
     },
+        {
+        name: "Fuiro Chibi",
+        rarity: "común",
+        probability: 5,
+        img: "https://i.pinimg.com/736x/ca/b5/a4/cab5a41cac30a455a70d1b80c89c662b.jpg"
+    },
     
     
     {
@@ -225,6 +231,12 @@ const waifuList = [
         probability: 3,
         img: "https://i1.sndcdn.com/artworks-8ne47oeiNyxO90bm-LBx2Ng-t500x500.jpg"
     },
+    {
+        name: "Fuiro 2006",
+        rarity: "rara",
+        probability: 3,
+        img: "https://gprw.s3.amazonaws.com/uploads/releases/614/image/lg-022f3cf7193976905295029c6bbfbe86.png"
+    },
     
     
     {
@@ -310,6 +322,12 @@ const waifuList = [
         rarity: "épica",
         probability: 1.5,
         img: "https://files.catbox.moe/bp2wrg.webp"
+    },
+    {
+        name: "🖤FUIRO🖤",
+        rarity: "épica",
+        probability: 1.5,
+        img: "https://media.tenor.com/-zHmFGOc-rkAAAAe/fuiro-vocaloid.png"
     },
    
     
@@ -428,6 +446,12 @@ const waifuList = [
         rarity: "Legendaria",
         probability: 0.167,
         img: "https://files.catbox.moe/g6kfb6.jpg"
+    },
+    {
+        name: "💢💥BORDERLANDS☢⚠",
+        rarity: "Legendaria",
+        probability: 0.167,
+        img: "https://pixelz.cc/wp-content/uploads/2019/05/borderlands-3-super-deluxe-edition-uhd-4k-wallpaper.jpg"
     },
     {
         name: "🌌HALO⚕️",
