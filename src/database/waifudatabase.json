@@ -4724,6 +4724,103 @@
           "obtainedAt": "2025-09-11T09:11:08.487Z"
         }
       ]
+    },
+    "5219541554172@s.whatsapp.net": {
+      "name": "~🦋●⃝丂卄丨几ㄖ乃ㄩ💖",
+      "characters": [
+        {
+          "name": "Len",
+          "rarity": "rara",
+          "obtainedAt": "2025-12-14T14:29:46.757Z",
+          "obtainedFrom": "rw"
+        },
+        {
+          "name": "Momone momo 2006",
+          "rarity": "rara",
+          "obtainedAt": "2025-12-15T17:28:17.674Z",
+          "obtainedFrom": "rw"
+        },
+        {
+          "name": "Gumi Chibi",
+          "rarity": "común",
+          "obtainedAt": "2025-12-16T21:54:04.296Z",
+          "obtainedFrom": "rw"
+        },
+        {
+          "name": "Len Chibi",
+          "rarity": "común",
+          "obtainedAt": "2025-12-17T01:21:20.585Z",
+          "obtainedFrom": "rw"
+        }
+      ]
+    },
+    "5217971411358@s.whatsapp.net": {
+      "name": "Hatsune Miku",
+      "characters": [
+        {
+          "name": "Momone momo 2006",
+          "rarity": "rara",
+          "obtainedAt": "2025-12-14T17:07:59.536Z",
+          "obtainedFrom": "rw"
+        },
+        {
+          "name": "💜Defoko Utane💜",
+          "rarity": "épica",
+          "obtainedAt": "2025-12-14T19:06:29.093Z",
+          "obtainedFrom": "rw"
+        },
+        {
+          "name": "Hatsune Chibi",
+          "rarity": "común",
+          "obtainedAt": "2025-12-14T20:25:10.500Z",
+          "obtainedFrom": "rw"
+        },
+        {
+          "name": "Len Chibi",
+          "rarity": "común",
+          "obtainedAt": "2025-12-16T18:14:11.867Z",
+          "obtainedFrom": "rw"
+        }
+      ]
+    },
+    "51946291806@s.whatsapp.net": {
+      "name": "かなお",
+      "characters": [
+        {
+          "name": "Len",
+          "rarity": "rara",
+          "obtainedAt": "2025-12-14T17:29:07.698Z",
+          "obtainedFrom": "rw"
+        },
+        {
+          "name": "Haku Chibi",
+          "rarity": "común",
+          "obtainedAt": "2025-12-14T18:22:26.145Z",
+          "obtainedFrom": "rw"
+        },
+        {
+          "name": "Ritsu chibi",
+          "rarity": "común",
+          "obtainedAt": "2025-12-15T18:41:41.797Z",
+          "obtainedFrom": "rw"
+        }
+      ]
+    },
+    "51950128979@s.whatsapp.net": {
+      "name": "Jorge",
+      "characters": [
+        {
+          "name": "Akita Neru 2006",
+          "rarity": "rara",
+          "obtainedAt": "2025-12-16T23:48:30.255Z",
+          "obtainedFrom": "rw"
+        },
+        {
+          "name": "Neru Chibi",
+          "rarity": "común",
+          "obtainedAt": "2025-12-16T23:48:55.983Z"
+        }
+      ]
     }
   }
 }
