@@ -91,7 +91,7 @@ export async function before(m, { conn, participants, groupMetadata }) {
       for (const user of users) {
         if (!user) continue
         
-        const userName = user.split('@')[0]
+        const userName = await conn.getName(user).catch(() => user.split('@')[0])
         const welcomeText = `╭━━━━━━━━━━━━━━━━━╮
 ┃  💙 *BIENVENID@* 💙       ┃
 ╰━━━━━━━━━━━━━━━━━╯
@@ -122,7 +122,7 @@ export async function before(m, { conn, participants, groupMetadata }) {
       for (const user of users) {
         if (!user) continue
         
-        const userName = user.split('@')[0]
+        const userName = await conn.getName(user).catch(() => user.split('@')[0])
         const byeText = `╭━━━━━━━━━━━━━━━━━╮
 ┃  👋 *HASTA PRONTO*     ┃
 ╰━━━━━━━━━━━━━━━━━╯

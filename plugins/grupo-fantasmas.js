@@ -33,8 +33,9 @@ if (!isEliminar) {
 let userList = []
 for (let jid of sider) {
 let participant = participants.find(u => u.id === jid)
-let name = participant ? (await conn.getName(jid)) : jid.split('@')[0]
-userList.push(`• ${name} (@${jid.split('@')[0]})`)
+let normalized = typeof conn.decodeJid === 'function' ? conn.decodeJid(jid) : jid
+let name = participant ? (await conn.getName(normalized)) : normalized.split('@')[0]
+userList.push(`• ${name} (@${normalized.split('@')[0]})`)
 }
 
 const listMsg = `${emoji} *${command === 'fantasmas' ? 'Revisión' : 'Eliminación'} de inactivos*\n\n${emoji2} *Lista de fantasmas:*\n${userList.join('\n')}\n\n⚠️ *Total: ${total} usuarios*\n\n${command === 'fantasmas' ? '📝 *NOTA:* Esto no es al 100% acertado, el bot inicia el conteo de mensajes a partir de que se active en este número\n\n' : ''}💡 Presiona el botón de abajo para eliminarlos:`
