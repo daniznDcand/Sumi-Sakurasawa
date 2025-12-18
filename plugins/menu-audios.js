@@ -1,6 +1,6 @@
 let handler = async (m, { conn, usedPrefix }) => {
   let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender
-  let username = await conn.getName(who).catch(() => who.split('@')[0])
+  let username = await Promise.resolve(conn.getName(who)).catch(() => who.split('@')[0])
   const menuImageUrl = 'https://www.wargamer.com/wp-content/sites/wargamer/2022/02/magic-the-gathering-hatsune-miku-music-video-teaser.jpg'
   
   let str = `
