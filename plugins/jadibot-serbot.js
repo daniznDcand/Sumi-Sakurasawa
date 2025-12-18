@@ -101,6 +101,33 @@ const RESOURCE_LIMITS = {
   DELETE_TIMEOUT: 180000  
 }
 
+function clearSubBotIntervals(s) {
+  try {
+    if (!s) return
+    const intervals = [
+      '_keepAliveInterval',
+      '_saveCredsInterval',
+      '_inactivityMonitor',
+      'heartbeatInterval',
+      '_presenceInterval',
+      'pingInterval',
+      '_activityInterval'
+    ]
+    for (const k of intervals) {
+      if (s[k]) {
+        clearInterval(s[k])
+        s[k] = null
+      }
+    }
+    if (Array.isArray(s._extraIntervals)) {
+      for (const id of s._extraIntervals) {
+        try { clearInterval(id) } catch {}
+      }
+      s._extraIntervals = []
+    }
+  } catch (e) {}
+}
+
 
 global.reconnectThrottle = global.reconnectThrottle || {
   lastReconnect: 0,
@@ -141,12 +168,7 @@ setInterval(async () => {
             conn.ev.removeAllListeners()
           }
          
-          ['_keepAliveInterval', '_saveCredsInterval', '_inactivityMonitor', 'heartbeatInterval', '_presenceInterval'].forEach(interval => {
-            if (conn[interval]) {
-              clearInterval(conn[interval])
-              conn[interval] = null
-            }
-          })
+          clearSubBotIntervals(conn)
         } catch (e) {}
         
         indicesToRemove.push(i)
@@ -180,7 +202,7 @@ setInterval(async () => {
 function checkResourceLimits() {
   
   const activeConnections = global.conns.filter(c => 
-    c && c.user && c.ws && c.ws.socket && c.ws.socket.readyState === 1
+    c && c.user && isSocketReady(c)
   ).length
   
   
@@ -281,7 +303,9 @@ const MEMORY_LIMIT_MB = 800
 try {
   
   const memUsage = Math.round(process.memoryUsage().heapUsed / 1024 / 1024)
-  const activeConnections = global.conns.filter(c => c && c.user && isSocketReady(c)).length
+  const activeConnections = global.conns.filter(c => 
+    c && c.user && isSocketReady(c)
+  ).length
   
   console.log(`🔍 Estado del servidor: ${activeConnections}/${MAX_CONNECTIONS} conexiones, ${memUsage}MB RAM`)
   
@@ -573,7 +597,7 @@ sock.sessionErrorHandler = (error) => {
       } finally {
         sock._handlingSessionError = false
       }
-    }, 3000) 
+    }, 20000) 
   }
 }
 
@@ -697,23 +721,14 @@ await new Promise(resolve => setTimeout(resolve, totalWait))
 
 try {
 
+const oldSock = sock
+
 try {
-  if (sock.heartbeatInterval) {
-    clearInterval(sock.heartbeatInterval)
-    sock.heartbeatInterval = null
+  clearSubBotIntervals(oldSock)
+  oldSock.ev.removeAllListeners()
+  if (oldSock.ws && typeof oldSock.ws.close === 'function') {
+    oldSock.ws.close()
   }
-  if (sock.pingInterval) {
-    clearInterval(sock.pingInterval)
-    sock.pingInterval = null
-  }
-  
-  sock.ev.removeAllListeners()
-  
-  if (sock.ws && typeof sock.ws.close === 'function') {
-    sock.ws.close()
-  }
-  
-  
   await new Promise(resolve => setTimeout(resolve, 1500))
 } catch (e) {
   console.log('Error cerrando conexión anterior:', e.message)
@@ -734,7 +749,7 @@ vlog('🔄 Creando socket de reconexión con opciones limpias...')
 const cleanReconnectOptions = cleanSocketOptions(reconnectOptions)
 sock = makeWASocket(cleanReconnectOptions)
 sock.reconnectAttempts = reconnectAttempts
-sock.maxReconnectAttempts = 50 
+sock.maxReconnectAttempts = 10 
 sock.lastActivity = Date.now()
 sock.sessionStartTime = sessionStartTime
 sock.isInit = false
@@ -1521,21 +1536,23 @@ await joinChannels(sock)
 
 
 
-setInterval(() => {
-if (sock && sock.user) {
-
-if (!sock.createdAt) sock.createdAt = sock.sessionStartTime || Date.now()
-sock.lastActivity = Date.now()
+try {
+  if (sock._activityInterval) clearInterval(sock._activityInterval)
+  sock._activityInterval = setInterval(() => {
+    if (sock && sock.user) {
+      if (!sock.createdAt) sock.createdAt = sock.sessionStartTime || Date.now()
+      sock.lastActivity = Date.now()
+    }
+  }, 30000)
+} catch (e) {}
 }
-}, 30000)
-}
 }
 
 
 
 
 
-setInterval(async () => {
+if (!global._subbotGlobalCleanupInterval) global._subbotGlobalCleanupInterval = setInterval(async () => {
 const currentTime = Date.now()
 const instantCleanupThreshold = 60000 
 const connectionAgeThreshold = 120000 
@@ -1576,7 +1593,6 @@ try {
     if (shouldInstantCleanup) {
       const phoneNumber = conn.user?.jid ? cleanPhoneNumber(conn.user.jid) : 'unknown'
       
-      
       try { 
         if (conn?.ws && typeof conn.ws.close === 'function') {
           conn.ws.close()
@@ -1588,6 +1604,10 @@ try {
           conn.ev.removeAllListeners()
         }
       } catch (e) {}
+
+      try {
+        clearSubBotIntervals(conn)
+      } catch (e) {}
       
       indicesToRemove.push(index)
       
@@ -1595,7 +1615,6 @@ try {
       console.log(chalk.blue(`💙 Auto-limpieza: +${phoneNumber} (${Math.round(inactiveTime/1000)}s inactivo)`))
     }
   }
-  
   
   if (indicesToRemove.length > 0) {
     indicesToRemove.reverse().forEach(i => {
