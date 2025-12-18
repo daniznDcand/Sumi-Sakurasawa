@@ -1,6 +1,7 @@
 let handler = async (m, { conn, usedPrefix }) => {
   let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender
-  let username = conn.getName(who)
+  let username = await conn.getName(who).catch(() => who.split('@')[0])
+  const menuImageUrl = 'https://i.imgur.com/6n8GQqH.jpeg'
   
   let str = `
 ╭━━━〔 💙 HATSUNE MIKU 💙 〕━━━╮
@@ -151,8 +152,9 @@ let handler = async (m, { conn, usedPrefix }) => {
 ╰═══• ೋ💙ೋ •═══╯`.trim()
 
   let mentionedJid = [who]
-  conn.sendMessage(m.chat, { 
-    text: str,
+  await conn.sendMessage(m.chat, {
+    image: { url: menuImageUrl },
+    caption: str,
     contextInfo: { mentionedJid }
   }, { quoted: m })
 }
