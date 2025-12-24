@@ -88,29 +88,11 @@ let handler = async (m, { conn, command, usedPrefix, args }) => {
 
             
             
-            if (!m.mentionedJid || m.mentionedJid.length === 0) {
-                try {
-                    const proposer = Object.keys(proposals).find(p => proposals[p] === m.sender)
-                    if (proposer) m.mentionedJid = [proposer]
-                } catch (err) {
-                    console.error('rg-marry: error checking auto-accept proposer', err)
-                }
+            // Procesar propuesta o aceptación.
+            // Si se menciona a alguien: puede ser propuesta (sender -> to) o aceptación (to fue quien propuso previamente)
+            let to = (m.mentionedJid && m.mentionedJid.length) ? m.mentionedJid[0] : null
 
-                if (!m.mentionedJid || m.mentionedJid.length === 0) {
-                    
-                    await conn.reply(
-                        m.chat,
-                        `💔 No hay ninguna propuesta pendiente hacia ti.`,
-                        m
-                    );
-                    return;
-                }
-            }
-
-            let to = m.mentionedJid[0];
-
-           
-            if (marriages[to]) {
+            if (to && marriages[to]) {
                 await conn.reply(
                     m.chat,
                     `💙 @${to.split('@')[0]} ya está casado/a con: *@${marriages[to].split('@')[0]}*. ¡Busca a tu Miku ideal!`,
@@ -120,64 +102,114 @@ let handler = async (m, { conn, command, usedPrefix, args }) => {
                 return;
             }
 
-            
-            if (sender === to) {
+            if (to && sender === to) {
                 await m.reply('💙 ¡No puedes casarte contigo mismo! Miku te anima a buscar tu pareja.');
                 return;
             }
+            
+            if (to) {
+                
+                if (proposals[to] && proposals[to] === sender) {
+                    
+                    delete proposals[to]
+                    console.log('rg-marry: proposal accepted and removed for', to)
+                    let senderName = conn.getName(sender)
+                    let toName = conn.getName(to)
 
-           if (proposals[to] && proposals[to] === sender) {
-               delete proposals[to];
-               console.log('rg-marry: proposal accepted and removed for', to)
-               let senderName = conn.getName(sender);
-               let toName = conn.getName(to);
+                    if (!global.db.users[sender]) global.db.users[sender] = { age: 18, partner: '' }
+                    if (!global.db.users[to]) global.db.users[to] = { age: 18, partner: '' }
 
-               
-               if (!global.db.users[sender]) {
-                   global.db.users[sender] = { age: 18, partner: '' };
-               }
-               if (!global.db.users[to]) {
-                   global.db.users[to] = { age: 18, partner: '' };
-               }
+                    marriages[sender] = to
+                    marriages[to] = sender
+                    saveMarriages(marriages)
 
-               marriages[sender] = to;
-               marriages[to] = sender;
-               saveMarriages(marriages);
+                    try {
+                        const gifUrl = 'https://media.tenor.com/epaiybggZBQAAAPo/tonikaku-kawaii-kawaii-anime.mp4'
+                        const gifMessage = {
+                            video: { url: gifUrl },
+                            gifPlayback: true,
+                            caption: `💍 ¡Felicidades @${sender.split('@')[0]} y @${to.split('@')[0]}! Se han casado 💙`,
+                            mentions: [sender, to]
+                        }
+                        await conn.sendMessage(m.chat, gifMessage, { quoted: m })
+                    } catch (e) {
+                        console.error('Error sending marriage GIF:', e)
+                    }
 
-               
-               try {
-                   const gifUrl = 'https://media.tenor.com/epaiybggZBQAAAPo/tonikaku-kawaii-kawaii-anime.mp4';
-                   const gifMessage = {
-                       video: { url: gifUrl },
-                       gifPlayback: true,
-                       caption: `💍 ¡Felicidades @${sender.split('@')[0]} y @${to.split('@')[0]}! Se han casado 💙`,
-                       mentions: [sender, to]
-                   };
-                   await conn.sendMessage(m.chat, gifMessage, { quoted: m });
-               } catch (e) {
-                   console.error('Error sending marriage GIF:', e);
-               }
+                    global.db.users[sender].partner = toName
+                    global.db.users[to].partner = senderName
 
-               global.db.users[sender].partner = toName;
-               global.db.users[to].partner = senderName;
+                    await conn.reply(
+                        m.chat,
+                        `💙 ｡･:*:･ﾟ💍,｡･:*:･ﾟ💍\n¡Felicidades! Se han casado 💙\n\n*•.¸💙 Esposo/a @${sender.split('@')[0]} 💙•.¸*\n*•.¸💙 Esposo/a @${to.split('@')[0]} 💙•.¸*\n\n\`¡Disfruten de su luna de miel con Miku~!\`\n\n｡･:*:･ﾟ💍,｡･:*:･ﾟ💍`,
+                        m,
+                        { mentions: [sender, to] }
+                    )
+                    return
+                }
 
-               await conn.reply(
-                   m.chat,
-                   `💙 ｡･:*:･ﾟ💍,｡･:*:･ﾟ💍\n¡Felicidades! Se han casado 💙\n\n*•.¸💙 Esposo/a @${sender.split('@')[0]} 💙•.¸*\n*•.¸💙 Esposo/a @${to.split('@')[0]} 💙•.¸*\n\n\`¡Disfruten de su luna de miel con Miku~!\`\n\n｡･:*:･ﾟ💍,｡･:*:･ﾟ💍`,
-                   m,
-                   { mentions: [sender, to] }
-               );
-           } else {
-               let proposalJid = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : (m.fromMe ? conn.user.jid : m.sender);
-               proposals[sender] = to;
-               console.log('rg-marry: new proposal', sender, '=>', to)
-               await conn.reply(
-                   m.chat,
-                   `💙 @${proposalJid.split('@')[0]}, @${sender.split('@')[0]} te ha propuesto matrimonio~\n¿Aceptas ser su Miku? 💙\n> Para aceptar, responde: *${usedPrefix}${command} @${sender.split('@')[0]}*`,
-                   m,
-                   { mentions: [sender, proposalJid] }
-               );
-           }
+                
+                if (proposals[sender] && proposals[sender] === to) {
+                    await conn.reply(m.chat, `💙 Ya le has propuesto matrimonio a @${to.split('@')[0]}. Espera su respuesta.`, m, { mentions: [to] })
+                    return
+                }
+
+                
+                proposals[sender] = to
+                console.log('rg-marry: new proposal', sender, '=>', to)
+                let proposalJid = to
+                await conn.reply(
+                    m.chat,
+                    `💙 @${proposalJid.split('@')[0]}, @${sender.split('@')[0]} te ha propuesto matrimonio~\n¿Aceptas ser su Miku? 💙\n> Para aceptar, responde: *${usedPrefix}${command} @${sender.split('@')[0]}*`,
+                    m,
+                    { mentions: [sender, proposalJid] }
+                )
+                return
+            }
+
+            
+            const proposer = Object.keys(proposals).find(p => proposals[p] === sender)
+            if (proposer) {
+                const toAccept = proposer
+                delete proposals[toAccept]
+                console.log('rg-marry: auto-accept proposal from', toAccept)
+                let senderName = conn.getName(sender)
+                let toName = conn.getName(toAccept)
+
+                if (!global.db.users[sender]) global.db.users[sender] = { age: 18, partner: '' }
+                if (!global.db.users[toAccept]) global.db.users[toAccept] = { age: 18, partner: '' }
+
+                marriages[sender] = toAccept
+                marriages[toAccept] = sender
+                saveMarriages(marriages)
+
+                try {
+                    const gifUrl = 'https://media.tenor.com/epaiybggZBQAAAPo/tonikaku-kawaii-kawaii-anime.mp4'
+                    const gifMessage = {
+                        video: { url: gifUrl },
+                        gifPlayback: true,
+                        caption: `💍 ¡Felicidades @${sender.split('@')[0]} y @${toAccept.split('@')[0]}! Se han casado 💙`,
+                        mentions: [sender, toAccept]
+                    }
+                    await conn.sendMessage(m.chat, gifMessage, { quoted: m })
+                } catch (e) {
+                    console.error('Error sending marriage GIF:', e)
+                }
+
+                global.db.users[sender].partner = toName
+                global.db.users[toAccept].partner = senderName
+
+                await conn.reply(
+                    m.chat,
+                    `💙 ｡･:*:･ﾟ💍,｡･:*:･ﾟ💍\n¡Felicidades! Se han casado 💙\n\n*•.¸💙 Esposo/a @${sender.split('@')[0]} 💙•.¸*\n*•.¸💙 Esposo/a @${toAccept.split('@')[0]} 💙•.¸*\n\n\`¡Disfruten de su luna de miel con Miku~!\`\n\n｡･:*:･ﾟ💍,｡･:*:･ﾟ💍`,
+                    m,
+                    { mentions: [sender, toAccept] }
+                )
+                return
+            }
+
+           
+            await conn.reply(m.chat, `💔 No hay ninguna propuesta pendiente hacia ti.`, m)
            break;
            } catch (error) {
                console.error('💙 Error en comando marry:', error);
