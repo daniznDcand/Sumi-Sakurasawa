@@ -103,7 +103,7 @@ async function sendMarriageGif(conn, chat, sender, partner, quoted) {
     }
 }
 
-handler = async (m, { conn, command, usedPrefix }) => {
+let handler = async (m, { conn, command, usedPrefix }) => {
     try {
         const isMarry = /^(marry|casarse|boda)$/i.test(command)
         const isDivorce = /^(divorce|divorciarse)$/i.test(command)
@@ -198,6 +198,7 @@ handler = async (m, { conn, command, usedPrefix }) => {
 
 handler.help = ['marry @user', 'divorce']
 handler.tags = ['fun']
+handler.customPrefix = /^/
 handler.command = /^(marry|casarse|boda|divorce|divorciarse)$/i
 handler.group = true
 handler.register = true
