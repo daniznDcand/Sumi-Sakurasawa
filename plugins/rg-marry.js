@@ -87,14 +87,24 @@ let handler = async (m, { conn, command, usedPrefix, args }) => {
             }
 
             
+            // Si no mencionó a nadie, comprobar si hay una propuesta pendiente dirigida al que ejecuta el comando
             if (!m.mentionedJid || m.mentionedJid.length === 0) {
-                await conn.reply(
-                    m.chat,
-                    `💙 Debes mencionar a alguien para proponer matrimonio o aceptar la propuesta.\n> Ejemplo » *${usedPrefix}${command} @${conn.user.jid.split('@')[0]}*`,
-                    m,
-                    { mentions: [conn.user.jid] }
-                );
-                return;
+                try {
+                    const proposer = Object.keys(proposals).find(p => proposals[p] === m.sender)
+                    if (proposer) m.mentionedJid = [proposer]
+                } catch (err) {
+                    console.error('rg-marry: error checking auto-accept proposer', err)
+                }
+
+                if (!m.mentionedJid || m.mentionedJid.length === 0) {
+                    // No hay propuesta pendiente para este usuario
+                    await conn.reply(
+                        m.chat,
+                        `💔 No hay ninguna propuesta pendiente hacia ti.`,
+                        m
+                    );
+                    return;
+                }
             }
 
             let to = m.mentionedJid[0];
@@ -118,6 +128,7 @@ let handler = async (m, { conn, command, usedPrefix, args }) => {
 
            if (proposals[to] && proposals[to] === sender) {
                delete proposals[to];
+               console.log('rg-marry: proposal accepted and removed for', to)
                let senderName = conn.getName(sender);
                let toName = conn.getName(to);
 
@@ -159,6 +170,7 @@ let handler = async (m, { conn, command, usedPrefix, args }) => {
            } else {
                let proposalJid = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : (m.fromMe ? conn.user.jid : m.sender);
                proposals[sender] = to;
+               console.log('rg-marry: new proposal', sender, '=>', to)
                await conn.reply(
                    m.chat,
                    `💙 @${proposalJid.split('@')[0]}, @${sender.split('@')[0]} te ha propuesto matrimonio~\n¿Aceptas ser su Miku? 💙\n> Para aceptar, responde: *${usedPrefix}${command} @${sender.split('@')[0]}*`,
