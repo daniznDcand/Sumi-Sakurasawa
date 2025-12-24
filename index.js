@@ -4,6 +4,7 @@ import './plugins/main-allfake.js'
 import cfonts from 'cfonts'
 import { createRequire } from 'module'
 import { fileURLToPath, pathToFileURL } from 'url'
+import { format } from 'util'
 import { platform } from 'process'
 import * as ws from 'ws'
 import fs, { readdirSync, statSync, unlinkSync, existsSync, mkdirSync, readFileSync, rmSync, watch } from 'fs'
@@ -318,11 +319,16 @@ else {
 conn.logger.warn(`deleted plugin - '${filename}'`)
 return delete global.plugins[filename]
 }} else conn.logger.info(`new plugin - '${filename}'`)
-const err = syntaxerror(readFileSync(dir), filename, {
-sourceType: 'module',
-allowAwaitOutsideFunction: true,
-})
-if (err) conn.logger.error(`syntax error while loading '${filename}'\n${format(err)}`)
+		if (!existsSync(dir)) {
+			conn.logger.warn(`deleted plugin - '${filename}'`)
+			delete global.plugins[filename]
+			return
+		}
+		const err = syntaxerror(readFileSync(dir), filename, {
+			sourceType: 'module',
+			allowAwaitOutsideFunction: true,
+		})
+		if (err) conn.logger.error(`syntax error while loading '${filename}'\n${format(err)}`)
 else {
 try {
 const module = (await import(`${global.__filename(dir)}?update=${Date.now()}`))
