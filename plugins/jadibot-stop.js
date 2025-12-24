@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import { clearSubBotIntervals } from '../lib/subbot-utils.js'
+import { clearSubBotIntervals, pushInternalNotification } from '../lib/subbot-utils.js'
 
 let handler = async (m, { conn, args, isROwner }) => {
   try {
@@ -9,7 +9,7 @@ let handler = async (m, { conn, args, isROwner }) => {
     if (targetArg) sessionId = targetArg
     else sessionId = m.sender.split('@')[0]
 
-    // allow owner to stop any session by passing number
+    
     if (!isROwner && sessionId !== m.sender.split('@')[0]) return m.reply('Solo los creadores pueden detener sesiones de otros.')
 
     const jid = sessionId + '@s.whatsapp.net'
@@ -17,16 +17,27 @@ let handler = async (m, { conn, args, isROwner }) => {
 
     if (sub) {
       try {
+        console.log('Stopping subbot session', sessionId)
         sub._isBeingDeleted = true
+        sub._shouldReconnect = false
         clearSubBotIntervals(sub)
-        try { sub.ws?.close() } catch (e) {}
+        // try several ways to close the socket
+        try { if (sub.ws?.socket?.readyState === 1) sub.ws.socket.close(1000, 'closed by owner') } catch (e) {}
+        try { sub.ws?.close?.() } catch (e) {}
+        try { if (typeof sub.ws?.terminate === 'function') sub.ws.terminate() } catch (e) {}
         try { sub.ev?.removeAllListeners() } catch (e) {}
-      } catch (e) {}
-      // remove from list
-      global.conns = (global.conns || []).filter(s => s !== sub)
+        // ensure it's removed from global list immediately to avoid reconnects
+        global.conns = (global.conns || []).filter(s => s !== sub)
+        // push internal notifications for owner and the sub (for logs)
+        try { pushInternalNotification(global.conn, m.sender, `Subbot ${sessionId} detenido por ${m.sender}`) } catch (e) {}
+        try { pushInternalNotification(sub, m.sender, `Tu subbot fue detenido por el owner ${m.sender}`) } catch (e) {}
+        console.log('Subbot stopped and removed from global.conns', sessionId)
+      } catch (e) {
+        console.error('Error while stopping subbot:', e)
+      }
     }
 
-    // remove session folder
+    
     const sessPath = path.join(process.cwd(), `${global.jadi}`, sessionId)
     if (fs.existsSync(sessPath)) {
       try {

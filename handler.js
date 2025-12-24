@@ -62,6 +62,28 @@ if (messageKey && (m.message?.buttonsResponseMessage || m.message?.templateButto
 }
 
 if (global.db.data == null) await global.loadDatabase()
+  const getUserSafe = (jid) => {
+    try {
+      if (typeof global.getUser === 'function') return global.getUser(jid)
+      if (!global.db) global.db = { data: { users: {}, chats: {}, settings: {} } }
+      if (!global.db.data.users) global.db.data.users = {}
+      if (!global.db.data.users[jid]) global.db.data.users[jid] = { name: '', exp: 0, coin: 0, bank: 0, level: 0, health: 100, genre: '', birth: '', marry: '', description: '', packstickers: null, premium: false, premiumTime: 0, banned: false, bannedReason: '', commands: 0, afk: -1, afkReason: '', warn: 0, registered: false, Subs: 0 }
+      return global.db.data.users[jid]
+    } catch (e) {
+      return {}
+    }
+  }
+  const getChatSafe = (jid) => {
+    try {
+      if (typeof global.getChat === 'function') return global.getChat(jid)
+      if (!global.db) global.db = { data: { users: {}, chats: {}, settings: {} } }
+      if (!global.db.data.chats) global.db.data.chats = {}
+      if (!global.db.data.chats[jid]) global.db.data.chats[jid] = { isBanned: false, isMute: false, welcome: false, sWelcome: '', sBye: '', detect: true, primaryBot: null, modoadmin: false, antiLink: true, nsfw: false, economy: true, gacha: true }
+      return global.db.data.chats[jid]
+    } catch (e) {
+      return {}
+    }
+  }
 try {
   m = smsg(this, m) || m
   if (!m) {
@@ -69,8 +91,8 @@ try {
   }
   m.exp = 0
   try {
-  let user = global.getUser(m.sender)
-  let chat = global.getChat(m.chat)
+  let user = getUserSafe(m.sender)
+  let chat = getChatSafe(m.chat)
   if (global.botCache) global.botCache.cacheUser(m.sender, user, 300000)
   if (global.botCache) global.botCache.cacheChat(m.chat, chat, 300000)
   const settings = global.db.data.settings[this.user.jid]
