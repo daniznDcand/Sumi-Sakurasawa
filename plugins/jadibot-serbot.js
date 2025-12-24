@@ -171,9 +171,12 @@ setInterval(async () => {
 
 function checkResourceLimits() {
   
-  const activeConnections = global.conns.filter(c => 
-    c && c.user && isSocketReady(c)
-  ).length
+
+  const activeConnections = (global.conns || []).filter(c => {
+    try {
+      return c && c.user && c.ws && c.ws.socket && c.ws.socket.readyState === 1
+    } catch (e) { return false }
+  }).length
   
   
   if (activeConnections >= RESOURCE_LIMITS.MAX_SUBBOTS) {
@@ -238,12 +241,11 @@ function cleanPhoneNumber(phone) {
 const NOTIFY_COOLDOWN = 10 * 60 * 1000 
 function shouldNotifyUser(jid) {
   try {
-    if (!global.db || !global.db.data) return true
-    if (!global.db.data.users) global.db.data.users = {}
-    if (!global.db.data.users[jid]) global.db.data.users[jid] = {}
-    const last = global.db.data.users[jid].subBotLastNotify || 0
+    if (!global.getUser) return true
+    const u = global.getUser(jid)
+    const last = u.subBotLastNotify || 0
     if (Date.now() - last > NOTIFY_COOLDOWN) {
-      global.db.data.users[jid].subBotLastNotify = Date.now()
+      u.subBotLastNotify = Date.now()
       return true
     }
     return false
@@ -273,9 +275,11 @@ const MEMORY_LIMIT_MB = 800
 try {
   
   const memUsage = Math.round(process.memoryUsage().heapUsed / 1024 / 1024)
-  const activeConnections = global.conns.filter(c => 
-    c && c.user && isSocketReady(c)
-  ).length
+  const activeConnections = global.conns.filter(c => {
+    try {
+      return c && c.user && c.ws && c.ws.socket && c.ws.socket.readyState === 1
+    } catch (e) { return false }
+  }).length
   
   console.log(`🔍 Estado del servidor: ${activeConnections}/${MAX_CONNECTIONS} conexiones, ${memUsage}MB RAM`)
   
@@ -322,8 +326,8 @@ try {
 } catch (error) {
   console.error('Error en gestión de conexiones:', error.message)
 }
-let time = global.db.data.users[m.sender].Subs + 120000
-if (new Date - global.db.data.users[m.sender].Subs < 120000) return conn.reply(m.chat, `⏱️ Debes esperar ${msToTime(time - new Date())} para volver a vincular un *Sub-Bot.*`, m)
+let time = (global.getUser ? global.getUser(m.sender).Subs : (global.db.data.users[m.sender] || {}).Subs) + 120000
+if (new Date - (global.getUser ? global.getUser(m.sender).Subs : (global.db.data.users[m.sender] || {}).Subs) < 120000) return conn.reply(m.chat, `⏱️ Debes esperar ${msToTime(time - new Date())} para volver a vincular un *Sub-Bot.*`, m)
 const subBots = [...new Set([...global.conns.filter((conn) => conn.user && conn.ws.socket && conn.ws.socket.readyState !== CLOSED).map((conn) => conn)])]
 const subBotsCount = subBots.length
 if (subBotsCount === 20) {
@@ -343,7 +347,8 @@ mikuJBOptions.usedPrefix = usedPrefix
 mikuJBOptions.command = command
 mikuJBOptions.fromCommand = true
 mikuJadiBot(mikuJBOptions)
-global.db.data.users[m.sender].Subs = new Date * 1
+if (global.getUser) global.getUser(m.sender).Subs = Date.now()
+else (global.db.data.users[m.sender] = global.db.data.users[m.sender] || {}).Subs = Date.now()
 } 
 handler.help = [ 'code']
 handler.tags = ['serbot']
@@ -515,6 +520,24 @@ try {
   throw new Error(`Error en configuración de socket: ${error.message}`)
 }
 sock.maxReconnectAttempts = 5  
+// Apply per-session customization (botName, menuTitle) if present
+try {
+  const cfgPath = path.join(pathMikuJadiBot, 'assets', 'config.json')
+  if (fs.existsSync(cfgPath)) {
+    try {
+      const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'))
+      if (cfg && cfg.botName) {
+        sock.user = sock.user || {}
+        sock.user.name = cfg.botName
+        vlog(`🔧 Aplicado botName para sesión ${path.basename(pathMikuJadiBot)}: ${cfg.botName}`)
+      }
+      if (cfg && cfg.menuTitle) {
+        sock._menuTitle = cfg.menuTitle
+        vlog(`🔧 Aplicado menuTitle para sesión ${path.basename(pathMikuJadiBot)}: ${cfg.menuTitle}`)
+      }
+    } catch (e) { console.log('⚠️ Error leyendo config.json de sesión:', e.message) }
+  }
+} catch (e) {}
 sock.lastActivity = Date.now()
 sock.sessionStartTime = sessionStartTime
 sock.subreloadHandler = (reload) => creloadHandler(reload)
@@ -1504,7 +1527,7 @@ await joinChannels(sock)
         }, { quoted: m })
         sock._notifiedOpen = true
         try {
-          // Enviar mensaje privado al SubBot para instrucciones de personalización
+          
           const subJid = sock.user?.jid
           if (subJid && conn && !sock._customizeIntroSent) {
             const sessionId = path.basename(pathMikuJadiBot)

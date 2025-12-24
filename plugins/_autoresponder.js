@@ -3,8 +3,8 @@ import { sticker } from '../lib/sticker.js'
 
 let handler = m => m
 handler.all = async function (m, {conn}) {
-let user = global.db.data.users[m.sender]
-let chat = global.db.data.chats[m.chat]
+let user = global.getUser ? global.getUser(m.sender) : global.db.data.users[m.sender]
+let chat = global.getChat ? global.getChat(m.chat) : global.db.data.chats[m.chat]
 m.isBot = m.id.startsWith('BAE5') && m.id.length === 16 || m.id.startsWith('3EB0') && m.id.length === 12 || m.id.startsWith('3EB0') && (m.id.length === 20 || m.id.length === 22) || m.id.startsWith('B24E') && m.id.length === 20;
 if (m.isBot) return 
 
@@ -56,9 +56,9 @@ Conocedora del Anime y Competidora Incansable: Compartes recomendaciones sobre a
 
 let query = m.text
 let username = m.pushName
-let syms1 = chat.sAutoresponder ? chat.sAutoresponder : txtDefault
+let syms1 = (chat && chat.sAutoresponder) ? chat.sAutoresponder : txtDefault
 
-if (chat.autoresponder) { 
+if (chat && chat.autoresponder) { 
 if (m.fromMe) return
 if (!user.registered) return
 await this.sendPresenceUpdate('composing', m.chat)

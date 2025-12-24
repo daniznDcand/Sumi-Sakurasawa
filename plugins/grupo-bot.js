@@ -6,14 +6,15 @@ let handler = async (m, { conn, args, isAdmin, isROwner, usedPrefix }) => {
         return conn.reply(m.chat, `💙 Usa:\n\n> » *${usedPrefix}bot on* (activar)\n> » *${usedPrefix}bot off* (desactivar)`, m, global.rcanal)
     }
 
+    const chat = global.getChat ? global.getChat(m.chat) : global.db.data.chats[m.chat]
     if (action === 'on') {
-        global.db.data.chats[m.chat].isBanned = false
+        chat.isBanned = false
         await conn.reply(m.chat, '💙 Bot activo en este grupo.', m, global.rcanal)
         await m.react('✅')
         return
     }
 
-    global.db.data.chats[m.chat].isBanned = true
+    chat.isBanned = true
     await conn.reply(m.chat, '💙 El bot fue desactivado en este grupo.', m, global.rcanal)
     await m.react('✅')
 }

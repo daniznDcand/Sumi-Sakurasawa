@@ -2,8 +2,8 @@
 import fetch from 'node-fetch'
 
 const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, isROwner }) => {
-  let chat = global.db.data.chats[m.chat]
-  let user = global.db.data.users[m.sender]
+  let chat = global.getChat ? global.getChat(m.chat) : global.db.data.chats[m.chat]
+  let user = global.getUser ? global.getUser(m.sender) : global.db.data.users[m.sender]
   let bot = global.db.data.settings[conn.user.jid] || {}
   let type = command.toLowerCase()
   let isAll = false, isUser = false

@@ -43,14 +43,8 @@ export async function before(m, { conn, isAdmin, isBotAdmin }) {
     if (!m || !m.text || m.text.trim() === '' || (m.isBaileys && m.fromMe) || !m.isGroup) {
       return true
     }
-    if (!global.db) global.db = { data: { chats: {} } }
-    if (!global.db.data) global.db.data = { chats: {} }
-    if (!global.db.data.chats) global.db.data.chats = {}
-    if (!global.db.data.chats[m.chat]) global.db.data.chats[m.chat] = { antiMencion: false }
-    const chat = global.db.data.chats[m.chat]
-    if (chat.antiMencion === undefined) {
-      chat.antiMencion = false
-    }
+    const chat = global.getChat ? global.getChat(m.chat) : (global.db && global.db.data && global.db.data.chats && global.db.data.chats[m.chat]) || { antiMencion: false }
+    if (chat.antiMencion === undefined) chat.antiMencion = false
     if (!chat.antiMencion) {
       return true
     }

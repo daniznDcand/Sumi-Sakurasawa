@@ -82,7 +82,34 @@ settings: {},
 }
 global.db.chain = chain(global.db.data)
 }
-loadDatabase()
+// Asegurarse de cargar la base de datos antes de continuar
+await loadDatabase()
+
+// In-memory cache helpers para accesos rápidos a usuarios y chats
+global.userCache = new Map()
+global.getUser = function (jid) {
+	if (!global.db || !global.db.data) return null
+	if (!global.db.data.users) global.db.data.users = {}
+	if (!global.db.data.users[jid]) {
+		global.db.data.users[jid] = {
+			name: '', exp: 0, coin: 0, bank: 0, level: 0,
+			health: 100, genre: '', birth: '', marry: '', description: '',
+			packstickers: null, premium: false, premiumTime: 0,
+			banned: false, bannedReason: '', commands: 0, afk: -1, afkReason: '', warn: 0, registered: false,
+			Subs: 0
+		}
+	}
+	// mantener cache ligera
+	global.userCache.set(jid, global.db.data.users[jid])
+	return global.db.data.users[jid]
+}
+
+global.getChat = function (jid) {
+	if (!global.db || !global.db.data) return null
+	if (!global.db.data.chats) global.db.data.chats = {}
+	if (!global.db.data.chats[jid]) global.db.data.chats[jid] = { isBanned: false, isMute: false, welcome: false, sWelcome: '', sBye: '', detect: true, primaryBot: null, modoadmin: false, antiLink: true, nsfw: false, economy: true, gacha: true }
+	return global.db.data.chats[jid]
+}
 
 const { state, saveState, saveCreds } = await useMultiFileAuthState(global.sessions)
 const msgRetryCounterMap = new Map()

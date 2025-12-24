@@ -129,12 +129,7 @@ export async function before(m, { conn, isAdmin, isBotAdmin }) {
     }
     
     
-    if (!global.db) global.db = { data: { chats: {} } }
-    if (!global.db.data) global.db.data = { chats: {} }
-    if (!global.db.data.chats) global.db.data.chats = {}
-    if (!global.db.data.chats[m.chat]) global.db.data.chats[m.chat] = { antitoxic: false }
-    
-    const chat = global.db.data.chats[m.chat]
+    const chat = global.getChat ? global.getChat(m.chat) : (global.db && global.db.data && global.db.data.chats && global.db.data.chats[m.chat]) || { antitoxic: false }
     
     
     if (chat.antitoxic === undefined) {

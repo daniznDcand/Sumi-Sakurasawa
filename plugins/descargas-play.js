@@ -100,15 +100,12 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       console.error("Error al obtener la miniatura:", thumbError);
     }
       
-    if (!global.db.data.users[m.sender]) {
-      global.db.data.users[m.sender] = {};
-    }
-    
-    global.db.data.users[m.sender].lastYTSearch = {
+    const usr = global.getUser ? global.getUser(m.sender) : (global.db.data.users[m.sender] = global.db.data.users[m.sender] || {})
+    usr.lastYTSearch = {
       url,
       title,
-      messageId: m.key.id,  
-      timestamp: Date.now() 
+      messageId: m.key.id,
+      timestamp: Date.now()
     };
 
   } catch (error) {
@@ -176,7 +173,7 @@ async function processDownload(conn, m, url, title, option) {
       }
     }
     
-    const user = global.db.data.users[m.sender];
+    const user = global.getUser ? global.getUser(m.sender) : global.db.data.users[m.sender];
     if (user && !user.monedaDeducted) {
       user.moneda = (user.moneda || 0) - 2;
       user.monedaDeducted = true;

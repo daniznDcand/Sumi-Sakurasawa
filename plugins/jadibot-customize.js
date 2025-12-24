@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import chalk from 'chalk'
+import { ensureSessionAssets, getSessionConfig, saveSessionConfig } from '../lib/subbot-utils.js'
 
 let handler = async (m, { conn, args, usedPrefix }) => {
   try {
@@ -9,8 +10,8 @@ let handler = async (m, { conn, args, usedPrefix }) => {
     const sessionId = (who.split('@')[0])
     if (!sessionId) return m.reply('⚠️ No se pudo determinar la sesión.')
 
-    const base = path.join(process.cwd(), `${global.jadi}`, sessionId, 'assets')
-    if (!fs.existsSync(base)) fs.mkdirSync(base, { recursive: true })
+    const base = ensureSessionAssets(sessionId)
+    if (!base) return m.reply('❌ Error interno creando carpeta de assets.')
 
     const subCmd = (args[0] || '').toLowerCase()
 
@@ -19,11 +20,11 @@ let handler = async (m, { conn, args, usedPrefix }) => {
     }
 
     if (subCmd === 'setmenu' || subCmd === 'setwelcomeimg') {
-      // require quoted image
-      if (!m.quoted || !m.quoted.mimetype || !/image\//.test(m.quoted.mimetype)) {
-        return m.reply('Responde a una imagen con este comando.')
-      }
-      const media = await m.quoted.download().catch(() => null)
+      // accept replied image or inline image
+      let media = null
+      if (m.quoted && m.quoted.mimetype && /image\//.test(m.quoted.mimetype)) media = await m.quoted.download().catch(() => null)
+      else if (m.mimetype && /image\//.test(m.mimetype)) media = await m.download().catch(() => null)
+      else return m.reply('Responde a una imagen con este comando o envía una imagen junto al comando.')
       if (!media) return m.reply('No se pudo descargar la imagen.')
       const filename = subCmd === 'setmenu' ? 'menu.jpg' : 'welcome.jpg'
       const p = path.join(base, filename)
@@ -34,27 +35,24 @@ let handler = async (m, { conn, args, usedPrefix }) => {
     if (subCmd === 'setwelcome') {
       const text = args.slice(1).join(' ') || m.text?.replace(/^setwelcome\s*/i, '')
       if (!text) return m.reply('Envía: setwelcome <texto de bienvenida>')
-      const cfgPath = path.join(base, 'config.json')
-      let cfg = {}
-      if (fs.existsSync(cfgPath)) cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'))
+      const cfg = getSessionConfig(sessionId)
       cfg.welcomeText = text
-      fs.writeFileSync(cfgPath, JSON.stringify(cfg, null, 2))
+      saveSessionConfig(sessionId, cfg)
       return m.reply('✅ Texto de bienvenida guardado.')
     }
 
     if (subCmd === 'viewassets') {
-      const cfgPath = path.join(base, 'config.json')
+      const cfg = getSessionConfig(sessionId)
       const menuP = path.join(base, 'menu.jpg')
       const welcomeP = path.join(base, 'welcome.jpg')
       let out = `📁 Assets para ${sessionId}:\n`
       out += `• menu: ${fs.existsSync(menuP) ? '✅' : '❌'}\n`
       out += `• welcome image: ${fs.existsSync(welcomeP) ? '✅' : '❌'}\n`
-      out += `• welcome text: ${fs.existsSync(cfgPath) ? '✅' : '❌'}`
+      out += `• welcome text: ${cfg.welcomeText ? '✅' : '❌'}`
       await conn.sendMessage(m.chat, { text: out }, { quoted: m })
       if (fs.existsSync(menuP)) await conn.sendFile(m.chat, menuP, 'menu.jpg', 'Menu image', m).catch(()=>{})
       if (fs.existsSync(welcomeP)) await conn.sendFile(m.chat, welcomeP, 'welcome.jpg', 'Welcome image', m).catch(()=>{})
-      if (fs.existsSync(cfgPath)) {
-        const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'))
+      if (cfg.welcomeText) {
         await conn.sendMessage(m.chat, { text: `📜 Welcome text:\n${cfg.welcomeText || ''}` }, { quoted: m })
       }
       return

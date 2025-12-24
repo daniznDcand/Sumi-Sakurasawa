@@ -2,7 +2,7 @@ import fetch from 'node-fetch'
 
 export async function before(m, { conn, participants, groupMetadata }) {
   try {
-    // Allow subbots to send their own welcomes using per-session assets
+    
     if (!m.isGroup) return true
     if (!m.messageStubType) return true
 
@@ -10,12 +10,7 @@ export async function before(m, { conn, participants, groupMetadata }) {
     const now = Date.now()
     if (msgTs && (now - msgTs) > 2 * 60 * 1000) return true
 
-    if (!global.db) global.db = { data: { chats: {} } }
-    if (!global.db.data) global.db.data = { chats: {} }
-    if (!global.db.data.chats) global.db.data.chats = {}
-    if (!global.db.data.chats[m.chat]) global.db.data.chats[m.chat] = {}
-
-    const chat = global.db.data.chats[m.chat]
+    const chat = global.getChat ? global.getChat(m.chat) : (global.db && global.db.data && global.db.data.chats && global.db.data.chats[m.chat]) || {}
     
     if (chat.welcome === undefined) {
       chat.welcome = true
@@ -48,7 +43,7 @@ export async function before(m, { conn, participants, groupMetadata }) {
         if (!shouldSendWelcome(jid, user)) return
         let ppBuffer = null
         try {
-          // If this connection is a SubBot, prefer per-session welcome image
+          
           if (conn?.isSubBot) {
             try {
               const sessionId = (conn.user?.jid || '').split('@')[0]
@@ -60,7 +55,7 @@ export async function before(m, { conn, participants, groupMetadata }) {
               console.log('Error cargando asset welcome para subbot:', e.message)
             }
           }
-          // fallback to profile picture
+          
           if (!ppBuffer) {
             const ppUrl = await conn.profilePictureUrl(user, 'image').catch(() => null)
             if (ppUrl) {
@@ -85,7 +80,7 @@ export async function before(m, { conn, participants, groupMetadata }) {
         
         const buttons = []
         const urls = [['🎵 Ir Canal 💙', canalUrl]]
-        // If subbot, change title to include SubBot name
+        
         const title = conn?.isSubBot ? (conn.user?.name || 'SubBot') : '💙 Hatsune Miku Bot'
         await conn.sendNCarousel(jid, text, title, ppBuffer, buttons, null, urls, null, quoted, [user], { width: 1024, height: 1024 })
 
@@ -109,7 +104,7 @@ export async function before(m, { conn, participants, groupMetadata }) {
         
         const userName = await Promise.resolve(conn.getName(user)).catch(() => user.split('@')[0])
 
-        // Allow per-session welcome text for subbots
+        
         let welcomeText = `╭━━━━━━━━━━━━━━━━━╮
 ┃  💙 *BIENVENID@* 💙       ┃
 ╰━━━━━━━━━━━━━━━━━╯
