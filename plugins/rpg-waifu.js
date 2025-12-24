@@ -46,11 +46,19 @@ function saveDatabase(data) {
 }
 
 global.db = global.db || {};
-global.db.waifu = global.db.waifu || {
-    cooldowns: {},
-    waifus: {},
-    collection: {}
-};
+global.db.data = global.db.data || {};
+global.db.data.users = global.db.data.users || {};
+
+
+try {
+    const fileData = loadDatabase();
+    if (fileData && fileData.users) {
+        
+        for (const uid of Object.keys(fileData.users)) {
+            if (!global.db.data.users[uid]) global.db.data.users[uid] = fileData.users[uid];
+        }
+    }
+} catch (e) { console.error('Error merging waifu DB:', e) }
 
 
 const waifuList = [
@@ -639,6 +647,7 @@ handler.before = async function (m, { conn }) {
                 });
 
                 user.waifu.pending = null
+                try { saveDatabase({ users: global.db.data.users }) } catch (e) { console.error('Error saving waifu DB (claim):', e) }
 
                 const rarityColors = {
                     'común': '⚪',
@@ -668,6 +677,7 @@ handler.before = async function (m, { conn }) {
                 user.coin += sellPrice
 
                 user.waifu.pending = null
+                try { saveDatabase({ users: global.db.data.users }) } catch (e) { console.error('Error saving waifu DB (sell):', e) }
 
                 const rarityColors = {
                     'común': '⚪',
@@ -726,6 +736,7 @@ let regalarWaifuHandler = async (m, { conn, args, participants }) => {
 
     toUser.waifu.pending = fromUser.waifu.pending
     fromUser.waifu.pending = null
+    try { saveDatabase({ users: global.db.data.users }) } catch (e) { console.error('Error saving waifu DB (gift):', e) }
     m.reply(`🎁 Has regalado tu waifu a @${mentionedJid.split('@')[0]}!`, null, { mentions: [mentionedJid] });
 };
 
@@ -772,6 +783,7 @@ let subastarWaifuHandler = async (m, { conn, args }) => {
             if (!user.coin) user.coin = 0
             winner.coin -= subasta[userId].puja;
             user.coin += subasta[userId].puja;
+            try { saveDatabase({ users: global.db.data.users }) } catch (e) { console.error('Error saving waifu DB (auction):', e) }
             conn.reply(m.chat, `🏆 Subasta finalizada. Ganador: @${subasta[userId].mejorPostor.split('@')[0]} por ${subasta[userId].puja} monedas.`, null, { mentions: [subasta[userId].mejorPostor] });
         } else {
             conn.reply(m.chat, '⏰ Subasta finalizada sin postores.', null, { mentions: [userId] });

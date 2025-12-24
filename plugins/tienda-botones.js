@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import fs_sync from 'fs';
 import path from 'path';
+import { startRotation, getFeatured } from '../lib/featured-waifu.js'
 
 const dbPath = path.join(process.cwd(), 'src', 'database');
 const databaseFilePath = path.join(dbPath, 'waifudatabase.json');
@@ -504,6 +505,13 @@ function getRandomWaifus(count, rarity = null) {
     return waifus;
 }
 
+// Iniciar rotación de waifu destacada (por defecto 10 minutos)
+try {
+    startRotation(getRandomWaifu, { intervalMs: 1000 * 60 * 10 })
+} catch (e) {
+    console.error('featured-waifu rotation init error:', e)
+}
+
 function getLimitedTimeDiscount() {
     const now = new Date();
     const hour = now.getHours();
@@ -521,7 +529,8 @@ let handler = async (m, { conn, usedPrefix, command }) => {
     const user = global.db.data.users[m.sender]
     const userId = m.sender
 
-    const shopImage = 'https://i.pinimg.com/564x/fe/50/3d/fe503deb95faf6a5ca62d3c0cc5a4ccb.jpg'
+    const featured = getFeatured()
+    const shopImage = (featured && featured.img) ? featured.img : 'https://i.pinimg.com/564x/fe/50/3d/fe503deb95faf6a5ca62d3c0cc5a4ccb.jpg'
 
     const buttons = [
         { buttonId: 'shop_limited', buttonText: { displayText: '⏰ OFERTAS LIMITADAS' }, type: 1 },
@@ -724,7 +733,8 @@ handler.before = async function (m, { conn }) {
     }
 
     if (buttonId === 'shop_back') {
-        const shopImage = 'https://wallpapers-clan.com/wp-content/uploads/2025/04/hatsune-miku-cherry-blossoms-pc-desktop-laptop-wallpaper-cover.jpg'
+        const featuredBack = getFeatured()
+        const shopImage = (featuredBack && featuredBack.img) ? featuredBack.img : 'https://wallpapers-clan.com/wp-content/uploads/2025/04/hatsune-miku-cherry-blossoms-pc-desktop-laptop-wallpaper-cover.jpg'
 
         const buttons = [
             { buttonId: 'shop_limited', buttonText: { displayText: '⏰ OFERTAS LIMITADAS' }, type: 1 },
