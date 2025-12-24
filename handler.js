@@ -6,6 +6,7 @@ import fs, { unwatchFile, watchFile } from "fs"
 import chalk from "chalk"
 import fetch from "node-fetch"
 import ws from "ws"
+import "./lib/cache.js"
 
 const { proto } = (await import("@whiskeysockets/baileys")).default
 const isNumber = x => typeof x === "number" && !isNaN(x)
@@ -15,9 +16,25 @@ resolve()
 }, ms))
 
 let processedButtonMessages = new Map()
+const messageCache = new Map()
+
+
+const getMessageCache = (key) => messageCache.get(key)
+const setMessageCache = (key, value) => {
+    messageCache.set(key, value)
+    setTimeout(() => messageCache.delete(key), 30000) 
+}
 
 export async function handler(chatUpdate) {
-this.msgqueque = this.msgqueque || []
+    
+    const messageId = chatUpdate?.messages?.[0]?.key?.id
+    if (messageId && getMessageCache(messageId)) return
+    
+    if (messageId) {
+        setMessageCache(messageId, true)
+    }
+
+    this.msgqueque = this.msgqueque || []
 this.uptime = this.uptime || Date.now()
 if (!chatUpdate) {
 return
@@ -33,7 +50,7 @@ if (messageKey && (m.message?.buttonsResponseMessage || m.message?.templateButto
   const now = Date.now()
   const lastProcessed = processedButtonMessages.get(messageKey)
 
-  if (lastProcessed && (now - lastProcessed) < 5000) {
+  if (lastProcessed && (now - lastProcessed) < 2000) { 
     return
   }
 
@@ -41,7 +58,7 @@ if (messageKey && (m.message?.buttonsResponseMessage || m.message?.templateButto
 
   setTimeout(() => {
     processedButtonMessages.delete(messageKey)
-  }, 10000)
+  }, 5000) 
 }
 
 if (global.db.data == null) await global.loadDatabase()
@@ -75,6 +92,8 @@ if (!("afk" in user) || !isNumber(user.afk)) user.afk = -1
 if (!("afkReason" in user)) user.afkReason = ""
 if (!("warn" in user) || !isNumber(user.warn)) user.warn = 0
 if (!("registered" in user)) user.registered = false
+
+if (global.botCache) global.botCache.cacheUser(m.sender, user, 300000)
 } else global.db.data.users[m.sender] = {
 name: m.name,
 exp: 0,
@@ -112,6 +131,9 @@ if (!("antiLink" in chat)) chat.antiLink = true
 if (!("nsfw" in chat)) chat.nsfw = false
 if (!("economy" in chat)) chat.economy = true;
 if (!("gacha" in chat)) chat.gacha = true
+
+
+if (global.botCache) global.botCache.cacheChat(m.chat, chat, 300000)
 } else global.db.data.chats[m.chat] = {
 isBanned: false,
 isMute: false,
