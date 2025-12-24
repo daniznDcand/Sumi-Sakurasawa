@@ -133,6 +133,20 @@ let handler = async (m, { conn, command, usedPrefix, args }) => {
                marriages[to] = sender;
                saveMarriages(marriages);
 
+               
+               try {
+                   const gifUrl = 'https://media.tenor.com/epaiybggZBQAAAPo/tonikaku-kawaii-kawaii-anime.mp4';
+                   const gifMessage = {
+                       video: { url: gifUrl },
+                       gifPlayback: true,
+                       caption: `💍 ¡Felicidades @${sender.split('@')[0]} y @${to.split('@')[0]}! Se han casado 💙`,
+                       mentions: [sender, to]
+                   };
+                   await conn.sendMessage(m.chat, gifMessage, { quoted: m });
+               } catch (e) {
+                   console.error('Error sending marriage GIF:', e);
+               }
+
                global.db.users[sender].partner = toName;
                global.db.users[to].partner = senderName;
 
