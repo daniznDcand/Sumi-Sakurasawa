@@ -104,6 +104,7 @@ async function sendMarriageGif(conn, chat, sender, partner, quoted) {
 }
 
 let handler = async (m, { conn, command, usedPrefix }) => {
+    try { console.log('rg-marry: invoked', { command, text: (m.text||'').slice(0,200) }) } catch {}
     try {
         const isMarry = /^(marry|casarse|boda)$/i.test(command)
         const isDivorce = /^(divorce|divorciarse)$/i.test(command)
@@ -127,7 +128,34 @@ let handler = async (m, { conn, command, usedPrefix }) => {
         }
 
         
-        const mentioned = (m.mentionedJid && m.mentionedJid.length) ? m.mentionedJid[0] : null
+        
+        let mentioned = (m.mentionedJid && m.mentionedJid.length) ? m.mentionedJid[0] : null
+        if (!mentioned) {
+            if (m.quoted && m.quoted.sender) mentioned = m.quoted.sender
+            else {
+                try {
+                    let text = (m.text || '').trim()
+                    if (usedPrefix && text.startsWith(usedPrefix)) text = text.slice(usedPrefix.length).trim()
+                    const parts = text.split(/\s+/)
+                    const arg = parts.slice(1).join(' ').trim()
+                    if (arg) {
+                        
+                        const digits = arg.replace(/\D/g, '')
+                        if (digits.length >= 6) {
+                            mentioned = `${digits}@s.whatsapp.net`
+                        } else if (m.isGroup) {
+                            const gm = await conn.groupMetadata(m.chat).catch(() => null)
+                            if (gm && gm.participants) {
+                                const match = gm.participants.find(p => ((p.jid || '') + (p.notify || '') + (p.name || '')).toLowerCase().includes(arg.toLowerCase()))
+                                if (match) mentioned = match.jid
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error('rg-marry: error resolving target arg', e)
+                }
+            }
+        }
 
         if (mentioned) {
             const target = mentioned
@@ -198,7 +226,6 @@ let handler = async (m, { conn, command, usedPrefix }) => {
 
 handler.help = ['marry @user', 'divorce']
 handler.tags = ['fun']
-handler.customPrefix = /^/
 handler.command = /^(marry|casarse|boda|divorce|divorciarse)$/i
 handler.group = true
 handler.register = true
