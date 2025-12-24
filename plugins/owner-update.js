@@ -36,9 +36,9 @@ let handler = async (m, { conn }) => {
           const emoji = file.endsWith('.js') ? '📜' : file.endsWith('.json') ? '📋' : '📄';
           response += `│  ${emoji} ${file}\n`;
         });
-        response += `└─ 🔄 Reinicia el bot para cargar los cambios`;
+        response += `└─ ✅ Cambios Aplicados por Papi DEPOOL`;
       } else {
-        response += `└─ 🔄 Reinicia el bot para cargar los cambios`;
+        response += `└─ ✅ Cambios Aplicados por Papi DEPOOL`;
       }
 
       conn.reply(m.chat, response, m);

@@ -21,14 +21,14 @@ let handler = async (m, { conn, args, isROwner }) => {
         sub._isBeingDeleted = true
         sub._shouldReconnect = false
         clearSubBotIntervals(sub)
-        // try several ways to close the socket
+        
         try { if (sub.ws?.socket?.readyState === 1) sub.ws.socket.close(1000, 'closed by owner') } catch (e) {}
         try { sub.ws?.close?.() } catch (e) {}
         try { if (typeof sub.ws?.terminate === 'function') sub.ws.terminate() } catch (e) {}
         try { sub.ev?.removeAllListeners() } catch (e) {}
-        // ensure it's removed from global list immediately to avoid reconnects
+        
         global.conns = (global.conns || []).filter(s => s !== sub)
-        // push internal notifications for owner and the sub (for logs)
+        
         try { pushInternalNotification(global.conn, m.sender, `Subbot ${sessionId} detenido por ${m.sender}`) } catch (e) {}
         try { pushInternalNotification(sub, m.sender, `Tu subbot fue detenido por el owner ${m.sender}`) } catch (e) {}
         console.log('Subbot stopped and removed from global.conns', sessionId)

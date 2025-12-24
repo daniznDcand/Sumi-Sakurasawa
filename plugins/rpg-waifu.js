@@ -79,7 +79,7 @@ const waifuList = [
         name: "Momo Chibi",
         rarity: "común",
         probability: 5,  
-        img: "https://qu.ax/snGCa.png"
+        img: "https://i.pinimg.com/736x/89/85/bf/8985bf3fefe2bf09fbd5602bf325285b.jpg"
     },
     {
         name: "Ritsu chibi",
@@ -145,7 +145,7 @@ const waifuList = [
         name: "Sukone Chibi",
         rarity: "común",
         probability: 5,
-        img: "https://qu.ax/ROZWw.png"
+        img: "https://i.pinimg.com/736x/bd/65/34/bd65347807569025f7196e1da753c252.jpg"
     },
         {
         name: "Fuiro Chibi",
@@ -171,13 +171,13 @@ const waifuList = [
         name: "Momone momo 2006",
         rarity: "rara",
         probability: 3,
-        img: "https://qu.ax/VuWrg.png"
+        img: "https://i.pinimg.com/736x/23/42/38/2342389710827674684269196ebabbb6.jpg"
     },
     {
         name: "Namine Ritsu 2006",
         rarity: "rara",
         probability: 3,
-        img: "https://qu.ax/sEVwC.png"
+        img: "https://i.pinimg.com/736x/64/4d/7e/644d7e9ddff3461dee41850febf411c5.jpg"
     },
     {
         name: "Defoko Utau",
@@ -201,7 +201,7 @@ const waifuList = [
         name: "Sukone Tei 2006",
         rarity: "rara",
         probability: 3,
-        img: "https://qu.ax/EyaRp.png"
+        img: "https://i.pinimg.com/736x/67/1e/40/671e40a106af9b5e4cf1e14a212266a7.jpg"
     },
     {
         name: "Gumi Megpoid 2006",
@@ -219,7 +219,7 @@ const waifuList = [
         name: "Teto",
         rarity: "rara",
         probability: 3,
-        img: "https://qu.ax/ZxvtB.png"
+        img: "https://i.pinimg.com/736x/ff/1b/5e/ff1b5e2a8c30cedab77eb4490cea7b0e.jpg"
     },
     {
         name: "Emu Otori",
@@ -281,7 +281,7 @@ const waifuList = [
         name: "❤Ritsu🖤",
         rarity: "épica",
         probability: 1.5,
-        img: "https://qu.ax/OhBgu.png"
+        img: "https://i1.sndcdn.com/artworks-000033453125-njjsvn-t1080x1080.jpg"
     },
     {
         name: "💛Neru💛",
@@ -349,7 +349,7 @@ const waifuList = [
         name: "💚Momone Momo💗",
         rarity: "ultra rara",
         probability: 0.4,
-        img: "https://qu.ax/nOQpw.png"
+        img: "https://i.ytimg.com/vi/SinNL35NUuc/maxresdefault.jpg"
     },
     {
         name: "🩵Aoki Lapis🩵",
@@ -435,7 +435,7 @@ const waifuList = [
         name: "🖤Inabakumori🖤",
         rarity: "Legendaria",
         probability: 0.167,
-        img: "https://qu.ax/cfEbf.jpg"
+        img: "https://i.ytimg.com/vi/4bzEgrvU1lA/maxresdefault.jpg"
     },
     {
         name: "❤KASANE TETO❤",

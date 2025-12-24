@@ -24,7 +24,7 @@ const response = await axios.post("https://luminai.my.id", {
 content: q,
 user: username,
 prompt: logic,
-webSearchMode: true // true = resultado con url
+webSearchMode: true 
 });
 return response.data.result
 } catch (error) {

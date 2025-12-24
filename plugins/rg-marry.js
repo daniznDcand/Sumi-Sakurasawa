@@ -87,7 +87,7 @@ let handler = async (m, { conn, command, usedPrefix, args }) => {
             }
 
             
-            // Si no mencionó a nadie, comprobar si hay una propuesta pendiente dirigida al que ejecuta el comando
+            
             if (!m.mentionedJid || m.mentionedJid.length === 0) {
                 try {
                     const proposer = Object.keys(proposals).find(p => proposals[p] === m.sender)
@@ -97,7 +97,7 @@ let handler = async (m, { conn, command, usedPrefix, args }) => {
                 }
 
                 if (!m.mentionedJid || m.mentionedJid.length === 0) {
-                    // No hay propuesta pendiente para este usuario
+                    
                     await conn.reply(
                         m.chat,
                         `💔 No hay ninguna propuesta pendiente hacia ti.`,

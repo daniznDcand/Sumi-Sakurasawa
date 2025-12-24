@@ -20,7 +20,7 @@ let handler = async (m, { conn, args, usedPrefix }) => {
     }
 
     if (subCmd === 'setmenu' || subCmd === 'setwelcomeimg') {
-      // accept replied image or inline image
+      
       let media = null
       if (m.quoted && m.quoted.mimetype && /image\//.test(m.quoted.mimetype)) media = await m.quoted.download().catch(() => null)
       else if (m.mimetype && /image\//.test(m.mimetype)) media = await m.download().catch(() => null)

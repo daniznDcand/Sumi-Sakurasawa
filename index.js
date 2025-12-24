@@ -82,10 +82,10 @@ settings: {},
 }
 global.db.chain = chain(global.db.data)
 }
-// Asegurarse de cargar la base de datos antes de continuar
+
 await loadDatabase()
 
-// In-memory cache helpers para accesos rápidos a usuarios y chats
+
 global.userCache = new Map()
 global.getUser = function (jid) {
 	if (!global.db || !global.db.data) return null
@@ -99,7 +99,7 @@ global.getUser = function (jid) {
 			Subs: 0
 		}
 	}
-	// mantener cache ligera
+	
 	global.userCache.set(jid, global.db.data.users[jid])
 	return global.db.data.users[jid]
 }

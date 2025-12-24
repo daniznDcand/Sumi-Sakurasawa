@@ -520,7 +520,7 @@ try {
   throw new Error(`Error en configuración de socket: ${error.message}`)
 }
 sock.maxReconnectAttempts = 5  
-// Apply per-session customization (botName, menuTitle) if present
+
 try {
   const cfgPath = path.join(pathMikuJadiBot, 'assets', 'config.json')
   if (fs.existsSync(cfgPath)) {

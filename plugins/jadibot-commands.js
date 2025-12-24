@@ -1,4 +1,4 @@
-// Comandos específicos para SubBots
+
 import { spawn } from 'child_process'
 import path from 'path'
 
@@ -14,7 +14,7 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
     switch (command) {
       case 'code':
       case 'qr':
-        // Delegar la creación de SubBot al bot principal
+        
         const parentBot = conn.parentBot || global.conn
         
         if (!parentBot || typeof parentBot.sendMessage !== 'function') {
@@ -38,7 +38,7 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
             mentions: [m.sender]
           }, { quoted: m })
           
-          // También responder al usuario que hizo la solicitud
+          
           await conn.sendMessage(m.chat, {
             text: `🤖 *Solicitud Procesada*\n\n` +
                   `✅ Tu solicitud ha sido enviada al bot principal.\n\n` +
@@ -57,7 +57,7 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
         
       case 'status':
       case 'info':
-        // Información del SubBot
+        
         const uptime = Date.now() - conn.sessionStartTime
         const uptimeStr = msToTime(uptime)
         const parentInfo = conn.parentBot?.user?.name || conn.parentBot?.user?.id || 'No disponible'
@@ -77,7 +77,7 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
         break
         
       default:
-        // Para otros comandos, no hacer nada especial (dejar que el handler normal los procese)
+        
         return false
     }
     
@@ -87,7 +87,7 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   }
 }
 
-// Función auxiliar para formatear tiempo
+
 function msToTime(ms) {
   const seconds = Math.floor((ms / 1000) % 60)
   const minutes = Math.floor((ms / (1000 * 60)) % 60)
