@@ -505,7 +505,7 @@ function getRandomWaifus(count, rarity = null) {
     return waifus;
 }
 
-// Iniciar rotación de waifu destacada (por defecto 10 minutos)
+
 try {
     startRotation(getRandomWaifu, { intervalMs: 1000 * 60 * 10 })
 } catch (e) {
@@ -606,12 +606,16 @@ handler.before = async function (m, { conn }) {
             pack3Price = Math.floor(pack3Price * (1 - discountInfo.discount / 100));
         }
 
-        const limitedButtons = [
-            { buttonId: 'buy_limited_pack1', buttonText: { displayText: `🎁 Pack Básico - ${pack1Price} coins` }, type: 1 },
-            { buttonId: 'buy_limited_pack2', buttonText: { displayText: `💎 Pack Premium - ${pack2Price} coins` }, type: 1 },
-            { buttonId: 'buy_limited_pack3', buttonText: { displayText: `👑 Pack Legendario - ${pack3Price} coins` }, type: 1 },
-            { buttonId: 'shop_back', buttonText: { displayText: '⬅️ Volver' }, type: 1 }
-        ]
+        const featured = getFeatured()
+        const featuredPriceMap = { 'común': 300, 'rara': 1200, 'épica': 2000, 'ultra rara': 3500, 'Legendaria': 5000 }
+        const featuredPrice = featured ? (featuredPriceMap[featured.rarity] || 1000) : null
+
+        const limitedButtons = []
+        if (featured) limitedButtons.push({ buttonId: 'buy_featured_waifu', buttonText: { displayText: `⭐ Comprar Waifu Destacada - ${featuredPrice}` }, type: 1 })
+        limitedButtons.push({ buttonId: 'buy_limited_pack1', buttonText: { displayText: `🎁 Pack Básico - ${pack1Price} coins` }, type: 1 })
+        limitedButtons.push({ buttonId: 'buy_limited_pack2', buttonText: { displayText: `💎 Pack Premium - ${pack2Price} coins` }, type: 1 })
+        limitedButtons.push({ buttonId: 'buy_limited_pack3', buttonText: { displayText: `👑 Pack Legendario - ${pack3Price} coins` }, type: 1 })
+        limitedButtons.push({ buttonId: 'shop_back', buttonText: { displayText: '⬅️ Volver' }, type: 1 })
 
         let limitedMessage = `⏰ *OFERTAS LIMITADAS* ⏰\n\n💰 *Monedas:* ${coins}`
 
@@ -627,6 +631,10 @@ handler.before = async function (m, { conn }) {
 
         if (!discountInfo.active) {
             limitedMessage += `\n\n⚠️ *Descuentos: 14-17h (15%) y 20-23h (25%)*`
+        }
+
+        if (featured) {
+            limitedMessage += `\n\n⭐ *Waifu Destacada para compra*\n• ${featured.name} (${featured.rarity})\n• Precio: ${featuredPrice} coins\n`
         }
 
         limitedMessage += `\n\n🎲 *Waifu completamente aleatorias*`
@@ -763,6 +771,9 @@ handler.before = async function (m, { conn }) {
         const itemName = buttonId.split('_')[2]
 
         const discountInfo = getLimitedTimeDiscount();
+        const featured = getFeatured()
+        const featuredPriceMap = { 'común': 300, 'rara': 1200, 'épica': 2000, 'ultra rara': 3500, 'Legendaria': 5000 }
+        const featuredPrice = featured ? (featuredPriceMap[featured.rarity] || 1000) : null
         let basePrice = 0
         let finalPrice = 0
         let itemDescription = ''
@@ -800,6 +811,15 @@ handler.before = async function (m, { conn }) {
                     { type: 'exp', amount: 10000 },
                     { type: 'discount', percentage: 50, duration: 24 }
                 ]
+                break
+            case 'buy_featured_waifu':
+                if (!featured) {
+                    return await m.reply('⭐ No hay waifu destacada disponible para comprar en este momento.')
+                }
+                basePrice = featuredPrice || 1000
+                finalPrice = discountInfo.active ? Math.floor(basePrice * (1 - discountInfo.discount / 100)) : basePrice
+                itemDescription = `⭐ Waifu Destacada: ${featured.name} (${featured.rarity})`
+                rewards = [ { type: 'featured_waifu', waifu: featured } ]
                 break
             case 'buy_premium_miku':
                 finalPrice = 5000
@@ -895,6 +915,28 @@ handler.before = async function (m, { conn }) {
                     }
 
                     waifuImages.push({ name: waifu.name, img: waifu.img, rarity: waifu.rarity });
+                }
+            } else if (reward.type === 'featured_waifu') {
+                hasWaifuReward = true;
+                const fw = reward.waifu
+                if (fw) {
+                    const existsF = user.waifu.characters.find(
+                        char => char.name === fw.name && char.rarity === fw.rarity
+                    );
+
+                    if (!existsF) {
+                        user.waifu.characters.push({
+                            name: fw.name,
+                            rarity: fw.rarity,
+                            obtainedAt: new Date().toISOString(),
+                            obtainedFrom: 'tienda'
+                        });
+                        successMessage += `💙 ${fw.name} (${fw.rarity.charAt(0).toUpperCase()})\n`
+                    } else {
+                        successMessage += `💙 ${fw.name} (${fw.rarity.charAt(0).toUpperCase()}) ✓\n`
+                    }
+
+                    waifuImages.push({ name: fw.name, img: fw.img, rarity: fw.rarity });
                 }
             } else if (reward.type === 'exp') {
                 if (!user.rpgData) {
