@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import chalk from 'chalk'
+import { clearSubBotIntervals } from '../lib/subbot-utils.js'
 
 
 function isSocketReady(s) {
@@ -179,26 +180,7 @@ async function deleteSubBot(bot, phoneNumber, m, conn, usedPrefix, silent = fals
     
    
     try {
-      if (bot && bot._keepAliveInterval) {
-        clearInterval(bot._keepAliveInterval)
-        bot._keepAliveInterval = null
-      }
-      if (bot && bot._saveCredsInterval) {
-        clearInterval(bot._saveCredsInterval)
-        bot._saveCredsInterval = null
-      }
-      if (bot && bot._inactivityMonitor) {
-        clearInterval(bot._inactivityMonitor)
-        bot._inactivityMonitor = null
-      }
-      if (bot && bot.heartbeatInterval) {
-        clearInterval(bot.heartbeatInterval)
-        bot.heartbeatInterval = null
-      }
-      if (bot && bot._presenceInterval) {
-        clearInterval(bot._presenceInterval)
-        bot._presenceInterval = null
-      }
+      clearSubBotIntervals(bot)
     } catch (e) {
       console.log(chalk.yellow(`⚠️ Error limpiando intervalos: ${e.message}`))
     }

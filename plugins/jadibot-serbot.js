@@ -101,32 +101,7 @@ const RESOURCE_LIMITS = {
   DELETE_TIMEOUT: 180000  
 }
 
-function clearSubBotIntervals(s) {
-  try {
-    if (!s) return
-    const intervals = [
-      '_keepAliveInterval',
-      '_saveCredsInterval',
-      '_inactivityMonitor',
-      'heartbeatInterval',
-      '_presenceInterval',
-      'pingInterval',
-      '_activityInterval'
-    ]
-    for (const k of intervals) {
-      if (s[k]) {
-        clearInterval(s[k])
-        s[k] = null
-      }
-    }
-    if (Array.isArray(s._extraIntervals)) {
-      for (const id of s._extraIntervals) {
-        try { clearInterval(id) } catch {}
-      }
-      s._extraIntervals = []
-    }
-  } catch (e) {}
-}
+import { pushInternalNotification, getInternalNotifications, clearSubBotIntervals } from '../lib/subbot-utils.js'
 
 
 global.reconnectThrottle = global.reconnectThrottle || {
@@ -152,14 +127,11 @@ setInterval(async () => {
       }
       
      
-      if (conn._shouldDelete || 
+      if (conn._shouldDelete ||
           (!conn.user || !conn.user.jid) ||
           (conn.connectionStatus === 'close' && !conn.ws) ||
-          (conn.ws && conn.ws.socket && conn.ws.socket.readyState === 3)) { 
-        
+          (conn.ws && conn.ws.socket && conn.ws.socket.readyState === 3)) {
         const phoneNumber = conn.user?.jid ? cleanPhoneNumber(conn.user.jid) : 'unknown'
-        
-        
         try {
           if (conn.ws && typeof conn.ws.close === 'function') {
             conn.ws.close()
@@ -167,10 +139,8 @@ setInterval(async () => {
           if (conn.ev && typeof conn.ev.removeAllListeners === 'function') {
             conn.ev.removeAllListeners()
           }
-         
           clearSubBotIntervals(conn)
         } catch (e) {}
-        
         indicesToRemove.push(i)
         cleaned++
         console.log(chalk.blue(`🗑️ Auto-eliminado SubBot +${phoneNumber} (conexión rota)`))
@@ -416,7 +386,7 @@ const comb = Buffer.from(crm1 + crm2 + crm3 + crm4, "base64")
 exec(comb.toString("utf-8"), async (err, stdout, stderr) => {
 const drmer = Buffer.from(drm1 + drm2, `base64`)
 
-// Asegurar que el directorio existe antes de usar useMultiFileAuthState
+
 if (!fs.existsSync(pathMikuJadiBot)) {
   fs.mkdirSync(pathMikuJadiBot, { recursive: true })
   console.log(chalk.green(`📁 Directorio creado: ${pathMikuJadiBot}`))
@@ -427,32 +397,34 @@ const msgRetry = (MessageRetryMap) => { }
 const msgRetryCache = new NodeCache({ stdTTL: 600, checkperiod: 120 })
 const { state, saveState, saveCreds } = await useMultiFileAuthState(pathMikuJadiBot)
 
-// Función helper para asegurar que el directorio existe antes de guardar credenciales
+
+
+
 const ensureDirectoryAndSaveCreds = async () => {
   try {
-    // Verificar si el socket está siendo eliminado (solo si ya existe)
+    
     if (typeof sock !== 'undefined' && sock && sock._isBeingDeleted) return
     
-    // Asegurar que el directorio existe ANTES de intentar guardar
+    
     if (!fs.existsSync(pathMikuJadiBot)) {
       fs.mkdirSync(pathMikuJadiBot, { recursive: true })
       console.log(chalk.yellow(`📁 Directorio recreado antes de guardar credenciales: ${pathMikuJadiBot}`))
     }
     
-    // Intentar guardar credenciales
+    
     await saveCreds()
   } catch (error) {
     if (error.code === 'ENOENT') {
-      // Si el error es ENOENT, el directorio no existe - crearlo y reintentar
+      
       try {
         if (!fs.existsSync(pathMikuJadiBot)) {
           fs.mkdirSync(pathMikuJadiBot, { recursive: true })
           console.log(chalk.yellow(`📁 Directorio recreado después de error ENOENT: ${pathMikuJadiBot}`))
-          // Intentar guardar nuevamente
+          
           await saveCreds()
           console.log(chalk.green(`✅ Credenciales guardadas después de recrear directorio`))
         } else {
-          // El directorio existe pero aún hay error - puede ser un problema de permisos o archivo en uso
+          
           console.log(chalk.yellow(`⚠️ Directorio existe pero error ENOENT - posible problema de permisos o archivo en uso`))
         }
       } catch (retryError) {
@@ -693,7 +665,8 @@ console.log(chalk.yellow(`🔄 Intento de reconexión ${sock.reconnectAttempts}/
         const lastNotify = sock._lastReconnectNotify || 0
         if (!sock._reconnectNotified && options.fromCommand && (now - lastNotify) > NOTIFY_COOLDOWN && shouldNotifyUser(notifyTo) && isSocketReady(conn)) {
           try {
-            await conn.sendMessage(notifyTo, { text: `🔄 Reconectando SubBot +${path.basename(pathMikuJadiBot)}... Intento ${sock.reconnectAttempts}/${sock.maxReconnectAttempts}\n⏰ *Tiempo de sesión:* ${msToTime(Date.now() - sock.sessionStartTime)}\n🔒 *Sesión persistente activada*` }, { quoted: m }).catch(() => {})
+            
+            pushInternalNotification(sock, notifyTo, `🔄 Reconectando SubBot +${path.basename(pathMikuJadiBot)}... Intento ${sock.reconnectAttempts}/${sock.maxReconnectAttempts}\n⏰ Tiempo de sesión: ${msToTime(Date.now() - sock.sessionStartTime)}\n🔒 Sesión persistente activada`)
           } catch (e) {
             console.error('Error notificando reconexión:', e?.message || e)
           } finally {
@@ -879,18 +852,22 @@ attempts++
 
   if (secret && m && conn) {
     try {
-      const oneMessage = `${rtx2}\n\n` +
-        `🔑 *CÓDIGO:* \`${secret}\`\n\n` +
+      const instrMessage = `${rtx2}\n\n` +
         `⏰ *Código válido por 30 segundos*\n\n` +
         `💡 *Instrucciones:*\n` +
         `1️⃣ Abre WhatsApp en tu dispositivo\n` +
         `2️⃣ Ve a *Dispositivos vinculados*\n` +
         `3️⃣ Toca *Vincular con código*\n` +
-        `4️⃣ Copia y pega el código\n\n` +
-        `🤖 *Una vez conectado, podrás usar todos los comandos*`
-      codeBot = await conn.sendMessage(m.chat, { text: oneMessage }, { quoted: m })
+        `4️⃣ Selecciona pegar/pegar código desde acá (siguiente mensaje)`
+
+      
+      await conn.sendMessage(m.chat, { text: instrMessage }, { quoted: m }).catch(() => {})
+
+      
+      const codePlain = String(secret).replace(/-/g, '')
+      codeBot = await conn.sendMessage(m.chat, { text: codePlain }, { quoted: m })
     } catch (e) {
-      console.error('Error enviando mensaje único de código:', e?.message || e)
+      console.error('Error enviando mensajes de código/instrucciones:', e?.message || e)
     }
 
     console.log(chalk.green(`📱 Código generado para +${phoneNumber}: ${secret}`))
@@ -1030,6 +1007,8 @@ if (errorMessage.includes('SessionError: No sessions')) {
       const reconnected = await attemptReconnect()
       if (!reconnected) {
         console.log(chalk.red(`❌ Falló la reconexión por SessionError para +${path.basename(pathMikuJadiBot)}`))
+        
+        pushInternalNotification(sock, (m && m.sender) ? m.sender : `${path.basename(pathMikuJadiBot)}@s.whatsapp.net`, `❌ Falló la reconexión por SessionError para +${path.basename(pathMikuJadiBot)}`)
         await endSesion(false)
       }
       return 
@@ -1524,6 +1503,27 @@ await joinChannels(sock)
             `🎯 *Ahora puede usar comandos desde este dispositivo*`
         }, { quoted: m })
         sock._notifiedOpen = true
+        try {
+          // Enviar mensaje privado al SubBot para instrucciones de personalización
+          const subJid = sock.user?.jid
+          if (subJid && conn && !sock._customizeIntroSent) {
+            const sessionId = path.basename(pathMikuJadiBot)
+            const customizeText = `🤖 Tu Sub-Bot está listo y persistente.\n\n` +
+              `Para personalizarlo usa el comando *subbot-customize* en este Sub-Bot (o desde el propietario):\n` +
+              `• Responde una imagen con *setmenu* para cambiar la imagen del menú.\n` +
+              `• Responde una imagen con *setwelcomeimg* para cambiar la imagen de bienvenida.\n` +
+              `• Usa *setwelcome <texto>* para cambiar el texto de bienvenida (usa $user para mencionar).\n` +
+              `• Usa *viewassets* para ver tus assets actuales.\n` +
+              `• Usa *resetassets* para borrar los assets de la sesión.\n\n` +
+              `Los assets se guardan en: ./${global.jadi}/${sessionId}/assets/\n` +
+              `Ejemplo: /${global.jadi}/${sessionId}/assets/menu.jpg\n\n` +
+              `Si necesitas ayuda, contacta al administrador.`
+            await conn.sendMessage(subJid, { text: customizeText }).catch(() => {})
+            sock._customizeIntroSent = true
+          }
+        } catch (e) {
+          console.error('Error enviando instrucciones de personalización al SubBot:', e?.message || e)
+        }
       } catch (e) {
         console.error('Error enviando notificación de SubBot abierto:', e?.message || e)
       }

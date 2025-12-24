@@ -2,7 +2,7 @@ import fetch from 'node-fetch'
 
 export async function before(m, { conn, participants, groupMetadata }) {
   try {
-    if (conn?.isSubBot) return true
+    // Allow subbots to send their own welcomes using per-session assets
     if (!m.isGroup) return true
     if (!m.messageStubType) return true
 
@@ -48,10 +48,25 @@ export async function before(m, { conn, participants, groupMetadata }) {
         if (!shouldSendWelcome(jid, user)) return
         let ppBuffer = null
         try {
-          const ppUrl = await conn.profilePictureUrl(user, 'image').catch(() => null)
-          if (ppUrl) {
-            const response = await fetch(ppUrl)
-            ppBuffer = await response.buffer()
+          // If this connection is a SubBot, prefer per-session welcome image
+          if (conn?.isSubBot) {
+            try {
+              const sessionId = (conn.user?.jid || '').split('@')[0]
+              const assetPath = path.join(process.cwd(), `${global.jadi}`, sessionId, 'assets', 'welcome.jpg')
+              if (fs.existsSync(assetPath)) {
+                ppBuffer = fs.readFileSync(assetPath)
+              }
+            } catch (e) {
+              console.log('Error cargando asset welcome para subbot:', e.message)
+            }
+          }
+          // fallback to profile picture
+          if (!ppBuffer) {
+            const ppUrl = await conn.profilePictureUrl(user, 'image').catch(() => null)
+            if (ppUrl) {
+              const response = await fetch(ppUrl)
+              ppBuffer = await response.buffer()
+            }
           }
         } catch (e) {
           console.log('Error obteniendo foto de perfil:', e)
@@ -70,8 +85,9 @@ export async function before(m, { conn, participants, groupMetadata }) {
         
         const buttons = []
         const urls = [['🎵 Ir Canal 💙', canalUrl]]
-        
-        await conn.sendNCarousel(jid, text, '💙 Hatsune Miku Bot', ppBuffer, buttons, null, urls, null, quoted, [user], { width: 1024, height: 1024 })
+        // If subbot, change title to include SubBot name
+        const title = conn?.isSubBot ? (conn.user?.name || 'SubBot') : '💙 Hatsune Miku Bot'
+        await conn.sendNCarousel(jid, text, title, ppBuffer, buttons, null, urls, null, quoted, [user], { width: 1024, height: 1024 })
 
       } catch (err) {
         console.log('sendSingleWelcome error:', err)
@@ -92,7 +108,9 @@ export async function before(m, { conn, participants, groupMetadata }) {
         if (!user) continue
         
         const userName = await Promise.resolve(conn.getName(user)).catch(() => user.split('@')[0])
-        const welcomeText = `╭━━━━━━━━━━━━━━━━━╮
+
+        // Allow per-session welcome text for subbots
+        let welcomeText = `╭━━━━━━━━━━━━━━━━━╮
 ┃  💙 *BIENVENID@* 💙       ┃
 ╰━━━━━━━━━━━━━━━━━╯
 
@@ -105,6 +123,16 @@ export async function before(m, { conn, participants, groupMetadata }) {
 🎮 Juegos, música y más
 💫 ¡Disfruta tu estadía!
 ━━━━━━━━━━━━━━━━━`
+        if (conn?.isSubBot) {
+          try {
+            const sessionId = (conn.user?.jid || '').split('@')[0]
+            const cfgPath = path.join(process.cwd(), `${global.jadi}`, sessionId, 'assets', 'config.json')
+            if (fs.existsSync(cfgPath)) {
+              const cfg = JSON.parse(fs.readFileSync(cfgPath, 'utf8'))
+              if (cfg && cfg.welcomeText) welcomeText = cfg.welcomeText.replace(/\$user/g, `@${userName}`)
+            }
+          } catch (e) { console.log('Error leyendo config welcome de subbot:', e.message) }
+        }
 
         await sendSingleWelcome(m.chat, welcomeText, user, m)
         console.log(`✅ Welcome enviado a ${userName}`)
