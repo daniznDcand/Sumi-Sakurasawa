@@ -103,7 +103,7 @@ async function sendMarriageGif(conn, chat, sender, partner, quoted) {
     }
 }
 
-let handler = async (m, { conn, command, usedPrefix }) => {
+handler = async (m, { conn, command, usedPrefix }) => {
     try { console.log('rg-marry: invoked', { command, text: (m.text||'').slice(0,200) }) } catch {}
     try {
         const isMarry = /^(marry|casarse|boda)$/i.test(command)
