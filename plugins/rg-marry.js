@@ -196,7 +196,8 @@ let handler = async (m, { conn, command, usedPrefix }) => {
 
 handler.help = ['marry @user', 'divorce']
 handler.tags = ['fun']
-handler.command = ['marry', 'casarse', 'boda', 'divorce', 'divorciarse']
+handler.customPrefix = /^/
+handler.command = /^(marry|casarse|boda|divorce|divorciarse)$/i
 handler.group = true
 handler.register = true
 
