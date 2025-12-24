@@ -12,6 +12,11 @@ let handler = async (message, { conn, text, usedPrefix, command }) => {
     return conn.reply(message.chat, "💙 Por favor, ingrese un texto para realizar una búsqueda en tiktok.", message, global.rcanal);
   }
 
+ 
+  const dev = global.dev || 'Hatsune Miku';
+  const avatar = global.icono || null;
+  const redes = global.redes || null;
+
   async function createVideoMessage(url) {
     const { videoMessage } = await generateWAMessageContent({
       video: { url }
@@ -45,8 +50,11 @@ let handler = async (message, { conn, text, usedPrefix, command }) => {
     });
 
     let results = [];
-    let { data } = await axios.get("https://apis-starlights-team.koyeb.app/starlight/tiktoksearch?text=" + text);
-    let searchResults = data.data;
+    let { data } = await axios.get("https://apis-starlights-team.koyeb.app/starlight/tiktoksearch?text=" + encodeURIComponent(text));
+    let searchResults = data && (data.data || data.result || data.items) ? (data.data || data.result || data.items) : null;
+    if (!searchResults || !Array.isArray(searchResults) || searchResults.length === 0) {
+      return conn.reply(message.chat, `💙 No se encontraron resultados para: ${text}`, message);
+    }
     shuffleArray(searchResults);
     let topResults = searchResults.splice(0, 7);
 
