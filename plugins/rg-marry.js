@@ -11,57 +11,6 @@ function ensureDbDir() {
 
 let handler
 
-handler.before = async function (m, { conn }) {
-    if (!m.message) return false
-
-    let buttonId = null
-    if (m.message.templateButtonReplyMessage) buttonId = m.message.templateButtonReplyMessage.selectedId
-    if (m.message.buttonsResponseMessage) buttonId = m.message.buttonsResponseMessage.selectedButtonId
-    if (!buttonId) return false
-
-    try {
-        if (buttonId.startsWith('marry_accept_') || buttonId.startsWith('marry_reject_')) {
-            const parts = buttonId.split('_')
-            const action = parts[1] 
-            const proposer = parts.slice(2).join('_')
-            const responder = m.sender
-
-           
-            if (!proposals[responder] || proposals[responder] !== proposer) {
-                await conn.reply(m.chat, '💙 No hay una propuesta válida para ti de esa persona.', m)
-                return true
-            }
-
-            if (action === 'accept') {
-                
-                delete proposals[responder]
-                saveJson(proposalsFile, proposals)
-                marriages[responder] = proposer
-                marriages[proposer] = responder
-                saveJson(marriagesFile, marriages)
-                if (!global.db.users[proposer]) global.db.users[proposer] = { age: 18, partner: '' }
-                if (!global.db.users[responder]) global.db.users[responder] = { age: 18, partner: '' }
-                global.db.users[responder].partner = await conn.getName(proposer)
-                global.db.users[proposer].partner = await conn.getName(responder)
-                await sendMarriageGif(conn, m.chat, proposer, responder, m)
-                await conn.reply(m.chat, `💙 ¡Felicidades! Se han casado @${proposer.split('@')[0]} y @${responder.split('@')[0]}!`, m, { mentions: [proposer, responder] })
-                return true
-            } else if (action === 'reject') {
-                delete proposals[responder]
-                saveJson(proposalsFile, proposals)
-                await conn.reply(m.chat, `💔 @${responder.split('@')[0]} rechazó la propuesta de @${proposer.split('@')[0]}.`, m, { mentions: [responder, proposer] })
-                return true
-            }
-        }
-    } catch (e) {
-        console.error('rg-marry before handler error', e)
-        try { await conn.reply(m.chat, '💙 Ocurrió un error procesando el botón.', m) } catch {}
-        return true
-    }
-
-    return false
-}
-
 function loadJson(filePath) {
     try {
         ensureDbDir()
@@ -222,6 +171,55 @@ handler = async (m, { conn, command, usedPrefix }) => {
         console.error('rg-marry handler error', e)
         try { await conn.reply(m.chat, '💙 Ocurrió un error al procesar el comando marry.', m) } catch {}
     }
+}
+
+handler.before = async function (m, { conn }) {
+    if (!m.message) return false
+
+    let buttonId = null
+    if (m.message.templateButtonReplyMessage) buttonId = m.message.templateButtonReplyMessage.selectedId
+    if (m.message.buttonsResponseMessage) buttonId = m.message.buttonsResponseMessage.selectedButtonId
+    if (!buttonId) return false
+
+    try {
+        if (buttonId.startsWith('marry_accept_') || buttonId.startsWith('marry_reject_')) {
+            const parts = buttonId.split('_')
+            const action = parts[1]
+            const proposer = parts.slice(2).join('_')
+            const responder = m.sender
+
+            if (!proposals[responder] || proposals[responder] !== proposer) {
+                await conn.reply(m.chat, '💙 No hay una propuesta válida para ti de esa persona.', m)
+                return true
+            }
+
+            if (action === 'accept') {
+                delete proposals[responder]
+                saveJson(proposalsFile, proposals)
+                marriages[responder] = proposer
+                marriages[proposer] = responder
+                saveJson(marriagesFile, marriages)
+                if (!global.db.users[proposer]) global.db.users[proposer] = { age: 18, partner: '' }
+                if (!global.db.users[responder]) global.db.users[responder] = { age: 18, partner: '' }
+                global.db.users[responder].partner = await conn.getName(proposer)
+                global.db.users[proposer].partner = await conn.getName(responder)
+                await sendMarriageGif(conn, m.chat, proposer, responder, m)
+                await conn.reply(m.chat, `💙 ¡Felicidades! Se han casado @${proposer.split('@')[0]} y @${responder.split('@')[0]}!`, m, { mentions: [proposer, responder] })
+                return true
+            } else if (action === 'reject') {
+                delete proposals[responder]
+                saveJson(proposalsFile, proposals)
+                await conn.reply(m.chat, `💔 @${responder.split('@')[0]} rechazó la propuesta de @${proposer.split('@')[0]}.`, m, { mentions: [responder, proposer] })
+                return true
+            }
+        }
+    } catch (e) {
+        console.error('rg-marry before handler error', e)
+        try { await conn.reply(m.chat, '💙 Ocurrió un error procesando el botón.', m) } catch {}
+        return true
+    }
+
+    return false
 }
 
 handler.help = ['marry @user', 'divorce']
