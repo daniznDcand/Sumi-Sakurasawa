@@ -296,9 +296,9 @@ if (readBotPath.includes(creds)) {
 mikuJadiBot({ pathMikuJadiBot: botPath, m: null, conn, args: '', usedPrefix: '/', command: 'serbot' })
 }}}}}
 
-const defaultPluginFolderPath = join(__dirname, './plugins/index')
-const fallbackPluginFolderPath = join(__dirname, './plugins')
-const pluginFolder = global.__dirname(existsSync(defaultPluginFolderPath) ? defaultPluginFolderPath : fallbackPluginFolderPath)
+const defaultPluginFolderPath = join(__dirname, 'plugins', 'index')
+const fallbackPluginFolderPath = join(__dirname, 'plugins')
+const pluginFolder = existsSync(defaultPluginFolderPath) ? defaultPluginFolderPath : fallbackPluginFolderPath
 const pluginFilter = (filename) => /\.js$/.test(filename)
 global.plugins = {}
 async function filesInit() {
