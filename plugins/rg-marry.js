@@ -9,6 +9,8 @@ function ensureDbDir() {
     if (!fs.existsSync(DB_DIR)) fs.mkdirSync(DB_DIR, { recursive: true })
 }
 
+let handler
+
 handler.before = async function (m, { conn }) {
     if (!m.message) return false
 
@@ -101,7 +103,7 @@ async function sendMarriageGif(conn, chat, sender, partner, quoted) {
     }
 }
 
-let handler = async (m, { conn, command, usedPrefix }) => {
+handler = async (m, { conn, command, usedPrefix }) => {
     try {
         const isMarry = /^(marry|casarse|boda)$/i.test(command)
         const isDivorce = /^(divorce|divorciarse)$/i.test(command)
@@ -196,7 +198,6 @@ let handler = async (m, { conn, command, usedPrefix }) => {
 
 handler.help = ['marry @user', 'divorce']
 handler.tags = ['fun']
-handler.customPrefix = /^/
 handler.command = /^(marry|casarse|boda|divorce|divorciarse)$/i
 handler.group = true
 handler.register = true
