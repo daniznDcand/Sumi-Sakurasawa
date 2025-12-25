@@ -487,6 +487,28 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
   }
   
   
+  // Allow setting specific options for some features, e.g., `enable antimencion action kick|delete`
+  if ((dbKey === 'antiMencion' || type === 'antimencion') && args[1] && args[1].toLowerCase() === 'action') {
+    const action = (args[2] || '').toLowerCase()
+    if (!m.isGroup) return conn.reply(m.chat, '❌ Este ajuste solo puede aplicarse en grupos.', m)
+    if (!(isAdmin || isOwner)) {
+      global.dfail('admin', m, conn)
+      throw false
+    }
+    if (!['kick', 'delete'].includes(action)) {
+      return conn.reply(m.chat, '❌ Acción inválida. Use `kick` o `delete`.
+
+Ejemplo: `enable antimencion action kick`', m)
+    }
+    chat.antiMencionAction = action
+    return conn.reply(m.chat, `✅ antiMencion action establecido a *${action}* para este chat.`, m)
+  }
+
+  // Ensure default action is set when enabling antiMencion
+  if (!isAll && dbKey === 'antiMencion' && isEnable && chat.antiMencionAction === undefined) {
+    chat.antiMencionAction = 'kick'
+  }
+
   if (isAll) {
     bot[dbKey] = isEnable
   } else {
