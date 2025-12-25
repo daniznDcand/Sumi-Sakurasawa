@@ -41,9 +41,15 @@ export async function before(m, { conn, participants, groupMetadata }) {
     const sendSingleWelcome = async (jid, text, user, quoted) => {
       try {
         if (!shouldSendWelcome(jid, user)) return
+        
+       
+        if (!conn || !conn.user) {
+          console.log('⚠️ Conexión no disponible, saltando welcome')
+          return
+        }
+        
         let ppBuffer = null
         try {
-          
           if (conn?.isSubBot) {
             try {
               const sessionId = (conn.user?.jid || '').split('@')[0]
@@ -76,17 +82,28 @@ export async function before(m, { conn, participants, groupMetadata }) {
           }
         }
 
-        console.log('📤 Enviando welcome con imagen ampliada y botón de canal...')
+        console.log('📤 Enviando welcome...')
         
-        const buttons = []
-        const urls = [['🎵 Ir Canal 💙', canalUrl]]
         
-        const title = conn?.isSubBot ? (conn.user?.name || 'SubBot') : '💙 Hatsune Miku Bot'
-        await conn.sendNCarousel(jid, text, title, ppBuffer, buttons, null, urls, null, quoted, [user], { width: 1024, height: 1024 })
+        try {
+          const buttons = []
+          const urls = [['🎵 Ir Canal 💙', canalUrl]]
+          const title = conn?.isSubBot ? (conn.user?.name || 'SubBot') : '💙 Hatsune Miku Bot'
+          await conn.sendNCarousel(jid, text, title, ppBuffer, buttons, null, urls, null, quoted, [user], { width: 1024, height: 1024 })
+        } catch (carouselError) {
+          console.log('Error con carousel, usando reply simple:', carouselError.message)
+          
+          await conn.reply(jid, `${text}\n\n🎵 *Ver Canal:* ${canalUrl}`, quoted, { mentions: [user] })
+        }
 
       } catch (err) {
         console.log('sendSingleWelcome error:', err)
-        return await conn.reply(jid, `${text}\n\n🎵 *Ver Canal:* ${canalUrl}`, quoted, { mentions: [user] })
+       
+        try {
+          await conn.sendMessage(jid, { text: `${text}\n\n🎵 *Ver Canal:* ${canalUrl}` })
+        } catch (finalError) {
+          console.log('Error final enviando welcome:', finalError.message)
+        }
       }
     }
 
