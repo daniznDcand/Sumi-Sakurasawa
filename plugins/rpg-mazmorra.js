@@ -193,12 +193,12 @@ async function showDungeonMenu(conn, m, user, usedPrefix) {
   Object.entries(DUNGEONS).forEach(([id, dungeon]) => {
     let status = user.rpgData.level >= dungeon.minLevel ? "✅" : "🔒"
     let levelReq = user.rpgData.level >= dungeon.minLevel ? "" : `(Nivel ${dungeon.minLevel} requerido)`
-    menuText += `${status} *${dungeon.name}* ${levelReq}\n`
+    menuText += `${status} **${dungeon.name}** ${levelReq}\n`
     menuText += `   📊 Nivel mínimo: ${dungeon.minLevel}\n`
     menuText += `   👹 Esbirros: ${dungeon.enemies.minions.length} | 💀 Jefes: ${dungeon.enemies.bosses.length}\n\n`
   })
 
-  menuText += `🌌 *Boss Ultra Raro:* DEPOOL.EXE BINARIO (0.1% probabilidad)\n`
+  menuText += `🌌 *Boss Ultra Raro:* ENTIDAD CÓSMICA (0.1% probabilidad)\n`
   menuText += `💎 *Recompensa Ultra:* 100,000 cebollines + Rango Especial\n\n`
   menuText += `💡 *Comandos:*\n`
   menuText += `• \`${usedPrefix}mazmorra entrar [1-4]\` - Entrar a mazmorra\n`
@@ -245,7 +245,7 @@ async function enterDungeon(conn, m, user, dungeonId, usedPrefix) {
 
   cooldowns[m.sender] = Date.now()
   
-  
+ 
   let isUltraBoss = Math.random() < ULTRA_BOSS.probability
   let enemy
   
@@ -275,7 +275,7 @@ async function enterDungeon(conn, m, user, dungeonId, usedPrefix) {
   
   if (isUltraBoss) {
     battleText += `🌌 *¡BOSS ULTRA RARO APARECIÓ!* 🌌\n`
-    battleText += `💎 *${enemy.name}* (ULTRA BOSS)\n`
+    battleText += `💎 **${enemy.name}** (ULTRA BOSS)\n`
   } else {
     battleText += `🎯 *Enemigo Encontrado:*\n`
     battleText += `${enemy.type === 'minion' ? '👹' : '💀'} **${enemy.name}** ${enemy.type === 'minion' ? '(Esbirro)' : '(JEFE)'}\n`
@@ -332,7 +332,7 @@ async function attackEnemy(conn, m, user, usedPrefix) {
   let enemyDamage = Math.max(1, enemy.attack - user.rpgData.defense + Math.floor(Math.random() * 8))
   user.rpgData.hp -= enemyDamage
 
-  battleResult += `👹 *${enemy.name}* contraataca\n`
+  battleResult += `👹 **${enemy.name}** contraataca\n`
   battleResult += `💢 Daño recibido: ${enemyDamage}\n`
   battleResult += `❤️ Tu HP: ${Math.max(0, user.rpgData.hp)}/${user.rpgData.maxHp}\n\n`
 
@@ -365,7 +365,7 @@ async function victoryReward(conn, m, user, battle, usedPrefix) {
   let { enemy, dungeon } = battle
   delete activeDungeons[m.sender]
 
-  
+
   user.coin = (user.coin || 0) + enemy.reward.coins
   user.rpgData.exp += enemy.reward.exp
   user.rpgData.totalExp += enemy.reward.exp
@@ -378,7 +378,7 @@ async function victoryReward(conn, m, user, battle, usedPrefix) {
   let victoryText = `🎉 *¡VICTORIA!* 🎉\n\n`
   
   if (enemy.type === 'ultraboss') {
-    victoryText += `🌌 ¡Has derrotado a la *DEPOOL.EXE BINARIO*!\n`
+    victoryText += `🌌 ¡Has derrotado a la **DEPOOL.EXE BINARIO**!\n`
     victoryText += `💎 ¡LOGRO ÉPICO DESBLOQUEADO!\n\n`
     
     

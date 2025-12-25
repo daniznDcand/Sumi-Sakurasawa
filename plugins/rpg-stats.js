@@ -56,7 +56,7 @@ let handler = async (m, { conn, usedPrefix }) => {
   let winRate = totalBattles > 0 ? Math.floor((user.rpgData.wins / totalBattles) * 100) : 0
   
   
-  let currentRank = getRank(user.rpgData.totalExp)
+  let currentRank = getRank(user.rpgData.totalExp || 0)
   let nextRank = RANKS[currentRank.level + 1]
   
 
@@ -86,7 +86,7 @@ let handler = async (m, { conn, usedPrefix }) => {
   statsText += `👤 *Aventurero:* ${conn.getName(m.sender)}\n`
   statsText += `⭐ *Nivel:* ${user.rpgData.level}\n`
   statsText += `📈 *EXP:* ${user.rpgData.exp}/${expNeeded} (${expProgress}%)\n`
-  statsText += `🏆 *EXP Total:* ${user.rpgData.totalExp.toLocaleString()}\n\n`
+  statsText += `🏆 *EXP Total:* ${(user.rpgData.totalExp || 0).toLocaleString()}\n\n`
   
   
   statsText += `🏛️ *SISTEMA DE RANGOS:*\n`
@@ -95,7 +95,7 @@ let handler = async (m, { conn, usedPrefix }) => {
     statsText += `${RANKS[10].icon} *Rango Especial:* ${RANKS[10].name}\n`
   }
   if (nextRank) {
-    let expToNext = nextRank.minExp - user.rpgData.totalExp
+    let expToNext = nextRank.minExp - (user.rpgData.totalExp || 0)
     statsText += `🎯 *Siguiente:* ${nextRank.icon} ${nextRank.name} (${expToNext.toLocaleString()} EXP)\n`
   }
   statsText += `\n`
@@ -129,7 +129,7 @@ let handler = async (m, { conn, usedPrefix }) => {
   statsText += `🏷️ *TABLA DE RANGOS:*\n`
   Object.entries(RANKS).forEach(([level, rank]) => {
     if (rank.special) return
-    let status = user.rpgData.totalExp >= rank.minExp ? '✅' : '🔒'
+    let status = (user.rpgData.totalExp || 0) >= rank.minExp ? '✅' : '🔒'
     let current = parseInt(level) === currentRank.level ? ' ⭐' : ''
     statsText += `${status} ${rank.icon} ${rank.name}${current}\n`
   })
