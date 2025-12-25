@@ -91,6 +91,9 @@ let txt = `╭━━━━━━━━━━━━━━━━━━━╮
 ├ 🏹 .cazar - Cazar
 ├ 🎒 .inv - Ver inventario
 ├ 🏰 .mazmorra - Explorar mazmorras
+├ 🏪 .tiendarpg - Tienda RPG completa
+├ 📊 .rpgstats - Estadísticas RPG
+├ 🏆 .ranking - Ranking aventureros
 ├ 🎃 .halloween - Dulce o truco
 ├ 🎄 .christmas - Regalo navideño
 ├ 🦹 .crime - Trabajar ladrón

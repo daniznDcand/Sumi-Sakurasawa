@@ -31,7 +31,7 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
       ['📥 Descargas', 'menu_descargas'],
       ['🛠️ Herramientas', 'menu_herramientas'],
       ['🔍 Buscadores', 'menu_buscadores'],
-      ['🎮 Juegos', 'menu_juegos'],
+      ['🎮 Juegos & RPG', 'menu_juegos'],
       ['🎌 Anime', 'menu_anime'],
       ['👥 admin Grupos', 'menu_grupos'],
       ['ℹ️ Info Bot', 'menu_info']
@@ -382,7 +382,7 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
     ]
 
     const text = `┏━━━━━━━━━┓
-┃ 🎮 *JUEGOS* ┃
+┃ 🎮 *JUEGOS & RPG* ┃
 ┗━━━━━━━━━┛
 
 🕹️ ━━ *JUEGOS CLÁSICOS* ━━
@@ -414,6 +414,28 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
 
 ━━━━━━━━━━━━━━━━━━━━━
 
+⚔️ ━━ *SISTEMA RPG* ━━
+
+🏰 \`.mazmorra\`
+   → Explorar mazmorras épicas
+
+🏪 \`.tiendarpg\`
+   → Tienda RPG completa
+
+📊 \`.rpgstats\`
+   → Ver estadísticas RPG
+
+🏆 \`.ranking\`
+   → Ranking de aventureros
+
+💰 \`.work\` | \`.daily\` | \`.mine\`
+   → Ganar cebollines
+
+🎰 \`.slot\` | \`.ruleta\` | \`.cf\`
+   → Juegos de azar
+
+━━━━━━━━━━━━━━━━━━━━━
+
 ⚔️ ━━ *COMPETITIVO* ━━
 
 🥊 \`.pvp [@usuario]\`
@@ -426,6 +448,10 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
    → Desafío matemático
 
 ━━━━━━━━━━━━━━━━━━━━━
+
+💰 *Sistema de cebollines integrado*
+🎆 *Boss ultra raro con 100K cebollines*
+💎 *Rangos desde Novato hasta ERUDITO*
 
 💙 *Usa los comandos o el botón*
 ⬅️ *para volver al menú principal*`

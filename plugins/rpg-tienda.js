@@ -1,39 +1,75 @@
 const SHOP_ITEMS = {
+  
   potion: {
     name: "🧪 Poción de Salud",
     description: "Restaura 50 HP",
     price: 100,
-    effect: 'heal'
+    effect: 'heal',
+    category: 'basic'
   },
   megapotion: {
     name: "💉 Mega Poción",
     description: "Restaura toda la salud",
     price: 250,
-    effect: 'fullheal'
+    effect: 'fullheal',
+    category: 'basic'
   },
   strength: {
     name: "⚔️ Poción de Fuerza",
     description: "Aumenta ataque permanentemente +3",
     price: 500,
-    effect: 'attack'
+    effect: 'attack',
+    category: 'basic'
   },
   defense: {
     name: "🛡️ Poción de Defensa", 
     description: "Aumenta defensa permanentemente +2",
     price: 400,
-    effect: 'defense'
+    effect: 'defense',
+    category: 'basic'
   },
   vitality: {
     name: "❤️ Poción de Vitalidad",
     description: "Aumenta HP máximo permanentemente +15",
     price: 600,
-    effect: 'hp'
+    effect: 'hp',
+    category: 'basic'
   },
   experience: {
     name: "⭐ Pergamino de Experiencia",
     description: "Otorga 75 puntos de experiencia",
     price: 300,
-    effect: 'exp'
+    effect: 'exp',
+    category: 'basic'
+  },
+ 
+  battlepotion: {
+    name: "⚡ Poción de Batalla",
+    description: "Restaura HP y aumenta ataque temporalmente",
+    price: 200,
+    effect: 'battle',
+    category: 'special'
+  },
+  revive: {
+    name: "🌟 Cristal de Resurrección",
+    description: "Revive con 50% HP si mueres en mazmorra",
+    price: 800,
+    effect: 'revive',
+    category: 'special'
+  },
+  luck: {
+    name: "🍀 Amuleto de Suerte",
+    description: "Aumenta recompensas de mazmorra por 1 hora",
+    price: 350,
+    effect: 'luck',
+    category: 'special'
+  },
+  shield: {
+    name: "🔰 Escudo Mágico",
+    description: "Reduce daño recibido en próxima batalla",
+    price: 150,
+    effect: 'shield',
+    category: 'special'
   }
 }
 
@@ -59,25 +95,56 @@ let handler = async (m, { conn, usedPrefix, command, text }) => {
   
   
   if (!text) {
-    let shopMessage = `🏪 *TIENDA RPG* 🏪\n\n`
+    let shopMessage = `🏪 *TIENDA RPG COMPLETA* 🏪\n\n`
     shopMessage += `💰 *Tus monedas:* ${coins}\n\n`
-    shopMessage += `📋 *Artículos disponibles:*\n\n`
     
-    Object.entries(SHOP_ITEMS).forEach(([key, item]) => {
+   
+    shopMessage += `📋 *OBJETOS BÁSICOS:*\n\n`
+    Object.entries(SHOP_ITEMS).filter(([key, item]) => item.category === 'basic').forEach(([key, item]) => {
       shopMessage += `*${item.name}*\n`
       shopMessage += `💭 ${item.description}\n`
-      shopMessage += `💰 Precio: ${item.price} monedas\n`
-      shopMessage += `📝 Comando: \`${usedPrefix}tiendarpg ${key}\`\n\n`
+      shopMessage += `💰 Precio: ${item.price} monedas\n\n`
     })
     
-    shopMessage += `💡 *Cómo usar:*\n`
-    shopMessage += `• Escribe \`${usedPrefix}tiendarpg [item]\` para comprar\n`
-    shopMessage += `• Ejemplo: \`${usedPrefix}tiendarpg potion\`\n\n`
+    shopMessage += `✨ *OBJETOS ESPECIALES:*\n\n`
+    Object.entries(SHOP_ITEMS).filter(([key, item]) => item.category === 'special').forEach(([key, item]) => {
+      shopMessage += `*${item.name}*\n`
+      shopMessage += `💭 ${item.description}\n`
+      shopMessage += `💰 Precio: ${item.price} monedas\n\n`
+    })
+    
+    shopMessage += `💡 *Usa los botones para comprar rápidamente*\n`
     shopMessage += `🎮 *Otros comandos:*\n`
-    shopMessage += `• \`${usedPrefix}aventura\` - Ir de aventura\n`
+    shopMessage += `• \`${usedPrefix}mazmorra\` - Explorar mazmorras\n`
     shopMessage += `• \`${usedPrefix}rpgstats\` - Ver tu perfil`
     
-    return m.reply(shopMessage)
+   
+    const basicButtons = [
+      { buttonId: `${usedPrefix}tiendarpg potion`, buttonText: { displayText: '🧪 Poción (100)' }, type: 1 },
+      { buttonId: `${usedPrefix}tiendarpg megapotion`, buttonText: { displayText: '💉 Mega (250)' }, type: 1 },
+      { buttonId: `${usedPrefix}tiendarpg strength`, buttonText: { displayText: '⚔️ Fuerza (500)' }, type: 1 }
+    ]
+    
+    const moreButtons = [
+      { buttonId: `${usedPrefix}tiendarpg defense`, buttonText: { displayText: '🛡️ Defensa (400)' }, type: 1 },
+      { buttonId: `${usedPrefix}tiendarpg battlepotion`, buttonText: { displayText: '⚡ Batalla (200)' }, type: 1 },
+      { buttonId: `${usedPrefix}tiendarpg revive`, buttonText: { displayText: '🌟 Revivir (800)' }, type: 1 }
+    ]
+    
+    const extraButtons = [
+      { buttonId: `${usedPrefix}tiendarpg luck`, buttonText: { displayText: '🍀 Suerte (350)' }, type: 1 },
+      { buttonId: `${usedPrefix}tienda`, buttonText: { displayText: '🏪 Tienda Premium' }, type: 1 },
+      { buttonId: `${usedPrefix}mazmorra`, buttonText: { displayText: '🏛️ Mazmorras' }, type: 1 }
+    ]
+
+    const buttonMessage = {
+      text: shopMessage,
+      footer: '🏪 Tienda RPG Completa - Hatsune Miku Bot',
+      buttons: basicButtons.concat(moreButtons).concat(extraButtons),
+      headerType: 1
+    }
+
+    return await conn.sendMessage(m.chat, buttonMessage, { quoted: m })
   }
   
  
@@ -158,9 +225,50 @@ let handler = async (m, { conn, usedPrefix, command, text }) => {
         resultMessage += `📈 *EXP actual:* ${user.rpgData.exp}/${user.rpgData.level * 100}`
       }
       break
+      
+    case 'battle':
+      const battleHeal = Math.min(30, user.rpgData.maxHp - user.rpgData.hp)
+      user.rpgData.hp += battleHeal
+      user.rpgData.tempAttack = (user.rpgData.tempAttack || 0) + 10
+      user.rpgData.tempAttackExpiry = Date.now() + (30 * 60 * 1000) 
+      resultMessage += `⚡ *Efecto:* Recuperaste ${battleHeal} HP y +10 ataque temporal\n`
+      resultMessage += `💪 *Ataque temporal:* ${user.rpgData.attack + user.rpgData.tempAttack} (30 min)`
+      break
+      
+    case 'revive':
+      user.rpgData.reviveToken = true
+      resultMessage += `🌟 *Efecto:* Tienes un cristal de resurrección activo\n`
+      resultMessage += `💫 *Protección:* Si mueres en mazmorra, revivirás con 50% HP`
+      break
+      
+    case 'luck':
+      user.rpgData.luckBoost = Date.now() + (60 * 60 * 1000) 
+      resultMessage += `🍀 *Efecto:* Amuleto de suerte activo por 1 hora\n`
+      resultMessage += `💰 *Bonus:* +50% recompensas en mazmorras`
+      break
+      
+    case 'shield':
+      user.rpgData.magicShield = 3 
+      resultMessage += `🔰 *Efecto:* Escudo mágico activo\n`
+      resultMessage += `🛡️ *Protección:* Reduce 50% del daño en próximas 3 batallas`
+      break
   }
   
-  await m.reply(resultMessage)
+  
+  const postPurchaseButtons = [
+    { buttonId: `${usedPrefix}tiendarpg`, buttonText: { displayText: '🏪 Volver a Tienda' }, type: 1 },
+    { buttonId: `${usedPrefix}mazmorra`, buttonText: { displayText: '🏛️ Ir a Mazmorras' }, type: 1 },
+    { buttonId: `${usedPrefix}rpgstats`, buttonText: { displayText: '📊 Ver Stats' }, type: 1 }
+  ]
+
+  const purchaseMessage = {
+    text: resultMessage,
+    footer: '✅ Compra realizada con éxito',
+    buttons: postPurchaseButtons,
+    headerType: 1
+  }
+
+  await conn.sendMessage(m.chat, purchaseMessage, { quoted: m })
 }
 
 handler.help = ['tiendarpg']
