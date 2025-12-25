@@ -73,9 +73,25 @@ export async function before(m, { conn, isAdmin, isBotAdmin }) {
     }
 
     const content = extractRelevantText(m)
-    if (!content) return true
 
-    const mentionsStatus = containsStatusMention(content)
+    
+    let isStatusStub = false
+    try {
+      if (m.messageStubType) {
+        const WAMessageStubType = (await import('@whiskeysockets/baileys')).default
+        const stubName = WAMessageStubType[m.messageStubType] || ''
+        if (/STATUS/i.test(stubName) && /MENTION/i.test(stubName)) {
+          isStatusStub = true
+        }
+      }
+    } catch (e) {
+      
+    }
+
+   
+    if (!content && !isStatusStub) return true
+
+    const mentionsStatus = isStatusStub || containsStatusMention(content)
     if (!mentionsStatus) return true
 
     const userNumber = m.sender.split('@')[0]
