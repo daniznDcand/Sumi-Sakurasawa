@@ -13,24 +13,27 @@ let handler = async (m, { conn, usedPrefix }) => {
     let name = conn.getName(who);
 
     let premium = user.premium ? '✅' : '❌';
+    let level = user.level || 1;
+    let exp = user.exp || 0;
+    let expNeeded = level * 100;
+    let expProgress = Math.floor((exp / expNeeded) * 100);
 
-    let text = `╭━〔 Inventario de ${name} 〕⬣\n` +
+    let text = `╭━〔 💙 Inventario de ${name} 💙 〕⬣\n` +
+               `┋ 🎶 *Nivel:* ${level}\n` +
+               `┋ ✨ *Experiencia:* ${exp}/${expNeeded} (${expProgress}%)\n` +
                `┋ 💸 *${moneda} en Cartera:* ${user.coin || 0}\n` +  
                `┋ 🏦 *${moneda} en Banco:* ${user.bank || 0}\n` + 
+               `┋ 💎 *Cristales Vocaloid:* ${user.diamond || 0}\n` +
                `┋ ♦️ *Esmeraldas:* ${user.emerald || 0}\n` + 
                `┋ 🔩 *Hierro:* ${user.iron || 0}\n` +  
                `┋ 🏅 *Oro:* ${user.gold || 0}\n` + 
                `┋ 🕋 *Carbón:* ${user.coal || 0}\n` +  
-               `┋ 🪨 *Piedra:* ${user.stone || 0}\n` +  
-               `┋ ✨ *Experiencia:* ${user.exp || 0}\n` + 
+               `┋ 🗻 *Piedra:* ${user.stone || 0}\n` +  
                `┋ ❤️ *Salud:* ${user.health || 100}\n` + 
-               `┋ 💎 *Diamantes:* ${user.diamond || 0}\n` +   
-               `┋ 🍬 *Dulces:* ${user.candies || 0}\n` + 
-               `┋ 🎁 *Regalos:* ${user.gifts || 0}\n` + 
                `┋ 🎟️ *Tokens:* ${user.joincount || 0}\n` +  
                `┋ ⚜️ *Premium:* ${premium}\n` + 
                `┋ ⏳ *Última Aventura:* ${user.lastAdventure ? moment(user.lastAdventure).fromNow() : 'Nunca'}\n` + 
-               `┋ 📅 *Fecha:* ${new Date().toLocaleString('id-ID')}\n` +
+               `┋ 📅 *Fecha:* ${new Date().toLocaleString('es-ES')}\n` +
                `╰━━━━━━━━━━━━⬣`;
 
     await conn.sendFile(m.chat, img, 'miku.jpg', text, fkontak);

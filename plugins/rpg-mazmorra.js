@@ -298,22 +298,16 @@ async function enterDungeon(conn, m, user, dungeonId, usedPrefix) {
 
   
   try {
-    await conn.sendMessage(m.chat, {
-      image: { url: isUltraBoss ? ULTRA_BOSS.image : dungeon.image },
-      caption: battleText,
-      footer: isUltraBoss ? '🌌 ¡ENTIDAD CÓSMICA DETECTADA!' : '⚔️ ¡Prepárate para la batalla!',
-      buttons: battleButtons,
-      headerType: 4
-    }, { quoted: m })
+    await conn.sendFile(m.chat, isUltraBoss ? ULTRA_BOSS.image : dungeon.image, 'battle.jpg', battleText, fkontak)
   } catch {
-    
-    const battleMessage = {
-      text: battleText,
-      footer: isUltraBoss ? '🌌 ¡ENTIDAD CÓSMICA DETECTADA!' : '⚔️ ¡Prepárate para la batalla!',
-      buttons: battleButtons,
-      headerType: 1
+    try {
+      await conn.sendMessage(m.chat, {
+        image: { url: isUltraBoss ? ULTRA_BOSS.image : dungeon.image },
+        caption: battleText
+      }, { quoted: m })
+    } catch {
+      await conn.reply(m.chat, battleText, m)
     }
-    await conn.sendMessage(m.chat, battleMessage, { quoted: m })
   }
 }
 
