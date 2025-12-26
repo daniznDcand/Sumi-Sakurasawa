@@ -57,8 +57,8 @@ let handler = async (m, { conn, args }) => {
     let bankCoins = user.bank || 0;
     
     
-    let currentRank = getRank(user.rpgData.totalExp);
-    let specialRankText = user.rpgData.specialRank ? `${RANKS[10].icon} ${RANKS[10].name}` : "";
+    let currentRank = getRank(user.rpgData?.totalExp || 0);
+    let specialRankText = user.rpgData?.specialRank ? `${RANKS[10].icon} ${RANKS[10].name}` : "";
 
     let perfil = await conn.profilePictureUrl(userId, 'image').catch(_ => 'https://w7.pngwing.com/pngs/492/82/png-transparent-hatsune-miku-vocaloid-anime-animation-hatsune-miku-blue-fictional-characters-black-hair.png');
 
@@ -77,16 +77,16 @@ ${description}
 🔰 Premium » ${user.premium ? '✅' : '❌'}
 
 ⚔️ *ESTADÍSTICAS RPG*
-📊 Nivel RPG » ${user.rpgData.level}
-❤️ HP » ${user.rpgData.hp}/${user.rpgData.maxHp}
-⚔️ Ataque » ${user.rpgData.attack}
-🛡️ Defensa » ${user.rpgData.defense}
-⭐ EXP Total » ${user.rpgData.totalExp.toLocaleString()}
+📊 Nivel RPG » ${user.rpgData?.level || 1}
+❤️ HP » ${user.rpgData?.hp || 100}/${user.rpgData?.maxHp || 100}
+⚔️ Ataque » ${user.rpgData?.attack || 20}
+🛡️ Defensa » ${user.rpgData?.defense || 10}
+⭐ EXP Total » ${(user.rpgData?.totalExp || 0).toLocaleString()}
 ${currentRank.icon} Rango » ${currentRank.name}
-${specialRankText ? `${specialRankText}\n` : ''}🏆 Victorias » ${user.rpgData.wins}
-💀 Derrotas » ${user.rpgData.losses}
-👑 Jefes Derrotados » ${user.rpgData.bossKills}
-🌌 Ultra Boss » ${user.rpgData.ultraBossKills}
+${specialRankText ? `${specialRankText}\n` : ''}🏆 Victorias » ${user.rpgData?.wins || 0}
+💀 Derrotas » ${user.rpgData?.losses || 0}
+👑 Jefes Derrotados » ${user.rpgData?.bossKills || 0}
+🌌 Ultra Boss » ${user.rpgData?.ultraBossKills || 0}
 
 🎮 *SISTEMA GENERAL*
 💫 Experiencia » ${exp.toLocaleString()}
