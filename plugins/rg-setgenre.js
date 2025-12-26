@@ -38,6 +38,6 @@ return conn.reply(m.chat, `${emoji} Se ha establecido tu género como: *${user.g
 
 handler.help = ['setgenre']
 handler.tags = ['rg']
-handler.command = ['setgenero', 'setgenre']
+handler.command = ['setgenero', 'setgenre','setgen']
 export default handler;
 
