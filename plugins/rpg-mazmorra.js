@@ -296,14 +296,25 @@ async function enterDungeon(conn, m, user, dungeonId, usedPrefix) {
     { buttonId: `${usedPrefix}mazmorra usar potion`, buttonText: { displayText: '🧪 Usar Poción' }, type: 1 }
   ]
 
-  const battleMessage = {
-    text: battleText,
-    footer: isUltraBoss ? '🌌 ¡ENTIDAD CÓSMICA DETECTADA!' : '⚔️ ¡Prepárate para la batalla!',
-    buttons: battleButtons,
-    headerType: 1
+  
+  try {
+    await conn.sendMessage(m.chat, {
+      image: { url: isUltraBoss ? ULTRA_BOSS.image : dungeon.image },
+      caption: battleText,
+      footer: isUltraBoss ? '🌌 ¡ENTIDAD CÓSMICA DETECTADA!' : '⚔️ ¡Prepárate para la batalla!',
+      buttons: battleButtons,
+      headerType: 4
+    }, { quoted: m })
+  } catch {
+    
+    const battleMessage = {
+      text: battleText,
+      footer: isUltraBoss ? '🌌 ¡ENTIDAD CÓSMICA DETECTADA!' : '⚔️ ¡Prepárate para la batalla!',
+      buttons: battleButtons,
+      headerType: 1
+    }
+    await conn.sendMessage(m.chat, battleMessage, { quoted: m })
   }
-
-  await conn.sendMessage(m.chat, battleMessage, { quoted: m })
 }
 
 async function attackEnemy(conn, m, user, usedPrefix) {
@@ -497,7 +508,18 @@ async function fleeDungeon(conn, m, user, usedPrefix) {
     headerType: 1
   }
 
-  await conn.sendMessage(m.chat, fleeMessage, { quoted: m })
+
+  try {
+    await conn.sendMessage(m.chat, {
+      image: { url: 'https://images.stockcake.com/public/b/d/8/bd898038-7b4d-4471-ab83-20a6158614d0_medium/heroic-fiery-leap-stockcake.jpg' },
+      caption: fleeText,
+      footer: '🏃 Has escapado sano y salvo',
+      buttons: fleeButtons,
+      headerType: 4
+    }, { quoted: m })
+  } catch {
+    await conn.sendMessage(m.chat, fleeMessage, { quoted: m })
+  }
 }
 
 async function useItem(conn, m, user, item, usedPrefix) {
