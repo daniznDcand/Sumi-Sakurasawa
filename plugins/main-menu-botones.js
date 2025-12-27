@@ -1,3 +1,5 @@
+import { sendCompatibleMessage } from '../lib/compatible-messages.js'
+
 const handler = async (m, { conn, usedPrefix, command, args }) => {
   
   if (command && command.includes('menu')) {
@@ -63,23 +65,26 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
     const menuGif = 'https://wallpapers-clan.com/wp-content/uploads/2025/04/hatsune-miku-cherry-blossoms-pc-desktop-laptop-wallpaper-cover.jpg'
 
     try {
-      return await conn.sendNCarousel(m.chat, text, footer, menuGif, buttons, null, null, null, m)
+      return await sendCompatibleMessage(conn, m.chat, {
+        text,
+        footer,
+        image: { url: menuGif },
+        buttons: buttons.map(btn => ({
+          buttonId: btn[1],
+          buttonText: { displayText: btn[0] },
+          type: 1
+        }))
+      }, { quoted: m })
     } catch (error) {
-      
-      
-      const buttonMessage = {
-        text: text,
-        footer: footer,
-        templateButtons: buttons.map((btn, index) => ({
-          index: index + 1,
-          quickReplyButton: {
-            displayText: btn[0],
-            id: btn[1]
-          }
-        })),
-        image: { url: menuGif }
-      }
-      return await conn.sendMessage(m.chat, buttonMessage, { quoted: m })
+      return await sendCompatibleMessage(conn, m.chat, {
+        text,
+        footer,
+        buttons: buttons.map(btn => ({
+          buttonId: btn[1],
+          buttonText: { displayText: btn[0] },
+          type: 1
+        }))
+      }, { quoted: m })
     }
   }
 

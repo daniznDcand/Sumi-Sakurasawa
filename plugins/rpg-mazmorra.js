@@ -1,3 +1,5 @@
+import { sendCompatibleMessage } from '../lib/compatible-messages.js'
+
 let cooldowns = {}
 let activeDungeons = {}
 
@@ -218,14 +220,11 @@ async function showDungeonMenu(conn, m, user, usedPrefix) {
     { buttonId: `${usedPrefix}rpgstats`, buttonText: { displayText: '📊 Ver Stats' }, type: 1 }
   ]
 
-  const buttonMessage = {
+  await sendCompatibleMessage(conn, m.chat, {
     text: menuText,
     footer: '💙 Sistema de Mazmorras - Hatsune Miku Bot',
-    buttons: buttons.concat(moreButtons),
-    headerType: 1
-  }
-
-  await conn.sendMessage(m.chat, buttonMessage, { quoted: m })
+    buttons: buttons.concat(moreButtons)
+  }, { quoted: m })
 }
 
 async function enterDungeon(conn, m, user, dungeonId, usedPrefix) {
@@ -356,14 +355,11 @@ async function attackEnemy(conn, m, user, usedPrefix) {
     { buttonId: `${usedPrefix}mazmorra usar potion`, buttonText: { displayText: '🧪 Usar Poción' }, type: 1 }
   ]
 
-  const continueMessage = {
+  await sendCompatibleMessage(conn, m.chat, {
     text: battleResult,
     footer: '⚔️ ¡La batalla continúa!',
-    buttons: continueButtons,
-    headerType: 1
-  }
-
-  await conn.sendMessage(m.chat, continueMessage, { quoted: m })
+    buttons: continueButtons
+  }, { quoted: m })
 }
 
 async function victoryReward(conn, m, user, battle, usedPrefix) {
@@ -436,14 +432,11 @@ async function victoryReward(conn, m, user, battle, usedPrefix) {
     { buttonId: `${usedPrefix}rpgstats`, buttonText: { displayText: '📊 Ver Stats' }, type: 1 }
   ]
 
-  const victoryMessage = {
+  await sendCompatibleMessage(conn, m.chat, {
     text: victoryText,
     footer: enemy.type === 'ultraboss' ? '🌌 ¡VICTORIA CÓSMICA!' : '🎉 ¡Felicidades por tu victoria!',
-    buttons: postBattleButtons,
-    headerType: 1
-  }
-
-  await conn.sendMessage(m.chat, victoryMessage, { quoted: m })
+    buttons: postBattleButtons
+  }, { quoted: m })
 }
 
 async function defeatPenalty(conn, m, user, usedPrefix) {
@@ -468,14 +461,11 @@ async function defeatPenalty(conn, m, user, usedPrefix) {
     { buttonId: `${usedPrefix}rpgstats`, buttonText: { displayText: '📊 Ver Stats' }, type: 1 }
   ]
 
-  const defeatMessage = {
+  await sendCompatibleMessage(conn, m.chat, {
     text: defeatText,
     footer: '💀 No te rindas, inténtalo de nuevo',
-    buttons: defeatButtons,
-    headerType: 1
-  }
-
-  await conn.sendMessage(m.chat, defeatMessage, { quoted: m })
+    buttons: defeatButtons
+  }, { quoted: m })
 }
 
 async function fleeDungeon(conn, m, user, usedPrefix) {
@@ -495,24 +485,19 @@ async function fleeDungeon(conn, m, user, usedPrefix) {
     { buttonId: `${usedPrefix}tiendarpg`, buttonText: { displayText: '🏪 Ir a Tienda' }, type: 1 }
   ]
 
-  const fleeMessage = {
-    text: fleeText,
-    footer: '🏃 Has escapado sano y salvo',
-    buttons: fleeButtons,
-    headerType: 1
-  }
-
-
   try {
-    await conn.sendMessage(m.chat, {
+    await sendCompatibleMessage(conn, m.chat, {
       image: { url: 'https://images.stockcake.com/public/b/d/8/bd898038-7b4d-4471-ab83-20a6158614d0_medium/heroic-fiery-leap-stockcake.jpg' },
       caption: fleeText,
       footer: '🏃 Has escapado sano y salvo',
-      buttons: fleeButtons,
-      headerType: 4
+      buttons: fleeButtons
     }, { quoted: m })
   } catch {
-    await conn.sendMessage(m.chat, fleeMessage, { quoted: m })
+    await sendCompatibleMessage(conn, m.chat, {
+      text: fleeText,
+      footer: '🏃 Has escapado sano y salvo',
+      buttons: fleeButtons
+    }, { quoted: m })
   }
 }
 
@@ -540,14 +525,11 @@ async function useItem(conn, m, user, item, usedPrefix) {
       { buttonId: `${usedPrefix}mazmorra huir`, buttonText: { displayText: '🏃 Huir' }, type: 1 }
     ]
 
-    const healMessage = {
+    await sendCompatibleMessage(conn, m.chat, {
       text: healText,
       footer: '🧪 Poción consumida',
-      buttons: healButtons,
-      headerType: 1
-    }
-
-    await conn.sendMessage(m.chat, healMessage, { quoted: m })
+      buttons: healButtons
+    }, { quoted: m })
   } else {
     m.reply('❌ Objeto no válido. Usa: potion')
   }
