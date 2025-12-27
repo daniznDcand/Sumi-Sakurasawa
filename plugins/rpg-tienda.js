@@ -1,5 +1,3 @@
-import { sendCompatibleMessage } from '../lib/compatible-messages.js'
-
 const SHOP_ITEMS = {
   
   potion: {
@@ -158,11 +156,14 @@ let handler = async (m, { conn, usedPrefix, command, text }) => {
       { buttonId: `${usedPrefix}tienda`, buttonText: { displayText: '🏪 Tienda Premium' }, type: 1 }
     ]
 
-    return await sendCompatibleMessage(conn, m.chat, {
+    const buttonMessage = {
       text: shopMessage,
       footer: '🏪 Tienda RPG - Hatsune Miku Bot',
-      buttons: categoryButtons.concat(moreButtons)
-    }, { quoted: m })
+      buttons: categoryButtons.concat(moreButtons),
+      headerType: 1
+    }
+
+    return await conn.sendMessage(m.chat, buttonMessage, { quoted: m })
   }
   
   

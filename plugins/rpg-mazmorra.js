@@ -1,44 +1,3 @@
-
-function isWhatsAppBusiness(conn) {
-  return conn.user?.id?.includes('business') || 
-         conn.user?.name?.toLowerCase().includes('business') ||
-         conn.user?.verifiedName?.toLowerCase().includes('business')
-}
-
-async function sendAdaptiveMessage(conn, jid, content, options = {}) {
-  const isBusiness = isWhatsAppBusiness(conn)
-  
-  if (content.buttons && !isBusiness) {
- 
-    let textMessage = content.text || content.caption || ''
-    
-    if (content.buttons.length > 0) {
-      textMessage += '\n\n📋 *Opciones disponibles:*\n'
-      content.buttons.forEach((btn, index) => {
-        const buttonText = btn.buttonText?.displayText || btn[0] || 'Opción'
-        textMessage += `${index + 1}. ${buttonText}\n`
-      })
-      textMessage += '\n💡 *Responde con el número de la opción que deseas*'
-    }
-    
-    if (content.image) {
-      return await conn.sendMessage(jid, {
-        image: content.image,
-        caption: textMessage
-      }, options)
-    } else {
-      return await conn.sendMessage(jid, {
-        text: textMessage
-      }, options)
-    }
-  } else {
-    
-    return await conn.sendMessage(jid, content, options)
-  }
-}
-
-import { sendCompatibleMessage } from '../lib/compatible-messages.js'
-
 let cooldowns = {}
 let activeDungeons = {}
 
@@ -259,11 +218,14 @@ async function showDungeonMenu(conn, m, user, usedPrefix) {
     { buttonId: `${usedPrefix}rpgstats`, buttonText: { displayText: '📊 Ver Stats' }, type: 1 }
   ]
 
-  await sendAdaptiveMessage(conn, m.chat, {
+  const buttonMessage = {
     text: menuText,
     footer: '💙 Sistema de Mazmorras - Hatsune Miku Bot',
-    buttons: buttons.concat(moreButtons)
-  }, { quoted: m })
+    buttons: buttons.concat(moreButtons),
+    headerType: 1
+  }
+
+  await conn.sendMessage(m.chat, buttonMessage, { quoted: m })
 }
 
 async function enterDungeon(conn, m, user, dungeonId, usedPrefix) {
@@ -334,21 +296,18 @@ async function enterDungeon(conn, m, user, dungeonId, usedPrefix) {
     { buttonId: `${usedPrefix}mazmorra usar potion`, buttonText: { displayText: '🧪 Usar Poción' }, type: 1 }
   ]
 
-
+  
   try {
-    await sendAdaptiveMessage(conn, m.chat, {
-      image: { url: isUltraBoss ? ULTRA_BOSS.image : dungeon.image },
-      caption: battleText,
-      footer: isUltraBoss ? '🌌 ¡ENTIDAD CÓSMICA DETECTADA!' : '⚔️ ¡Prepárate para la batalla!',
-      buttons: battleButtons,
-      headerType: 4
-    }, { quoted: m })
+    await conn.sendFile(m.chat, isUltraBoss ? ULTRA_BOSS.image : dungeon.image, 'battle.jpg', battleText, fkontak)
   } catch {
-    await sendAdaptiveMessage(conn, m.chat, {
-      text: battleText,
-      footer: isUltraBoss ? '🌌 ¡ENTIDAD CÓSMICA DETECTADA!' : '⚔️ ¡Prepárate para la batalla!',
-      buttons: battleButtons
-    }, { quoted: m })
+    try {
+      await conn.sendMessage(m.chat, {
+        image: { url: isUltraBoss ? ULTRA_BOSS.image : dungeon.image },
+        caption: battleText
+      }, { quoted: m })
+    } catch {
+      await conn.reply(m.chat, battleText, m)
+    }
   }
 }
 
@@ -397,11 +356,14 @@ async function attackEnemy(conn, m, user, usedPrefix) {
     { buttonId: `${usedPrefix}mazmorra usar potion`, buttonText: { displayText: '🧪 Usar Poción' }, type: 1 }
   ]
 
-  await sendAdaptiveMessage(conn, m.chat, {
+  const continueMessage = {
     text: battleResult,
     footer: '⚔️ ¡La batalla continúa!',
-    buttons: continueButtons
-  }, { quoted: m })
+    buttons: continueButtons,
+    headerType: 1
+  }
+
+  await conn.sendMessage(m.chat, continueMessage, { quoted: m })
 }
 
 async function victoryReward(conn, m, user, battle, usedPrefix) {
@@ -474,11 +436,14 @@ async function victoryReward(conn, m, user, battle, usedPrefix) {
     { buttonId: `${usedPrefix}rpgstats`, buttonText: { displayText: '📊 Ver Stats' }, type: 1 }
   ]
 
-  await sendAdaptiveMessage(conn, m.chat, {
+  const victoryMessage = {
     text: victoryText,
     footer: enemy.type === 'ultraboss' ? '🌌 ¡VICTORIA CÓSMICA!' : '🎉 ¡Felicidades por tu victoria!',
-    buttons: postBattleButtons
-  }, { quoted: m })
+    buttons: postBattleButtons,
+    headerType: 1
+  }
+
+  await conn.sendMessage(m.chat, victoryMessage, { quoted: m })
 }
 
 async function defeatPenalty(conn, m, user, usedPrefix) {
@@ -503,11 +468,14 @@ async function defeatPenalty(conn, m, user, usedPrefix) {
     { buttonId: `${usedPrefix}rpgstats`, buttonText: { displayText: '📊 Ver Stats' }, type: 1 }
   ]
 
-  await sendAdaptiveMessage(conn, m.chat, {
+  const defeatMessage = {
     text: defeatText,
     footer: '💀 No te rindas, inténtalo de nuevo',
-    buttons: defeatButtons
-  }, { quoted: m })
+    buttons: defeatButtons,
+    headerType: 1
+  }
+
+  await conn.sendMessage(m.chat, defeatMessage, { quoted: m })
 }
 
 async function fleeDungeon(conn, m, user, usedPrefix) {
@@ -527,19 +495,24 @@ async function fleeDungeon(conn, m, user, usedPrefix) {
     { buttonId: `${usedPrefix}tiendarpg`, buttonText: { displayText: '🏪 Ir a Tienda' }, type: 1 }
   ]
 
+  const fleeMessage = {
+    text: fleeText,
+    footer: '🏃 Has escapado sano y salvo',
+    buttons: fleeButtons,
+    headerType: 1
+  }
+
+
   try {
-    await sendAdaptiveMessage(conn, m.chat, {
+    await conn.sendMessage(m.chat, {
       image: { url: 'https://images.stockcake.com/public/b/d/8/bd898038-7b4d-4471-ab83-20a6158614d0_medium/heroic-fiery-leap-stockcake.jpg' },
       caption: fleeText,
       footer: '🏃 Has escapado sano y salvo',
-      buttons: fleeButtons
+      buttons: fleeButtons,
+      headerType: 4
     }, { quoted: m })
   } catch {
-    await sendAdaptiveMessage(conn, m.chat, {
-      text: fleeText,
-      footer: '🏃 Has escapado sano y salvo',
-      buttons: fleeButtons
-    }, { quoted: m })
+    await conn.sendMessage(m.chat, fleeMessage, { quoted: m })
   }
 }
 
@@ -567,11 +540,14 @@ async function useItem(conn, m, user, item, usedPrefix) {
       { buttonId: `${usedPrefix}mazmorra huir`, buttonText: { displayText: '🏃 Huir' }, type: 1 }
     ]
 
-    await sendAdaptiveMessage(conn, m.chat, {
+    const healMessage = {
       text: healText,
       footer: '🧪 Poción consumida',
-      buttons: healButtons
-    }, { quoted: m })
+      buttons: healButtons,
+      headerType: 1
+    }
+
+    await conn.sendMessage(m.chat, healMessage, { quoted: m })
   } else {
     m.reply('❌ Objeto no válido. Usa: potion')
   }
