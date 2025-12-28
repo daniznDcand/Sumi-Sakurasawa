@@ -389,7 +389,7 @@ async function victoryReward(conn, m, user, battle, usedPrefix) {
       victoryText += `${RANKS[10].icon} **${RANKS[10].name}**\n\n`
     }
   } else {
-    victoryText += `💀 Has derrotado a **${enemy.name}**\n`
+    victoryText += `💀 Has derrotado a *${enemy.name}*\n`
     victoryText += `${enemy.type === 'boss' ? '👑 ¡Era un JEFE! Recompensa extra' : '👹 Esbirro eliminado'}\n\n`
   }
   
