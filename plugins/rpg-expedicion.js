@@ -288,7 +288,7 @@ let handler = async (m, { conn, usedPrefix, command }) => {
 
 handler.help = ['expedicion', 'rpg2']
 handler.tags = ['rpg']
-handler.command = /^(expedicion|rpg2)$/i
+handler.command = /^(aventura|rpgaventure)$/i
 handler.group = true
 handler.register = true
 
