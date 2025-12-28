@@ -492,24 +492,14 @@ async function fleeDungeon(conn, m, user, usedPrefix) {
   ]
 
   const fleeMessage = {
-    text: fleeText,
+    image: { url: 'https://images.stockcake.com/public/b/d/8/bd898038-7b4d-4471-ab83-20a6158614d0_medium/heroic-fiery-leap-stockcake.jpg' },
+    caption: fleeText,
     footer: '🏃 Has escapado sano y salvo',
     buttons: fleeButtons,
-    headerType: 1
+    headerType: 4
   }
 
-
-  try {
-    await conn.sendMessage(m.chat, {
-      image: { url: 'https://images.stockcake.com/public/b/d/8/bd898038-7b4d-4471-ab83-20a6158614d0_medium/heroic-fiery-leap-stockcake.jpg' },
-      caption: fleeText,
-      footer: '🏃 Has escapado sano y salvo',
-      buttons: fleeButtons,
-      headerType: 4
-    }, { quoted: m })
-  } catch {
-    await conn.sendMessage(m.chat, fleeMessage, { quoted: m })
-  }
+  await conn.sendMessage(m.chat, fleeMessage, { quoted: m })
 }
 
 async function useItem(conn, m, user, item, usedPrefix) {
