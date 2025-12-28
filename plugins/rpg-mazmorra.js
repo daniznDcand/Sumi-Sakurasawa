@@ -31,7 +31,7 @@ const ULTRA_BOSS = {
 const DUNGEONS = {
   1: {
     name: "🏰 Castillo Abandonado",
-    image: "https://images.stockcake.com/public/7/4/1/741c3c8e-4b8e-4b3e-9f8e-2c5d8a9b1c3e_medium/dark-castle-entrance-stockcake.jpg",
+    image: "https://i.pinimg.com/236x/f5/cc/8a/f5cc8aaca0367bf56217cc26db9566cc.jpg",
     minLevel: 1,
     enemies: {
       minions: [
@@ -47,7 +47,7 @@ const DUNGEONS = {
   },
   2: {
     name: "🌋 Cavernas de Fuego",
-    image: "https://images.stockcake.com/public/a/2/3/a23f4b5c-6d7e-8f9a-0b1c-2d3e4f5a6b7c_medium/volcanic-cave-entrance-stockcake.jpg", 
+    image: "https://i.pinimg.com/736x/b8/f8/29/b8f829be33e314b4f3733096114defa5.jpg", 
     minLevel: 5,
     enemies: {
       minions: [
@@ -64,7 +64,7 @@ const DUNGEONS = {
   },
   3: {
     name: "❄️ Fortaleza Helada",
-    image: "https://images.stockcake.com/public/c/4/5/c45d6e7f-8a9b-0c1d-2e3f-4a5b6c7d8e9f_medium/frozen-fortress-gates-stockcake.jpg",
+    image: "https://images.splitshire.com/full/A-Medieval-Castle-in-the-Snowy-Mountains_JIDn5.png",
     minLevel: 10,
     enemies: {
       minions: [
