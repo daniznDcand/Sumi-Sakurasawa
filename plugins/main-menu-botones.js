@@ -1,5 +1,8 @@
+import fs from 'fs'
+import path from 'path'
+
 const handler = async (m, { conn, usedPrefix, command, args }) => {
-  
+
   if (command && command.includes('menu')) {
     console.log('🔍 DEBUG MENU:', {
       command: command,
@@ -7,7 +10,7 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
       message: Object.keys(m.message || {})
     })
   }
-  
+
   let userId = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.sender
   let user = global.db.data.users[userId]
   let name = conn.getName(userId)
@@ -15,8 +18,23 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
   let uptime = clockString(_uptime)
   let totalreg = Object.keys(global.db.data.users).length
   let totalCommands = Object.values(global.plugins).filter((v) => v.help && v.tags).length
-  
+
   usedPrefix = '.'
+
+  
+  let customMenuBg = null
+  const isSubBot = conn.user.jid !== global.conn.user.jid
+  if (isSubBot) {
+    try {
+      const sessionId = conn.user?.jid?.split('@')[0] || 'unknown'
+      const basePath = path.join(process.cwd(), `${global.jadi}`, sessionId, 'assets', 'menu_bg.jpg')
+      if (fs.existsSync(basePath)) {
+        customMenuBg = basePath
+      }
+    } catch (e) {
+      console.log('Error checking custom menu background:', e.message)
+    }
+  }
 
   
   const menuCommand = command || ''

@@ -13,20 +13,52 @@ let handler = async (m, { conn, args, usedPrefix }) => {
     const base = ensureSessionAssets(sessionId)
     if (!base) return m.reply('❌ Error interno creando carpeta de assets.')
 
-    const subCmd = (args[0] || '').toLowerCase()
+    let subCmd = (args[0] || '').toLowerCase()
 
-    if (!subCmd || subCmd === 'help') {
-      return m.reply(`Comandos de SubBot-Customize:\n- setmenu (responde imagen)\n- setwelcomeimg (responde imagen)\n- setwelcome (texto)\n- viewassets\n- resetassets`)    
+    
+    const commandMap = {
+      'menuimg': 'setmenu',
+      'bgimg': 'setmenubg',
+      'welcomeimg': 'setwelcomeimg',
+      'misassets': 'viewassets',
+      'reset': 'resetassets'
     }
 
-    if (subCmd === 'setmenu' || subCmd === 'setwelcomeimg') {
-      
+    if (commandMap[subCmd]) {
+      subCmd = commandMap[subCmd]
+    }
+
+    if (!subCmd || subCmd === 'help') {
+      return m.reply(`🎨 *PERSONALIZA TU SUBBOT* 🎨
+
+📱 *Comandos simples:*
+• \`.menuimg\` - Cambia imagen del menú (responde imagen)
+• \`.bgimg\` - Cambia fondo del menú (responde imagen)
+• \`.welcomeimg\` - Cambia imagen de bienvenida (responde imagen)
+• \`.welcome <texto>\` - Cambia texto de bienvenida
+• \`.misassets\` - Ver personalización actual
+• \`.reset\` - Borrar toda personalización
+
+💡 *Ejemplos:*
+• Responde una imagen con \`.menuimg\`
+• Escribe: \`.welcome ¡Hola $user! Bienvenido a mi bot personalizado\`
+
+Los cambios se guardan automáticamente en tu sesión.`)
+    }
+
+    if (subCmd === 'setmenu' || subCmd === 'setwelcomeimg' || subCmd === 'setmenubg') {
+
       let media = null
       if (m.quoted && m.quoted.mimetype && /image\//.test(m.quoted.mimetype)) media = await m.quoted.download().catch(() => null)
       else if (m.mimetype && /image\//.test(m.mimetype)) media = await m.download().catch(() => null)
       else return m.reply('Responde a una imagen con este comando o envía una imagen junto al comando.')
       if (!media) return m.reply('No se pudo descargar la imagen.')
-      const filename = subCmd === 'setmenu' ? 'menu.jpg' : 'welcome.jpg'
+
+      let filename = ''
+      if (subCmd === 'setmenu') filename = 'menu.jpg'
+      else if (subCmd === 'setwelcomeimg') filename = 'welcome.jpg'
+      else if (subCmd === 'setmenubg') filename = 'menu_bg.jpg'
+
       const p = path.join(base, filename)
       fs.writeFileSync(p, media)
       return m.reply(`✅ Imagen guardada: ${filename}`)
@@ -45,12 +77,15 @@ let handler = async (m, { conn, args, usedPrefix }) => {
       const cfg = getSessionConfig(sessionId)
       const menuP = path.join(base, 'menu.jpg')
       const welcomeP = path.join(base, 'welcome.jpg')
+      const menuBgP = path.join(base, 'menu_bg.jpg')
       let out = `📁 Assets para ${sessionId}:\n`
       out += `• menu: ${fs.existsSync(menuP) ? '✅' : '❌'}\n`
+      out += `• menu background: ${fs.existsSync(menuBgP) ? '✅' : '❌'}\n`
       out += `• welcome image: ${fs.existsSync(welcomeP) ? '✅' : '❌'}\n`
       out += `• welcome text: ${cfg.welcomeText ? '✅' : '❌'}`
       await conn.sendMessage(m.chat, { text: out }, { quoted: m })
       if (fs.existsSync(menuP)) await conn.sendFile(m.chat, menuP, 'menu.jpg', 'Menu image', m).catch(()=>{})
+      if (fs.existsSync(menuBgP)) await conn.sendFile(m.chat, menuBgP, 'menu_bg.jpg', 'Menu background', m).catch(()=>{})
       if (fs.existsSync(welcomeP)) await conn.sendFile(m.chat, welcomeP, 'welcome.jpg', 'Welcome image', m).catch(()=>{})
       if (cfg.welcomeText) {
         await conn.sendMessage(m.chat, { text: `📜 Welcome text:\n${cfg.welcomeText || ''}` }, { quoted: m })
@@ -74,8 +109,8 @@ let handler = async (m, { conn, args, usedPrefix }) => {
   }
 }
 
-handler.help = ['subbot-customize']
+handler.help = ['subbot-customize', 'menuimg', 'bgimg', 'welcomeimg', 'welcome', 'misassets', 'reset']
 handler.tags = ['serbot']
-handler.command = ['subbot-customize','subbotcustomize']
+handler.command = ['subbot-customize','subbotcustomize', 'menuimg', 'bgimg', 'welcomeimg', 'welcome', 'misassets', 'reset']
 
 export default handler
