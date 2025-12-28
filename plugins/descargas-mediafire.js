@@ -21,7 +21,35 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
     const {name, size, date, mime, link} = res;
     const caption = `${tradutor.texto2[0]}\n\n${tradutor.texto2[1]} ${name}\n${tradutor.texto2[2]} ${size}\n${tradutor.texto2[3]} ${mime}\n\n${tradutor.texto2[4]}`.trim();
     await m.reply(caption);
-    await conn.sendFile(m.chat, link, name, '', m, null, {mimetype: mime, asDocument: true});
+
+    
+    try {
+      const fileResponse = await axios.get(link, {
+        responseType: 'arraybuffer',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Referer': args[0]
+        },
+        maxRedirects: 5,
+        timeout: 60000
+      });
+
+      if (fileResponse.data) {
+        await conn.sendFile(m.chat, fileResponse.data, name, '', m, null, {
+          mimetype: mime || fileResponse.headers['content-type'],
+          asDocument: true
+        });
+      } else {
+        throw new Error('No se pudo obtener el contenido del archivo');
+      }
+    } catch (downloadError) {
+      console.error('Error descargando archivo:', downloadError.message);
+      
+      await conn.sendMessage(m.chat, {
+        text: `❌ Error al descargar directamente. Enlace alternativo: ${link}`,
+        quoted: m
+      });
+    }
   } catch (error) {
     console.error('Error en MediaFire:', error);
     await m.reply(tradutor.texto3);
