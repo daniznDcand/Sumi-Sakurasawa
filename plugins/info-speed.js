@@ -20,7 +20,7 @@ let chats = Object.entries(conn.chats).filter(([id, data]) => id && data.isChats
 let groups = Object.entries(conn.chats).filter(([jid, chat]) => jid.endsWith('@g.us') && chat.isChats && !chat.metadata?.read_only && !chat.metadata?.announce).map(v => v[0])
 
 
-let texto = `🎤💙 *${packname}* �🎤
+let texto = `💙 *${packname}* 🎤
 🎵 *Velocidad del Escenario Virtual:*
 → ${latensi.toFixed(4)}ms ✨
 
@@ -31,7 +31,7 @@ let texto = `🎤💙 *${packname}* �🎤
 → ${chats.length} *Fanáticos privados* 🎤
 → ${groups.length} *Salas de concierto* 🎵
 
-� *Sistema de Actuación:*
+💫 *Sistema de Actuación:*
 ➤ *Memoria Virtual ⪼* ${format(totalmem() - freemem())} / ${format(totalmem())} 💙`.trim()
 
 m.react('🎤')
