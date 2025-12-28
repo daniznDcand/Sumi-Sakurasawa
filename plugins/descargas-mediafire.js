@@ -34,11 +34,32 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
         timeout: 60000
       });
 
-      if (fileResponse.data) {
-        await conn.sendFile(m.chat, fileResponse.data, name, '', m, null, {
-          mimetype: mime || fileResponse.headers['content-type'],
-          asDocument: true
-        });
+      if (fileResponse.data && Buffer.isBuffer(fileResponse.data) && fileResponse.data.length > 0) {
+        const fileBuffer = Buffer.from(fileResponse.data);
+
+        
+        if (fileBuffer.length > 25 * 1024 * 1024) {
+          throw new Error('El archivo es demasiado grande (máximo 25MB)');
+        }
+
+        const docMessage = {
+          document: fileBuffer,
+          mimetype: mime || fileResponse.headers['content-type'] || 'application/octet-stream',
+          fileName: name,
+          caption: `📁 *Archivo descargado de MediaFire*\n\n📄 *Nombre:* ${name}\n📊 *Tamaño:* ${size}\n🗂️ *Tipo:* ${mime || 'Desconocido'}\n\n💙 *Descargado por Hatsune Miku Bot*`,
+          contextInfo: {
+            externalAdReply: {
+              showAdAttribution: true,
+              mediaType: 2,
+              mediaUrl: args[0],
+              title: name,
+              body: `📁 MediaFire | 💙 Hatsune Miku Bot`,
+              sourceUrl: args[0]
+            }
+          }
+        };
+
+        await conn.sendMessage(m.chat, docMessage, { quoted: m });
       } else {
         throw new Error('No se pudo obtener el contenido del archivo');
       }
