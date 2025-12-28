@@ -296,19 +296,15 @@ async function enterDungeon(conn, m, user, dungeonId, usedPrefix) {
     { buttonId: `${usedPrefix}mazmorra usar potion`, buttonText: { displayText: '🧪 Usar Poción' }, type: 1 }
   ]
 
-  
-  try {
-    await conn.sendFile(m.chat, isUltraBoss ? ULTRA_BOSS.image : dungeon.image, 'battle.jpg', battleText, fkontak)
-  } catch {
-    try {
-      await conn.sendMessage(m.chat, {
-        image: { url: isUltraBoss ? ULTRA_BOSS.image : dungeon.image },
-        caption: battleText
-      }, { quoted: m })
-    } catch {
-      await conn.reply(m.chat, battleText, m)
-    }
+  const battleMessage = {
+    image: { url: isUltraBoss ? ULTRA_BOSS.image : dungeon.image },
+    caption: battleText,
+    footer: '⚔️ ¡La batalla comienza!',
+    buttons: battleButtons,
+    headerType: 4
   }
+
+  await conn.sendMessage(m.chat, battleMessage, { quoted: m })
 }
 
 async function attackEnemy(conn, m, user, usedPrefix) {
