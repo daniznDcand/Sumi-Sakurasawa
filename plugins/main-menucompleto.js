@@ -9,10 +9,10 @@ let totalCommands = Object.values(global.plugins).filter((v) => v.help && v.tags
 
 
 let txt = `╭━━━━━━━━━━━━━━━━━━━╮
-┃ 🎤 *HATSUNE MIKU BOT* 🎤 ┃
+┃ 🎤*HATSUNE MIKU BOT*🎤 ┃
 ╰━━━━━━━━━━━━━━━━━━━╯
 
-🌸 ¡Konnichiwa, @${userId.split('@')[0]}! 🌸
+🌸*¡Konnichiwa,* @${userId.split('@')[0]}!🌸
 
 ┏━━━━━━━━━━━━━━━━┓
 ┃ 💙 *Estado:* ${(conn.user.jid == global.conn.user.jid ? 'Principal ⚡️' : 'Sub-Bot 🔌')}
