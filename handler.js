@@ -121,7 +121,7 @@ const isOwner = isROwner || m.fromMe
 const isPrems = isROwner || global.prems.map(v => String(v).replace(/[^0-9]/g, "") + "@s.whatsapp.net").includes(m.sender) || user.premium == true
 const isOwners = [this.user.jid, ...global.owner.map((number) => (Array.isArray(number) ? number[0] : number) + "@s.whatsapp.net")].includes(m.sender)
 if (opts["queque"] && m.text && !(isPrems)) {
-const queque = this.msgqueque, time = 1000 * 5
+const queque = this.msgqueque, time = 1000 * 1
 const previousID = queque[queque.length - 1]
 queque.push(m.id || m.key.id)
 setInterval(async function () {

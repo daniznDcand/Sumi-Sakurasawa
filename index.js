@@ -64,13 +64,6 @@ global.prefix = new RegExp('^[#!./-]')
 global.db = new Low(/https?:\/\//.test(global.opts['db'] || '') ? new cloudDBAdapter(global.opts['db']) : new JSONFile('database.json'))
 global.DATABASE = global.db
 global.loadDatabase = async function loadDatabase() {
-if (global.db.READ) {
-return new Promise((resolve) => setInterval(async function () {
-if (!global.db.READ) {
-clearInterval(this)
-resolve(global.db.data == null ? global.loadDatabase() : global.db.data)
-}}, 1 * 1000))
-}
 if (global.db.data !== null) return
 global.db.READ = true
 await global.db.read().catch(console.error)
