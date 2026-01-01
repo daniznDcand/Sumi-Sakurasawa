@@ -513,6 +513,11 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
     chat[dbKey] = isEnable
   }
 
+  
+  if (global.db && global.db.write) {
+    await global.db.write().catch(console.error)
+  }
+
   conn.reply(m.chat, `💙 La función *${type}* se *${isEnable ? 'activó' : 'desactivó'}* ${isAll ? 'para este Bot' : isUser ? '' : 'para este chat'}`, m, rcanal);
 };
 
