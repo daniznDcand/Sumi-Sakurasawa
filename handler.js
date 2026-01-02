@@ -18,11 +18,10 @@ resolve()
 let processedButtonMessages = new Map()
 const messageCache = new Map()
 
-
 const getMessageCache = (key) => messageCache.get(key)
 const setMessageCache = (key, value) => {
     messageCache.set(key, value)
-    setTimeout(() => messageCache.delete(key), 30000) 
+    setTimeout(() => messageCache.delete(key), 10000) 
 }
 
 export async function handler(chatUpdate) {
