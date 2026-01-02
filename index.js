@@ -156,8 +156,9 @@ userDevicesCache: userDevicesCache || new Map(),
 defaultQueryTimeoutMs: undefined,
 cachedGroupMetadata: (jid) => global.conn.chats[jid] ?? {},
 version: version,
-keepAliveIntervalMs: 55000,
-maxIdleTimeMs: 60000,
+keepAliveIntervalMs: 120000,
+maxIdleTimeMs: 180000,
+defaultQueryTimeoutMs: 60000,
 }
 global.conn = makeWASocket(connectionOptions)
 conn.ev.on("creds.update", saveCreds)
