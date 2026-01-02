@@ -1,5 +1,3 @@
-/* Codigo hecho por @Fabri115 y mejorado por BrunoSobrino */
-
 import { readdirSync, unlinkSync, existsSync, promises as fs, rmSync } from 'fs'
 import path from 'path'
 
@@ -18,14 +16,25 @@ try {
 if (!existsSync(sessionPath)) {
 return await conn.reply(m.chat, `${emoji} La carpeta está vacía.`, m)
 }
-let files = await fs.readdir(sessionPath)
-let filesDeleted = 0
-for (const file of files) {
-if (file !== 'creds.json') {
-await fs.unlink(path.join(sessionPath, file))
-filesDeleted++;
+
+async function deleteRecursively(dirPath) {
+  let filesDeleted = 0
+  const items = await fs.readdir(dirPath)
+  for (const item of items) {
+    const itemPath = path.join(dirPath, item)
+    const stat = await fs.stat(itemPath)
+    if (stat.isDirectory()) {
+      filesDeleted += await deleteRecursively(itemPath)
+      await fs.rmdir(itemPath)
+    } else if (item !== 'creds.json') {
+      await fs.unlink(itemPath)
+      filesDeleted++
+    }
+  }
+  return filesDeleted
 }
-}
+
+let filesDeleted = await deleteRecursively(sessionPath)
 if (filesDeleted === 0) {
 await conn.reply(m.chat, `${emoji2} La carpeta esta vacía.`, m)
 } else {
