@@ -13,7 +13,7 @@ let handler = async (m, { conn, usedPrefix }) => {
     let name2 = m.pushName || (await conn.getName(m.sender)) || m.sender.split('@')[0]
 
     let str = who
-        ? `💙 \`${name2}\` le dio un abrazo virtual lleno de amor a \`${name || who}\` como en el mundo de Miku 🤗` 
+        ? `💙 \`${name2}\` le dio un abrazo virtual lleno de amor a \`${name}\` como en el mundo de Miku 🤗` 
         : `💙 \`${name2}\` se abrazó a sí mismo/a con cariño virtual 🤗`
     
     if (m.isGroup) {
