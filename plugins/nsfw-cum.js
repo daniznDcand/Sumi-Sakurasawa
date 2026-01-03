@@ -34,7 +34,7 @@ let handler = async (m, { conn, usedPrefix }) => {
         const video = videos[Math.floor(Math.random() * videos.length)];
         
        
-        await m.reply({ video: { url: video }, caption: str, gifPlayback: true });
+        await conn.sendMessage(m.chat, { video: { url: video }, caption: str, gifPlayback: true }, { quoted: m });
     }
 };
 
