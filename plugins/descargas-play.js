@@ -195,14 +195,14 @@ async function downloadVideo(url) {
 
   const apis = [
     {
-      name: 'Adonix',
-      url: `https://api-adonix.ultraplus.click/download/ytmp4?apikey=${global.apikey}&url=${encodeURIComponent(url)}`,
-      extractor: data => data?.data?.url
+      name: 'AlyaBot',
+      url: `https://rest.alyabotpe.xyz/dl/ytmp4?url=${encodeURIComponent(url)}&quality=144&key=stellar-t1opU0P4`,
+      extractor: data => data?.result?.url
     },
     {
-      name: 'MayAPI',
-      url: `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=mp4&apikey=${global.APIKeys?.['https://mayapi.ooguy.com']}`,
-      extractor: data => data?.result?.url
+      name: 'Adonix',
+      url: `https://api-adonix.ultraplus.click/download/ytvideo?apikey=DuarteXVKey34&url=${encodeURIComponent(url)}`,
+      extractor: data => data?.data?.url
     },
     {
       name: 'Y2Mate',
@@ -241,14 +241,14 @@ async function downloadAudio(url) {
 
   const apis = [
     {
-      name: 'Adonix',
-      url: `https://api-adonix.ultraplus.click/download/ytmp3?apikey=${global.apikey}&url=${encodeURIComponent(url)}`,
-      extractor: data => data?.data?.url
+      name: 'AlyaBot',
+      url: `https://rest.alyabotpe.xyz/dl/ytmp3?url=${encodeURIComponent(url)}&key=stellar-t1opU0P4`,
+      extractor: data => data?.result?.url
     },
     {
-      name: 'MayAPI',
-      url: `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=mp3&apikey=${global.APIKeys?.['https://mayapi.ooguy.com']}`,
-      extractor: data => data?.result?.url
+      name: 'Adonix',
+      url: `https://api-adonix.ultraplus.click/download/ytaudio?apikey=DuarteXVKey34&url=${encodeURIComponent(url)}`,
+      extractor: data => data?.data?.url
     },
     {
       name: 'Y2Mate',
