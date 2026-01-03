@@ -25,14 +25,14 @@ let handler = async (m, { conn, usedPrefix }) => {
     }
     
     if (m.isGroup) {
-        let pp = 'https://qu.ax/GRoUp.mp4'; 
-        let pp2 = 'https://qu.ax/ecCLK.mp4'; 
-        let pp3 = 'https://qu.ax/MJBNo.mp4';
-        let pp4 = 'https://qu.ax/HLTOu.mp4';
-        let pp5 = 'https://qu.ax/BzTUE.mp4';
-        let pp6 = 'https://qu.ax/UNRMc.mp4';
-        let pp7 = 'https://qu.ax/KraLy.mp4';
-        let pp8 = 'https://qu.ax/UKxHy.mp4';
+        let pp = 'https://media.tenor.com/avjdyRYvSz4AAAPo/anime-smoke.mp4'; 
+        let pp2 = 'https://media.tenor.com/26VXnb94UpkAAAPo/himeno-chainsaw-man.mp4'; 
+        let pp3 = 'https://media.tenor.com/DI7x6eNuoFwAAAPo/smoke-anime.mp4';
+        let pp4 = 'https://media.tenor.com/8jyJDJN6F18AAAPo/neco-arc-chaos-talking.mp4';
+        let pp5 = 'https://media.tenor.com/zKmYYLGNsEUAAAPo/cyberpunk-cyberpunk-anime.mp4';
+        let pp6 = 'https://media.tenor.com/taEalfrZcE4AAAPo/gachiakuta-enjin-smoking.mp4';
+        let pp7 = 'https://media.tenor.com/ua_VYLJfi4YAAAPo/cowboy-bebop-spike-spiegel.mp4';
+        let pp8 = 'https://media.tenor.com/S8jqkmuIt9IAAAPo/class-of-09-nicole-class-of-09.mp4';
         
         const videos = [pp, pp2, pp3, pp4, pp5, pp6, pp7, pp8];
         const video = videos[Math.floor(Math.random() * videos.length)];
