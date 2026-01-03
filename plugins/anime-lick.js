@@ -8,11 +8,11 @@ import fs from 'fs'
 import path from 'path'
 
 let handler = async (m, { conn, usedPrefix }) => {
-    let who = m.mentionedJid.length > 0 ? m.mentionedJid[0] : (m.quoted ? m.quoted.sender : m.sender)
-    let name = m.pushName || (await conn.getName(who)) || who.split('@')[0]
+    let who = m.mentionedJid.length > 0 ? m.mentionedJid[0] : (m.quoted ? m.quoted.sender : null)
+    let name = who ? (await conn.getName(who)) || who.split('@')[0] : null
     let name2 = m.pushName || (await conn.getName(m.sender)) || m.sender.split('@')[0]
 
-    let str = m.mentionedJid.length > 0 || m.quoted 
+    let str = who
         ? `🎤💙 \`${name2}\` le dio un lamidita juguetona a \`${name || who}\` en el concierto virtual ✨😋🎵` 
         : `🎤💙 \`${name2}\` está siendo travieso/a en el mundo virtual de Miku ✨😋💫`
     
@@ -36,7 +36,7 @@ let handler = async (m, { conn, usedPrefix }) => {
         const videos = [pp, pp2, pp3, pp4, pp5, pp6, pp7, pp8, pp9, pp10, pp11, pp12, pp13, pp14, pp15]
         const video = videos[Math.floor(Math.random() * videos.length)]
         
-        conn.sendMessage(m.chat, { video: { url: video }, gifPlayback: true, caption: str, ptt: true, mentions: [who] }, { quoted: m })
+        conn.sendMessage(m.chat, { video: { url: video }, gifPlayback: true, caption: str, ptt: true, mentions: who ? [who] : [] }, { quoted: m })
     }
 }
 
