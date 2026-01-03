@@ -1,5 +1,6 @@
 import fetch from "node-fetch";
 import yts from 'yt-search';
+import { ytv, yta } from '../lib/y2mate.js';
 
 function extractYouTubeId(url) {
   const patterns = [
@@ -193,24 +194,34 @@ async function downloadVideo(url) {
   if (!videoId) throw new Error('URL inválida');
 
   const apis = [
-    { 
-      name: 'Adonix', 
+    {
+      name: 'Adonix',
       url: `https://api-adonix.ultraplus.click/download/ytmp4?apikey=${global.apikey}&url=${encodeURIComponent(url)}`,
       extractor: data => data?.data?.url
     },
-    { 
-      name: 'MayAPI', 
+    {
+      name: 'MayAPI',
       url: `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=mp4&apikey=${global.APIKeys?.['https://mayapi.ooguy.com']}`,
       extractor: data => data?.result?.url
+    },
+    {
+      name: 'Y2Mate',
+      downloadFunc: async () => await ytv(url),
+      extractor: data => data?.link
     }
   ];
 
   for (const api of apis) {
     try {
       console.log(`🔄 ${api.name}...`);
-      const res = await fetch(api.url);
-      const data = await res.json();
-      
+      let data;
+      if (api.downloadFunc) {
+        data = await api.downloadFunc();
+      } else {
+        const res = await fetch(api.url);
+        data = await res.json();
+      }
+
       const videoUrl = api.extractor(data);
       if (videoUrl) {
         console.log(`✅ ${api.name} exitoso`);
@@ -229,24 +240,34 @@ async function downloadAudio(url) {
   if (!videoId) throw new Error('URL inválida');
 
   const apis = [
-    { 
-      name: 'Adonix', 
+    {
+      name: 'Adonix',
       url: `https://api-adonix.ultraplus.click/download/ytmp3?apikey=${global.apikey}&url=${encodeURIComponent(url)}`,
       extractor: data => data?.data?.url
     },
-    { 
-      name: 'MayAPI', 
+    {
+      name: 'MayAPI',
       url: `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=mp3&apikey=${global.APIKeys?.['https://mayapi.ooguy.com']}`,
       extractor: data => data?.result?.url
+    },
+    {
+      name: 'Y2Mate',
+      downloadFunc: async () => await yta(url),
+      extractor: data => data?.link
     }
   ];
 
   for (const api of apis) {
     try {
       console.log(`🔄 ${api.name}...`);
-      const res = await fetch(api.url);
-      const data = await res.json();
-      
+      let data;
+      if (api.downloadFunc) {
+        data = await api.downloadFunc();
+      } else {
+        const res = await fetch(api.url);
+        data = await res.json();
+      }
+
       const audioUrl = api.extractor(data);
       if (audioUrl) {
         console.log(`✅ ${api.name} exitoso`);
