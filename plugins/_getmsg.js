@@ -4,7 +4,7 @@ export async function all(m) {
     if ((global.getUser ? global.getUser(m.sender) : global.db.data.users[m.sender]).banned) return
     if (m.isBaileys) return
     let msgs = global.db.data.msgs
-    if (!(m.text in msgs)) return
+    if (!msgs || !(m.text in msgs)) return
     let _m = this.serializeM(JSON.parse(JSON.stringify(msgs[m.text]), (_, v) => {
         if (
             v !== null &&
