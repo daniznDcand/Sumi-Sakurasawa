@@ -8,8 +8,8 @@ import path from 'path'
 
 let handler = async (m, { conn, usedPrefix }) => {
     let who = m.mentionedJid.length > 0 ? m.mentionedJid[0] : (m.quoted ? m.quoted.sender : m.sender)
-    let name = conn.getName(who)
-    let name2 = conn.getName(m.sender)
+    let name = m.pushName || (await conn.getName(who)) || who.split('@')[0]
+    let name2 = m.pushName || (await conn.getName(m.sender)) || m.sender.split('@')[0]
 
     let str = m.mentionedJid.length > 0 || m.quoted 
         ? `\`${name2}\` está comiendo con \`${name || who}\` en el café virtual (っ˘ڡ˘ς) 🍰💙` 
