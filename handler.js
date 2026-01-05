@@ -333,7 +333,7 @@ if (plugin.register && !user.registered) {
 ┃ 🚫 *¡ACCESO RESTRINGIDO!* 🚫
 ┃╰────────────────╯
 
-🌸 *📝 REGISTRO REQUERIDO* 🌸
+🌸*📝REGISTRO REQUERIDO*🌸
 
 💙 *Este comando requiere registro para usarlo*
 
@@ -344,15 +344,15 @@ ${usedPrefix}reg nombre.edad
 ${usedPrefix}reg ${m.name || 'MikuFan'}.18
 
 👓 *¿Qué obtienes al registrarte?*
-🌱 • Cebollines para comprar en la tienda
+🌱 • Cebollines para comprar
 ⭐ • Experiencia y niveles
 🎟️ • Tickets exclusivos
 🎤 • Acceso a todos los comandos
 
 🌱 *¡Únete a la familia Miku!*
-📢 Canal oficial: https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o
 
-╰─「 💙 *¡Regístrate para desbloquear!* 💙 」─╯
+
+╰─「 💙*¡Regístrate y desbloquea!*💙」─╯
 
 💫 *Escribe ${usedPrefix}reg para comenzar tu aventura* 💫`
 
