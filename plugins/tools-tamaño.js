@@ -1,14 +1,15 @@
 import uploadImage from '../lib/uploadImage.js'
 import fetch from 'node-fetch'
+import { replyWithChannel } from '../lib/simple.js'
 let handler = async (m, { conn, usedPrefix, command, args, text }) => {
 let q = m.quoted ? m.quoted : m
 let mime = (q.msg || q).mimetype || ''
-if (!mime) return conn.reply(m.chat, `${emoji} Por favor, responda a una *Imagen* o *Video.*`, m, global.rcanal)
-if (!text) return conn.reply(m.chat, `${emoji} Ingresa el peso nuevo de la imágen/video.`, m, global.rcanal)
+if (!mime) return replyWithChannel(conn, m.chat, `${emoji} Por favor, responda a una *Imagen* o *Video.*`, m)
+if (!text) return replyWithChannel(conn, m.chat, `${emoji} Ingresa el peso nuevo de la imágen/video.`, m)
 await m.react('🕓')
 try {
 if (isNaN(text)) return conn.reply(m.chat, `${emoji2} Sólo números.`, m).then(_ => m.react('✖️'))
-if (!/image\/(jpe?g|png)|video|document/.test(mime)) return conn.reply(m.chat, `${emoji2} Formato no soportado.`, m, global.rcanal)
+if (!/image\/(jpe?g|png)|video|document/.test(mime)) return replyWithChannel(conn, m.chat, `${emoji2} Formato no soportado.`, m)
 let img = await q.download()
 let url = await uploadImage(img)
 

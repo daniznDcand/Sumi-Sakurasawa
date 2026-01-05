@@ -2,6 +2,7 @@ import { sticker } from '../lib/sticker.js'
 import uploadFile from '../lib/uploadFile.js'
 import uploadImage from '../lib/uploadImage.js'
 import { webp2png } from '../lib/webp2mp4.js'
+import { replyWithChannel } from '../lib/simple.js'
 
 let handler = async (m, { conn, args }) => {
 let stiker = false
@@ -16,7 +17,7 @@ let txt = args.join(' ')
 
 if (/webp|image|video/g.test(mime) && q.download) {
 if (/video/.test(mime) && (q.msg || q).seconds > 16)
-return conn.reply(m.chat, '💙 El video no puede durar más de *15 segundos* para crear un sticker virtual perfecto ✨', m, global.rcanal)
+return replyWithChannel(conn, m.chat, '💙 El video no puede durar más de *15 segundos* para crear un sticker virtual perfecto ✨', m)
 let buffer = await q.download()
 await m.react('🎤')
 
@@ -26,9 +27,9 @@ stiker = await sticker(buffer, false, marca[0], marca[1])
 let buffer = await sticker(false, args[0], texto1, texto2)
 stiker = buffer
 } else {
-return conn.reply(m.chat, '💙 Por favor, envía una *imagen* o *video* para crear un hermoso sticker virtual ✨', m, global.rcanal)
+return replyWithChannel(conn, m.chat, '💙 Por favor, envía una *imagen* o *video* para crear un hermoso sticker virtual ✨', m)
 }} catch (e) {
-await conn.reply(m.chat, '💫 ¡Gomen! Ocurrió un error en el escenario virtual: ' + e.message + ' ✨', m, global.rcanal)
+await replyWithChannel(conn, m.chat, '💫 ¡Gomen! Ocurrió un error en el escenario virtual: ' + e.message + ' ✨', m)
 await m.react('🎵')
 } finally {
 if (stiker) {

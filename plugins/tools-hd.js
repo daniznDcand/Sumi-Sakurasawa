@@ -1,5 +1,6 @@
 import fetch from 'node-fetch'
 import FormData from 'form-data'
+import { replyWithChannel } from '../lib/simple.js'
 
 let handler = async (m, { conn, usedPrefix, command }) => {
   const ctxErr = (global.rcanalx || {})
@@ -10,12 +11,12 @@ let handler = async (m, { conn, usedPrefix, command }) => {
 
   if (!/image\/(jpe?g|png)/i.test(mime)) {
     await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
-    return conn.reply(m.chat, `💙 *Responde a una imagen*`, m, rcanal)
+    return replyWithChannel(conn, m.chat, `💙 *Responde a una imagen*`, m)
   }
 
   try {
     await conn.sendMessage(m.chat, { react: { text: '🕒', key: m.key } })
-    conn.reply(m.chat, `♻️ *Procesando imagen...*`, m, ctxWarn)  
+    replyWithChannel(conn, m.chat, `♻️ *Procesando imagen...*`, m, ctxWarn)  
 
     const media = await quoted.download()
     const base64 = media.toString('base64')

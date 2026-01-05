@@ -1,11 +1,12 @@
 import { toAudio } from '../lib/converter.js'
+import { replyWithChannel } from '../lib/simple.js'
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
 let q = m.quoted || m
 let mime = (q.msg || q).mimetype || ''
-if (!m.quoted) return conn.reply(m.chat,  `${emoji} Etiqueta el *Video o Audio* que desea convertir en documento.`, m, global.rcanal)
+if (!m.quoted) return replyWithChannel(conn, m.chat,  `${emoji} Etiqueta el *Video o Audio* que desea convertir en documento.`, m)
 if(!text) return conn.reply(m.chat, `${emoji2} Ingresa el nombre para guardar el documento.`, m)
-if (!/audio|video/.test(mime)) return conn.reply(m.chat,  `${emoji} Etiqueta el *Video o Audio* que desea convertir en documento.`, m, global.rcanal)
+if (!/audio|video/.test(mime)) return replyWithChannel(conn, m.chat,  `${emoji} Etiqueta el *Video o Audio* que desea convertir en documento.`, m)
 let media = await q.download?.()
 if (!media) throw m.react('✖️')
 await m.react('🕓')
