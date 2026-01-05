@@ -260,6 +260,10 @@ if (!globalThis.db.data.settings[conn.user.jid].jadibotmd) {
 return m.reply(`💙 El Comando *${command}* está desactivado temporalmente.`)
 }
 
+if (!globalThis.db.data.settings[conn.user.jid].serbot) {
+return m.reply(`💙 La función *serbot* está desactivada. Use ${usedPrefix}enable serbot para activarla.`)
+}
+
 
 const isFromSubBot = conn.isSubBot === true
 if (isFromSubBot && (command === 'code')) {

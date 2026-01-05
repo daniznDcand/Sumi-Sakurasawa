@@ -225,9 +225,10 @@ const handler = async (m, { isPrems, conn }) => {
 
   try {
     await conn.sendMessage(m.chat, { 
-      image: { url: 'https://media.tenor.com/I_1R0Sf588QAAAPo/hatsune-miku-hatsune.mp4' },
+      video: { url: 'https://media.tenor.com/I_1R0Sf588QAAAPo/hatsune-miku-hatsune.mp4' },
+      gifPlayback: true,
       caption: texto,
-      gifPlayback: true 
+      mentions: []
     }, { quoted: m });
   } catch (error) {
     console.error('💙 Error al enviar el cofre:', error);

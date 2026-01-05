@@ -4,6 +4,10 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
     return m.reply(`💙 El comando *${command}* está desactivado temporalmente.`)
   }
   
+  if (!globalThis.db.data.settings[conn.user.jid].serbot) {
+    return m.reply(`💙 La función *serbot* está desactivada. Use ${usedPrefix}enable serbot para activarla.`)
+  }
+  
   
   if (!global.db.data.users[m.sender]) {
     global.db.data.users[m.sender] = { Subs: 0 }
