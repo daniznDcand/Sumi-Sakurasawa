@@ -11,8 +11,8 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   }
 
  
-  const channelId = '120363350523130615@newsletter'
-  const channelName = '💙🌱 Hatsune – Miku – Bot 🌱💙'
+  const channelId = '120363315369913363@newsletter'
+  const channelName = '💙HATSUNE MIKU CHANNEL💙'
   
   try {
     let quoted = m.quoted ? m.quoted : m
