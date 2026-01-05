@@ -536,11 +536,10 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
   const mensaje = `💙 La función *${type}* se *${isEnable ? 'activó' : 'desactivó'}* ${isAll ? 'para este Bot' : isUser ? '' : 'para este chat'}`;
   
   try {
-    const buttons = [
-      ['🎵 Canal Oficial 💙', 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o']
-    ];
+    const buttons = []
+    const urls = [['🎵 Canal Oficial 💙', 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o']]
     
-    await conn.sendNCarousel(m.chat, mensaje, '💙 Hatsune Miku Bot', null, buttons, null, null, null, m);
+    await conn.sendNCarousel(m.chat, mensaje, '💙 Hatsune Miku Bot', null, buttons, null, urls, null, m);
   } catch (error) {
     console.log('Error con botones, usando reply simple:', error.message);
     conn.reply(m.chat, `${mensaje}\n\n🎵 *Canal Oficial:* https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o`, m);
