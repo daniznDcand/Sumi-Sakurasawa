@@ -281,8 +281,14 @@ return
 }}}
 
 const adminMode = chat.modoadmin || false
-const wa = plugin.botAdmin || plugin.admin || plugin.group || plugin || noPrefix || pluginPrefix || m.text.slice(0, 1) === pluginPrefix || plugin.command
-if (adminMode && !isOwner && m.isGroup && !isAdmin && wa) return
+const isCommand = plugin.botAdmin || plugin.admin || plugin.group || plugin || noPrefix || pluginPrefix || m.text.slice(0, 1) === pluginPrefix || plugin.command
+
+
+if (adminMode && m.isGroup && !isOwner && !isAdmin) {
+  
+  return false
+}
+
 if (plugin.rowner && plugin.owner && !(isROwner || isOwner)) {
 fail("owner", m, this)
 continue
