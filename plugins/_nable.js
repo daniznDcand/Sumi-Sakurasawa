@@ -532,7 +532,22 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
     await global.db.write().catch(console.error)
   }
 
-  conn.reply(m.chat, `💙 La función *${type}* se *${isEnable ? 'activó' : 'desactivó'}* ${isAll ? 'para este Bot' : isUser ? '' : 'para este chat'}`, m, rcanal);
+  
+  const canalCompatible = {
+    contextInfo: {
+      isForwarded: true,
+      externalAdReply: {
+        showAdAttribution: true,
+        title: "💙🌱 Hatsune – Miku – Bot 🌱💙",
+        body: "Sistema de Configuración",
+        previewType: "IMAGE",
+        sourceUrl: global.redes || "https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o",
+        thumbnail: null
+      }
+    }
+  };
+  
+  conn.reply(m.chat, `💙 La función *${type}* se *${isEnable ? 'activó' : 'desactivó'}* ${isAll ? 'para este Bot' : isUser ? '' : 'para este chat'}`, m, canalCompatible);
 };
 
 handler.help = ['welcome', 'bienvenida', 'antiprivado', 'antiprivate', 'restrict', 'restringir', 'autolevelup', 'autonivel', 'antibot', 'antibots', 'autoaceptar', 'aceptarauto', 'autorechazar', 'rechazarauto', 'autoresponder', 'autorespond', 'antisubbots', 'antibot2', 'modoadmin', 'soloadmin', 'reaction', 'reaccion', 'nsfw', 'modohorny', 'antispam', 'jadibotmd', 'modejadibot', 'serbot', 'subbots', 'detect', 'avisos', 'antilink', 'antilink2', 'antifake', 'antiarabes', 'antitoxic', 'antimencion', 'antimencionar', 'audios', 'enable', 'disable']
