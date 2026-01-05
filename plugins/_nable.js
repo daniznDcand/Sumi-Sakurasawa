@@ -533,21 +533,20 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
   }
 
   
-  const canalCompatible = {
-    contextInfo: {
-      isForwarded: true,
-      externalAdReply: {
-        showAdAttribution: true,
-        title: "💙🌱 Hatsune – Miku – Bot 🌱💙",
-        body: "Sistema de Configuración",
-        previewType: "IMAGE",
-        sourceUrl: global.redes || "https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o",
-        thumbnail: null
-      }
-    }
-  };
+  const mensaje = `💙 La función *${type}* se *${isEnable ? 'activó' : 'desactivó'}* ${isAll ? 'para este Bot' : isUser ? '' : 'para este chat'}`;
   
-  conn.reply(m.chat, `💙 La función *${type}* se *${isEnable ? 'activó' : 'desactivó'}* ${isAll ? 'para este Bot' : isUser ? '' : 'para este chat'}`, m, canalCompatible);
+  try {
+    const buttons = [
+      ['🎵 Canal Oficial 💙', global.redes || 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o']
+    ];
+    
+    const urls = [['🎵 Ir Canal 💙', global.redes || 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o']];
+    
+    await conn.sendNCarousel(m.chat, mensaje, '💙 Hatsune Miku Bot', null, buttons, null, urls, null, m);
+  } catch (error) {
+    console.log('Error con botones, usando reply simple:', error.message);
+    conn.reply(m.chat, `${mensaje}\n\n🎵 *Canal Oficial:* ${global.redes || 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'}`, m);
+  }
 };
 
 handler.help = ['welcome', 'bienvenida', 'antiprivado', 'antiprivate', 'restrict', 'restringir', 'autolevelup', 'autonivel', 'antibot', 'antibots', 'autoaceptar', 'aceptarauto', 'autorechazar', 'rechazarauto', 'autoresponder', 'autorespond', 'antisubbots', 'antibot2', 'modoadmin', 'soloadmin', 'reaction', 'reaccion', 'nsfw', 'modohorny', 'antispam', 'jadibotmd', 'modejadibot', 'serbot', 'subbots', 'detect', 'avisos', 'antilink', 'antilink2', 'antifake', 'antiarabes', 'antitoxic', 'antimencion', 'antimencionar', 'audios', 'enable', 'disable']
