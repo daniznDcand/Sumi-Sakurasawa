@@ -19,12 +19,13 @@ let handler = async (m, { conn }) => {
     while (canLevelUp(user.level, user.exp, global.multiplier)) user.level++;
 
     if (before !== user.level) {
-        let txt = `💙 Felicidades Has subido de nivel 💙\n\n`; 
-        txt += `*${before}* 🔌 *${user.level}* [ ${user.role} ]\n\n`;
-        txt += `• 📈 *Nivel anterior* : ${before}\n`;
-        txt += `• 🎉 *Nuevos niveles* : ${user.level}\n`;
-        txt += `• 📅 *Fecha* : ${new Date().toLocaleString('id-ID')}\n\n`;
-        txt += `> 🧧 Nota: *Cuanto más interactúes con el Bot, mayor será tu nivel.*`;
+        let txt = `🎵✨ *¡LEVEL UP! HATSUNE MIKU CONCERT* ✨🎵\n\n`;
+        txt += `💙 *¡FELICIDADES!* Has subido de nivel 💙\n\n`;
+        txt += `🔌 *${before}* ➞ *${user.level}* [ ${user.role} ]\n\n`;
+        txt += `📈 *Nivel anterior* : ${before}\n`;
+        txt += `🎉 *Nuevo nivel* : ${user.level}\n`;
+        txt += `📅 *Fecha* : ${new Date().toLocaleString('es-ES', { timeZone: 'America/Mexico_City' })}\n\n`;
+        txt += `🎶 *Sigue interactuando con Miku para subir más niveles!* 🎶`;
         
         
        
@@ -37,11 +38,20 @@ let handler = async (m, { conn }) => {
         const video = videos[Math.floor(Math.random() * videos.length)];
         
         try {
+            
             await conn.sendMessage(m.chat, { video: { url: video }, gifPlayback: true, caption: txt, mentions: [who] }, { quoted: m });
         } catch (e) {
-            console.error('Error enviando video de level up:', e);
-            
-            await conn.sendMessage(m.chat, { text: txt }, { quoted: m });
+            try {
+                
+                const res = await fetch(video);
+                if (!res.ok) throw new Error('download failed');
+                const ab = await res.arrayBuffer();
+                const buf = Buffer.from(ab);
+                await conn.sendMessage(m.chat, { video: buf, gifPlayback: true, mimetype: 'video/mp4', caption: txt, mentions: [who] }, { quoted: m });
+            } catch (e2) {
+                
+                await conn.sendMessage(m.chat, { text: txt }, { quoted: m });
+            }
         }
     } else {
         let users = Object.entries(global.db.data.users).map(([key, value]) => {
