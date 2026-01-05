@@ -359,7 +359,7 @@ ${usedPrefix}reg ${m.name || 'MikuFan'}.18
   await replyWithChannel(this, m.chat, restrictedMsg, m)
   continue
 }
-if (plugin.private && m.isGroup) {
+if (plugin.private && !m.isGroup) {
 fail("private", m, this)
 continue
 }

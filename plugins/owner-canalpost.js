@@ -10,6 +10,7 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
     return conn.reply(m.chat, `${global.emoji} ❌ *Este comando solo puede ser usado por el owner del bot.*`, m)
   }
 
+ 
   const channelId = '120363350523130615@newsletter'
   const channelName = '💙🌱 Hatsune – Miku – Bot 🌱💙'
   
@@ -27,41 +28,81 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
     
     let messageContent = {}
     
-   
+    
     if (quoted && (mime.includes('image') || mime.includes('video'))) {
       let buffer = await quoted.download()
       
       if (mime.includes('image')) {
         messageContent = {
           image: buffer,
-          caption: texto || `💙 *${channelName} - Publicación Oficial* 💙\n\n📅 *Fecha:* ${new Date().toLocaleString('es-MX')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}`,
-          footer: `🌱 ${channelName}`
+          caption: texto || `💙 *${channelName} - Publicación Oficial* 💙\n\n📅 *Fecha:* ${new Date().toLocaleString('es-MX')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}`
         }
       } else if (mime.includes('video')) {
         messageContent = {
           video: buffer,
-          caption: texto || `💙 *${channelName} - Video Oficial* 💙\n\n📅 *Fecha:* ${new Date().toLocaleString('es-MX')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}`,
-          footer: `🌱 ${channelName}`
+          caption: texto || `💙 *${channelName} - Video Oficial* 💙\n\n📅 *Fecha:* ${new Date().toLocaleString('es-MX')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}`
         }
       }
     } 
-   
+    
     else {
       messageContent = {
-        text: `💙 *${channelName} - Mensaje Oficial* 💙\n\n📝 *Mensaje:*\n${texto}\n\n📅 *Fecha:* ${new Date().toLocaleString('es-MX')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}\n\n━━━━━━━━━━━━━━━━━━━━\n🌱 *Sigue nuestro canal para más contenido!*\n\n📺 *Canal:* ${channelName}`,
-        footer: `🌱 ${channelName}`
+        text: `💙 *${channelName} - Mensaje Oficial* 💙\n\n📝 *Mensaje:*\n${texto}\n\n📅 *Fecha:* ${new Date().toLocaleString('es-MX')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}\n\n━━━━━━━━━━━━━━━━━━━━\n🌱 *Sigue nuestro canal para más contenido!*\n\n📺 *Canal:* ${channelName}`
       }
     }
     
-  
+    
     try {
-      await conn.sendMessage(channelId, messageContent)
-      await m.react('✅')
-      conn.reply(m.chat, `${global.emoji} ✅ *Mensaje enviado exitosamente al canal*\n\n📊 *Tipo:* ${mime.includes('image') ? 'Imagen' : mime.includes('video') ? 'Video' : 'Texto'}\n📝 *Contenido:* ${texto ? texto.substring(0, 30) + '...' : 'Sin texto'}\n📺 *Canal:* ${channelName}\n🎯 *ID:* ${channelId}`, m)
+      
+      let result = null
+      
+     
+      try {
+        result = await conn.sendMessage(channelId, messageContent)
+      } catch (e1) {
+        console.log('Método 1 falló, intentando método 2:', e1.message)
+        
+        
+        try {
+          if (messageContent.image) {
+            result = await conn.sendMessage(channelId, { 
+              image: messageContent.image, 
+              caption: messageContent.caption 
+            })
+          } else if (messageContent.video) {
+            result = await conn.sendMessage(channelId, { 
+              video: messageContent.video, 
+              caption: messageContent.caption 
+            })
+          } else {
+            result = await conn.sendMessage(channelId, { 
+              text: messageContent.text 
+            })
+          }
+        } catch (e2) {
+          console.log('Método 2 falló, intentando método 3:', e2.message)
+          
+          
+          try {
+            const msg = await conn.prepareMessageFromContent(channelId, messageContent, {})
+            result = await conn.relayMessage(channelId, msg.message, { messageId: msg.key.id })
+          } catch (e3) {
+            throw new Error('Todos los métodos de envío fallaron: ' + e3.message)
+          }
+        }
+      }
+      
+      if (result) {
+        await m.react('✅')
+        conn.reply(m.chat, `${global.emoji} ✅ *Mensaje enviado exitosamente al canal*\n\n📊 *Tipo:* ${mime.includes('image') ? 'Imagen' : mime.includes('video') ? 'Video' : 'Texto'}\n📝 *Contenido:* ${texto ? texto.substring(0, 30) + '...' : 'Sin texto'}\n📺 *Canal:* ${channelName}\n🎯 *ID:* ${channelId}\n🆔 *Message ID:* ${result.key?.id || 'N/A'}`, m)
+      } else {
+        throw new Error('No se recibió respuesta del canal')
+      }
+      
     } catch (error) {
       console.error('Error enviando al canal:', error)
       await m.react('❌')
-      conn.reply(m.chat, `${global.emoji} ❌ *Error al enviar mensaje al canal*\n\n📝 *Error:* ${error.message}\n💡 *Asegúrate de tener permisos de administrador en el canal*\n📺 *Canal:* ${channelName}\n🎯 *ID:* ${channelId}`, m)
+      conn.reply(m.chat, `${global.emoji} ❌ *Error al enviar mensaje al canal*\n\n📝 *Error:* ${error.message}\n💡 *Posibles soluciones:*\n• Verifica que el bot sea admin del canal\n• Verifica que el ID del canal sea correcto\n• Intenta reiniciar el bot\n\n📺 *Canal:* ${channelName}\n🎯 *ID:* ${channelId}`, m)
     }
     
   } catch (error) {
