@@ -316,9 +316,48 @@ fail("admin", m, this)
 continue
 }
 if (plugin.register && !user.registered) {
-await m.reply(`🚫 *ACCESO RESTRINGIDO* 🚫\n\n💙 *Este comando requiere registro*\n\n🎯 *Usa .reg nombre.edad para registrarte*\n\n*Ejemplo:*\n.reg ${m.name || 'MikuFan'}.18\n\n🌸 *¡Regístrate para acceder a todas las funciones!*`)
+  
+  async function replyWithChannel(conn, chat, text, quoted = null) {
+    try {
+      const buttons = []
+      const urls = [['🎵 Canal Oficial 💙', 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o']]
+      
+      await conn.sendNCarousel(chat, text, '💙 Hatsune Miku Bot', null, buttons, null, urls, null, quoted);
+    } catch (error) {
+      console.log('Error con botones, usando reply simple:', error.message);
+      conn.reply(chat, `${text}\n\n🎵 *Canal Oficial:* https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o`, quoted);
+    }
+  }
 
-continue
+  const restrictedMsg = `╭─「 🎵 *HATSUNE MIKU BOT* 🎵 」─╮
+┃ 🚫 *¡ACCESO RESTRINGIDO!* 🚫
+┃╰─────────────────────────────────────────╯
+
+🌸 *📝 REGISTRO REQUERIDO* 🌸
+
+💙 *Este comando requiere registro para usarlo*
+
+🎯 *Usa este comando para registrarte:*
+${usedPrefix}reg nombre.edad
+
+📝 *Ejemplo práctico:*
+${usedPrefix}reg ${m.name || 'MikuFan'}.18
+
+👓 *¿Qué obtienes al registrarte?*
+🌱 • Cebollines para comprar en la tienda
+⭐ • Experiencia y niveles
+🎟️ • Tickets exclusivos
+🎤 • Acceso a todos los comandos
+
+🌱 *¡Únete a la familia Miku!*
+📢 Canal oficial: https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o
+
+╰─「 💙 *¡Regístrate para desbloquear!* 💙 」─╯
+
+💫 *Escribe ${usedPrefix}reg para comenzar tu aventura* 💫`
+
+  await replyWithChannel(this, m.chat, restrictedMsg, m)
+  continue
 }
 if (plugin.private && m.isGroup) {
 fail("private", m, this)
