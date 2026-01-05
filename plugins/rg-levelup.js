@@ -25,7 +25,14 @@ let handler = async (m, { conn }) => {
         txt += `• 🎉 *Nuevos niveles* : ${user.level}\n`;
         txt += `• 📅 *Fecha* : ${new Date().toLocaleString('id-ID')}\n\n`;
         txt += `> 🧧 Nota: *Cuanto más interactúes con el Bot, mayor será tu nivel.*`;
-        await conn.sendMessage(m.chat, { text: txt }, { quoted: m });
+        
+        
+        const videos = [
+            'https://media.tenor.com/AespzecEc6wAAAPo/miku.mp4'
+        ];
+        const video = videos[Math.floor(Math.random() * videos.length)];
+        
+        await conn.sendMessage(m.chat, { video: { url: video }, gifPlayback: true, caption: txt, mentions: [who] }, { quoted: m });
     } else {
         let users = Object.entries(global.db.data.users).map(([key, value]) => {
             return { ...value, jid: key };
