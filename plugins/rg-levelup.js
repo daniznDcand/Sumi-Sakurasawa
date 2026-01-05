@@ -27,12 +27,22 @@ let handler = async (m, { conn }) => {
         txt += `> 🧧 Nota: *Cuanto más interactúes con el Bot, mayor será tu nivel.*`;
         
         
+       
         const videos = [
-            'https://media.tenor.com/AespzecEc6wAAAPo/miku.mp4'
+            'https://media.tenor.com/AespzecEc6wAAAPo/miku.mp4',
+            'https://media.tenor.com/BQ5qLEfhiQYAAAPo/hatsune-miku-bluescreen.mp4',
+            'https://media.tenor.com/4rGH_-GnqZQAAAPo/miku-head-shake-miku.mp4',
+            'https://media.tenor.com/TuBV7odxKU8AAAPo/miku-angry-meme-goku-angry.mp4'
         ];
         const video = videos[Math.floor(Math.random() * videos.length)];
         
-        await conn.sendMessage(m.chat, { video: { url: video }, gifPlayback: true, caption: txt, mentions: [who] }, { quoted: m });
+        try {
+            await conn.sendMessage(m.chat, { video: { url: video }, gifPlayback: true, caption: txt, mentions: [who] }, { quoted: m });
+        } catch (e) {
+            console.error('Error enviando video de level up:', e);
+            
+            await conn.sendMessage(m.chat, { text: txt }, { quoted: m });
+        }
     } else {
         let users = Object.entries(global.db.data.users).map(([key, value]) => {
             return { ...value, jid: key };
