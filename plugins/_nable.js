@@ -537,15 +537,13 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
   
   try {
     const buttons = [
-      ['🎵 Canal Oficial 💙', global.redes || 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o']
+      ['🎵 Canal Oficial 💙', 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o']
     ];
     
-    const urls = [['🎵 Ir Canal 💙', global.redes || 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o']];
-    
-    await conn.sendNCarousel(m.chat, mensaje, '💙 Hatsune Miku Bot', null, buttons, null, urls, null, m);
+    await conn.sendNCarousel(m.chat, mensaje, '💙 Hatsune Miku Bot', null, buttons, null, null, null, m);
   } catch (error) {
     console.log('Error con botones, usando reply simple:', error.message);
-    conn.reply(m.chat, `${mensaje}\n\n🎵 *Canal Oficial:* ${global.redes || 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'}`, m);
+    conn.reply(m.chat, `${mensaje}\n\n🎵 *Canal Oficial:* https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o`, m);
   }
 };
 
