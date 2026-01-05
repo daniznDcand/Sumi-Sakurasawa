@@ -37,21 +37,16 @@ let handler = async (m, { conn }) => {
         ];
         const video = videos[Math.floor(Math.random() * videos.length)];
         
+        console.log('Intentando enviar video:', video);
+        
         try {
-            
+           
             await conn.sendMessage(m.chat, { video: { url: video }, gifPlayback: true, caption: txt, mentions: [who] }, { quoted: m });
+            console.log('Video enviado con éxito');
         } catch (e) {
-            try {
-                
-                const res = await fetch(video);
-                if (!res.ok) throw new Error('download failed');
-                const ab = await res.arrayBuffer();
-                const buf = Buffer.from(ab);
-                await conn.sendMessage(m.chat, { video: buf, gifPlayback: true, mimetype: 'video/mp4', caption: txt, mentions: [who] }, { quoted: m });
-            } catch (e2) {
-                
-                await conn.sendMessage(m.chat, { text: txt }, { quoted: m });
-            }
+            console.error('Error al enviar video:', e);
+            
+            await conn.sendMessage(m.chat, { text: txt }, { quoted: m });
         }
     } else {
         let users = Object.entries(global.db.data.users).map(([key, value]) => {
