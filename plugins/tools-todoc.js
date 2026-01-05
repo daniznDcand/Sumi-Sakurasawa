@@ -1,5 +1,17 @@
 import { toAudio } from '../lib/converter.js'
-import { replyWithChannel } from '../lib/simple.js'
+
+
+async function replyWithChannel(conn, chat, text, quoted = null) {
+  try {
+    const buttons = []
+    const urls = [['🎵 Canal Oficial 💙', 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o']]
+    
+    await conn.sendNCarousel(chat, text, '💙 Hatsune Miku Bot', null, buttons, null, urls, null, quoted);
+  } catch (error) {
+    console.log('Error con botones, usando reply simple:', error.message);
+    conn.reply(chat, `${text}\n\n🎵 *Canal Oficial:* https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o`, quoted);
+  }
+}
 
 let handler = async (m, { conn, text, usedPrefix, command }) => {
 let q = m.quoted || m
