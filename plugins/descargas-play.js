@@ -207,7 +207,7 @@ async function downloadVideo(url) {
     {
       name: 'Stellar',
       url: `${global.APIs.stellar.url}/dow/ytmp4?url=${encodeURIComponent(url)}&key=GataDios`,
-      extractor: data => data?.data?.dl
+      extractor: data => data?.data?.dl || data?.result?.download?.url || data?.dl
     },
     {
       name: 'Exonity',
@@ -230,6 +230,7 @@ async function downloadVideo(url) {
       } else {
         const res = await fetch(api.url);
         data = await res.json();
+        console.log(`📊 ${api.name} response:`, JSON.stringify(data, null, 2));
       }
 
       const videoUrl = api.extractor(data);
@@ -263,7 +264,7 @@ async function downloadAudio(url) {
     {
       name: 'Stellar',
       url: `${global.APIs.stellar.url}/dow/ytmp3?url=${encodeURIComponent(url)}&key=GataDios`,
-      extractor: data => data?.data?.dl
+      extractor: data => data?.data?.dl || data?.result?.download?.url || data?.dl
     },
     {
       name: 'Zenkey',
@@ -286,6 +287,7 @@ async function downloadAudio(url) {
       } else {
         const res = await fetch(api.url);
         data = await res.json();
+        console.log(`📊 ${api.name} response:`, JSON.stringify(data, null, 2));
       }
 
       const audioUrl = api.extractor(data);
