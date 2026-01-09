@@ -2,7 +2,7 @@ import fetch from "node-fetch";
 import yts from 'yt-search';
 import { ytv, yta } from '../lib/y2mate.js';
 
-const API_KEY = 'xxxxxx';
+const API_KEY = 'Duarte-zz12';
 
 function extractYouTubeId(url) {
   const patterns = [
@@ -70,50 +70,6 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 
     const vistas = formatViews(views);
     const canal = author.name || 'Desconocido';
-
-    
-    if (['play', 'yta', 'ytmp3', 'playaudio'].includes(command)) {
-      try {
-        const audioAPI = `https://rest.alyabotpe.xyz/dl/ytmp3?url=${encodeURIComponent(url)}&key=${API_KEY}`;
-        const res = await fetch(audioAPI);
-        const json = await res.json();
-
-        if (json.status && json.data && json.data.dl) {
-          await conn.sendMessage(m.chat, {
-            audio: { url: json.data.dl },
-            fileName: `${json.data.title || 'audio'}.mp3`,
-            mimetype: 'audio/mpeg',
-            ptt: false
-          }, { quoted: m });
-        } else {
-          throw new Error('No se pudo obtener el audio');
-        }
-      } catch (e) {
-        return conn.reply(m.chat, `⚽ ¡Fallo en la descarga de audio! ${e.message}`, m);
-      }
-      return;
-    } else if (['play2', 'ytv', 'ytmp4'].includes(command)) {
-      try {
-        const videoAPI = `https://rest.alyabotpe.xyz/dl/ytmp4?url=${encodeURIComponent(url)}&quality=144&key=${API_KEY}`;
-        const res = await fetch(videoAPI);
-        const json = await res.json();
-
-        if (json.status && json.data && json.data.dl) {
-          await conn.sendMessage(m.chat, {
-            video: { url: json.data.dl },
-            fileName: `${json.data.title || 'video'}.mp4`,
-            mimetype: 'video/mp4',
-            caption: `🎬 ${json.data.title || title}`
-          }, { quoted: m });
-        } else {
-          throw new Error('No se pudo obtener el video');
-        }
-      } catch (e) {
-        return conn.reply(m.chat, `⚽ ¡Fallo en la descarga de video! ${e.message}`, m);
-      }
-      return;
-    }
-    
     
     const buttons = [
       ['🎵 Audio', 'ytdl_audio_mp3'],
@@ -365,7 +321,7 @@ handler.before = async (m, { conn }) => {
   return true;
 };
 
-handler.command = handler.help = ['play', 'yta', 'ytmp3', 'playaudio', 'play2', 'ytv', 'ytmp4'];
+handler.command = handler.help = ['play'];
 handler.tags = ['downloader'];
 handler.register = true;
 
