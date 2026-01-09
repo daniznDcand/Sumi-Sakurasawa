@@ -193,53 +193,25 @@ async function downloadVideo(url) {
   const videoId = extractYouTubeId(url);
   if (!videoId) throw new Error('URL inválida');
 
-  const apis = [
-    {
-      name: 'Siputzx',
-      url: `https://api.siputzx.my.id/api/d/ytmp4?url=${encodeURIComponent(url)}`,
-      extractor: data => data?.dl
-    },
-    {
-      name: 'Neoxr',
-      url: `https://api.neoxr.eu/api/youtube?url=${encodeURIComponent(url)}&type=video&quality=720p&apikey=GataDios`,
-      extractor: data => data?.data?.url
-    },
-    {
-      name: 'Stellar',
-      url: `${global.APIs.stellar.url}/dow/ytmp4?url=${encodeURIComponent(url)}&key=GataDios`,
-      extractor: data => data?.data?.dl || data?.result?.download?.url || data?.dl
-    },
-    {
-      name: 'Exonity',
-      url: `https://exonity.tech/api/ytdlp2-faster?apikey=adminsepuh&url=${encodeURIComponent(url)}`,
-      extractor: data => data?.result?.media?.mp4
-    },
-    {
-      name: 'Y2Mate',
-      downloadFunc: async () => await ytv(url),
-      extractor: data => data?.link
-    }
+  const videoAPIs = [
+    `https://rest.alyabotpe.xyz/dl/ytmp4?url=${encodeURIComponent(url)}&quality=144&key=stellar-t1opU0P4`,
+    `https://api-adonix.ultraplus.click/download/ytvideo?apikey=DuarteXVKey34&url=${encodeURIComponent(url)}` 
   ];
 
-  for (const api of apis) {
+  for (const apiUrl of videoAPIs) {
     try {
-      console.log(`🔄 ${api.name}...`);
-      let data;
-      if (api.downloadFunc) {
-        data = await api.downloadFunc();
-      } else {
-        const res = await fetch(api.url);
-        data = await res.json();
-        console.log(`📊 ${api.name} response:`, JSON.stringify(data, null, 2));
-      }
+      console.log(`🔄 Trying API: ${apiUrl}`);
+      const res = await fetch(apiUrl);
+      const data = await res.json();
+      console.log(`📊 API response:`, JSON.stringify(data, null, 2));
 
-      const videoUrl = api.extractor(data);
+      const videoUrl = data?.data?.dl || data?.data?.url;
       if (videoUrl) {
-        console.log(`✅ ${api.name} exitoso`);
+        console.log(`✅ API exitoso`);
         return { url: videoUrl };
       }
     } catch (error) {
-      console.log(`❌ ${api.name} falló:`, error.message);
+      console.log(`❌ API falló:`, error.message);
     }
   }
 
@@ -250,57 +222,29 @@ async function downloadAudio(url) {
   const videoId = extractYouTubeId(url);
   if (!videoId) throw new Error('URL inválida');
 
-  const apis = [
-    {
-      name: 'Siputzx',
-      url: `https://api.siputzx.my.id/api/d/ytmp4?url=${encodeURIComponent(url)}`,
-      extractor: data => data?.dl
-    },
-    {
-      name: 'Neoxr',
-      url: `https://api.neoxr.eu/api/youtube?url=${encodeURIComponent(url)}&type=audio&quality=128kbps&apikey=GataDios`,
-      extractor: data => data?.data?.url
-    },
-    {
-      name: 'Stellar',
-      url: `${global.APIs.stellar.url}/dow/ytmp3?url=${encodeURIComponent(url)}&key=GataDios`,
-      extractor: data => data?.data?.dl || data?.result?.download?.url || data?.dl
-    },
-    {
-      name: 'Zenkey',
-      url: `https://api.zenkey.my.id/api/download/ytmp3?apikey=zenkey&url=${encodeURIComponent(url)}`,
-      extractor: data => data?.result?.download?.url
-    },
-    {
-      name: 'Y2Mate',
-      downloadFunc: async () => await yta(url),
-      extractor: data => data?.link
-    }
+  const audioAPIs = [
+    `https://rest.alyabotpe.xyz/dl/ytmp3?url=${encodeURIComponent(url)}&key=stellar-t1opU0P4`,
+    `https://api-adonix.ultraplus.click/download/ytaudio?apikey=DuarteXVKey34&url=${encodeURIComponent(url)}` 
   ];
 
-  for (const api of apis) {
+  for (const apiUrl of audioAPIs) {
     try {
-      console.log(`🔄 ${api.name}...`);
-      let data;
-      if (api.downloadFunc) {
-        data = await api.downloadFunc();
-      } else {
-        const res = await fetch(api.url);
-        data = await res.json();
-        console.log(`📊 ${api.name} response:`, JSON.stringify(data, null, 2));
-      }
+      console.log(`🔄 Trying API: ${apiUrl}`);
+      const res = await fetch(apiUrl);
+      const data = await res.json();
+      console.log(`📊 API response:`, JSON.stringify(data, null, 2));
 
-      const audioUrl = api.extractor(data);
+      const audioUrl = data?.data?.dl || data?.data?.url;
       if (audioUrl) {
-        console.log(`✅ ${api.name} exitoso`);
+        console.log(`✅ API exitoso`);
         return { url: audioUrl };
       }
     } catch (error) {
-      console.log(`❌ ${api.name} falló:`, error.message);
+      console.log(`❌ API falló:`, error.message);
     }
   }
 
-  throw new Error('No se pudo descargar. Intenta más tarde.');
+  throw new Error('No se pudo descargar el audio. Intenta más tarde.');
 }
 
 handler.before = async (m, { conn }) => {
