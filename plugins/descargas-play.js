@@ -195,14 +195,24 @@ async function downloadVideo(url) {
 
   const apis = [
     {
-      name: 'AlyaBot',
-      url: `https://rest.alyabotpe.xyz/dl/ytmp4?url=${encodeURIComponent(url)}&quality=144&key=stellar-t1opU0P4`,
+      name: 'Siputzx',
+      url: `https://api.siputzx.my.id/api/d/ytmp4?url=${encodeURIComponent(url)}`,
+      extractor: data => data?.dl
+    },
+    {
+      name: 'Neoxr',
+      url: `https://api.neoxr.eu/api/youtube?url=${encodeURIComponent(url)}&type=video&quality=720p&apikey=GataDios`,
+      extractor: data => data?.data?.url
+    },
+    {
+      name: 'Stellar',
+      url: `${global.APIs.stellar.url}/dow/ytmp4?url=${encodeURIComponent(url)}&key=GataDios`,
       extractor: data => data?.data?.dl
     },
     {
-      name: 'Adonix',
-      url: `https://api-adonix.ultraplus.click/download/ytvideo?apikey=DuarteXVKey34&url=${encodeURIComponent(url)}`,
-      extractor: data => data?.data?.url
+      name: 'Exonity',
+      url: `https://exonity.tech/api/ytdlp2-faster?apikey=adminsepuh&url=${encodeURIComponent(url)}`,
+      extractor: data => data?.result?.media?.mp4
     },
     {
       name: 'Y2Mate',
@@ -241,14 +251,24 @@ async function downloadAudio(url) {
 
   const apis = [
     {
-      name: 'AlyaBot',
-      url: `https://rest.alyabotpe.xyz/dl/ytmp3?url=${encodeURIComponent(url)}&key=stellar-t1opU0P4`,
+      name: 'Siputzx',
+      url: `https://api.siputzx.my.id/api/d/ytmp4?url=${encodeURIComponent(url)}`,
+      extractor: data => data?.dl
+    },
+    {
+      name: 'Neoxr',
+      url: `https://api.neoxr.eu/api/youtube?url=${encodeURIComponent(url)}&type=audio&quality=128kbps&apikey=GataDios`,
+      extractor: data => data?.data?.url
+    },
+    {
+      name: 'Stellar',
+      url: `${global.APIs.stellar.url}/dow/ytmp3?url=${encodeURIComponent(url)}&key=GataDios`,
       extractor: data => data?.data?.dl
     },
     {
-      name: 'Adonix',
-      url: `https://api-adonix.ultraplus.click/download/ytaudio?apikey=DuarteXVKey34&url=${encodeURIComponent(url)}`,
-      extractor: data => data?.data?.url
+      name: 'Zenkey',
+      url: `https://api.zenkey.my.id/api/download/ytmp3?apikey=zenkey&url=${encodeURIComponent(url)}`,
+      extractor: data => data?.result?.download?.url
     },
     {
       name: 'Y2Mate',
