@@ -87,7 +87,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 > 🌱 *Canal:* ${canal}
 *°.⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸.°*
 > 💙 *Publicado:* ${ago}
-*⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣ׄۛ۫۫۫۫۫۫ۜ*
+*⏝ּׅ︣︢ۛ۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣ׄۛ۫۫۫۫۫۫ۜ*
 
 💌 *Selecciona el formato para descargar:*`;
 
@@ -197,7 +197,7 @@ async function downloadVideo(url) {
     {
       name: 'AlyaBot',
       url: `https://rest.alyabotpe.xyz/dl/ytmp4?url=${encodeURIComponent(url)}&quality=144&key=stellar-t1opU0P4`,
-      extractor: data => data?.result?.url
+      extractor: data => data?.data?.dl
     },
     {
       name: 'Adonix',
@@ -243,7 +243,7 @@ async function downloadAudio(url) {
     {
       name: 'AlyaBot',
       url: `https://rest.alyabotpe.xyz/dl/ytmp3?url=${encodeURIComponent(url)}&key=stellar-t1opU0P4`,
-      extractor: data => data?.result?.url
+      extractor: data => data?.data?.dl
     },
     {
       name: 'Adonix',
