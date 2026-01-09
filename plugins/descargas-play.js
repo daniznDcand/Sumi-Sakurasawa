@@ -2,7 +2,7 @@ import fetch from "node-fetch";
 import yts from 'yt-search';
 import { ytv, yta } from '../lib/y2mate.js';
 
-const API_KEY = 'xxxxx-pene-xxxx';
+const API_KEY = 'Duarte-zz12';
 
 function extractYouTubeId(url) {
   const patterns = [
