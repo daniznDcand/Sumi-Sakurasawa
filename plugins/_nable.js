@@ -540,13 +540,13 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
       ['⚙️ Menú Principal', `${usedPrefix}menu`],
       ['📋 Ver Funciones', `${usedPrefix}enable`]
     ]
-    const urls = [
-      ['🎵 Canal Oficial 💙', 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'],
-      ['🌟 Grupo Soporte 🌟', 'https://chat.whatsapp.com/FQ78boTUpJ7Ge3oEtn8pRE'],
-      ['📱 GitHub 📱', 'https://github.com/Brauliovh3/HATSUNE-MIKU']
-    ]
     
-    await conn.sendNCarousel(m.chat, mensaje, '💙 Hatsune Miku Bot - Configuración', null, buttons, null, urls, null, m);
+    
+    await conn.sendNCarousel(m.chat, mensaje, '💙 Hatsune Miku Bot - Configuración', null, buttons, null, null, null, m);
+    
+    
+    const canalMsg = `🎵 *Canal Oficial de Hatsune Miku* 🎵\n\n💫 *Únete para obtener:* 💫\n🌱 • Novedades del bot\n🎤 • Comandos exclusivos\n⭐ • Sorteos especiales\n🎵 • Contenido único\n\n💙 *Tu apoyo nos mantiene activos!* 💙`;
+    await conn.reply(m.chat, canalMsg, m, global.getRcanal?.() || global.rcanal);
   } catch (error) {
     console.log('Error con botones, usando sendMikuMessage:', error.message);
     await conn.sendMikuMessage(m.chat, mensaje, m);
