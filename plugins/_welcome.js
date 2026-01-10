@@ -30,7 +30,8 @@ export async function before(m, { conn, participants, groupMetadata }) {
     const shouldSendWelcome = (jid, user) => {
       const key = `${jid}|${user}`
       const last = global.__welcomeThrottle.get(key) || 0
-      if (Date.now() - last < 10 * 60 * 1000) return false
+      
+      if (Date.now() - last < 30 * 1000) return false
       global.__welcomeThrottle.set(key, Date.now())
       return true
     }
@@ -39,7 +40,6 @@ export async function before(m, { conn, participants, groupMetadata }) {
       try {
         if (!shouldSendWelcome(jid, user)) return
         
-       
         if (!conn || !conn.user) {
           console.log('⚠️ Conexión no disponible, saltando welcome')
           return
@@ -47,40 +47,14 @@ export async function before(m, { conn, participants, groupMetadata }) {
         
         let ppBuffer = null
         try {
-          if (conn?.isSubBot) {
-            try {
-              const sessionId = (conn.user?.jid || '').split('@')[0]
-              const assetPath = path.join(process.cwd(), `${global.jadi}`, sessionId, 'assets', 'welcome.jpg')
-              if (fs.existsSync(assetPath)) {
-                ppBuffer = fs.readFileSync(assetPath)
-              }
-            } catch (e) {
-              console.log('Error cargando asset welcome para subbot:', e.message)
-            }
-          }
-          
-          if (!ppBuffer) {
-            const ppUrl = await conn.profilePictureUrl(user, 'image').catch(() => null)
-            if (ppUrl) {
-              const response = await fetch(ppUrl)
-              ppBuffer = await response.buffer()
-            }
-          }
+         
+          const defaultResponse = await fetch('https://server.wallpaperalchemy.com/storage/wallpapers/287/hatsune-miku-4k-anime-wallpaper.png')
+          ppBuffer = await defaultResponse.buffer()
         } catch (e) {
-          console.log('Error obteniendo foto de perfil:', e)
-        }
-
-        if (!ppBuffer) {
-          try {
-            const defaultResponse = await fetch('https://server.wallpaperalchemy.com/storage/wallpapers/287/hatsune-miku-4k-anime-wallpaper.png')
-            ppBuffer = await defaultResponse.buffer()
-          } catch (e) {
-            ppBuffer = null
-          }
+          ppBuffer = null
         }
 
         console.log('📤 Enviando welcome...')
-        
         
         try {
           const buttons = []
@@ -145,7 +119,7 @@ export async function before(m, { conn, participants, groupMetadata }) {
 
         await sendSingleWelcome(m.chat, welcomeText, user, m)
         console.log(`✅ Welcome enviado a ${userName}`)
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        
       }
       return true
     }
