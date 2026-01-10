@@ -534,16 +534,7 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
 
   
   const mensaje = `💙 La función *${type}* se *${isEnable ? 'activó' : 'desactivó'}* ${isAll ? 'para este Bot' : isUser ? '' : 'para este chat'}`;
-  
-  try {
-    await conn.sendNCarousel(m.chat, mensaje, '💙 Hatsune Miku Bot - Configuración', 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg', null, null, null, null, m);
-    
-    const canalMsg = `🎵 *Canal Oficial de Hatsune Miku* 🎵\n\n💫 *Únete para obtener:* 💫\n🌱 • Novedades del bot\n🎤 • Comandos exclusivos\n⭐ • Sorteos especiales\n🎵 • Contenido único\n\n💙 *Tu apoyo nos mantiene activos!* 💙`;
-    await conn.reply(m.chat, canalMsg, m, global.rcanal);
-  } catch (error) {
-    console.log('Error con botones, usando reply simple:', error.message);
-    await conn.reply(m.chat, `${mensaje}\n\n🎵 *Canal Oficial:* https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o`, m);
-  }
+  m.reply(mensaje)
 };
 
 handler.help = ['welcome', 'bienvenida', 'antiprivado', 'antiprivate', 'restrict', 'restringir', 'autolevelup', 'autonivel', 'antibot', 'antibots', 'autoaceptar', 'aceptarauto', 'autorechazar', 'rechazarauto', 'autoresponder', 'autorespond', 'antisubbots', 'antibot2', 'modoadmin', 'soloadmin', 'reaction', 'reaccion', 'nsfw', 'modohorny', 'antispam', 'jadibotmd', 'modejadibot', 'serbot', 'subbots', 'detect', 'avisos', 'antilink', 'antilink2', 'antifake', 'antiarabes', 'antitoxic', 'antimencion', 'antimencionar', 'audios', 'enable', 'disable']
