@@ -102,6 +102,36 @@ global.rcanal = {
       newsletterJid: "120363350523130615@newsletter", 
       serverMessageId: 100, 
       newsletterName: "💙🌱 Hatsune – Miku – Bot 🌱💙"
+    },
+    externalAdReply: {
+      showAdAttribution: true,
+      title: global.packname || '🎤 𝙃𝘼𝙏𝙎𝙐𝙉𝙀 𝙈𝙄𝙆𝙐 𝘽𝙊𝙏 🎤',
+      body: global.dev || '© 🄿🄾🅆🄴🅁🄴🄳',
+      mediaUrl: null,
+      description: '🎵 Hatsune Miku, la Diva Virtual del Futuro 🎵',
+      previewType: "PHOTO",
+      thumbnailUrl: global.banner || 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg',
+      sourceUrl: global.redes || 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o',
+      mediaType: 1,
+      renderLargerThumbnail: false
+    }
+  }
+}
+
+
+global.rcanalNormal = { 
+  contextInfo: { 
+    externalAdReply: {
+      showAdAttribution: true,
+      title: global.packname || '🎤 𝙃𝘼𝙏𝙎𝙐𝙉𝙀 𝙈𝙄𝙆𝙐 𝘽𝙊𝙏 🎤',
+      body: global.dev || '© 🄿🄾🅆🄴🅁🄴🄳',
+      mediaUrl: null,
+      description: '🎵 Hatsune Miku, la Diva Virtual del Futuro 🎵',
+      previewType: "PHOTO",
+      thumbnailUrl: global.banner || 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg',
+      sourceUrl: global.redes || 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o',
+      mediaType: 1,
+      renderLargerThumbnail: false
     }
   }
 }

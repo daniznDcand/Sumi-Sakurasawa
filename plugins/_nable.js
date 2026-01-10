@@ -533,16 +533,31 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
   }
 
   
-  const mensaje = `💙 La función *${type}* se *${isEnable ? 'activó' : 'desactivó'}* ${isAll ? 'para este Bot' : isUser ? '' : 'para este chat'}`;
+  const mensaje = `╭─「 🎵 *HATSUNE MIKU BOT* 🎵 」─╮
+┃ ✨ *CONFIGURACIÓN ACTUALIZADA* ✨
+┃╰────────────────────────╯
+
+🌟 *Función:* ${type}
+${isEnable ? '🟢' : '🔴'} *Estado:* ${isEnable ? 'ACTIVADA' : 'DESACTIVADA'}
+📍 *Ámbito:* ${isAll ? 'Global del Bot' : isUser ? 'Usuario' : 'Este Chat'}
+
+╰─「 💙 *Configuración aplicada con éxito* 💙 」─╯`;
   
   try {
-    const buttons = []
-    const urls = [['🎵 Canal Oficial 💙', 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o']]
+    const buttons = [
+      ['⚙️ Configurar Bot', `${usedPrefix}menu`],
+      ['📋 Lista Funciones', `${usedPrefix}enable`]
+    ]
+    const urls = [
+      ['🎵 Canal Oficial 💙', 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'],
+      ['🌟 Grupo Soporte 🌟', 'https://chat.whatsapp.com/FQ78boTUpJ7Ge3oEtn8pRE'],
+      ['📱 GitHub 📱', 'https://github.com/Brauliovh3/HATSUNE-MIKU']
+    ]
     
-    await conn.sendNCarousel(m.chat, mensaje, '💙 Hatsune Miku Bot', null, buttons, null, urls, null, m);
+    await conn.sendNCarousel(m.chat, mensaje, '💙 Hatsune Miku Bot - Configuración', null, buttons, null, urls, null, m);
   } catch (error) {
     console.log('Error con botones, usando reply simple:', error.message);
-    conn.reply(m.chat, `${mensaje}\n\n🎵 *Canal Oficial:* https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o`, m);
+    conn.reply(m.chat, `${mensaje}\n\n🎵 *Canal Oficial:* https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o\n🌟 *Grupo Soporte:* https://chat.whatsapp.com/FQ78boTUpJ7Ge3oEtn8pRE`, m);
   }
 };
 

@@ -435,8 +435,21 @@ admin: `💙 El comando *${comando}* solo puede ser usado por los administradore
 botAdmin: `💙 Para ejecutar el comando *${comando}* debo ser administrador del grupo.`,
 restrict: `💙 Esta caracteristica está desactivada.`
 }[type]
-if (msg) return conn.reply(m.chat, msg, m, global.rcanal).then(_ => m.react('✖️'))
+if (msg) return conn.reply(m.chat, msg, m, global.getRcanal?.() || global.rcanal).then(_ => m.react('✖️'))
 }
+
+
+global.getRcanal = () => {
+  try {
+    
+    return global.rcanal;
+  } catch (error) {
+    
+    console.log('Usando rcanalNormal para WhatsApp estándar');
+    return global.rcanalNormal;
+  }
+}
+
 let file = global.__filename(import.meta.url, true)
 watchFile(file, async () => {
 unwatchFile(file)
