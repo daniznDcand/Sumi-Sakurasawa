@@ -536,21 +536,13 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
   const mensaje = `💙 La función *${type}* se *${isEnable ? 'activó' : 'desactivó'}* ${isAll ? 'para este Bot' : isUser ? '' : 'para este chat'}`;
   
   try {
-    const buttons = [
-      ['⚙️ Menú Principal', `${usedPrefix}menu`],
-      ['📋 Ver Funciones', `${usedPrefix}enable`],
-      ['🎵 Ver Canal 🎵', 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o']
-    ]
-    
-    
-    await conn.sendNCarousel(m.chat, mensaje, '💙 Hatsune Miku Bot - Configuración', 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg', buttons, null, null, null, m);
-    
+    await conn.sendNCarousel(m.chat, mensaje, '💙 Hatsune Miku Bot - Configuración', 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg', null, null, null, null, m);
     
     const canalMsg = `🎵 *Canal Oficial de Hatsune Miku* 🎵\n\n💫 *Únete para obtener:* 💫\n🌱 • Novedades del bot\n🎤 • Comandos exclusivos\n⭐ • Sorteos especiales\n🎵 • Contenido único\n\n💙 *Tu apoyo nos mantiene activos!* 💙`;
-    await conn.reply(m.chat, canalMsg, m, global.getRcanal?.() || global.rcanal);
+    await conn.reply(m.chat, canalMsg, m, global.rcanal);
   } catch (error) {
-    console.log('Error con botones, usando sendMikuMessage:', error.message);
-    await conn.sendMikuMessage(m.chat, mensaje, m);
+    console.log('Error con botones, usando reply simple:', error.message);
+    await conn.reply(m.chat, `${mensaje}\n\n🎵 *Canal Oficial:* https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o`, m);
   }
 };
 

@@ -435,17 +435,7 @@ admin: `💙 El comando *${comando}* solo puede ser usado por los administradore
 botAdmin: `💙 Para ejecutar el comando *${comando}* debo ser administrador del grupo.`,
 restrict: `💙 Esta caracteristica está desactivada.`
 }[type]
-if (msg) return global.sendMikuMsg(conn, m.chat, msg, m)
-}
-
-
-global.sendMikuMsg = async (conn, jid, text, quoted = null, options = {}) => {
-  try {
-    await conn.sendMikuMessage(jid, text, quoted, options);
-  } catch (error) {
-    console.log('Error con sendMikuMessage, usando reply simple:', error.message);
-    return conn.reply(jid, text, quoted, options);
-  }
+if (msg) return conn.reply(m.chat, msg, m, global.rcanal).then(_ => m.react('✖️'))
 }
 
 let file = global.__filename(import.meta.url, true)
