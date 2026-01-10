@@ -25,16 +25,12 @@ let handler = async (m, { conn, usedPrefix }) => {
     }
     
     if (m.isGroup) {
-        let pp = 'https://qu.ax/acRFf.mp4'; 
-        let pp2 = 'https://qu.ax/iUjgV.mp4'; 
-        let pp3 = 'https://qu.ax/wjheu.mp4';
-        let pp4 = 'https://qu.ax/ejZJD.mp4';
-        let pp5 = 'https://qu.ax/UOLym.mp4';
-        let pp6 = 'https://qu.ax/qTAxM.mp4';
-        let pp7 = 'https://qu.ax/oCYed.mp4';
-        let pp8 = 'https://qu.ax/OPMAT.mp4';
+        let pp = 'https://media.tenor.com/cvzwv1MgTzUAAAPo/nice-try-miku-nice-try.mp4'; 
+        let pp2 = 'https://media.tenor.com/AxoMmJmmaZQAAAPo/miku-run.mp4'; 
+        let pp3 = 'https://media.tenor.com/lm2L1EEUpf0AAAPo/hatsune-miku.mp4';
+        let pp4 = 'https://media.tenor.com/HqLbiAuWSJwAAAPo/miku-hatsune-miku.mp4';
         
-        const videos = [pp, pp2, pp3, pp4, pp5, pp6, pp7, pp8];
+        const videos = [pp, pp2, pp3, pp4];
         const video = videos[Math.floor(Math.random() * videos.length)];
 
         let mentions = [who];
