@@ -533,19 +533,7 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
   }
 
   
-  const mensaje = `╔═══════════════════════════════════════╗
-║ 🎵 *𝐇𝐀𝐓𝐒𝐔𝐍𝐄 𝐌𝐈𝐊𝐔 𝐁𝐎𝐓* 🎵 ║
-╠═══════════════════════════════════════╣
-║                                               ║
-║  ✨ *CONFIGURACIÓN ACTUALIZADA* ✨       ║
-║                                               ║
-║  🌟 *FUNCIÓN:* ${type}                      ║
-║  ${isEnable ? '🟢' : '🔴'} *ESTADO:* ${isEnable ? 'ACTIVADA' : 'DESACTIVADA'}              ║
-║  📍 *ÁMBITO:* ${isAll ? 'GLOBAL DEL BOT' : isUser ? 'USUARIO' : 'ESTE CHAT'}        ║
-║                                               ║
-╚═══════════════════════════════════════╝
-
-💙 *Configuración aplicada con éxito* 💙`;
+  const mensaje = `💙 La función *${type}* se *${isEnable ? 'activó' : 'desactivó'}* ${isAll ? 'para este Bot' : isUser ? '' : 'para este chat'}`;
   
   try {
     const buttons = [
