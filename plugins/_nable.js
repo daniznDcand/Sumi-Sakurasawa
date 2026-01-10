@@ -538,11 +538,12 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
   try {
     const buttons = [
       ['⚙️ Menú Principal', `${usedPrefix}menu`],
-      ['📋 Ver Funciones', `${usedPrefix}enable`]
+      ['📋 Ver Funciones', `${usedPrefix}enable`],
+      ['🎵 Ver Canal 🎵', 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o']
     ]
     
     
-    await conn.sendNCarousel(m.chat, mensaje, '💙 Hatsune Miku Bot - Configuración', null, buttons, null, null, null, m);
+    await conn.sendNCarousel(m.chat, mensaje, '💙 Hatsune Miku Bot - Configuración', 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg', buttons, null, null, null, m);
     
     
     const canalMsg = `🎵 *Canal Oficial de Hatsune Miku* 🎵\n\n💫 *Únete para obtener:* 💫\n🌱 • Novedades del bot\n🎤 • Comandos exclusivos\n⭐ • Sorteos especiales\n🎵 • Contenido único\n\n💙 *Tu apoyo nos mantiene activos!* 💙`;
