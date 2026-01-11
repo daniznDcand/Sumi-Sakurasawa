@@ -1,5 +1,3 @@
-//Codígo creado por Destroy wa.me/584120346669
-
 const handler = async (m, { conn, usedPrefix, command, text }) => {
   let who;
 
