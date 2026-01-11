@@ -28,8 +28,8 @@ let handler = async (m, { conn, text, args, usedPrefix }) => {
     }
 }
 
-handler.command = /^(dawn|amanecer|noche)$/i
+handler.command = /^(dawn|night|noche|oscuro)$/i
 handler.tags = ['anime']
-handler.help = ['dawn']
+handler.help = ['night']
 
 export default handler
