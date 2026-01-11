@@ -17,14 +17,14 @@ let handler = async (m, { conn, usedPrefix }) => {
         : `💙 \`${name2}\` está bailando en el escenario virtual como Hatsune Miku `
     
     if (m.isGroup) {
-        let pp = 'https://litter.catbox.moe/883kzka79wv1dtah.mp4'
-        let pp2 = 'https://litter.catbox.moe/3uvca2ijyh0l0y6b.mp4'
-        let pp3 = 'https://litter.catbox.moe/s8wt67cigp7hb440.mp4'
-        let pp4 = 'https://litter.catbox.moe/72m7inirzcro7ttk.mp4'
-        let pp5 = 'https://litter.catbox.moe/wqj08v2osvgjgqth.mp4'
-        let pp6 = 'https://litter.catbox.moe/1yai4xl2orezw4au.mp4'
-        let pp7 = 'https://litter.catbox.moe/d4dr37eqydlay2wl.mp4'
-        let pp8 = 'https://litter.catbox.moe/oc3x4bb8dv4z8gqm.mp4'
+        let pp = 'https://media.tenor.com/TxflfpxQNgcAAAPo/happy-dance.mp4'
+        let pp2 = 'https://media.tenor.com/EV17KKTqY2EAAAPo/evangelion-neon-genesis-evangelion.mp4'
+        let pp3 = 'https://media.tenor.com/H6VeJuNhLJkAAAPo/anime-girl-dance.mp4'
+        let pp4 = 'https://media.tenor.com/6DxJzu87RocAAAPo/cute-girls.mp4'
+        let pp5 = 'https://media.tenor.com/LNVNahJyrI0AAAPo/aharen-dance.mp4'
+        let pp6 = 'https://media.tenor.com/YwP5km8TjY8AAAPo/anime-dance-neon-genesis-evangelion.mp4'
+        let pp7 = 'https://media.tenor.com/t8Za-8GSW-0AAAPo/dandadan-headbang.mp4'
+        let pp8 = 'https://media.tenor.com/NYa3Fij29kQAAAPo/skill-issue-chika-dance.mp4'
         
         
         const videos = [pp, pp2, pp3, pp4, pp5, pp6, pp7, pp8]

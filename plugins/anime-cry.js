@@ -17,14 +17,14 @@ let handler = async (m, { conn, usedPrefix }) => {
         : `💙 \`${name2}\` está llorando en el mundo virtual de Miku 😢`
     
     if (m.isGroup) {
-        let pp = 'https://litter.catbox.moe/n0ew3er2iays5uwn.mp4'
-        let pp2 = 'https://litter.catbox.moe/8pk0ge34o47ilw6a.mp4'
-        let pp3 = 'https://litter.catbox.moe/hnlvhfh64f4xpc2x.mp4'
-        let pp4 = 'https://litter.catbox.moe/dmdp0rryr4gnht4r.mp4'
-        let pp5 = 'https://litter.catbox.moe/51acng21azvakg4n.mp4'
-        let pp6 = 'https://litter.catbox.moe/tmsxetb4ctrn6qpt.mp4'
-        let pp7 = 'https://litter.catbox.moe/psinj6y62lj924bl.mp4'
-        let pp8 = 'https://litter.catbox.moe/icuv01ingui6zlfo.mp4'
+        let pp = 'https://media.tenor.com/fmB1LPfUc5AAAAPo/waaa.mp4'
+        let pp2 = 'https://media.tenor.com/CJEm2aPh9ckAAAPo/kh%C3%B3c.mp4'
+        let pp3 = 'https://media.tenor.com/VO2in_SxlvAAAAPo/sad-taiga-aisaka.mp4'
+        let pp4 = 'https://media.tenor.com/PYOMyiz9VckAAAPo/sad-anime-boy-crying.mp4'
+        let pp5 = 'https://media.tenor.com/JxIgPl3glLIAAAPo/demon-slayer-kimetsu-no-yaiba-mugen-train.mp4'
+        let pp6 = 'https://media.tenor.com/IV2kNBcN3r0AAAPo/subaru-breakdown.mp4'
+        let pp7 = 'https://media.tenor.com/pWN680lA4LoAAAPo/sigma.mp4'
+        let pp8 = 'https://media.tenor.com/EVR8bvVLB2EAAAPo/chainsaw-man-pochita.mp4'
         
         const videos = [pp, pp2, pp3, pp4, pp5, pp6, pp7, pp8]
         const video = videos[Math.floor(Math.random() * videos.length)]

@@ -25,14 +25,14 @@ let handler = async (m, { conn, usedPrefix }) => {
     }
     
     if (m.isGroup) { 
-        let pp = 'https://qu.ax/dzdVR.mp4';
-        let pp2 = 'https://qu.ax/AXLDz.mp4';
-        let pp3 = 'https://qu.ax/AJEfp.mp4';
-        let pp4 = 'https://qu.ax/LEYfb.mp4';
-        let pp5 = 'https://qu.ax/WNGYF.mp4';
-        let pp6 = 'https://qu.ax/WFWaY.mp4';
-        let pp7 = 'https://qu.ax/ditle.mp4';
-        let pp8 = 'https://qu.ax/dzdVR.mp4';
+        let pp = 'https://media.tenor.com/3hiW5_Mg_XEAAAPo/hatsune-miku-poke.mp4';
+        let pp2 = 'https://media.tenor.com/iu_Lnd86GxAAAAPo/nekone-utawarerumono.mp4';
+        let pp3 = 'https://media.tenor.com/3dOqO4vVlr8AAAPo/poke-anime.mp4';
+        let pp4 = 'https://media.tenor.com/y4R6rexNEJIAAAPo/boop-anime.mp4';
+        let pp5 = 'https://media.tenor.com/1YMrMsCtxLQAAAPo/anime-poke.mp4';
+        let pp6 = 'https://media.tenor.com/t6ABAaRJEA0AAAPo/oreimo-ore-no-im%C5%8Dto-ga-konna-ni-kawaii-wake-ga-nai.mp4';
+        let pp7 = 'https://media.tenor.com/hSP6oVG2dTMAAAPo/yonomori-kobeni-anime-girl.mp4';
+        let pp8 = 'https://media.tenor.com/NFU6KXm582gAAAPo/anime-blend-s.mp4';
 
         const videos = [pp, pp2, pp3, pp4, pp5, pp6, pp7, pp8];
         const video = videos[Math.floor(Math.random() * videos.length)];

@@ -32,11 +32,9 @@ if (!db.data.chats[m.chat].nsfw && m.isGroup) {
         let pp2 = 'https://telegra.ph/file/a11625fef11d628d3c8df.mp4'; 
         let pp3 = 'https://telegra.ph/file/062b9506656e89b069618.mp4';
         let pp4 = 'https://telegra.ph/file/1325494a54adc9a87ec56.mp4';
-        let pp5 = 'https://qu.ax/KKazS.mp4';
-        let pp6 = 'https://qu.ax/ieJeB.mp4';
-        let pp7 = 'https://qu.ax/MCdGn.mp4';
         
-        const videos = [pp, pp2, pp3, pp4, pp5, pp6, pp7];
+        
+        const videos = [pp, pp2, pp3, pp4];
         const video = videos[Math.floor(Math.random() * videos.length)];
         
         let mentions = [who]; 

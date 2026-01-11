@@ -16,14 +16,14 @@ let handler = async (m, { conn, usedPrefix }) => {
         : `\`${name2}\` se acurrucó en el concierto virtual ꒰ঌ(˶ˆᗜˆ˵)໒꒱ 🎵`
     
     if (m.isGroup) {
-        let pp = 'https://litter.catbox.moe/jx3xsy80i896uw45.mp4'
-        let pp2 = 'https://litter.catbox.moe/v17caz2o6oh1ggw5.mp4'
-        let pp3 = 'https://litter.catbox.moe/lcqkay06t7vfi07r.mp4'
-        let pp4 = 'https://litter.catbox.moe/g1mge2ayw8hbqba2.mp4'
-        let pp5 = 'https://litter.catbox.moe/ezhhdikt23ydv2ca.mp4'
-        let pp6 = 'https://litter.catbox.moe/2dczzku8ur4hwv28.mp4'
-        let pp7 = 'https://litter.catbox.moe/5b4yen0c9h2mf7lw.mp4'
-        let pp8 = 'https://litter.catbox.moe/xt0x0ed3kk9bl8y1.mp4'
+        let pp = 'https://media.tenor.com/c2SMIhi33DMAAAPo/cuddle-bed-hug.mp4'
+        let pp2 = 'https://media.tenor.com/c2SMIhi33DMAAAPo/cuddle-bed-hug.mp4'
+        let pp3 = 'https://media.tenor.com/P54lVoy1FxkAAAPo/kuzu-no-honkai-hug.mp4'
+        let pp4 = 'https://media.tenor.com/SAL_XAuyuJAAAAPo/cute-anime.mp4'
+        let pp5 = 'https://media.tenor.com/bLttPccI_I4AAAPo/cuddle-anime.mp4'
+        let pp6 = 'https://media.tenor.com/vpE7LGJcq2gAAAPo/val-ally-anime.mp4'
+        let pp7 = 'https://media.tenor.com/sGrFJCNL1_8AAAPo/anime-sevendeadlysins.mp4'
+        let pp8 = 'https://media.tenor.com/XrbHCaTCRw0AAAPo/himeno-chainsaw-man.mp4'
 
         
         const videos = [pp, pp2, pp3, pp4, pp5, pp6, pp7, pp8]
