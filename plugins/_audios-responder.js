@@ -161,7 +161,7 @@ export async function before(m) {
         const mimetype = audioFile.endsWith('.m4a') ? 'audio/mp4' : 'audio/mpeg'
         
         try {
-          await this.sendFile(m.chat, buffer, 'audio.mp3', '', m, true, {
+          await conn.sendFile(m.chat, buffer, 'audio.mp3', '', m, true, {
             type: 'audioMessage',
             ptt: true,
             mimetype
