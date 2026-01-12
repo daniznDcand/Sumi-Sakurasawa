@@ -160,12 +160,12 @@ addNumber = phoneNumber.replace(/\D/g, '')
 setTimeout(async () => {
 let codeBot = await conn.requestPairingCode(addNumber)
 codeBot = codeBot.match(/.{1,4}/g)?.join("-") || codeBot
-console.log(chalk.bold.white(chalk.bgMagenta(`[💙]  Código:`)), chalk.bold.white(chalk.white(codeBot)))
+console.log(chalk.bold.white(chalk.bgMagenta(`[ 💙 ]  Código:`)), chalk.bold.white(chalk.white(codeBot)))
 }, 3000)
 }}}}
 conn.isInit = false
 conn.well = false
-conn.logger.info(`[💙]  H E C H O\n`)
+conn.logger.info(`[ 💙 ]  H E C H O\n`)
 if (!opts['test']) {
 if (global.db) setInterval(async () => {
 if (global.db.data) await global.db.write()
