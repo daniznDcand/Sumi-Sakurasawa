@@ -83,6 +83,53 @@ export default handler;
 
 async function mediafireDl(url) {
   try {
+    if (!url.includes('mediafire.com')) throw new Error('URL de MediaFire inválida');
+    
+    const apiUrl = `${global.mediafireAPI.url}?url=${encodeURIComponent(url)}&key=${global.mediafireAPI.key}`;
+    
+    console.log('Consultando API de MediaFire...');
+    
+    const response = await axios.get(apiUrl, {
+      timeout: 30000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
+    
+    if (!response.data || response.data.status !== 200) {
+      throw new Error(response.data.message || 'La API no respondió correctamente');
+    }
+    
+    const data = response.data.result;
+    const name = data.filename || data.name || 'archivo_descargado';
+    const size = data.filesize || data.size || 'Tamaño no disponible';
+    const mime = data.mimetype || lookup(name.split('.').pop()) || 'application/octet-stream';
+    const link = data.download || data.url || data.link;
+    
+    if (!link) {
+      throw new Error('No se encontró enlace de descarga en la respuesta');
+    }
+    
+    console.log('Datos obtenidos de la API:', { name, size, mime: mime.split('/')[0] });
+    
+    return { name, size, date: new Date().toLocaleString(), mime, link };
+    
+  } catch (error) {
+    console.error('Error en mediafireDl (API):', error.message);
+    
+     try {
+      console.log('Intentando con método original como fallback...');
+      return await mediafireDlOriginal(url);
+    } catch (fallbackError) {
+      console.error('Error en fallback:', fallbackError.message);
+      throw new Error(`Error al procesar MediaFire: ${error.message}`);
+    }
+  }
+}
+
+
+async function mediafireDlOriginal(url) {
+  try {
     if (!url.includes('www.mediafire.com')) throw new Error('URL de MediaFire inválida');
     let res;
     let $;
@@ -140,7 +187,7 @@ async function mediafireDl(url) {
     if (!link.startsWith('http')) throw new Error('Enlace de descarga inválido');
     return { name, size, date, mime, link };
   } catch (error) {
-    console.error('Error en mediafireDl:', error.message);
+    console.error('Error en mediafireDl original:', error.message);
     throw new Error(`Error al procesar MediaFire: ${error.message}`);
   }
 }

@@ -1,5 +1,6 @@
 import { igdl } from 'ruhend-scraper'
 import fetch from 'node-fetch'
+import { apisConfig } from '../lib/api-config.js'
 
 const handler = async (m, { text, conn, args }) => {
   if (!args[0]) {
@@ -10,11 +11,28 @@ const handler = async (m, { text, conn, args }) => {
 
   let res
   try {
-    res = await igdl(args[0])
+    const facebookApiUrl = `${apisConfig.facebook.url}?url=${encodeURIComponent(args[0])}&key=${apisConfig.facebook.key}`;
+    console.log('Consultando API de Facebook...');
+    
+    const apiResponse = await fetch(facebookApiUrl);
+    const apiData = await apiResponse.json();
+    
+    if (!apiData || !apiData.status || apiData.status !== 200) {
+      throw new Error(apiData.message || 'La API no respondió correctamente');
+    }
+    
+    res = apiData.result || apiData.data;
   } catch (e) {
-    console.error('Error igdl:', e)
-    await m.react(error)
-    return conn.reply(m.chat, `${msm} Error al obtener datos. Verifica que el enlace sea válido y público.`, m)
+    console.error('Error API Facebook:', e)
+    
+   
+    try {
+      res = await igdl(args[0])
+    } catch (fallbackError) {
+      console.error('Error en fallback:', fallbackError)
+      await m.react(error)
+      return conn.reply(m.chat, `${msm} Error al obtener datos. Verifica que el enlace sea válido y público.`, m)
+    }
   }
 
   let result = res?.data
