@@ -60,7 +60,7 @@ let handler = async function (m, { conn, text, usedPrefix, command }) {
   `🆔 *ID:* ${sn}\n\n` +
   `✨ *¡Disfruta de tu estadía en el mundo de Hatsune Miku!* ✨\n\n` +
   `🎁 *Recompensas por registro:*\n` +
-  `💰 +39 monedas\n` +
+  `🌱 +39 Cebollines\n` +
   `⭐ +300 XP\n` +
   `🎟️ +20 tickets\n\n` +
   `💙 *¡Ahora puedes usar todos los comandos del bot!*`
