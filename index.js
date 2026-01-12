@@ -1,17 +1,16 @@
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '1'
 import './settings.js'
-import './plugins/main-allfake.js'
+import './plugins/_allfake.js'
 import cfonts from 'cfonts'
 import { createRequire } from 'module'
 import { fileURLToPath, pathToFileURL } from 'url'
-import { format } from 'util'
 import { platform } from 'process'
 import * as ws from 'ws'
 import fs, { readdirSync, statSync, unlinkSync, existsSync, mkdirSync, readFileSync, rmSync, watch } from 'fs'
 import yargs from 'yargs'
 import { spawn, execSync } from 'child_process'
 import lodash from 'lodash'
-import { mikuJadiBot } from './plugins/jadibot-serbot.js'
+import { mikuJadiBot } from './plugins/sockets-serbot.js'
 import chalk from 'chalk'
 import syntaxerror from 'syntax-error'
 import pino from 'pino'
@@ -33,7 +32,7 @@ const { chain } = lodash
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000
 
 let { say } = cfonts
-console.log(chalk.magentaBright('\n💙 Iniciando...'))
+console.log(chalk.magentaBright('\n💙 Iniciando  01'))
 say('HATSUNE\nMIKU', {
 font: 'simple',
 align: 'left',
@@ -64,6 +63,13 @@ global.prefix = new RegExp('^[#!./-]')
 global.db = new Low(/https?:\/\//.test(global.opts['db'] || '') ? new cloudDBAdapter(global.opts['db']) : new JSONFile('database.json'))
 global.DATABASE = global.db
 global.loadDatabase = async function loadDatabase() {
+if (global.db.READ) {
+return new Promise((resolve) => setInterval(async function () {
+if (!global.db.READ) {
+clearInterval(this)
+resolve(global.db.data == null ? global.loadDatabase() : global.db.data)
+}}, 1 * 1000))
+}
 if (global.db.data !== null) return
 global.db.READ = true
 await global.db.read().catch(console.error)
@@ -76,34 +82,7 @@ settings: {},
 }
 global.db.chain = chain(global.db.data)
 }
-
-await loadDatabase()
-
-
-global.userCache = new Map()
-global.getUser = function (jid) {
-	if (!global.db || !global.db.data) return null
-	if (!global.db.data.users) global.db.data.users = {}
-	if (!global.db.data.users[jid]) {
-		global.db.data.users[jid] = {
-			name: '', exp: 0, coin: 0, bank: 0, level: 0,
-			health: 100, genre: '', birth: '', marry: '', description: '',
-			packstickers: null, premium: false, premiumTime: 0,
-			banned: false, bannedReason: '', commands: 0, afk: -1, afkReason: '', warn: 0, registered: false,
-			Subs: 0
-		}
-	}
-	
-	global.userCache.set(jid, global.db.data.users[jid])
-	return global.db.data.users[jid]
-}
-
-global.getChat = function (jid) {
-	if (!global.db || !global.db.data) return null
-	if (!global.db.data.chats) global.db.data.chats = {}
-	if (!global.db.data.chats[jid]) global.db.data.chats[jid] = { isBanned: false, isMute: false, welcome: false, sWelcome: '', sBye: '', detect: true, primaryBot: null, modoadmin: false, antiLink: true, nsfw: false, economy: true, gacha: true }
-	return global.db.data.chats[jid]
-}
+loadDatabase()
 
 const { state, saveState, saveCreds } = await useMultiFileAuthState(global.sessions)
 const msgRetryCounterMap = new Map()
@@ -123,12 +102,12 @@ let opcion
 if (methodCodeQR) {
 opcion = '1'
 }
-if (!methodCodeQR && !methodCode && !fs.existsSync(`./${global.sessions}/creds.json`)) {
+if (!methodCodeQR && !methodCode && !fs.existsSync(`./${sessions}/creds.json`)) {
 do {
 opcion = await question(colors("Seleccione una opción:\n") + qrOption("1. Con código QR\n") + textOption("2. Con código de texto de 8 dígitos\n--> "))
 if (!/^[1-2]$/.test(opcion)) {
 console.log(chalk.bold.redBright(`No se permiten numeros que no sean 1 o 2, tampoco letras o símbolos especiales.`))
-}} while (opcion !== '1' && opcion !== '2' || fs.existsSync(`./${global.sessions}/creds.json`))
+}} while (opcion !== '1' && opcion !== '2' || fs.existsSync(`./${sessions}/creds.json`))
 }
 console.info = () => {}
 const connectionOptions = {
@@ -156,14 +135,13 @@ userDevicesCache: userDevicesCache || new Map(),
 defaultQueryTimeoutMs: undefined,
 cachedGroupMetadata: (jid) => global.conn.chats[jid] ?? {},
 version: version,
-keepAliveIntervalMs: 120000,
-maxIdleTimeMs: 180000,
-defaultQueryTimeoutMs: 60000,
+keepAliveIntervalMs: 55000,
+maxIdleTimeMs: 60000,
 }
 global.conn = makeWASocket(connectionOptions)
 conn.ev.on("creds.update", saveCreds)
 
-if (!fs.existsSync(`./${global.sessions}/creds.json`)) {
+if (!fs.existsSync(`./${sessions}/creds.json`)) {
 if (opcion === '2' || methodCode) {
 opcion = '2'
 if (!conn.authState.creds.registered) {
@@ -172,7 +150,7 @@ if (!!phoneNumber) {
 addNumber = phoneNumber.replace(/[^0-9]/g, '')
 } else {
 do {
-phoneNumber = await question(chalk.bgBlack(chalk.bold.greenBright(`[ 🌱 ]  Por favor, Ingrese el número de WhatsApp.\n${chalk.bold.magentaBright('---> ')}`)))
+phoneNumber = await question(chalk.bgBlack(chalk.bold.greenBright(`[ ✿ ]  Por favor, Ingrese el número de WhatsApp.\n${chalk.bold.magentaBright('---> ')}`)))
 phoneNumber = phoneNumber.replace(/\D/g, '')
 if (!phoneNumber.startsWith('+')) {
 phoneNumber = `+${phoneNumber}`
@@ -181,15 +159,13 @@ rl.close()
 addNumber = phoneNumber.replace(/\D/g, '')
 setTimeout(async () => {
 let codeBot = await conn.requestPairingCode(addNumber)
-const rawPairingCode = String(codeBot || '').replace(/\s|-/g, '')
-const formattedPairingCode = rawPairingCode.match(/.{1,4}/g)?.join("-") || rawPairingCode
-console.log(chalk.bold.white(chalk.bgMagenta(`[ 💙🌱 ]  MIKU CODE:`)), chalk.bold.white(chalk.white(formattedPairingCode)))
-console.log(chalk.gray(`(Sin guiones) ${rawPairingCode}`))
+codeBot = codeBot.match(/.{1,4}/g)?.join("-") || codeBot
+console.log(chalk.bold.white(chalk.bgMagenta(`[💙]  Código:`)), chalk.bold.white(chalk.white(codeBot)))
 }, 3000)
 }}}}
 conn.isInit = false
 conn.well = false
-conn.logger.info(`[ 💙 ]  H E C H O\n`)
+conn.logger.info(`[💙]  H E C H O\n`)
 if (!opts['test']) {
 if (global.db) setInterval(async () => {
 if (global.db.data) await global.db.write()
@@ -211,20 +187,20 @@ global.timestamp.connect = new Date()
 if (global.db.data == null) loadDatabase()
 if (update.qr != 0 && update.qr != undefined || methodCodeQR) {
 if (opcion == '1' || methodCodeQR) {
-console.log(chalk.green.bold(`[ 💙 ]  Escanea este código QR`))
+console.log(chalk.green.bold(`[💙]  Escanea este código QR`))
 }}
 if (connection === "open") {
 const userJid = jidNormalizedUser(conn.user.id)
 const userName = conn.user.name || conn.user.verifiedName || "Desconocido"
 await joinChannels(conn)
-console.log(chalk.green.bold(`[ 💙 ]  Conectado a: ${userName}`))
+console.log(chalk.green.bold(`[💙]  Conectado a: ${userName}`))
 }
 let reason = new Boom(lastDisconnect?.error)?.output?.statusCode
 if (connection === "close") {
 if ([401, 440, 428, 405].includes(reason)) {
-console.log(chalk.red(`→ (${code}) › Cierra la session Principal.`))
+console.log(chalk.red(`→ (${code}) 💥 Cierra la session Principal.`))
 }
-console.log(chalk.yellow("→ Reconectando el Bot Principal..."))
+console.log(chalk.yellow("💙 Reconectando el Bot Principal..."))
 await global.reloadHandler(true).catch(console.error)
 }}
 process.on('uncaughtException', console.error)
@@ -272,12 +248,12 @@ console.error("Rechazo no manejado detectado:", reason)
 })
 
 global.rutaJadiBot = join(__dirname, `./${jadi}`)
-if (global.mikuJadibts) {
+if (global.mikuJadiBots) {
 if (!existsSync(global.rutaJadiBot)) {
 mkdirSync(global.rutaJadiBot, { recursive: true })
-console.log(chalk.bold.cyan(`🌱 La carpeta: ${jadi} se creó correctamente.`))
+console.log(chalk.bold.cyan(`💙 La carpeta: ${jadi} se creó correctamente.`))
 } else {
-console.log(chalk.bold.cyan(`🌱 La carpeta: ${jadi} ya está creada.`))
+console.log(chalk.bold.cyan(`💙 La carpeta: ${jadi} ya está creada.`))
 }
 const readRutaJadiBot = readdirSync(rutaJadiBot)
 if (readRutaJadiBot.length > 0) {
@@ -287,12 +263,10 @@ const botPath = join(rutaJadiBot, gjbts)
 if (existsSync(botPath) && statSync(botPath).isDirectory()) {
 const readBotPath = readdirSync(botPath)
 if (readBotPath.includes(creds)) {
-mikuJadiBot({ pathMikuJadiBot: botPath, m: null, conn, args: '', usedPrefix: '/', command: 'serbot' })
+yukiJadiBot({ pathMikuJadiBot: botPath, m: null, conn, args: '', usedPrefix: '/', command: 'serbot' })
 }}}}}
 
-const defaultPluginFolderPath = join(__dirname, 'plugins', 'index')
-const fallbackPluginFolderPath = join(__dirname, 'plugins')
-const pluginFolder = existsSync(defaultPluginFolderPath) ? defaultPluginFolderPath : fallbackPluginFolderPath
+const pluginFolder = global.__dirname(join(__dirname, './plugins/index'))
 const pluginFilter = (filename) => /\.js$/.test(filename)
 global.plugins = {}
 async function filesInit() {
@@ -315,16 +289,11 @@ else {
 conn.logger.warn(`deleted plugin - '${filename}'`)
 return delete global.plugins[filename]
 }} else conn.logger.info(`new plugin - '${filename}'`)
-		if (!existsSync(dir)) {
-			conn.logger.warn(`deleted plugin - '${filename}'`)
-			delete global.plugins[filename]
-			return
-		}
-		const err = syntaxerror(readFileSync(dir), filename, {
-			sourceType: 'module',
-			allowAwaitOutsideFunction: true,
-		})
-		if (err) conn.logger.error(`syntax error while loading '${filename}'\n${format(err)}`)
+const err = syntaxerror(readFileSync(dir), filename, {
+sourceType: 'module',
+allowAwaitOutsideFunction: true,
+})
+if (err) conn.logger.error(`syntax error while loading '${filename}'\n${format(err)}`)
 else {
 try {
 const module = (await import(`${global.__filename(dir)}?update=${Date.now()}`))
@@ -368,9 +337,9 @@ const filenames = readdirSync(tmpDir)
 filenames.forEach(file => {
 const filePath = join(tmpDir, file)
 unlinkSync(filePath)})
-console.log(chalk.gray(`💙 Archivos de la carpeta TMP eliminados`))
+console.log(chalk.gray(`💨 Archivos de la carpeta TMP eliminados`))
 } catch {
-console.log(chalk.gray(`💙 Los archivos de la carpeta TMP no se pudieron eliminar`))
+console.log(chalk.gray(`💨 Los archivos de la carpeta TMP no se pudieron eliminar`))
 }}, 30 * 1000) 
 _quickTest().catch(console.error)
 async function isValidPhoneNumber(number) {
@@ -392,4 +361,3 @@ for (const value of Object.values(global.ch)) {
 if (typeof value === 'string' && value.endsWith('@newsletter')) {
 await sock.newsletterFollow(value).catch(() => {})
 }}}
-
