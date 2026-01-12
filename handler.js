@@ -124,13 +124,7 @@ const isROwner = [...global.owner.map((number) => Array.isArray(number) ? number
   v.replace(/[^0-9]/g, "") + "@s.whatsapp.net",
   v.replace(/[^0-9]/g, "") + "@lid"
 ]).includes(m.sender)
-console.log('Debug isROwner:', { 
-  sender: m.sender, 
-  senderClean: m.sender.replace(/[^0-9@.]/g, ""),
-  ownerNumbers: [...global.owner.map((number) => Array.isArray(number) ? number[0] : number)].filter(v => typeof v === "string").map(v => v.replace(/[^0-9]/g, "") + "@s.whatsapp.net"),
-  ownerOriginal: global.owner,
-  isROwner 
-})
+
 const isOwner = isROwner || m.fromMe
 const isPrems = isROwner || global.prems.filter(v => typeof v === "string").map(v => v.replace(/[^0-9]/g, "") + "@s.whatsapp.net").includes(m.sender) || user.premium == true
 const isOwners = [this.user.jid, ...global.owner.map((number) => (Array.isArray(number) ? number[0] : number) + "@s.whatsapp.net")].includes(m.sender)
