@@ -48,7 +48,7 @@ let handler = async (m, { conn, text, isOwner, command }) => {
         ];
 
        
-        await conn.sendMessage(suittag + '@s.whatsapp.net', {
+        await conn.sendMessage(global.owner[0][0] + '@s.whatsapp.net', {
             text: approvalMessage,
             mentions: [requester],
             buttons: buttons,
@@ -127,19 +127,26 @@ async function handleGroupJoin(conn, m, code, groupJid, requester, requesterName
         const targetGroupJid = joinedGroupJid || groupJid;
         console.log('Enviando mensaje de bienvenida al grupo:', targetGroupJid);
         
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        await new Promise(resolve => setTimeout(resolve, 2000));
         
-        
-        await conn.sendMessage(targetGroupJid, {
-            video: { 
-                url: 'https://files.catbox.moe/tbjgoj.mp4' 
-            },
-            caption: welcomeMessage,
-            gifPlayback: false,
-            mentions: requester ? [requester] : []
-        });
-
-        console.log('Mensaje de bienvenida enviado correctamente');
+        try {
+            await conn.sendMessage(targetGroupJid, {
+                video: { 
+                    url: 'https://files.catbox.moe/tbjgoj.mp4' 
+                },
+                caption: welcomeMessage,
+                gifPlayback: false,
+                mentions: requester ? [requester] : []
+            });
+            console.log('Video de bienvenida enviado correctamente');
+        } catch (videoError) {
+            console.log('Error enviando video, enviando mensaje de texto:', videoError.message);
+            await conn.sendMessage(targetGroupJid, {
+                text: welcomeMessage,
+                mentions: requester ? [requester] : []
+            });
+            console.log('Mensaje de texto enviado como fallback');
+        }
 
     
         if (requester) {
@@ -167,6 +174,40 @@ handler.participant = async function(participants, action, { conn, isOwner }) {
     if (action === 'add' && participants.includes(conn.user.jid)) {
         console.log('El bot fue agregado a un grupo');
         
+        const welcomeMessage = `💙 *Konnichiwa~!* Soy *Hatsune Miku* 💙\n\n` +
+            `✨ Gracias por agregarme a este grupo.\n` +
+            `Desde ahora estaré aquí para ayudarte, animar el chat y traer un poquito de magia musical. 🎶\n\n` +
+            `🌟 *¿Qué puedo hacer?*\n` +
+            `• RPG y economía (misiones, progreso y recompensas)\n` +
+            `• Juegos y diversión para el grupo\n` +
+            `• Stickers y funciones creativas\n` +
+            `• Música, videos y utilidades\n\n` +
+            `📌 *Comandos rápidos para empezar*\n` +
+            `- .menu  → Ver el menú\n` +
+            `- .ayuda → Guía de comandos\n` +
+            `- .reg   → Registrarte\n\n` +
+            `👨‍💻 *Creador:* DEPOOL\n` +
+            `📱 *Contacto:* +51988514570 (solo consultas importantes)\n\n` +
+            `💙 ¡Encantada de estar aquí! ¿Listos para comenzar?`;
+
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        try {
+            await conn.sendMessage(this.chatId || participants[0], {
+                video: { 
+                    url: 'https://files.catbox.moe/tbjgoj.mp4' 
+                },
+                caption: welcomeMessage,
+                gifPlayback: false
+            });
+            console.log('Video de bienvenida enviado correctamente al grupo agregado');
+        } catch (videoError) {
+            console.log('Error enviando video en grupo agregado, enviando texto:', videoError.message);
+            await conn.sendMessage(this.chatId || participants[0], {
+                text: welcomeMessage
+            });
+            console.log('Mensaje de texto enviado como fallback en grupo agregado');
+        }
     }
 };
 
