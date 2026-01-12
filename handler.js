@@ -120,10 +120,20 @@ user.name = nuevo
 }} catch {}
 const chat = global.db.data.chats[m.chat]
 const settings = global.db.data.settings[this.user.jid]  
-const isROwner = [...global.owner.map((number) => number)].filter(v => typeof v === "string").map(v => v.replace(/[^0-9]/g, "") + "@s.whatsapp.net").includes(m.sender)
+const isROwner = [...global.owner.map((number) => Array.isArray(number) ? number[0] : number)].filter(v => typeof v === "string").flatMap(v => [
+  v.replace(/[^0-9]/g, "") + "@s.whatsapp.net",
+  v.replace(/[^0-9]/g, "") + "@lid"
+]).includes(m.sender)
+console.log('Debug isROwner:', { 
+  sender: m.sender, 
+  senderClean: m.sender.replace(/[^0-9@.]/g, ""),
+  ownerNumbers: [...global.owner.map((number) => Array.isArray(number) ? number[0] : number)].filter(v => typeof v === "string").map(v => v.replace(/[^0-9]/g, "") + "@s.whatsapp.net"),
+  ownerOriginal: global.owner,
+  isROwner 
+})
 const isOwner = isROwner || m.fromMe
 const isPrems = isROwner || global.prems.filter(v => typeof v === "string").map(v => v.replace(/[^0-9]/g, "") + "@s.whatsapp.net").includes(m.sender) || user.premium == true
-const isOwners = [this.user.jid, ...global.owner.map((number) => number + "@s.whatsapp.net")].includes(m.sender)
+const isOwners = [this.user.jid, ...global.owner.map((number) => (Array.isArray(number) ? number[0] : number) + "@s.whatsapp.net")].includes(m.sender)
 if (opts["queque"] && m.text && !(isPrems)) {
 const queque = this.msgqueque, time = 1000 * 5
 const previousID = queque[queque.length - 1]
