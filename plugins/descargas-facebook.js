@@ -8,6 +8,16 @@ const handler = async (m, { text, conn, args }) => {
 
   await m.react(rwait)
 
+  // Esperar a que las APIs estén disponibles
+  await new Promise(resolve => {
+    const checkInterval = setInterval(() => {
+      if (global.facebookAPI && global.facebookAPI.url && global.facebookAPI.key) {
+        clearInterval(checkInterval);
+        resolve();
+      }
+    }, 100);
+  });
+
   let res
   try {
     const facebookApiUrl = `${global.facebookAPI.url}?url=${encodeURIComponent(args[0])}&key=${global.facebookAPI.key}`;
