@@ -3,8 +3,12 @@ import { exec } from 'child_process';
 let handler = async (m, { conn }) => {
   m.reply('🎵 *Iniciando actualización...*\n└─ 🔄 Verificando cambios...');
 
-  exec('git pull', (err, stdout, stderr) => {
+  exec('git pull', { cwd: process.cwd() }, (err, stdout, stderr) => {
+    console.log('Git pull stdout:', stdout);
+    console.log('Git pull stderr:', stderr);
+    
     if (err) {
+      console.log('Git pull error:', err);
       conn.reply(m.chat, `❌ *Error en la actualización*\n├─ 📝 ${err.message}\n└─ 🔧 Verifica la conexión`, m);
       return;
     }

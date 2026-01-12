@@ -17,6 +17,7 @@ async function replyWithChannel(conn, chat, text, quoted = null) {
 }
 
 let handler = async (m, { conn, args }) => {
+const rcanal = 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
 let stiker = false
 let userId = m.sender
 let packstickers = global.db.data.users[userId] || {}
