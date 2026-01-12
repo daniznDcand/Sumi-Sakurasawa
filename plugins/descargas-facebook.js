@@ -1,6 +1,5 @@
 import { igdl } from 'ruhend-scraper'
 import fetch from 'node-fetch'
-import { apisConfig } from '../lib/api-config.js'
 
 const handler = async (m, { text, conn, args }) => {
   if (!args[0]) {
@@ -11,7 +10,7 @@ const handler = async (m, { text, conn, args }) => {
 
   let res
   try {
-    const facebookApiUrl = `${apisConfig.facebook.url}?url=${encodeURIComponent(args[0])}&key=${apisConfig.facebook.key}`;
+    const facebookApiUrl = `${global.facebookAPI.url}?url=${encodeURIComponent(args[0])}&key=${global.facebookAPI.key}`;
     console.log('Consultando API de Facebook...');
     
     const apiResponse = await fetch(facebookApiUrl);
@@ -25,7 +24,7 @@ const handler = async (m, { text, conn, args }) => {
   } catch (e) {
     console.error('Error API Facebook:', e)
     
-   
+    // Fallback al método original
     try {
       res = await igdl(args[0])
     } catch (fallbackError) {

@@ -58,14 +58,28 @@ global.welcom2 = '💫 ¡Sayonara! Gracias por cantar con nosotros 🌟 \n🎵 �
 global.banner = 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg'
 global.avatar = 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg'
 
-import { apisConfig } from './lib/api-config.js';
-
 global.api = {
   url: 'https://api.stellarwa.xyz',
   key: 'Angelithixyz'
 }
 
-global.mediafireAPI = apisConfig.mediafire
+
+try {
+  const { apisConfig } = await import('./lib/api-config.js');
+  global.mediafireAPI = apisConfig.mediafire;
+  global.facebookAPI = apisConfig.facebook;
+} catch (error) {
+  console.error('Error cargando APIs:', error);
+  
+  global.mediafireAPI = {
+    url: 'https://rest.alyabotpe.xyz/dl/mediafire',
+    key: 'Duarte-zz12'
+  };
+  global.facebookAPI = {
+    url: 'https://rest.alyabotpe.xyz/dl/facebook', 
+    key: 'Duarte-zz12'
+  };
+}
 
 global.playlistApiKey = 'f9e54e5c6amsh8b4dfc0bfb94abap19bab2jsne8b65338207e'
 
