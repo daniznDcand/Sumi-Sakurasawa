@@ -75,29 +75,59 @@ if (typeof chat !== "object") global.db.data.chats[m.chat] = {}
 if (chat) {
 if (!("isBanned" in chat)) chat.isBanned = false
 if (!("isMute" in chat)) chat.isMute = false;
-if (!("welcome" in chat)) chat.welcome = false
+if (!("welcome" in chat)) chat.welcome = true
 if (!("sWelcome" in chat)) chat.sWelcome = ""
 if (!("sBye" in chat)) chat.sBye = ""
 if (!("detect" in chat)) chat.detect = true
 if (!("primaryBot" in chat)) chat.primaryBot = null
 if (!("modoadmin" in chat)) chat.modoadmin = false
 if (!("antiLink" in chat)) chat.antiLink = true
+if (!("antiLink2" in chat)) chat.antiLink2 = false
+if (!("antiBot" in chat)) chat.antiBot = false
+if (!("antiBot2" in chat)) chat.antiBot2 = false
 if (!("nsfw" in chat)) chat.nsfw = false
 if (!("economy" in chat)) chat.economy = true;
 if (!("gacha" in chat)) chat.gacha = true
+if (!("audios" in chat)) chat.audios = true
+if (!("autoAceptar" in chat)) chat.autoAceptar = false
+if (!("autoRechazar" in chat)) chat.autoRechazar = false
+if (!("autoresponder" in chat)) chat.autoresponder = false
+if (!("reaction" in chat)) chat.reaction = true
+if (!("antifake" in chat)) chat.antifake = false
+if (!("antiarabes" in chat)) chat.antiarabes = false
+if (!("antitoxic" in chat)) chat.antitoxic = false
+if (!("antiMencion" in chat)) chat.antiMencion = false
+if (!("antiMencionAction" in chat)) chat.antiMencionAction = "kick"
+if (!("autolevelup" in chat)) chat.autolevelup = false
+if (!("antispam" in chat)) chat.antispam = false
 } else global.db.data.chats[m.chat] = {
 isBanned: false,
 isMute: false,
-welcome: false,
+welcome: true,
 sWelcome: "",
 sBye: "",
 detect: true,
 primaryBot: null,
 modoadmin: false,
 antiLink: true,
+antiLink2: false,
+antiBot: false,
+antiBot2: false,
 nsfw: false,
 economy: true,
-gacha: true
+gacha: true,
+audios: true,
+autoAceptar: false,
+autoRechazar: false,
+autoresponder: false,
+reaction: true,
+antifake: false,
+antiarabes: false,
+antitoxic: false,
+antiMencion: false,
+antiMencionAction: "kick",
+autolevelup: false,
+antispam: false
 }
 let settings = global.db.data.settings[this.user.jid]
 if (typeof settings !== "object") global.db.data.settings[this.user.jid] = {}
@@ -358,8 +388,23 @@ group: `💙 El comando *${comando}* solo puede ser usado en grupos.`,
 admin: `💙 El comando *${comando}* solo puede ser usado por los administradores del grupo.`,
 botAdmin: `💙 Para ejecutar el comando *${comando}* debo ser administrador del grupo.`
 }[type]
-if (msg) return conn.reply(m.chat, msg, m, rcanal).then(_ => m.react('💢'))
+if (msg) return conn.reply(m.chat, msg, m, global.rcanal).then(_ => m.react('💢'))
 }
+
+global.getChat = (jid) => {
+if (!global.db || !global.db.data || !global.db.data.chats) return {}
+return global.db.data.chats[jid] || {}
+}
+
+global.getUser = (jid) => {
+if (!global.db || !global.db.data || !global.db.data.users) return {}
+return global.db.data.users[jid] || {}
+}
+
+global.getRcanal = () => {
+return global.rcanal
+}
+
 let file = global.__filename(import.meta.url, true)
 watchFile(file, async () => {
 unwatchFile(file)
