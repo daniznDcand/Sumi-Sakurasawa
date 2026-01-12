@@ -1,6 +1,12 @@
 import { igdl } from 'ruhend-scraper'
 import fetch from 'node-fetch'
 
+
+const facebookAPI = {
+  url: 'https://rest.alyabotpe.xyz/dl/facebook',
+  key: 'Duarte-zz12'
+};
+
 const handler = async (m, { text, conn, args }) => {
   if (!args[0]) {
     return conn.reply(m.chat, `${emoji} Por favor, ingresa un enlace de Facebook.`, m)
@@ -8,19 +14,9 @@ const handler = async (m, { text, conn, args }) => {
 
   await m.react(rwait)
 
-  // Esperar a que las APIs estén disponibles
-  await new Promise(resolve => {
-    const checkInterval = setInterval(() => {
-      if (global.facebookAPI && global.facebookAPI.url && global.facebookAPI.key) {
-        clearInterval(checkInterval);
-        resolve();
-      }
-    }, 100);
-  });
-
   let res
   try {
-    const facebookApiUrl = `${global.facebookAPI.url}?url=${encodeURIComponent(args[0])}&key=${global.facebookAPI.key}`;
+    const facebookApiUrl = `${facebookAPI.url}?url=${encodeURIComponent(args[0])}&key=${facebookAPI.key}`;
     console.log('Consultando API de Facebook...');
     
     const apiResponse = await fetch(facebookApiUrl);
@@ -34,7 +30,7 @@ const handler = async (m, { text, conn, args }) => {
   } catch (e) {
     console.error('Error API Facebook:', e)
     
-    // Fallback al método original
+  
     try {
       res = await igdl(args[0])
     } catch (fallbackError) {

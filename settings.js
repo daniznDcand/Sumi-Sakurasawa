@@ -63,24 +63,6 @@ global.api = {
   key: 'Angelithixyz'
 }
 
-
-try {
-  const { apisConfig } = await import('./lib/api-config.js');
-  global.mediafireAPI = apisConfig.mediafire;
-  global.facebookAPI = apisConfig.facebook;
-} catch (error) {
-  console.error('Error cargando APIs:', error);
-  
-  global.mediafireAPI = {
-    url: 'https://rest.alyabotpe.xyz/dl/mediafire',
-    key: 'Duarte-zz12'
-  };
-  global.facebookAPI = {
-    url: 'https://rest.alyabotpe.xyz/dl/facebook', 
-    key: 'Duarte-zz12'
-  };
-}
-
 global.playlistApiKey = 'f9e54e5c6amsh8b4dfc0bfb94abap19bab2jsne8b65338207e'
 
 

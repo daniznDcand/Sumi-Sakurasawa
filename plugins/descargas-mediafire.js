@@ -2,6 +2,12 @@ import axios from 'axios';
 import cheerio from 'cheerio';
 import { lookup } from 'mime-types';
 
+
+const mediafireAPI = {
+  url: 'https://rest.alyabotpe.xyz/dl/mediafire',
+  key: 'Duarte-zz12'
+};
+
 const tradutor = {
   texto2: [
     '✅ *DESCARGA EXITOSA*',
@@ -85,7 +91,7 @@ async function mediafireDl(url) {
   try {
     if (!url.includes('mediafire.com')) throw new Error('URL de MediaFire inválida');
     
-    const apiUrl = `${global.mediafireAPI.url}?url=${encodeURIComponent(url)}&key=${global.mediafireAPI.key}`;
+    const apiUrl = `${mediafireAPI.url}?url=${encodeURIComponent(url)}&key=${mediafireAPI.key}`;
     
     console.log('Consultando API de MediaFire...');
     
@@ -117,7 +123,8 @@ async function mediafireDl(url) {
   } catch (error) {
     console.error('Error en mediafireDl (API):', error.message);
     
-     try {
+ 
+    try {
       console.log('Intentando con método original como fallback...');
       return await mediafireDlOriginal(url);
     } catch (fallbackError) {
