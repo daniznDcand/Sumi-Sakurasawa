@@ -196,6 +196,7 @@ async function downloadVideo(url) {
   if (!videoId) throw new Error('URL inválida');
 
   const videoAPIs = [
+    `https://rest.alyabotpe.xyz/dl/ytdl?url=${encodeURIComponent(url)}&format=mp4&key=${API_KEY}`,
     `https://rest.alyabotpe.xyz/dl/ytmp4?url=${encodeURIComponent(url)}&quality=144&key=${API_KEY}`,
     `https://api-adonix.ultraplus.click/download/ytvideo?apikey=DuarteXVKey34&url=${encodeURIComponent(url)}` 
   ];
@@ -207,10 +208,27 @@ async function downloadVideo(url) {
       const data = await res.json();
       console.log(`📊 API response:`, JSON.stringify(data, null, 2));
 
-      const videoUrl = data?.data?.dl || data?.data?.url;
-      if (videoUrl) {
-        console.log(`✅ API exitoso`);
+      
+      let videoUrl = data?.data?.dl || data?.data?.url || data?.data?.download || data?.result?.url || data?.result?.download || data?.url || data?.download;
+      
+      
+      if (apiUrl.includes('alyabotpe.xyz')) {
+        if (data.status === true && data.data) {
+          videoUrl = data.data.dl || data.data.url || data.data.download;
+        } else if (data.status === 200 && data.result) {
+          videoUrl = data.result.url || data.result.download || data.result.dl;
+        } else if (data.status !== true && data.status !== 200) {
+          console.log(`❌ AlyaBot API error: ${data.message || 'Status incorrecto'}`);
+          continue;
+        }
+      }
+      
+      if (videoUrl && videoUrl.startsWith('http')) {
+        console.log(`✅ API exitoso: ${apiUrl.split('?')[0]}`);
+        console.log(`🎬 Video URL: ${videoUrl}`);
         return { url: videoUrl };
+      } else {
+        console.log(`❌ No se encontró URL válida en la respuesta`);
       }
     } catch (error) {
       console.log(`❌ API falló:`, error.message);
@@ -225,6 +243,7 @@ async function downloadAudio(url) {
   if (!videoId) throw new Error('URL inválida');
 
   const audioAPIs = [
+    `https://rest.alyabotpe.xyz/dl/ytdl?url=${encodeURIComponent(url)}&format=mp3&key=${API_KEY}`,
     `https://rest.alyabotpe.xyz/dl/ytmp3?url=${encodeURIComponent(url)}&key=${API_KEY}`,
     `https://api-adonix.ultraplus.click/download/ytaudio?apikey=DuarteXVKey34&url=${encodeURIComponent(url)}` 
   ];
@@ -236,10 +255,25 @@ async function downloadAudio(url) {
       const data = await res.json();
       console.log(`📊 API response:`, JSON.stringify(data, null, 2));
 
-      const audioUrl = data?.data?.dl || data?.data?.url;
-      if (audioUrl) {
-        console.log(`✅ API exitoso`);
+      
+      let audioUrl = data?.data?.dl || data?.data?.url || data?.data?.download || data?.result?.url || data?.result?.download || data?.url || data?.download;
+      
+      
+      if (apiUrl.includes('alyabotpe.xyz')) {
+        if (data.status === 200 && data.result) {
+          audioUrl = data.result.url || data.result.download || data.result.dl;
+        } else if (data.status !== 200) {
+          console.log(`❌ AlyaBot API error: ${data.message || 'Status no 200'}`);
+          continue;
+        }
+      }
+      
+      if (audioUrl && audioUrl.startsWith('http')) {
+        console.log(`✅ API exitoso: ${apiUrl.split('?')[0]}`);
+        console.log(`🎵 Audio URL: ${audioUrl}`);
         return { url: audioUrl };
+      } else {
+        console.log(`❌ No se encontró URL válida en la respuesta`);
       }
     } catch (error) {
       console.log(`❌ API falló:`, error.message);
