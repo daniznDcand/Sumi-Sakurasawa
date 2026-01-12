@@ -1,5 +1,10 @@
 import fetch from 'node-fetch'
 
+const tiktokAPI = {
+  url: 'https://rest.alyabotpe.xyz/dl/tiktokmp3',
+  key: 'Duarte-zz12'
+};
+
 let handler = async (m, { conn, text, usedPrefix, command }) => {
     if (!text) {
         return conn.reply(m.chat, `💙 Por favor, ingresa un enlace de TikTok.\n\n📝 *Ejemplo:* ${usedPrefix}${command} https://www.tiktok.com/@usuario/video/1234567890`, m);
@@ -133,6 +138,10 @@ function validateTikTokUrl(url) {
 async function downloadAudioFromMultipleAPIs(url) {
     const apis = [
         {
+            name: 'AlyaBot-API',
+            func: () => tiktokAudioAlyaBot(url)
+        },
+        {
             name: 'TikWM',
             func: () => tiktokAudioTikWM(url)
         },
@@ -173,6 +182,43 @@ async function downloadAudioFromMultipleAPIs(url) {
     
     console.log('❌ Todas las APIs fallaron');
     return null;
+}
+
+async function tiktokAudioAlyaBot(url) {
+    try {
+        const apiUrl = `${tiktokAPI.url}?url=${encodeURIComponent(url)}&key=${tiktokAPI.key}`;
+        
+        const response = await fetch(apiUrl, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            },
+            timeout: 25000
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.status === 200 && data.result) {
+            const result = data.result;
+            let audioUrl = result.audio || result.audio_url || result.music;
+            
+            if (audioUrl && audioUrl.startsWith('http')) {
+                return {
+                    audioUrl: audioUrl,
+                    title: result.title || result.description || 'Audio TikTok',
+                    author: result.author || result.username || 'Desconocido',
+                    thumbnail: result.thumbnail || result.cover || result.image
+                };
+            }
+        }
+        
+        throw new Error('Sin URL de audio válida');
+    } catch (error) {
+        throw new Error(`AlyaBot-API: ${error.message}`);
+    }
 }
 
 async function tiktokAudioTikWM(url) {
