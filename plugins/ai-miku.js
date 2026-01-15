@@ -108,10 +108,10 @@ function detectMessageType(text) {
   return 'general'
 }
 
-async function getAIResponse(prompt, messageType = 'general') {
+async function getAIResponse(prompt, messageType = 'general', sender) {
   try {
-    const isOwner = global.db.data.users[m.sender]?.owner || false
-    const isRowner = global.db.data.users[m.sender]?.rowner || false
+    const isOwner = global.db.data.users[sender]?.owner || false
+    const isRowner = global.db.data.users[sender]?.rowner || false
     
     let personalityPrompt = ""
     if (isOwner || isRowner) {
@@ -217,7 +217,7 @@ let handler = async (m, { conn, text, isOwner }) => {
   try {
     await conn.sendPresenceUpdate('composing', m.chat)
     
-    const aiResponse = await getAIResponse(userRequest, messageType)
+    const aiResponse = await getAIResponse(userRequest, messageType, m.sender)
     
     if (aiResponse) {
       let responsePrefix = ""
