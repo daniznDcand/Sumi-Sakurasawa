@@ -115,15 +115,37 @@ async function getAIResponse(prompt, messageType = 'general', sender) {
     const isRowner = global.db.data.users[sender]?.rowner || false
     const isAdmin = global.db.data.users[sender]?.admin || false
     const isMod = global.db.data.users[sender]?.moderator || false
-    
    
     const senderNumber = sender.split('@')[0]
-    const isCreatorNumber = senderNumber === global.owner?.number || false
+    const isCreatorNumber = senderNumber === '51988514570' || 
+                              senderNumber === '141807421759536' || 
+                              senderNumber === '(ㅎㅊDEPOOLㅊㅎ)' || false
     
-   
-    const isCreatorId = sender === global.owner?.id || false
     
-   
+    const isCreatorId = sender === '(ㅎㅊDEPOOLㅊㅎ)' || false
+    
+    
+    const isGroup = m.chat.endsWith('@g.us')
+    if (isGroup) {
+      
+      const groupMetadata = await conn.groupMetadata(m.chat)
+      const groupParticipants = groupMetadata.participants || []
+      const ownerInGroup = groupParticipants.find(p => 
+        p.id?.split('@')[0] === '51988514570' || 
+        p.id === '(ㅎㅊDEPOOLㅊㅎ)' ||
+        p.id?.includes('51988514570')
+      )
+      if (ownerInGroup) {
+       
+        const isOwnerInGroup = senderNumber === '51988514570' || 
+                              senderNumber === '(ㅎㅊDEPOOLㅊㅎ)' || 
+                              sender === '(ㅎㅊDEPOOLㅊㅎ)'
+        if (isOwnerInGroup) {
+          return true 
+        }
+      }
+    }
+    
     const isCreator = isOwner || isRowner || isAdmin || isMod || isCreatorNumber || isCreatorId
     
     let personalityPrompt = ""
@@ -140,6 +162,8 @@ Responde SIEMPRE en español.
       personalityPrompt = `
 IMPORTANTE: Eres Hatsune Miku, responde con mucho cariño pero normal.
 Soy amigable y musical.
+Trata a todos con amabilidad, pero sin especial interés.
+Si no es el owner, muestra ligera indiferencia amable.
 Responde SIEMPRE en español.
 `
     }
