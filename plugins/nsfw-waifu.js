@@ -15,20 +15,52 @@ const handler = async (m, { conn, usedPrefix, command }) => {
     const apiUrl = `https://rest.alyabotpe.xyz/nsfw/waifu?key=${API_KEY}`;
     
     const response = await fetch(apiUrl);
-    const data = await response.json();
+    const contentType = response.headers.get('content-type');
     
-    console.log(`📊 API response:`, JSON.stringify(data, null, 2));
+    console.log(`📊 Content-Type:`, contentType);
     
-    if (data.status && data.result) {
-      const imageUrl = data.result;
+    if (contentType && contentType.includes('application/json')) {
+     
+      const data = await response.json();
+      console.log(`📊 API response:`, JSON.stringify(data, null, 2));
+      
+      if (data.status && data.result) {
+        const imageUrl = data.result;
+        
+        await conn.sendMessage(m.chat, {
+          image: { url: imageUrl },
+          caption: `💙 *Waifu NSFW*\n\n🌱 *Powered by Hatsune Miku Bot*`
+        }, { quoted: m });
+      } else {
+        throw new Error(data.message || 'No se pudo obtener la imagen');
+      }
+    } else if (contentType && (contentType.includes('image/') || contentType.includes('application/octet-stream'))) {
+     
+      const buffer = await response.buffer();
       
       await conn.sendMessage(m.chat, {
-        image: { url: imageUrl },
+        image: buffer,
         caption: `💙 *Waifu NSFW*\n\n🌱 *Powered by Hatsune Miku Bot*`
       }, { quoted: m });
-      
     } else {
-      throw new Error(data.message || 'No se pudo obtener la imagen');
+      
+      try {
+        const data = await response.json();
+        console.log(`📊 API response (fallback):`, JSON.stringify(data, null, 2));
+        
+        if (data.status && data.result) {
+          const imageUrl = data.result;
+          
+          await conn.sendMessage(m.chat, {
+            image: { url: imageUrl },
+            caption: `💙 *Waifu NSFW*\n\n🌱 *Powered by Hatsune Miku Bot*`
+          }, { quoted: m });
+        } else {
+          throw new Error(data.message || 'No se pudo obtener la imagen');
+        }
+      } catch (jsonError) {
+        throw new Error(`Respuesta no válida de la API. Content-Type: ${contentType}`);
+      }
     }
     
   } catch (error) {
