@@ -167,15 +167,24 @@ let handler = async (m, { conn, text, isOwner }) => {
   let userRequest = m.text.trim()
   let messageType = detectMessageType(userRequest)
   
-  if (messageText.startsWith('miku:')) {
-    userRequest = m.text.slice(5).trim()
+  // Remover prefijos del comando
+  const prefixes = [global.prefix || '.', '!', '/']
+  for (const prefix of prefixes) {
+    if (userRequest.startsWith(prefix + 'miku')) {
+      userRequest = userRequest.slice(prefix.length + 4).trim()
+      break
+    }
+  }
+  
+  if (messageText.startsWith('miku:') || messageText.includes('miku:')) {
+    userRequest = m.text.split('miku:')[1]?.trim() || ''
     if (!userRequest) {
       return conn.reply(m.chat, 
         "¡Miku desu! 🎵 ¿En qué puedo ayudarte? ¡Escribe 'miku:' seguido de tu petición! 💙", m)
     }
     messageType = detectMessageType(userRequest)
   } else {
-    userRequest = m.text.replace(/\bmiku\b/gi, '').trim()
+    userRequest = userRequest.replace(/\bmiku\b/gi, '').trim()
     if (!userRequest) {
       messageType = 'saludo'
       userRequest = 'hola'
