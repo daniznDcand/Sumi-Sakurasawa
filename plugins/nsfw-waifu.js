@@ -2,6 +2,13 @@ import fetch from "node-fetch";
 
 const handler = async (m, { conn, usedPrefix, command }) => {
   try {
+   
+    const isNsfwChat = global.db.data.chats[m.chat]?.nsfw || false;
+    
+    if (!isNsfwChat) {
+      return conn.reply(m.chat, `💙 Este comando solo se puede usar en chats habilitados para contenido NSFW.\n\n🌱 Usa ${usedPrefix}enable nsfw para habilitarlo en este grupo.`, m);
+    }
+    
     await conn.reply(m.chat, `💙 Buscando waifu NSFW... ⚡`, m);
     
     const API_KEY = 'Duarte-zz12';
