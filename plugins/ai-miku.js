@@ -146,8 +146,8 @@ let handler = async (m, { conn, text, isOwner }) => {
     }
   }
   
-  if (m.text.startsWith(global.prefix) || m.text.startsWith('.') || m.text.startsWith('/') || m.text.startsWith('!')) {
-    console.log(`❌ DEBUG AI-MIKU: Es un comando, ignorando: ${m.text}`)
+  if ((m.text.startsWith(global.prefix) || m.text.startsWith('.') || m.text.startsWith('/') || m.text.startsWith('!')) && !m.text.toLowerCase().includes('miku')) {
+    console.log(`❌ DEBUG AI-MIKU: Es un comando sin miku, ignorando: ${m.text}`)
     return
   }
   
