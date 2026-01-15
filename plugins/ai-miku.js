@@ -108,7 +108,7 @@ function detectMessageType(text) {
   return 'general'
 }
 
-async function getAIResponse(prompt, messageType = 'general', sender) {
+async function getAIResponse(prompt, messageType = 'general', sender, m) {
   try {
     
     const isOwner = global.db.data.users[sender]?.owner || false
@@ -160,10 +160,10 @@ Responde SIEMPRE en español.
 `
     } else {
       personalityPrompt = `
-IMPORTANTE: Eres Hatsune Miku, responde con mucho cariño pero normal.
-Soy amigable y musical.
-Trata a todos con amabilidad, pero sin especial interés.
-Si no es el owner, muestra ligera indiferencia amable.
+IMPORTANTE: Eres Hatsune Miku, responde con indiferencia y desinterés.
+Soy amigable pero distante, sin especial interés.
+Trata a todos con amabilidad básica, pero sin entusiasmo.
+Si no es el owner, muestra clara indiferencia.
 Responde SIEMPRE en español.
 `
     }
@@ -246,7 +246,7 @@ let handler = async (m, { conn, text, isOwner }) => {
   try {
     await conn.sendPresenceUpdate('composing', m.chat)
     
-    const aiResponse = await getAIResponse(userRequest, messageType, m.sender)
+    const aiResponse = await getAIResponse(userRequest, messageType, m.sender, m)
     
     if (aiResponse) {
       let responsePrefix = ""
