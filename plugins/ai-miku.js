@@ -1,86 +1,7 @@
 import fetch from 'node-fetch'
-import axios from 'axios'
 
-
-const AI_APIS = {
-  
-  groq_llama4: {
-    url: 'https://api.groq.com/openai/v1/chat/completions',
-    model: 'meta-llama/llama-4-scout-17b-16e-instruct',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer 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'
-    },
-    enabled: true,
-    timeout: 15000
-  },
-  
-  groq_llama32_90b: {
-    url: 'https://api.groq.com/openai/v1/chat/completions',
-    model: 'llama-3.2-90b-text-preview',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer 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'
-    },
-    enabled: true,
-    timeout: 10000
-  },
-  
-  groq_llama31_70b: {
-    url: 'https://api.groq.com/openai/v1/chat/completions',
-    model: 'llama-3.1-70b-versatile',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer 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'
-    },
-    enabled: true,
-    timeout: 12000
-  },
-  
-  groq_llama31_8b: {
-    url: 'https://api.groq.com/openai/v1/chat/completions',
-    model: 'llama-3.1-8b-instant',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer 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'
-    },
-    enabled: true,
-    timeout: 8000
-  },
-  
-  groq_mixtral: {
-    url: 'https://api.groq.com/openai/v1/chat/completions',
-    model: 'mixtral-8x7b-32768',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer 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'
-    },
-    enabled: true,
-    timeout: 12000
-  },
-  
- 
-  hf_mistral: {
-    url: 'https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.3',
-    headers: {
-      'Authorization': 'Bearer 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',
-      'Content-Type': 'application/json'
-    },
-    enabled: true,
-    timeout: 30000
-  },
-  
-  hf_llama: {
-    url: 'https://api-inference.huggingface.co/models/meta-llama/Meta-Llama-3.1-8B-Instruct',
-    headers: {
-      'Authorization': 'Bearer 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',
-      'Content-Type': 'application/json'
-    },
-    enabled: true,
-    timeout: 35000
-  }
-}
-
+const API_KEY = 'Duarte-zz12';
+const API_URL = 'https://rest.alyabotpe.xyz/ai/copilot';
 
 const MIKU_PERSONALITY = {
   name: "Hatsune Miku",
@@ -96,7 +17,6 @@ const MIKU_PERSONALITY = {
   ],
   responseStyle: "Respondo de forma amigable, musical y con la personalidad única de Hatsune Miku. Siempre incluyo elementos musicales en mis respuestas."
 }
-
 
 const FALLBACK_RESPONSES = {
   saludo: [
@@ -148,35 +68,28 @@ const FALLBACK_RESPONSES = {
   ]
 }
 
-
 function detectMessageType(text) {
   const lowerText = text.toLowerCase()
-  
   
   if (/\b(hola|hello|hi|buenas|buenos|konnichiwa|saludo|hey|ey|que tal|como estas|que onda|wassup|buenas tardes|buenas noches|buen dia)\b/.test(lowerText)) {
     return 'saludo'
   }
   
-  
   if (/\b(adios|bye|chao|sayonara|hasta luego|nos vemos|mata ne|hasta pronto|me voy|chau|goodbye)\b/.test(lowerText)) {
     return 'despedida'
   }
   
- 
   if (/\b(que|como|cuando|donde|por que|porque|puedes|podrias|me ayudas|ayuda|explica|dime|cuentame|cual|quien)\b/.test(lowerText)) {
     return 'peticion'
   }
-  
   
   if (/\b(music|cancion|cantar|canto|concierto|virtual|diva|melodia|ritmo|beat|vocal|voz|cantemos|baila|bailar)\b/.test(lowerText)) {
     return 'musica'
   }
   
-  
   if (/\b(puerro|negi|verdura|comida|comer)\b/.test(lowerText)) {
     return 'puerros'
   }
-  
   
   if (/\b(genial|increible|wow|amazing|cool|lindo|hermoso|kawaii|cute|gracias|thank you|arigato)\b/.test(lowerText)) {
     return 'conversacion'
@@ -185,176 +98,41 @@ function detectMessageType(text) {
   return 'general'
 }
 
-
 async function getAIResponse(prompt, messageType = 'general') {
-  
-  
-  let contextualInstructions = ""
-  switch (messageType) {
-    case 'saludo':
-      contextualInstructions = "El usuario te está saludando. Responde con un saludo alegre y musical, invita a conversar sobre música."
-      break
-    case 'despedida':
-      contextualInstructions = "El usuario se está despidiendo. Responde con una despedida cariñosa y musical, deséale que tenga música en su día."
-      break
-    case 'peticion':
-      contextualInstructions = "El usuario te está haciendo una pregunta o petición. Ayúdalo de la mejor manera posible manteniendo tu personalidad musical."
-      break
-    case 'musica':
-      contextualInstructions = "El usuario quiere hablar sobre música. ¡Este es tu tema favorito! Comparte tu pasión por la música y el canto."
-      break
-    case 'puerros':
-      contextualInstructions = "El usuario mencionó puerros (negi). ¡Comparte tu amor por los puerros de manera alegre y musical!"
-      break
-    case 'conversacion':
-      contextualInstructions = "El usuario está siendo amable o conversando casualmente. Responde de manera cálida y mantén la conversación musical."
-      break
-    default:
-      contextualInstructions = "Responde al usuario de manera general, manteniendo tu personalidad alegre y musical."
-  }
-  
-  const systemPrompt = `${MIKU_PERSONALITY.role}
-
-Características de mi personalidad:
-${MIKU_PERSONALITY.traits.map(trait => `- ${trait}`).join('\n')}
-
-Estilo de respuesta: ${MIKU_PERSONALITY.responseStyle}
-
-CONTEXTO ESPECÍFICO: ${contextualInstructions}
-
-IMPORTANTE: 
-- Responde SIEMPRE como Hatsune Miku
-- Incluye emoticones musicales: 🎵🎤🎶💙✨
-- Mantén respuestas entre 50-150 palabras
-- Sé alegre y musical
-- Menciona elementos de mi personalidad virtual
-- Usa expresiones como "Miku desu!", "¡Nya!", "¡Cantemos juntos!"
-- Adapta tu respuesta al contexto: ${messageType}
-
-Usuario: ${prompt}`
-
-  
-  const apis = Object.entries(AI_APIS).filter(([_, config]) => config.enabled)
-  
-  for (const [name, config] of apis) {
-    try {
-      let response
-      
-      switch (name) {
-        case 'groq_llama31_8b':
-        case 'groq_llama31_70b':
-        case 'groq_llama32_90b':
-        case 'groq_llama4':
-        case 'groq_mixtral':
-         
-          response = await axios.post(
-            config.url,
-            {
-              model: config.model,
-              messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: prompt }
-              ],
-              temperature: 0.7,
-              max_tokens: 1000,
-              top_p: 1,
-              stream: false
-            },
-            {
-              headers: config.headers,
-              timeout: config.timeout
-            }
-          )
-          
-          if (response.data?.choices?.[0]?.message?.content) {
-            return response.data.choices[0].message.content
-          }
-          break
-          
-        case 'hf_mistral':
-          
-          response = await axios.post(
-            config.url,
-            {
-              inputs: `<s>[INST] ${systemPrompt}\n\nUsuario: ${prompt} [/INST]`,
-              parameters: {
-                max_new_tokens: 800,
-                temperature: 0.7,
-                do_sample: true,
-                return_full_text: false,
-                stop: ["</s>", "[INST]"]
-              },
-              options: {
-                wait_for_model: true,
-                use_cache: false
-              }
-            },
-            {
-              headers: config.headers,
-              timeout: config.timeout
-            }
-          )
-          
-          if (response.data?.[0]?.generated_text) {
-            return response.data[0].generated_text.trim()
-          }
-          break
-          
-        case 'hf_llama':
-          
-          response = await axios.post(
-            config.url,
-            {
-              inputs: `<|begin_of_text|><|start_header_id|>system<|end_header_id|>\n${systemPrompt}<|eot_id|><|start_header_id|>user<|end_header_id|>\n${prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>`,
-              parameters: {
-                max_new_tokens: 800,
-                temperature: 0.7,
-                do_sample: true,
-                return_full_text: false
-              },
-              options: {
-                wait_for_model: true,
-                use_cache: false
-              }
-            },
-            {
-              headers: config.headers,
-              timeout: config.timeout
-            }
-          )
-          
-          if (response.data?.[0]?.generated_text) {
-            return response.data[0].generated_text.trim()
-          }
-          break
-      }
-    } catch (error) {
-      console.log(`❌ Error con API ${name}: ${error.message}`)
-      continue
+  try {
+    const apiUrl = `${API_URL}?text=${encodeURIComponent(prompt)}&key=${API_KEY}`
+    
+    const response = await fetch(apiUrl, {
+      method: 'GET',
+      timeout: 15000
+    })
+    
+    const data = await response.json()
+    console.log(`📊 API response:`, JSON.stringify(data, null, 2))
+    
+    if (data.status && data.result) {
+      return data.result
+    } else {
+      throw new Error(data.message || 'Respuesta inválida de la API')
     }
+  } catch (error) {
+    console.log(`❌ Error con API: ${error.message}`)
+    return getFallbackResponse(messageType)
   }
-  
-  
-  console.log('🎵 Todas las APIs fallaron, usando respuestas predeterminadas de Miku')
-  return getFallbackResponse(messageType)
 }
-
 
 function getFallbackResponse(messageType) {
   const responses = FALLBACK_RESPONSES[messageType] || FALLBACK_RESPONSES.general
   return responses[Math.floor(Math.random() * responses.length)]
 }
 
-
 let handler = async (m, { conn, text, isOwner }) => {
-  
   console.log(`🔍 DEBUG AI-MIKU: Handler ejecutándose. Mensaje: "${m?.text || 'undefined'}"`)
   
   if (!m || !m.text) {
     console.log(`❌ DEBUG AI-MIKU: Sin mensaje o texto`)
     return
   }
-  
   
   if (m.text.toLowerCase().includes('miku')) {
     console.log(`✅ 🎵 MIKU TEST: Detecté "miku" en el mensaje: ${m.text}`)
@@ -368,30 +146,26 @@ let handler = async (m, { conn, text, isOwner }) => {
     }
   }
   
-  
   if (m.text.startsWith(global.prefix) || m.text.startsWith('.') || m.text.startsWith('/') || m.text.startsWith('!')) {
     console.log(`❌ DEBUG AI-MIKU: Es un comando, ignorando: ${m.text}`)
-    return 
+    return
   }
   
   const messageText = m.text.toLowerCase().trim()
   console.log(`🔍 DEBUG AI-MIKU: Texto en minúsculas: "${messageText}"`)
   
- 
   const containsMiku = /\b(miku)\b/.test(messageText)
   console.log(`🔍 DEBUG AI-MIKU: ¿Contiene 'miku'? ${containsMiku}`)
   
   if (!containsMiku) {
     console.log(`❌ DEBUG AI-MIKU: No contiene 'miku', saliendo`)
-    return 
+    return
   }
   
-  console.log(`✅ 🎵 Miku AI detectó mensaje con "miku": ${m.text}`) 
-  
+  console.log(`✅ 🎵 Miku AI detectó mensaje con "miku": ${m.text}`)
   
   let userRequest = m.text.trim()
   let messageType = detectMessageType(userRequest)
-  
   
   if (messageText.startsWith('miku:')) {
     userRequest = m.text.slice(5).trim()
@@ -400,13 +174,9 @@ let handler = async (m, { conn, text, isOwner }) => {
         "¡Miku desu! 🎵 ¿En qué puedo ayudarte? ¡Escribe 'miku:' seguido de tu petición! 💙", m)
     }
     messageType = detectMessageType(userRequest)
-  }
-  
-  else {
-    
+  } else {
     userRequest = m.text.replace(/\bmiku\b/gi, '').trim()
     if (!userRequest) {
-      
       messageType = 'saludo'
       userRequest = 'hola'
     } else {
@@ -415,14 +185,11 @@ let handler = async (m, { conn, text, isOwner }) => {
   }
   
   try {
-    
     await conn.sendPresenceUpdate('composing', m.chat)
-    
     
     const aiResponse = await getAIResponse(userRequest, messageType)
     
     if (aiResponse) {
-      
       let responsePrefix = ""
       switch (messageType) {
         case 'saludo':
@@ -448,7 +215,6 @@ let handler = async (m, { conn, text, isOwner }) => {
       
       await conn.reply(m.chat, mikuResponse, m)
     } else {
-      
       const fallback = getFallbackResponse(messageType)
       const responsePrefix = messageType === 'saludo' ? "🎵 *Miku te saluda:* 🎤" : 
                            messageType === 'peticion' ? "🎵 *Miku responde:* 🎤" : 
@@ -461,18 +227,13 @@ let handler = async (m, { conn, text, isOwner }) => {
   } catch (error) {
     console.error('❌ Error en AI Miku:', error)
     
-    
     const errorResponse = FALLBACK_RESPONSES.error[Math.floor(Math.random() * FALLBACK_RESPONSES.error.length)]
     await conn.reply(m.chat, 
       `🎵 *Miku está un poco confundida:* 🎤\n\n${errorResponse}\n\n💙 _¡Pero siempre estoy aquí para cantar contigo!_ 💙`, m)
   }
 }
 
-
-
 handler.all = true 
 handler.priority = 1 
 
 export default handler
-
-
