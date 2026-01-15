@@ -37,28 +37,49 @@ export async function before(m, { conn, participants, groupMetadata }) {
           ppUrl = 'https://server.wallpaperalchemy.com/storage/wallpapers/287/hatsune-miku-4k-anime-wallpaper.png'
         }
 
-        console.log('📤 Enviando welcome con imagen no descargable y reenvío desde canal...')
+        console.log('📤 Enviando welcome con imagen...')
 
-        await conn.sendMessage(jid, {
-          text: text,
-          contextInfo: {
-            mentionedJid: [user],
-            forwardingScore: 1,
-            isForwarded: true,
-            forwardedNewsletterMessageInfo: {
-              newsletterJid: global.ch.ch1,
-              newsletterName: '💙 HATSUNE MIKU CHANNEL💙',
-              serverMessageId: -1
-            },
-            externalAdReply: {
-              title: '🎵 Hatsune Miku Bot 🎵',
-              body: `💙 Bienvenido al mundo virtual • ${groupSize} miembros 💙`,
-              thumbnailUrl: ppUrl,
-              mediaType: 1,
-              renderLargerThumbnail: true
+        
+        try {
+          await conn.sendMessage(jid, {
+            image: { url: ppUrl },
+            caption: text,
+            mentions: [user],
+            contextInfo: {
+              forwardingScore: 1,
+              isForwarded: true,
+              forwardedNewsletterMessageInfo: {
+                newsletterJid: global.ch.ch1,
+                newsletterName: '💙 HATSUNE MIKU CHANNEL💙',
+                serverMessageId: -1
+              }
             }
-          }
-        }, { quoted })
+          }, { quoted })
+        } catch (imageError) {
+          console.log('Error con imagen directa, usando fallback:', imageError.message)
+          
+          
+          await conn.sendMessage(jid, {
+            text: text,
+            contextInfo: {
+              mentionedJid: [user],
+              forwardingScore: 1,
+              isForwarded: true,
+              forwardedNewsletterMessageInfo: {
+                newsletterJid: global.ch.ch1,
+                newsletterName: '💙 HATSUNE MIKU CHANNEL💙',
+                serverMessageId: -1
+              },
+              externalAdReply: {
+                title: '🎵 Hatsune Miku Bot 🎵',
+                body: `💙 Bienvenido al mundo virtual • ${groupSize} miembros 💙`,
+                thumbnailUrl: ppUrl,
+                renderLargerThumbnail: true,
+                previewType: 0
+              }
+            }
+          }, { quoted })
+        }
 
       } catch (err) {
         console.log('sendSingleWelcome error:', err)
@@ -110,7 +131,7 @@ export async function before(m, { conn, participants, groupMetadata }) {
 
         const mentionTag = '@' + user.replace(/@.+/, '')
 
-        const byeText = `🎵 *¡HASTA PRONTO! DESDE EL MUNDO DE HATSUNE MIKU* 🎵
+        const byeText = `🎵*HASTA PRONTO! DEl MUNDO DE HATSUNE MIKU*🎵
 
 💙 Adiós ${mentionTag}! 💙
 🎶 Gracias por cantar con nosotros
