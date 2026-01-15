@@ -1,8 +1,79 @@
 import fetch from "node-fetch";
 import yts from 'yt-search';
-import { ytv, yta } from '../lib/y2mate.js';
 
 const API_KEY = 'Duarte-zz12';
+
+async function getAudioFromApis(url) {
+  
+   const apis = [    
+    { api: 'Ootaizumi', endpoint: global.APIs?.ootaizumi?.url ? `${global.APIs.ootaizumi.url}/downloader/youtube/play?query=${encodeURIComponent(url)}` : null, extractor: res => res.result?.download },
+    { api: 'Vreden', endpoint: global.APIs?.vreden?.url ? `${global.APIs.vreden.url}/api/v1/download/youtube/audio?url=${encodeURIComponent(url)}&quality=256` : null, extractor: res => res.result?.download?.url },
+    { api: 'Stellar', endpoint: global.APIs?.stellar?.url ? `${global.APIs.stellar.url}/dl/ytmp3?url=${encodeURIComponent(url)}&quality=256&key=${global.APIs.stellar.key}` : null, extractor: res => res.data?.dl },
+    { api: 'Ootaizumi v2', endpoint: global.APIs?.ootaizumi?.url ? `${global.APIs.ootaizumi.url}/downloader/youtube?url=${encodeURIComponent(url)}&format=mp3` : null, extractor: res => res.result?.download },
+    { api: 'Vreden v2', endpoint: global.APIs?.vreden?.url ? `${global.APIs.vreden.url}/api/v1/download/play/audio?query=${encodeURIComponent(url)}` : null, extractor: res => res.result?.download?.url },
+    { api: 'Nekolabs', endpoint: global.APIs?.nekolabs?.url ? `${global.APIs.nekolabs.url}/downloader/youtube/v1?url=${encodeURIComponent(url)}&format=mp3` : null, extractor: res => res.result?.downloadUrl },
+    { api: 'Nekolabs v2', endpoint: global.APIs?.nekolabs?.url ? `${global.APIs.nekolabs.url}/downloader/youtube/play/v1?q=${encodeURIComponent(url)}` : null, extractor: res => res.result?.downloadUrl },
+    
+    { api: 'AlyaBot v2', endpoint: `https://rest.alyabotpe.xyz/dl/ytmp3?url=${encodeURIComponent(url)}&key=Duarte-zz12`, extractor: res => res.status ? (res.data?.dl || res.data?.url || res.data?.download) : null },
+    { api: 'YtdlApi', endpoint: `https://api.ytdlapi.com/v3/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.data?.downloadUrl },
+    { api: 'SaveTik', endpoint: `https://api.savetik.app/youtube/audio?url=${encodeURIComponent(url)}`, extractor: res => res.data?.downloadUrl }
+  ].filter(api => api.endpoint !== null); 
+
+  for (const api of apis) {
+    try {
+      console.log(`🔄 Trying API: ${api.api}`);
+      const response = await fetch(api.endpoint);
+      const data = await response.json();
+      console.log(`📊 API response:`, JSON.stringify(data, null, 2));
+      
+      const downloadUrl = api.extractor(data);
+      if (downloadUrl && downloadUrl.startsWith('http')) {
+        console.log(`✅ API exitoso: ${api.api}, URL: ${downloadUrl}`);
+        return downloadUrl;
+      } else {
+        console.log(`❌ No se encontró URL válida en ${api.api}`);
+      }
+    } catch (error) {
+      console.log(`❌ API ${api.api} falló:`, error.message);
+    }
+  }
+  
+  throw new Error('No se pudo obtener el enlace de descarga de ninguna API de audio');
+}
+
+async function getVideoFromApis(url) {
+  
+  const apis = [    
+    { api: 'Vreden', endpoint: global.APIs?.vreden?.url ? `${global.APIs.vreden.url}/api/v1/download/youtube/video?url=${encodeURIComponent(url)}&quality=360` : null, extractor: res => res.result?.download?.url },
+    { api: 'Stellar v2', endpoint: global.APIs?.stellar?.url ? `${global.APIs.stellar.url}/dl/ytmp4v2?url=${encodeURIComponent(url)}&key=${global.APIs.stellar.key}` : null, extractor: res => res.vidinfo?.url },
+    { api: 'Stellar', endpoint: global.APIs?.stellar?.url ? `${global.APIs.stellar.url}/dl/ytmp4?url=${encodeURIComponent(url)}&quality=360&key=${global.APIs.stellar.key}` : null, extractor: res => res.data?.dl },
+    { api: 'Nekolabs', endpoint: global.APIs?.nekolabs?.url ? `${global.APIs.nekolabs.url}/downloader/youtube/v1?url=${encodeURIComponent(url)}&format=360` : null, extractor: res => res.result?.downloadUrl },
+    { api: 'Vreden v2', endpoint: global.APIs?.vreden?.url ? `${global.APIs.vreden.url}/api/v1/download/play/video?query=${encodeURIComponent(url)}` : null, extractor: res => res.result?.download?.url },
+    
+    { api: 'AlyaBot', endpoint: `https://rest.alyabotpe.xyz/dl/ytmp4?url=${encodeURIComponent(url)}&key=${API_KEY}`, extractor: res => res.status ? (res.data?.dl || res.data?.url || res.data?.download) : null }
+  ].filter(api => api.endpoint !== null); 
+
+  for (const api of apis) {
+    try {
+      console.log(`🔄 Trying API: ${api.api}`);
+      const response = await fetch(api.endpoint);
+      const data = await response.json();
+      console.log(`📊 API response:`, JSON.stringify(data, null, 2));
+      
+      const downloadUrl = api.extractor(data);
+      if (downloadUrl && downloadUrl.startsWith('http')) {
+        console.log(`✅ API exitoso: ${api.api}, URL: ${downloadUrl}`);
+        return downloadUrl;
+      } else {
+        console.log(`❌ No se encontró URL válida en ${api.api}`);
+      }
+    } catch (error) {
+      console.log(`❌ API ${api.api} falló:`, error.message);
+    }
+  }
+  
+  throw new Error('No se pudo obtener el enlace de descarga de ninguna API de video');
+}
 
 function extractYouTubeId(url) {
   const patterns = [
@@ -41,15 +112,35 @@ function formatViews(views) {
 const handler = async (m, { conn, text, usedPrefix, command }) => {
   try {
     if (!text.trim()) {
-      return conn.reply(m.chat, `💙HATSUNE MIKU💙\n\n💙 Ingresa el nombre de la música a descargar.\n\nEjemplo: ${usedPrefix}${command} Let you Down Cyberpunk`, m);
+      return conn.reply(m.chat, `💙HATSUNE MIKU💙\n\n💙 Ingresa el nombre de la música o URL de YouTube a descargar.\n\nEjemplo: ${usedPrefix}${command} Let you Down Cyberpunk`, m);
     }
 
-    const search = await yts(text);
-    if (!search.all || search.all.length === 0) {
-      return m.reply('No se encontraron resultados para tu búsqueda.');
+    let videoInfo;
+    let url = '';
+
+    
+    if (text.includes('youtube.com') || text.includes('youtu.be')) {
+      url = text;
+      const videoId = extractYouTubeId(url);
+      if (!videoId) {
+        return m.reply('URL de YouTube inválida');
+      }
+      
+      
+      const search = await yts(videoId);
+      if (search.all && search.all.length > 0) {
+        videoInfo = search.all.find(v => v.videoId === videoId);
+      }
+    } else {
+      
+      const search = await yts(text);
+      if (!search.all || search.all.length === 0) {
+        return m.reply('No se encontraron resultados para tu búsqueda.');
+      }
+      videoInfo = search.all[0];
+      url = videoInfo.url;
     }
 
-    const videoInfo = search.all[0];
     if (!videoInfo) {
       return m.reply('No se pudo obtener información del video.');
     }
@@ -60,7 +151,6 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       timestamp = 'Desconocido', 
       views = 0, 
       ago = 'Desconocido', 
-      url = '', 
       author = { name: 'Desconocido' } 
     } = videoInfo;
 
@@ -72,10 +162,10 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     const canal = author.name || 'Desconocido';
     
     const buttons = [
-      ['🎵 Audio', 'ytdl_audio_mp3'],
-      ['🎬 Video', 'ytdl_video_mp4'],
-      ['📁 MP3 Documento', 'ytdl_audio_doc'],
-      ['📁 MP4 Documento', 'ytdl_video_doc']
+      ['🎵 Audio MP3', 'ytdlv2_audio_mp3'],
+      ['🎬 Video MP4', 'ytdlv2_video_mp4'],
+      ['📁 MP3 Documento', 'ytdlv2_audio_doc'],
+      ['📁 MP4 Documento', 'ytdlv2_video_doc']
     ];
     
     const infoText = `*𖹭.╭╭ִ╼࣪━ִﮩ٨ـﮩ💙𝗠𝗶𝗸𝘂𝗺𝗶𝗻🌱ﮩ٨ـﮩ━ִ╾࣪╮╮.𖹭*
@@ -89,7 +179,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 > 🌱 *Canal:* ${canal}
 *°.⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸.°*
 > 💙 *Publicado:* ${ago}
-*⏝ּׅ︣︢ۛ۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫۫ۜ⏝ּׅ︣ׄۛ۫۫۫۫۫۫ۜ*
+*⏝ּׅ︣︢ۛ۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫ۜ⏝ּׅ︣ׄۛ۫۫۫۫۫ۜ*
 
 💌 *Selecciona el formato para descargar:*`;
 
@@ -130,14 +220,18 @@ async function processDownload(conn, m, url, title, option) {
   
   try {
     const isVideo = option === 2 || option === 4;
-    const result = isVideo ? await downloadVideo(url) : await downloadAudio(url);
     
-    if (!result?.url) {
-      throw new Error('No se pudo obtener el enlace de descarga');
+    let downloadUrl;
+    
+    if (isVideo) {
+      downloadUrl = await getVideoFromApis(url);
+    } else {
+      downloadUrl = await getAudioFromApis(url);
     }
     
+    console.log(`✅ API exitoso, URL: ${downloadUrl}`);
+    
     let fileName = `${title.replace(/[^\w\s]/gi, '').substring(0, 50)}`;
-    const downloadUrl = result.url;
 
     if (option === 1 || option === 3) {
       fileName += '.mp3';
@@ -191,104 +285,12 @@ async function processDownload(conn, m, url, title, option) {
   }
 }
 
-async function downloadVideo(url) {
-  const videoId = extractYouTubeId(url);
-  if (!videoId) throw new Error('URL inválida');
-
-  const videoAPIs = [
-    `https://rest.alyabotpe.xyz/dl/ytdl?url=${encodeURIComponent(url)}&format=mp4&key=${API_KEY}`,
-    `https://rest.alyabotpe.xyz/dl/ytmp4?url=${encodeURIComponent(url)}&quality=144&key=${API_KEY}`,
-    `https://api-adonix.ultraplus.click/download/ytvideo?apikey=DuarteXVKey34&url=${encodeURIComponent(url)}` 
-  ];
-
-  for (const apiUrl of videoAPIs) {
-    try {
-      console.log(`🔄 Trying API: ${apiUrl}`);
-      const res = await fetch(apiUrl);
-      const data = await res.json();
-      console.log(`📊 API response:`, JSON.stringify(data, null, 2));
-
-      
-      let videoUrl = data?.data?.dl || data?.data?.url || data?.data?.download || data?.result?.url || data?.result?.download || data?.url || data?.download;
-      
-      
-      if (apiUrl.includes('alyabotpe.xyz')) {
-        if (data.status === true && data.data) {
-          videoUrl = data.data.dl || data.data.url || data.data.download;
-        } else if (data.status === 200 && data.result) {
-          videoUrl = data.result.url || data.result.download || data.result.dl;
-        } else if (data.status !== true && data.status !== 200) {
-          console.log(`❌ AlyaBot API error: ${data.message || 'Status incorrecto'}`);
-          continue;
-        }
-      }
-      
-      if (videoUrl && videoUrl.startsWith('http')) {
-        console.log(`✅ API exitoso: ${apiUrl.split('?')[0]}`);
-        console.log(`🎬 Video URL: ${videoUrl}`);
-        return { url: videoUrl };
-      } else {
-        console.log(`❌ No se encontró URL válida en la respuesta`);
-      }
-    } catch (error) {
-      console.log(`❌ API falló:`, error.message);
-    }
-  }
-
-  throw new Error('No se pudo descargar el video. Intenta más tarde.');
-}
-
-async function downloadAudio(url) {
-  const videoId = extractYouTubeId(url);
-  if (!videoId) throw new Error('URL inválida');
-
-  const audioAPIs = [
-    `https://rest.alyabotpe.xyz/dl/ytdl?url=${encodeURIComponent(url)}&format=mp3&key=${API_KEY}`,
-    `https://rest.alyabotpe.xyz/dl/ytmp3?url=${encodeURIComponent(url)}&key=${API_KEY}`,
-    `https://api-adonix.ultraplus.click/download/ytaudio?apikey=DuarteXVKey34&url=${encodeURIComponent(url)}` 
-  ];
-
-  for (const apiUrl of audioAPIs) {
-    try {
-      console.log(`🔄 Trying API: ${apiUrl}`);
-      const res = await fetch(apiUrl);
-      const data = await res.json();
-      console.log(`📊 API response:`, JSON.stringify(data, null, 2));
-
-      
-      let audioUrl = data?.data?.dl || data?.data?.url || data?.data?.download || data?.result?.url || data?.result?.download || data?.url || data?.download;
-      
-      
-      if (apiUrl.includes('alyabotpe.xyz')) {
-        if (data.status === 200 && data.result) {
-          audioUrl = data.result.url || data.result.download || data.result.dl;
-        } else if (data.status !== 200) {
-          console.log(`❌ AlyaBot API error: ${data.message || 'Status no 200'}`);
-          continue;
-        }
-      }
-      
-      if (audioUrl && audioUrl.startsWith('http')) {
-        console.log(`✅ API exitoso: ${apiUrl.split('?')[0]}`);
-        console.log(`🎵 Audio URL: ${audioUrl}`);
-        return { url: audioUrl };
-      } else {
-        console.log(`❌ No se encontró URL válida en la respuesta`);
-      }
-    } catch (error) {
-      console.log(`❌ API falló:`, error.message);
-    }
-  }
-
-  throw new Error('No se pudo descargar el audio. Intenta más tarde.');
-}
-
 handler.before = async (m, { conn }) => {
   const buttonPatterns = [
-    /ytdl_audio_mp3/,
-    /ytdl_video_mp4/,
-    /ytdl_audio_doc/,
-    /ytdl_video_doc/
+    /ytdlv2_audio_mp3/,
+    /ytdlv2_video_mp4/,
+    /ytdlv2_audio_doc/,
+    /ytdlv2_video_doc/
   ];
   
   let isButtonResponse = false;
@@ -355,7 +357,7 @@ handler.before = async (m, { conn }) => {
   return true;
 };
 
-handler.command = handler.help = ['play'];
+handler.command = handler.help = ['play', 'ytdlv2'];
 handler.tags = ['downloader'];
 handler.register = true;
 
