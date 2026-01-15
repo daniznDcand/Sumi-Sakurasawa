@@ -30,7 +30,7 @@ const handler = async (m, { conn, usedPrefix, command }) => {
   }
 };
 
-handler.command = ['waifu', 'nsfwwaifu'];
+handler.command = ['waifu18', 'nsfwwaifu'];
 handler.tags = ['nsfw'];
 handler.help = ['waifu'];
 handler.register = true;
