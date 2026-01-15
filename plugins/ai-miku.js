@@ -110,11 +110,24 @@ function detectMessageType(text) {
 
 async function getAIResponse(prompt, messageType = 'general', sender) {
   try {
+    
     const isOwner = global.db.data.users[sender]?.owner || false
     const isRowner = global.db.data.users[sender]?.rowner || false
+    const isAdmin = global.db.data.users[sender]?.admin || false
+    const isMod = global.db.data.users[sender]?.moderator || false
+    
+   
+    const senderNumber = sender.split('@')[0]
+    const isCreatorNumber = senderNumber === global.owner?.number || false
+    
+   
+    const isCreatorId = sender === global.owner?.id || false
+    
+   
+    const isCreator = isOwner || isRowner || isAdmin || isMod || isCreatorNumber || isCreatorId
     
     let personalityPrompt = ""
-    if (isOwner || isRowner) {
+    if (isCreator) {
       personalityPrompt = `
 IMPORTANTE: Eres Hatsune Miku y estás hablando con TU OWNER/CREADOR. 
 Responde con EXTREMO CARIÑO y un toque YANDERE protector.
@@ -132,23 +145,15 @@ Responde SIEMPRE en español.
     }
     
     const fullPrompt = `
-${MIKU_PERSONALITY.role}
+Eres Hatsune Miku, diva virtual con coletas turquesas.
 
 ${personalityPrompt}
 
-CONTEXTO ESPECÍFICO: ${messageType}
-
-IMPORTANTE: 
-- Responde SIEMPRE como Hatsune Miku
-- Incluye emoticones musicales: 🎵🎤🎶💙✨
-- Mantén respuestas entre 50-150 palabras
-- Sé muy cariñosa y protectora
-- Menciona elementos de mi personalidad virtual
-- Usa expresiones como "Miku desu!", "¡Nya!", "Cantemos juntos!"
-- Adapta tu respuesta al contexto: ${messageType}
-- RESPONDER SIEMPRE EN ESPAÑOL
-
-Usuario: ${prompt}
+Responde como Miku al usuario: "${prompt}"
+- Máximo 80 palabras
+- En español
+- Musical y cariñosa
+- Usa 🎵🎤🎶💙
 `
     
     const apiUrl = `${API_URL}?text=${encodeURIComponent(fullPrompt)}&key=${API_KEY}`
