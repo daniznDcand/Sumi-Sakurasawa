@@ -25,10 +25,51 @@ if (!mentionsMiku && !m.mentionedJid.includes(this.user.jid)) return true
 async function polybuzzApi1(q, logic) {
 try {
 const fullPrompt = `${logic}\n\nUsuario: ${q}`;
-const apiUrl = `https://api.polybuzz.ai/api/point/report/v2?key=tourist_250aa8d5-d598-4411-9ac5-5aa5684bf761_1768620163422_20260116212323812&text=${encodeURIComponent(fullPrompt)}`;
-const response = await fetch(apiUrl);
-const data = await response.json();
-return data.result || data.response || data.answer;
+const url = "https://api.polybuzz.ai/api/conversation/msgbystream";
+const headers = {
+'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+'Content-Type': 'application/json',
+'Origin': 'https://www.polybuzz.ai',
+'Referer': 'https://www.polybuzz.ai/',
+};
+
+const payload = {
+'secretSceneId': 'vL8Vc', 
+'speechText': fullPrompt,
+'selectId': '490021023134',
+'currentChatStyleId': '1',
+'localLanguage': 'es-419',
+'mediaType': '2',
+'needLive2D': '2'
+};
+
+const response = await fetch(url, {
+method: 'POST',
+headers: headers,
+body: JSON.stringify(payload)
+});
+
+if (response.ok) {
+const text = await response.text();
+let fullResponse = "";
+const lines = text.split('\n');
+for (const line of lines) {
+if (line.includes('data: ')) {
+const data = line.split('data: ')[1];
+try {
+const json_obj = JSON.parse(data);
+if (json_obj.content) {
+fullResponse += json_obj.content;
+}
+} catch (e) {
+fullResponse += data;
+}
+}
+}
+return fullResponse;
+} else {
+return null;
+}
 } catch (error) {
 console.error('Error en Polybuzz API 1:', error);
 return null;
@@ -37,10 +78,51 @@ return null;
 async function polybuzzApi2(q, logic) {
 try {
 const fullPrompt = `${logic}\n\nUsuario: ${q}`;
-const apiUrl = `https://api.polybuzz.ai/api/point/report/v2?key=tourist_250aa8d5-d598-4411-9ac5-5aa5684bf761_1768620163422_20260116212323812&text=${encodeURIComponent(fullPrompt)}`;
-const response = await fetch(apiUrl);
-const data = await response.json();
-return data.result || data.response || data.answer;
+const url = "https://api.polybuzz.ai/api/conversation/msgbystream";
+const headers = {
+'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+'Content-Type': 'application/json',
+'Origin': 'https://www.polybuzz.ai',
+'Referer': 'https://www.polybuzz.ai/',
+};
+
+const payload = {
+'secretSceneId': 'vL8Vc', 
+'speechText': fullPrompt,
+'selectId': '490021023134',
+'currentChatStyleId': '1',
+'localLanguage': 'es-419',
+'mediaType': '2',
+'needLive2D': '2'
+};
+
+const response = await fetch(url, {
+method: 'POST',
+headers: headers,
+body: JSON.stringify(payload)
+});
+
+if (response.ok) {
+const text = await response.text();
+let fullResponse = "";
+const lines = text.split('\n');
+for (const line of lines) {
+if (line.includes('data: ')) {
+const data = line.split('data: ')[1];
+try {
+const json_obj = JSON.parse(data);
+if (json_obj.content) {
+fullResponse += json_obj.content;
+}
+} catch (e) {
+fullResponse += data;
+}
+}
+}
+return fullResponse;
+} else {
+return null;
+}
 } catch (error) {
 console.error('Error en Polybuzz API 2:', error);
 return null;
