@@ -22,24 +22,27 @@ const mentionsMiku = mikuKeywords.some(keyword => m.text.toLowerCase().includes(
 
 if (!mentionsMiku && !m.mentionedJid.includes(this.user.jid)) return true
 
-async function alyabotApi(q, logic) {
+async function polybuzzApi1(q, logic) {
 try {
-const API_KEY = 'Duarte-zz12';
-const API_URL = 'https://rest.alyabotpe.xyz/ai/copilot';
 const fullPrompt = `${logic}\n\nUsuario: ${q}`;
-const apiUrl = `${API_URL}?text=${encodeURIComponent(fullPrompt)}&key=${API_KEY}`;
-const response = await fetch(apiUrl, {
-method: 'GET',
-timeout: 15000
-});
+const apiUrl = `https://api.polybuzz.ai/api/point/report/v2?key=tourist_250aa8d5-d598-4411-9ac5-5aa5684bf761_1768620163422_20260116212323812&text=${encodeURIComponent(fullPrompt)}`;
+const response = await fetch(apiUrl);
 const data = await response.json();
-if (data.status && (data.result || data.response)) {
-return data.result || data.response;
-} else {
-throw new Error(data.message || 'Respuesta inválida de la API');
-}
+return data.result || data.response || data.answer;
 } catch (error) {
-console.error('Error en Alyabot API:', error);
+console.error('Error en Polybuzz API 1:', error);
+return null;
+}}
+
+async function polybuzzApi2(q, logic) {
+try {
+const fullPrompt = `${logic}\n\nUsuario: ${q}`;
+const apiUrl = `https://api.polybuzz.ai/api/point/report/v2?key=tourist_250aa8d5-d598-4411-9ac5-5aa5684bf761_1768620163422_20260116212323812&text=${encodeURIComponent(fullPrompt)}`;
+const response = await fetch(apiUrl);
+const data = await response.json();
+return data.result || data.response || data.answer;
+} catch (error) {
+console.error('Error en Polybuzz API 2:', error);
 return null;
 }}
 
@@ -88,7 +91,11 @@ if (m.fromMe) return
 if (!user.registered) return
 await this.sendPresenceUpdate('composing', m.chat)
 
-let result = await alyabotApi(query, syms1)
+let result = await polybuzzApi1(query, syms1)
+
+if (!result || result.trim().length === 0) {
+result = await polybuzzApi2(query, syms1)
+}
 
 if (result && result.trim().length > 0) {
 await this.reply(m.chat, result, m)
