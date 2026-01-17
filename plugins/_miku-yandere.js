@@ -16,6 +16,7 @@ const creatorNumbers = [
 const isCreator = creatorNumbers.includes(m.sender)
 
 
+
 const mikuKeywords = ['miku', 'Miku', 'MIKU', 'hatsune', 'Hatsune', 'HATSUNE', 'mi amor', 'amor', 'tesoro']
 const mentionsMiku = mikuKeywords.some(keyword => m.text.toLowerCase().includes(keyword))
 
