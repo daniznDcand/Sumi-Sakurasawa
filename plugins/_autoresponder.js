@@ -17,19 +17,6 @@ return true
 if (m.mentionedJid.includes(this.user.jid) || (m.quoted && m.quoted.sender === this.user.jid) || !chat.isBanned) {
 if (m.text.includes('PIEDRA') || m.text.includes('PAPEL') || m.text.includes('TIJERA') ||  m.text.includes('menu') ||  m.text.includes('estado') || m.text.includes('bots') ||  m.text.includes('serbot') || m.text.includes('jadibot') || m.text.includes('Video') || m.text.includes('Audio') || m.text.includes('audio')) return !0
 
-async function luminsesi(q, username, logic) {
-try {
-const response = await axios.post("https://luminai.my.id", {
-content: q,
-user: username,
-prompt: logic,
-webSearchMode: true 
-});
-return response.data.result
-} catch (error) {
-console.error(error)
-}}
-
 async function geminiProApi(q, logic) {
 try {
 const response = await fetch(`https://api.ryzendesu.vip/api/ai/gemini-pro?text=${encodeURIComponent(q)}&prompt=${encodeURIComponent(logic)}`);
@@ -79,14 +66,7 @@ if (m.fromMe) return
 if (!user.registered) return
 await this.sendPresenceUpdate('composing', m.chat)
 
-let result
-if (result && result.trim().length > 0) {
-result = await geminiProApi(query, syms1);
-}
-
-if (!result || result.trim().length === 0) {
-result = await luminsesi(query, username, syms1)
-}
+let result = await geminiProApi(query, syms1);
 
 if (result && result.trim().length > 0) {
 await this.reply(m.chat, result, m)
