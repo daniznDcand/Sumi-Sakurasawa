@@ -74,52 +74,47 @@ await this.sendPresenceUpdate('composing', m.chat)
 async function fireworksApi(q, logic) {
 try {
 const fullPrompt = `${logic}\n\nUsuario: ${q}`;
-const response = await fetch('https://api.fireworks.ai/inference/v1/chat/completions', {
+const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
 method: 'POST',
 headers: {
-'Accept': 'application/json',
 'Content-Type': 'application/json',
-'Authorization': 'Bearer key_5Uf9t69mra2RH5mC'
+'Authorization': 'Bearer xxxxx'
 },
 body: JSON.stringify({
-model: 'accounts/velasquezhuillcab-dc/deployments/nfxzkuky',
-max_tokens: 32000,
-top_p: 1,
-top_k: 40,
-presence_penalty: 0,
-frequency_penalty: 0,
-temperature: 0.6,
+model: 'openai/gpt-oss-120b',
 messages: [{
 role: 'user',
-content: [{
-type: 'text',
-text: fullPrompt
-}]
+content: fullPrompt
 }]
 })
 });
 const data = await response.json();
 if (!response.ok) {
-console.error('Fireworks API error response:', data);
+console.error('Groq API error response:', data);
 return null;
 }
 if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
-console.error('Invalid Fireworks API response structure:', data);
+console.error('Invalid Groq API response structure:', data);
 return null;
 }
 return data.choices[0].message.content;
 } catch (error) {
-console.error('Error en Fireworks API:', error);
+console.error('Error en Groq API:', error);
 return null;
 }}
 
 async function togetherApi(q, logic) {
 try {
+const apiKey = process.env.TOGETHER_API_KEY;
+if (!apiKey) {
+console.error('Together API key no configurada. Configura TOGETHER_API_KEY como variable de entorno');
+return null;
+}
 const fullPrompt = `${logic}\n\nUsuario: ${q}`;
 const response = await fetch('https://api.together.xyz/v1/chat/completions', {
 method: 'POST',
 headers: {
-'Authorization': 'Bearer together_tu_api_key_aqui',
+'Authorization': 'Bearer ' + apiKey,
 'Content-Type': 'application/json'
 },
 body: JSON.stringify({
