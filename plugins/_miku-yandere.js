@@ -27,20 +27,29 @@ try {
 const fullPrompt = `${logic}\n\nUsuario: ${q}`;
 const url = "https://api.polybuzz.ai/api/conversation/msgbystream";
 const headers = {
-'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36',
+'Accept': '*/*',
+'Accept-Language': 'es-419,es;q=0.9,en;q=0.8',
 'Content-Type': 'application/json',
 'Origin': 'https://www.polybuzz.ai',
 'Referer': 'https://www.polybuzz.ai/',
+'Cookie': 'poly_cuid=tourist_250aa8d5-d598-4411-9ac5-5aa5684bf761_1768620163422; session=8e6312dca14e022ae2a39df531679c9ed6aa0bbf0f5686fd011d29bab0a9bbf3; polyai-locale=es; age_ver=b',
+'Sec-Fetch-Dest': 'empty',
+'Sec-Fetch-Mode': 'cors',
+'Sec-Fetch-Site': 'same-site',
 };
 
 const payload = {
-'secretSceneId': 'vL8Vc', 
-'speechText': fullPrompt,
-'selectId': '490021023134',
 'currentChatStyleId': '1',
+'isMemoryFinished': '0',
 'localLanguage': 'es-419',
+'localTimezone': 'America/Mexico_City',
 'mediaType': '2',
-'needLive2D': '2'
+'needLive2D': '2',
+'restrictionType': '2',
+'secretSceneId': 'vL8Vc',
+'selectId': '490021023134',
+'speechText': fullPrompt
 };
 
 const response = await fetch(url, {
@@ -56,13 +65,17 @@ const lines = text.split('\n');
 for (const line of lines) {
 if (line.includes('data: ')) {
 const data = line.split('data: ')[1];
+if (data === '[DONE]') continue;
 try {
-const json_obj = JSON.parse(data);
-if (json_obj.content) {
-fullResponse += json_obj.content;
+const obj = JSON.parse(data);
+const content = obj.get ? obj.get('content') || obj.get('text') || '' : (obj.content || obj.text || '');
+if (content) {
+fullResponse += content;
 }
 } catch (e) {
+if (data) {
 fullResponse += data;
+}
 }
 }
 }
@@ -80,20 +93,29 @@ try {
 const fullPrompt = `${logic}\n\nUsuario: ${q}`;
 const url = "https://api.polybuzz.ai/api/conversation/msgbystream";
 const headers = {
-'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36',
+'Accept': '*/*',
+'Accept-Language': 'es-419,es;q=0.9,en;q=0.8',
 'Content-Type': 'application/json',
 'Origin': 'https://www.polybuzz.ai',
 'Referer': 'https://www.polybuzz.ai/',
+'Cookie': 'poly_cuid=tourist_250aa8d5-d598-4411-9ac5-5aa5684bf761_1768620163422; session=8e6312dca14e022ae2a39df531679c9ed6aa0bbf0f5686fd011d29bab0a9bbf3; polyai-locale=es; age_ver=b',
+'Sec-Fetch-Dest': 'empty',
+'Sec-Fetch-Mode': 'cors',
+'Sec-Fetch-Site': 'same-site',
 };
 
 const payload = {
-'secretSceneId': 'vL8Vc', 
-'speechText': fullPrompt,
-'selectId': '490021023134',
 'currentChatStyleId': '1',
+'isMemoryFinished': '0',
 'localLanguage': 'es-419',
+'localTimezone': 'America/Mexico_City',
 'mediaType': '2',
-'needLive2D': '2'
+'needLive2D': '2',
+'restrictionType': '2',
+'secretSceneId': 'vL8Vc',
+'selectId': '490021023134',
+'speechText': fullPrompt
 };
 
 const response = await fetch(url, {
@@ -109,13 +131,17 @@ const lines = text.split('\n');
 for (const line of lines) {
 if (line.includes('data: ')) {
 const data = line.split('data: ')[1];
+if (data === '[DONE]') continue;
 try {
-const json_obj = JSON.parse(data);
-if (json_obj.content) {
-fullResponse += json_obj.content;
+const obj = JSON.parse(data);
+const content = obj.get ? obj.get('content') || obj.get('text') || '' : (obj.content || obj.text || '');
+if (content) {
+fullResponse += content;
 }
 } catch (e) {
+if (data) {
 fullResponse += data;
+}
 }
 }
 }
