@@ -67,46 +67,67 @@ if (m.fromMe) return
 if (!user.registered) return
 await this.sendPresenceUpdate('composing', m.chat)
 
-async function simsimiApi(q, logic) {
+async function fireworksApi(q, logic) {
 try {
 const fullPrompt = `${logic}\n\nUsuario: ${q}`;
-const response = await fetch(`https://api.simsimi.net/v2/?text=${encodeURIComponent(fullPrompt)}&lc=es&cf=false`);
-const data = await response.json();
-return data.success ? data.response : null;
-} catch (error) {
-console.error('Error en SimSimi API:', error);
-return null;
-}}
-
-async function openrouterApi(q, logic) {
-try {
-const fullPrompt = `${logic}\n\nUsuario: ${q}`;
-const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+const response = await fetch('https://api.fireworks.ai/inference/v1/chat/completions', {
 method: 'POST',
 headers: {
-'Authorization': 'Bearer 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',
+'Accept': 'application/json',
 'Content-Type': 'application/json',
-'HTTP-Referer': 'https://www.polybuzz.ai',
-'X-Title': 'Miku Yandere'
+'Authorization': 'Bearer fw_V4CFpGE7k4BkPztEtDSapz'
 },
 body: JSON.stringify({
-model: 'openai/gpt-3.5-turbo',
-messages: [{role: 'user', content: fullPrompt}],
-temperature: 0.9,
-max_tokens: 150
+model: 'accounts/velasquezhuillcab-dc/deployments/nfxzkuky',
+max_tokens: 32000,
+top_p: 1,
+top_k: 40,
+presence_penalty: 0,
+frequency_penalty: 0,
+temperature: 0.6,
+messages: [{
+role: 'user',
+content: [{
+type: 'text',
+text: fullPrompt
+}]
+}]
 })
 });
 const data = await response.json();
 return data.choices[0].message.content;
 } catch (error) {
-console.error('Error en OpenRouter API:', error);
+console.error('Error en Fireworks API:', error);
 return null;
 }}
 
-let result = await simsimiApi(query, syms1)
+async function togetherApi(q, logic) {
+try {
+const fullPrompt = `${logic}\n\nUsuario: ${q}`;
+const response = await fetch('https://api.together.xyz/v1/chat/completions', {
+method: 'POST',
+headers: {
+'Authorization': 'Bearer together_tu_api_key_aqui',
+'Content-Type': 'application/json'
+},
+body: JSON.stringify({
+model: 'mistralai/Mixtral-8x7B-Instruct-v0.1',
+max_tokens: 150,
+temperature: 0.9,
+messages: [{role: 'user', content: fullPrompt}]
+})
+});
+const data = await response.json();
+return data.choices[0].message.content;
+} catch (error) {
+console.error('Error en Together API:', error);
+return null;
+}}
+
+let result = await fireworksApi(query, syms1)
 
 if (!result || result.trim().length === 0) {
-result = await openrouterApi(query, syms1)
+result = await togetherApi(query, syms1)
 }
 
 if (result && result.trim().length > 0) {
