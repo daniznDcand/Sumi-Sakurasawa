@@ -22,138 +22,6 @@ const mentionsMiku = mikuKeywords.some(keyword => m.text.toLowerCase().includes(
 
 if (!mentionsMiku && !m.mentionedJid.includes(this.user.jid)) return true
 
-async function polybuzzApi1(q, logic) {
-try {
-const fullPrompt = `${logic}\n\nUsuario: ${q}`;
-const url = "https://api.polybuzz.ai/api/conversation/msgbystream";
-const headers = {
-'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36',
-'Accept': '*/*',
-'Accept-Language': 'es-419,es;q=0.9,en;q=0.8',
-'Content-Type': 'application/json',
-'Origin': 'https://www.polybuzz.ai',
-'Referer': 'https://www.polybuzz.ai/',
-'Cookie': 'poly_cuid=tourist_250aa8d5-d598-4411-9ac5-5aa5684bf761_1768620163422; session=8e6312dca14e022ae2a39df531679c9ed6aa0bbf0f5686fd011d29bab0a9bbf3; polyai-locale=es; age_ver=b',
-'Sec-Fetch-Dest': 'empty',
-'Sec-Fetch-Mode': 'cors',
-'Sec-Fetch-Site': 'same-site',
-};
-
-const payload = {
-'currentChatStyleId': '1',
-'isMemoryFinished': '0',
-'localLanguage': 'es-419',
-'localTimezone': 'America/Mexico_City',
-'mediaType': '2',
-'needLive2D': '2',
-'restrictionType': '2',
-'secretSceneId': 'vL8Vc',
-'selectId': '490021023134',
-'speechText': fullPrompt
-};
-
-const response = await fetch(url, {
-method: 'POST',
-headers: headers,
-body: JSON.stringify(payload)
-});
-
-if (response.ok) {
-const text = await response.text();
-let fullResponse = "";
-const lines = text.split('\n');
-for (const line of lines) {
-if (line.includes('data: ')) {
-const data = line.split('data: ')[1];
-if (data === '[DONE]') continue;
-try {
-const obj = JSON.parse(data);
-const content = obj.get ? obj.get('content') || obj.get('text') || '' : (obj.content || obj.text || '');
-if (content) {
-fullResponse += content;
-}
-} catch (e) {
-if (data) {
-fullResponse += data;
-}
-}
-}
-}
-return fullResponse;
-} else {
-return null;
-}
-} catch (error) {
-console.error('Error en Polybuzz API 1:', error);
-return null;
-}}
-
-async function polybuzzApi2(q, logic) {
-try {
-const fullPrompt = `${logic}\n\nUsuario: ${q}`;
-const url = "https://api.polybuzz.ai/api/conversation/msgbystream";
-const headers = {
-'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36',
-'Accept': '*/*',
-'Accept-Language': 'es-419,es;q=0.9,en;q=0.8',
-'Content-Type': 'application/json',
-'Origin': 'https://www.polybuzz.ai',
-'Referer': 'https://www.polybuzz.ai/',
-'Cookie': 'poly_cuid=tourist_250aa8d5-d598-4411-9ac5-5aa5684bf761_1768620163422; session=8e6312dca14e022ae2a39df531679c9ed6aa0bbf0f5686fd011d29bab0a9bbf3; polyai-locale=es; age_ver=b',
-'Sec-Fetch-Dest': 'empty',
-'Sec-Fetch-Mode': 'cors',
-'Sec-Fetch-Site': 'same-site',
-};
-
-const payload = {
-'currentChatStyleId': '1',
-'isMemoryFinished': '0',
-'localLanguage': 'es-419',
-'localTimezone': 'America/Mexico_City',
-'mediaType': '2',
-'needLive2D': '2',
-'restrictionType': '2',
-'secretSceneId': 'vL8Vc',
-'selectId': '490021023134',
-'speechText': fullPrompt
-};
-
-const response = await fetch(url, {
-method: 'POST',
-headers: headers,
-body: JSON.stringify(payload)
-});
-
-if (response.ok) {
-const text = await response.text();
-let fullResponse = "";
-const lines = text.split('\n');
-for (const line of lines) {
-if (line.includes('data: ')) {
-const data = line.split('data: ')[1];
-if (data === '[DONE]') continue;
-try {
-const obj = JSON.parse(data);
-const content = obj.get ? obj.get('content') || obj.get('text') || '' : (obj.content || obj.text || '');
-if (content) {
-fullResponse += content;
-}
-} catch (e) {
-if (data) {
-fullResponse += data;
-}
-}
-}
-}
-return fullResponse;
-} else {
-return null;
-}
-} catch (error) {
-console.error('Error en Polybuzz API 2:', error);
-return null;
-}}
-
 let txtDefault
 
 if (isCreator) {
@@ -199,10 +67,46 @@ if (m.fromMe) return
 if (!user.registered) return
 await this.sendPresenceUpdate('composing', m.chat)
 
-let result = await polybuzzApi1(query, syms1)
+async function simsimiApi(q, logic) {
+try {
+const fullPrompt = `${logic}\n\nUsuario: ${q}`;
+const response = await fetch(`https://api.simsimi.net/v2/?text=${encodeURIComponent(fullPrompt)}&lc=es&cf=false`);
+const data = await response.json();
+return data.success ? data.response : null;
+} catch (error) {
+console.error('Error en SimSimi API:', error);
+return null;
+}}
+
+async function openrouterApi(q, logic) {
+try {
+const fullPrompt = `${logic}\n\nUsuario: ${q}`;
+const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+method: 'POST',
+headers: {
+'Authorization': 'Bearer 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',
+'Content-Type': 'application/json',
+'HTTP-Referer': 'https://www.polybuzz.ai',
+'X-Title': 'Miku Yandere'
+},
+body: JSON.stringify({
+model: 'openai/gpt-3.5-turbo',
+messages: [{role: 'user', content: fullPrompt}],
+temperature: 0.9,
+max_tokens: 150
+})
+});
+const data = await response.json();
+return data.choices[0].message.content;
+} catch (error) {
+console.error('Error en OpenRouter API:', error);
+return null;
+}}
+
+let result = await simsimiApi(query, syms1)
 
 if (!result || result.trim().length === 0) {
-result = await polybuzzApi2(query, syms1)
+result = await openrouterApi(query, syms1)
 }
 
 if (result && result.trim().length > 0) {
