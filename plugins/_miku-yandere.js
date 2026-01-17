@@ -22,30 +22,6 @@ const mentionsMiku = mikuKeywords.some(keyword => m.text.toLowerCase().includes(
 
 if (!mentionsMiku && !m.mentionedJid.includes(this.user.jid)) return true
 
-async function luminsesi(q, username, logic) {
-try {
-const response = await axios.post("https://luminai.my.id", {
-content: q,
-user: username,
-prompt: logic,
-webSearchMode: true 
-});
-return response.data.result
-} catch (error) {
-console.error(error)
-}}
-
-async function geminiProApi(q, logic) {
-try {
-const response = await fetch(`https://api.ryzendesu.vip/api/ai/gemini-pro?text=${encodeURIComponent(q)}&prompt=${encodeURIComponent(logic)}`);
-if (!response.ok) throw new Error(`Error en la solicitud: ${response.statusText}`)
-const result = await response.json();
-return result.answer
-} catch (error) {
-console.error('Error en Gemini Pro:', error)
-return null
-}}
-
 async function alyabotApi(q, logic) {
 try {
 const API_KEY = 'Duarte-zz12';
@@ -112,18 +88,7 @@ if (m.fromMe) return
 if (!user.registered) return
 await this.sendPresenceUpdate('composing', m.chat)
 
-let result
-if (result && result.trim().length > 0) {
-result = await geminiProApi(query, syms1);
-}
-
-if (!result || result.trim().length === 0) {
-result = await alyabotApi(query, syms1)
-}
-
-if (!result || result.trim().length === 0) {
-result = await luminsesi(query, username, syms1)
-}
+let result = await alyabotApi(query, syms1)
 
 if (result && result.trim().length > 0) {
 await this.reply(m.chat, result, m)
