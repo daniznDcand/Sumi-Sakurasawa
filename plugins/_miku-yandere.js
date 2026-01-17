@@ -75,7 +75,7 @@ method: 'POST',
 headers: {
 'Accept': 'application/json',
 'Content-Type': 'application/json',
-'Authorization': 'Bearer fw_V4CFpGE7k4BkPztEtDSapz'
+'Authorization': 'Bearer key_5Uf9t69mra2RH5mC'
 },
 body: JSON.stringify({
 model: 'accounts/velasquezhuillcab-dc/deployments/nfxzkuky',
@@ -95,6 +95,14 @@ text: fullPrompt
 })
 });
 const data = await response.json();
+if (!response.ok) {
+console.error('Fireworks API error response:', data);
+return null;
+}
+if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
+console.error('Invalid Fireworks API response structure:', data);
+return null;
+}
 return data.choices[0].message.content;
 } catch (error) {
 console.error('Error en Fireworks API:', error);
@@ -118,6 +126,14 @@ messages: [{role: 'user', content: fullPrompt}]
 })
 });
 const data = await response.json();
+if (!response.ok) {
+console.error('Together API error response:', data);
+return null;
+}
+if (!data.choices || !data.choices[0] || !data.choices[0].message || !data.choices[0].message.content) {
+console.error('Invalid Together API response structure:', data);
+return null;
+}
 return data.choices[0].message.content;
 } catch (error) {
 console.error('Error en Together API:', error);
