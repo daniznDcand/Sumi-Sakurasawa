@@ -14,72 +14,31 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         const data = await res.json()
         
         if (!data.status) throw `Error: ${data.message || 'No se encontró la canción'}`
-        
-        
-        if (Array.isArray(data.data)) {
-            if (data.data.length === 0) throw 'No se encontraron canciones'
-            
-            let resultList = `💙 *Resultados encontrados:*\n\n`
-            const buttons = []
-            
-            data.data.forEach((song, index) => {
-                resultList += `*${index + 1}.* ${song.title}\n`
-                resultList += `   🎤 ${song.artist}\n`
-                resultList += `   💿 ${song.album}\n`
-                resultList += `   ⏱️ ${song.duration}\n\n`
-                
-                
-                if (index < 10) {
-                    buttons.push([`${index + 1}. ${song.title.substring(0, 20)}${song.title.length > 20 ? '...' : ''}`, `spotify_select_${index}`])
-                }
-            })
-            
-            resultList += `💙 *Selecciona una canción con los botones*`
-            
-            await conn.sendNCarousel(m.chat, resultList, '🌱 Hatsune Miku - Spotify', null, buttons, null, null, null, m)
-            
-           
-            const user = global.db.data.users[m.sender] = global.db.data.users[m.sender] || {}
-            user.spotifyResults = data.data
-            user.spotifySearchTime = Date.now()
-            
-            return
-        }
-        
-        
-        const dlUrl = data?.data?.dl
-        if (!dlUrl) throw "No se pudo obtener el enlace de descarga."
 
-        const info = `💙 Descargando *<${data.data.title || 'Desconocido'}>*\n\n> 💫 Artista » *${data.data.artist || 'Desconocido'}*\n> 💌 Album » *${data.data.album || 'Desconocido'}*\n> ⏲ Duracion » *${data.data.duration || 'N/A'}*\n> 🜸 Link » ${data.data.url || 'N/A'}*`
-
-        await conn.sendMessage(m.chat, { text: info, contextInfo: { forwardingScore: 9999999, isForwarded: false, 
-        externalAdReply: {
-            showAdAttribution: true,
-            containsAutoReply: true,
-            renderLargerThumbnail: true,
-            title: botname,
-            body: dev,
-            mediaType: 1,
-            thumbnailUrl: data.data.image,
-            mediaUrl: data.data.url,
-            sourceUrl: data.data.url
-        }}}, { quoted: m })
-
+       
+        const song = data.data
         
-        try {
-            const checkResponse = await fetch(dlUrl, { method: 'HEAD' });
-            if (!checkResponse.ok) {
-                throw new Error('El enlace de descarga no está disponible');
-            }
-        } catch (checkError) {
-            throw new Error('El enlace de descarga no funciona o ha expirado. Intenta con otra canción.');
-        }
-
-        await conn.sendMessage(m.chat, {
-            document: { url: dlUrl },
-            mimetype: 'audio/mpeg',
-            fileName: `${(data.data.title || 'song').replace(/[/\\?%*:|"<>]/g, '')}.mp3`
-        }, { quoted: m })
+        let resultList = `💙 *Canción encontrada:*\n\n`
+        resultList += `🎵 *${song.title}*\n`
+        resultList += `🎤 ${song.artist}\n`
+        resultList += `💿 ${song.album}\n`
+        resultList += `⏱️ ${song.duration}\n`
+        resultList += `📅 ${song.release_date || 'N/A'}\n\n`
+        
+        const buttons = [
+            ['📥 Descargar MP3', `spotify_download_${encodeURIComponent(song.dl)}`]
+        ]
+        
+        resultList += `💙 *Presiona el botón para descargar*`
+        
+        await conn.sendNCarousel(m.chat, resultList, '🌱 Hatsune Miku - Spotify', song.image, buttons, null, null, null, m)
+        
+        
+        const user = global.db.data.users[m.sender] = global.db.data.users[m.sender] || {}
+        user.spotifySong = song
+        user.spotifySearchTime = Date.now()
+        
+        return
 
     } catch (e1) {
         m.reply(`${e1.message || e1}`)
@@ -95,36 +54,31 @@ handler.coin = 2;
 
 handler.before = async (m, { conn }) => {
     
-    if (!m.text || !m.text.includes('spotify_select_')) return false
+    if (!m.text || !m.text.includes('spotify_download_')) return false
     
     const user = global.db.data.users[m.sender]
-    if (!user || !user.spotifyResults) return false
+    if (!user || !user.spotifySong) return false
     
     
     if (Date.now() - user.spotifySearchTime > 5 * 60 * 1000) {
-        delete user.spotifyResults
+        delete user.spotifySong
         delete user.spotifySearchTime
         return false
     }
     
     
-    const match = m.text.match(/spotify_select_(\d+)/)
+    const match = m.text.match(/spotify_download_(.+)/)
     if (!match) return false
     
-    const selectedIndex = parseInt(match[1])
-    if (selectedIndex < 0 || selectedIndex >= user.spotifyResults.length) {
-        await conn.reply(m.chat, '❌ Selección inválida. Por favor intenta nuevamente.', m)
-        return false
-    }
-    
-    const selectedSong = user.spotifyResults[selectedIndex]
+    const downloadUrl = decodeURIComponent(match[1])
+    const song = user.spotifySong
     
     try {
-        await conn.reply(m.chat, `💙 Descargando *${selectedSong.title}*...`, m)
+        await conn.reply(m.chat, `💙 Descargando *${song.title}*...`, m)
         
         
         try {
-            const checkResponse = await fetch(selectedSong.dl, { method: 'HEAD' });
+            const checkResponse = await fetch(downloadUrl, { method: 'HEAD' });
             if (!checkResponse.ok) {
                 throw new Error('El enlace de descarga no está disponible');
             }
@@ -133,9 +87,9 @@ handler.before = async (m, { conn }) => {
         }
         
         await conn.sendMessage(m.chat, {
-            document: { url: selectedSong.dl },
+            document: { url: downloadUrl },
             mimetype: 'audio/mpeg',
-            fileName: `${selectedSong.title.replace(/[/\\?%*:|"<>]/g, '')}.mp3`
+            fileName: `${song.title.replace(/[/\\?%*:|"<>]/g, '')}.mp3`
         }, { quoted: m })
         
     } catch (error) {
@@ -143,7 +97,7 @@ handler.before = async (m, { conn }) => {
     }
     
     
-    delete user.spotifyResults
+    delete user.spotifySong
     delete user.spotifySearchTime
     
     return true
