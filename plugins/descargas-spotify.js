@@ -38,14 +38,14 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         
         
         const buttons = [
-            ['🎵 Canción 1', 'spotify_select_0'],
-            ['🎵 Canción 2', 'spotify_select_1'],
-            ['🎵 Canción 3', 'spotify_select_2'],
-            ['🎵 Canción 4', 'spotify_select_3'],
-            ['🎵 Canción 5', 'spotify_select_4']
+            {buttonId: 'spotify_select_0', buttonText: {displayText: '🎵 Canción 1'}, type: 1},
+            {buttonId: 'spotify_select_1', buttonText: {displayText: '🎵 Canción 2'}, type: 1},
+            {buttonId: 'spotify_select_2', buttonText: {displayText: '🎵 Canción 3'}, type: 1},
+            {buttonId: 'spotify_select_3', buttonText: {displayText: '🎵 Canción 4'}, type: 1},
+            {buttonId: 'spotify_select_4', buttonText: {displayText: '🎵 Canción 5'}, type: 1}
         ]
         
-        
+       
         try {
             await conn.sendMessage(m.chat, {
                 image: { url: thumbnail },
@@ -55,7 +55,9 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
                 headerType: 4
             }, { quoted: m })
         } catch (error) {
+            console.log('❌ Error en formato principal:', error.message)
             
+           
             await conn.sendMessage(m.chat, {
                 text: resultList,
                 contextInfo: {
