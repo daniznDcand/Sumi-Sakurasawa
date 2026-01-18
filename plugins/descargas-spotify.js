@@ -101,13 +101,26 @@ handler.coin = 2;
 
 handler.before = async (m, { conn }) => {
     
-    if (!m.text || !m.text.includes('spotify_select_')) return false
+    console.log('🔍 Detectando mensaje:', m.text)
+    
+    if (!m.text || !m.text.includes('spotify_select_')) {
+        console.log('❌ No es un mensaje de selección de Spotify')
+        return false
+    }
+    
+    console.log('✅ Mensaje de Spotify detectado')
     
     const user = global.db.data.users[m.sender]
-    if (!user || !user.spotifyResults) return false
+    if (!user || !user.spotifyResults) {
+        console.log('❌ No hay resultados guardados para el usuario')
+        return false
+    }
+    
+    console.log('📊 Resultados guardados:', user.spotifyResults.length)
     
     
     if (Date.now() - user.spotifySearchTime > 5 * 60 * 1000) {
+        console.log('⏰ Búsqueda expirada')
         delete user.spotifyResults
         delete user.spotifySearchTime
         return false
@@ -115,15 +128,22 @@ handler.before = async (m, { conn }) => {
     
     
     const match = m.text.match(/spotify_select_(\d+)/)
-    if (!match) return false
+    if (!match) {
+        console.log('❌ No se pudo extraer el índice')
+        return false
+    }
     
     const selectedIndex = parseInt(match[1])
+    console.log('🎯 Índice seleccionado:', selectedIndex)
+    
     if (selectedIndex < 0 || selectedIndex >= user.spotifyResults.length) {
+        console.log('❌ Índice fuera de rango')
         await conn.reply(m.chat, '❌ Selección inválida. Por favor intenta nuevamente.', m)
         return false
     }
     
     const selectedSong = user.spotifyResults[selectedIndex]
+    console.log('🎵 Canción seleccionada:', selectedSong.title)
     
     try {
         await conn.reply(m.chat, `💙 Obteniendo enlace de descarga para *${selectedSong.title}*...`, m)
@@ -140,6 +160,7 @@ handler.before = async (m, { conn }) => {
         }
         
         const downloadUrl = downloadData.data.dl
+        console.log('🔗 URL de descarga obtenida')
         
         
         try {
@@ -151,13 +172,17 @@ handler.before = async (m, { conn }) => {
             throw new Error('El enlace de descarga no funciona o ha expirado. Intenta con otra canción.');
         }
         
+        console.log('✅ Enviando archivo...')
         await conn.sendMessage(m.chat, {
             document: { url: downloadUrl },
             mimetype: 'audio/mpeg',
             fileName: `${selectedSong.title.replace(/[/\\?%*:|"<>]/g, '')}.mp3`
         }, { quoted: m })
         
+        console.log('✅ Archivo enviado exitosamente')
+        
     } catch (error) {
+        console.log('❌ Error en descarga:', error.message)
         await conn.reply(m.chat, `💙 Error: ${error.message}`, m)
     }
     
