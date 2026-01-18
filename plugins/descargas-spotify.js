@@ -21,18 +21,20 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         let resultList = `💙 *Resultados encontrados:*\n\n`
         const buttons = []
         
-        searchData.result.forEach((song, index) => {
+        
+        const maxResults = Math.min(5, searchData.result.length)
+        
+        for (let index = 0; index < maxResults; index++) {
+            const song = searchData.result[index]
             resultList += `*${index + 1}.* ${song.title}\n`
             resultList += `   🎤 ${song.artist}\n`
             resultList += `   ⏱️ ${Math.floor(song.duration_ms / 60000)}:${String(Math.floor((song.duration_ms % 60000) / 1000)).padStart(2, '0')}\n`
             resultList += `   🤑 Popularidad: ${song.popularity}\n\n`
             
             
-            if (index < 10) {
-                const title = `${index + 1}. ${song.title.substring(0, 25)}${song.title.length > 25 ? '...' : ''}`
-                buttons.push([title, `spotify_select_${index}`])
-            }
-        })
+            const title = `${index + 1}. ${song.title.substring(0, 25)}${song.title.length > 25 ? '...' : ''}`
+            buttons.push([title, `spotify_select_${index}`])
+        }
         
         resultList += `💙 *Selecciona una canción con los botones*`
         
