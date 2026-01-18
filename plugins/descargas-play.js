@@ -6,17 +6,8 @@ const API_KEY = 'Duarte-zz12';
 async function getAudioFromApis(url) {
   
    const apis = [    
-    { api: 'Ootaizumi', endpoint: global.APIs?.ootaizumi?.url ? `${global.APIs.ootaizumi.url}/downloader/youtube/play?query=${encodeURIComponent(url)}` : null, extractor: res => res.result?.download },
-    { api: 'Vreden', endpoint: global.APIs?.vreden?.url ? `${global.APIs.vreden.url}/api/v1/download/youtube/audio?url=${encodeURIComponent(url)}&quality=256` : null, extractor: res => res.result?.download?.url },
-    { api: 'Stellar', endpoint: global.APIs?.stellar?.url ? `${global.APIs.stellar.url}/dl/ytmp3?url=${encodeURIComponent(url)}&quality=256&key=${global.APIs.stellar.key}` : null, extractor: res => res.data?.dl },
-    { api: 'Ootaizumi v2', endpoint: global.APIs?.ootaizumi?.url ? `${global.APIs.ootaizumi.url}/downloader/youtube?url=${encodeURIComponent(url)}&format=mp3` : null, extractor: res => res.result?.download },
-    { api: 'Vreden v2', endpoint: global.APIs?.vreden?.url ? `${global.APIs.vreden.url}/api/v1/download/play/audio?query=${encodeURIComponent(url)}` : null, extractor: res => res.result?.download?.url },
-    { api: 'Nekolabs', endpoint: global.APIs?.nekolabs?.url ? `${global.APIs.nekolabs.url}/downloader/youtube/v1?url=${encodeURIComponent(url)}&format=mp3` : null, extractor: res => res.result?.downloadUrl },
-    { api: 'Nekolabs v2', endpoint: global.APIs?.nekolabs?.url ? `${global.APIs.nekolabs.url}/downloader/youtube/play/v1?q=${encodeURIComponent(url)}` : null, extractor: res => res.result?.downloadUrl },
-    
-    { api: 'AlyaBot v2', endpoint: `https://rest.alyabotpe.xyz/dl/ytmp3?url=${encodeURIComponent(url)}&key=Duarte-zz12`, extractor: res => res.status ? (res.data?.dl || res.data?.url || res.data?.download) : null },
-    { api: 'YtdlApi', endpoint: `https://api.ytdlapi.com/v3/ytmp3?url=${encodeURIComponent(url)}`, extractor: res => res.data?.downloadUrl },
-    { api: 'SaveTik', endpoint: `https://api.savetik.app/youtube/audio?url=${encodeURIComponent(url)}`, extractor: res => res.data?.downloadUrl }
+    { api: 'AlyaBot Play', endpoint: `https://rest.alyabotpe.xyz/dl/youtubeplay?query=${encodeURIComponent(url)}&key=${API_KEY}`, extractor: res => res.status ? res.data?.download : null },
+    { api: 'AlyaBot v2', endpoint: `https://rest.alyabotpe.xyz/dl/ytmp3?url=${encodeURIComponent(url)}&key=${API_KEY}`, extractor: res => res.status ? (res.data?.dl || res.data?.url || res.data?.download) : null }
   ].filter(api => api.endpoint !== null); 
 
   for (const api of apis) {
@@ -44,13 +35,7 @@ async function getAudioFromApis(url) {
 async function getVideoFromApis(url) {
   
   const apis = [    
-    { api: 'Vreden', endpoint: global.APIs?.vreden?.url ? `${global.APIs.vreden.url}/api/v1/download/youtube/video?url=${encodeURIComponent(url)}&quality=360` : null, extractor: res => res.result?.download?.url },
-    { api: 'Stellar v2', endpoint: global.APIs?.stellar?.url ? `${global.APIs.stellar.url}/dl/ytmp4v2?url=${encodeURIComponent(url)}&key=${global.APIs.stellar.key}` : null, extractor: res => res.vidinfo?.url },
-    { api: 'Stellar', endpoint: global.APIs?.stellar?.url ? `${global.APIs.stellar.url}/dl/ytmp4?url=${encodeURIComponent(url)}&quality=360&key=${global.APIs.stellar.key}` : null, extractor: res => res.data?.dl },
-    { api: 'Nekolabs', endpoint: global.APIs?.nekolabs?.url ? `${global.APIs.nekolabs.url}/downloader/youtube/v1?url=${encodeURIComponent(url)}&format=360` : null, extractor: res => res.result?.downloadUrl },
-    { api: 'Vreden v2', endpoint: global.APIs?.vreden?.url ? `${global.APIs.vreden.url}/api/v1/download/play/video?query=${encodeURIComponent(url)}` : null, extractor: res => res.result?.download?.url },
-    
-    { api: 'AlyaBot', endpoint: `https://rest.alyabotpe.xyz/dl/ytmp4?url=${encodeURIComponent(url)}&key=${API_KEY}`, extractor: res => res.status ? (res.data?.dl || res.data?.url || res.data?.download) : null }
+    { api: 'AlyaBot Video', endpoint: `https://rest.alyabotpe.xyz/dl/ytmp4?url=${encodeURIComponent(url)}&key=${API_KEY}`, extractor: res => res.status ? (res.data?.dl || res.data?.url || res.data?.download) : null }
   ].filter(api => api.endpoint !== null); 
 
   for (const api of apis) {
