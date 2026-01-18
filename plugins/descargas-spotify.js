@@ -19,9 +19,8 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         }
         
         let resultList = `💙 *Resultados encontrados:*\n\n`
-        const buttons = []
         
-        
+       
         const maxResults = Math.min(5, searchData.result.length)
         
         for (let index = 0; index < maxResults; index++) {
@@ -30,18 +29,33 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
             resultList += `   🎤 ${song.artist}\n`
             resultList += `   ⏱️ ${Math.floor(song.duration_ms / 60000)}:${String(Math.floor((song.duration_ms % 60000) / 1000)).padStart(2, '0')}\n`
             resultList += `   🤑 Popularidad: ${song.popularity}\n\n`
-            
-            const title = `${index + 1}. ${song.title.substring(0, 25)}${song.title.length > 25 ? '...' : ''}`
-            buttons.push([title, `spotify_select_${index}`])
         }
         
         resultList += `💙 *Selecciona una canción con los botones*`
         
+        
         const thumbnail = searchData.result[0]?.image
         
+        
+        const buttons = [
+            ['🎵 Canción 1', 'spotify_select_0'],
+            ['🎵 Canción 2', 'spotify_select_1'],
+            ['🎵 Canción 3', 'spotify_select_2'],
+            ['🎵 Canción 4', 'spotify_select_3'],
+            ['🎵 Canción 5', 'spotify_select_4']
+        ]
+        
+        
         try {
-            await conn.sendButton(m.chat, resultList, '🌱 Hatsune Miku - Spotify', thumbnail, buttons, m)
+            await conn.sendMessage(m.chat, {
+                image: { url: thumbnail },
+                caption: resultList,
+                footer: '🌱 Hatsune Miku - Spotify',
+                buttons: buttons,
+                headerType: 4
+            }, { quoted: m })
         } catch (error) {
+            
             await conn.sendMessage(m.chat, {
                 text: resultList,
                 contextInfo: {
@@ -59,13 +73,10 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
                 }
             }, { quoted: m })
             
+            
             await conn.sendMessage(m.chat, {
-                text: '📥 *Botones de selección:*',
-                buttons: buttons.map(btn => ({
-                    buttonId: btn[1],
-                    buttonText: {displayText: btn[0]},
-                    type: 1
-                }))
+                text: '📥 *Selecciona una canción:*',
+                buttons: buttons
             }, { quoted: m })
         }
         
