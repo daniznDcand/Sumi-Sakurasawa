@@ -31,19 +31,42 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
             resultList += `   ⏱️ ${Math.floor(song.duration_ms / 60000)}:${String(Math.floor((song.duration_ms % 60000) / 1000)).padStart(2, '0')}\n`
             resultList += `   🤑 Popularidad: ${song.popularity}\n\n`
             
-            
             const title = `${index + 1}. ${song.title.substring(0, 25)}${song.title.length > 25 ? '...' : ''}`
             buttons.push([title, `spotify_select_${index}`])
         }
         
         resultList += `💙 *Selecciona una canción con los botones*`
         
+        const thumbnail = searchData.result[0]?.image
         
         try {
-            await conn.sendButton(m.chat, resultList, '🌱 Hatsune Miku - Spotify', searchData.result[0]?.image, buttons, m)
+            await conn.sendButton(m.chat, resultList, '🌱 Hatsune Miku - Spotify', thumbnail, buttons, m)
         } catch (error) {
+            await conn.sendMessage(m.chat, {
+                text: resultList,
+                contextInfo: {
+                    externalAdReply: {
+                        showAdAttribution: true,
+                        containsAutoReply: true,
+                        renderLargerThumbnail: true,
+                        title: '🌱 Hatsune Miku - Spotify',
+                        body: 'Selecciona una canción',
+                        mediaType: 1,
+                        thumbnailUrl: thumbnail,
+                        mediaUrl: thumbnail,
+                        sourceUrl: thumbnail
+                    }
+                }
+            }, { quoted: m })
             
-            await conn.sendNCarousel(m.chat, resultList, '🌱 Hatsune Miku - Spotify', searchData.result[0]?.image, buttons, null, null, null, m)
+            await conn.sendMessage(m.chat, {
+                text: '📥 *Botones de selección:*',
+                buttons: buttons.map(btn => ({
+                    buttonId: btn[1],
+                    buttonText: {displayText: btn[0]},
+                    type: 1
+                }))
+            }, { quoted: m })
         }
         
         
