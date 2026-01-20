@@ -33,63 +33,31 @@ async function getAudioFromApis(url) {
 }
 
 async function getVideoFromApis(url) {
-  const apis = [
-    { api: 'Adonix', endpoint: `${global.APIs.adonix.url}/download/ytvideo?apikey=${global.APIs.adonix.key}&url=${encodeURIComponent(url)}`, extractor: res => res?.data?.url },
-    { api: 'Vreden', endpoint: `${global.APIs.vreden.url}/api/v1/download/youtube/video?url=${encodeURIComponent(url)}&quality=360`, extractor: res => res.result?.download?.url },
-    { api: 'Stellar v2', endpoint: `${global.APIs.stellar.url}/dl/ytmp4v2?url=${encodeURIComponent(url)}&key=${global.api.key}`, extractor: res => res.vidinfo?.url },
-    { api: 'Stellar', endpoint: `${global.APIs.stellar.url}/dl/ytmp4?url=${encodeURIComponent(url)}&quality=360&key=${global.api.key}`, extractor: res => res.data?.dl },
-    { api: 'Nekolabs', endpoint: `${global.APIs.nekolabs.url}/downloader/youtube/v1?url=${encodeURIComponent(url)}&format=360`, extractor: res => res.result?.downloadUrl },
-    { api: 'Vreden v2', endpoint: `${global.APIs.vreden.url}/api/v1/download/play/video?query=${encodeURIComponent(url)}`, extractor: res => res.result?.download?.url },
+  
+  const apis = [    
     { api: 'AlyaBot Video', endpoint: `https://rest.alyabotpe.xyz/dl/ytmp4?url=${encodeURIComponent(url)}&key=${API_KEY}`, extractor: res => res.status ? (res.data?.dl || res.data?.url || res.data?.download) : null }
-  ]
+  ].filter(api => api.endpoint !== null); 
 
-  for (const { api, endpoint, extractor } of apis) {
+  for (const api of apis) {
     try {
-      console.log(`🔄 Trying API: ${api}`);
-      const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 10000)
-      const res = await fetch(endpoint, { signal: controller.signal }).then(r => r.json())
-      clearTimeout(timeout)
-      const link = extractor(res)
-      if (link) {
-        console.log(`✅ API exitoso: ${api}, URL: ${link}`);
-        return link;
+      console.log(`🔄 Trying API: ${api.api}`);
+      const response = await fetch(api.endpoint);
+      const data = await response.json();
+      console.log(`📊 API response:`, JSON.stringify(data, null, 2));
+      
+      const downloadUrl = api.extractor(data);
+      if (downloadUrl && downloadUrl.startsWith('http')) {
+        console.log(`✅ API exitoso: ${api.api}, URL: ${downloadUrl}`);
+        return downloadUrl;
+      } else {
+        console.log(`❌ No se encontró URL válida en ${api.api}`);
       }
-    } catch (e) {
-      console.log(`❌ API ${api} falló:`, e.message);
+    } catch (error) {
+      console.log(`❌ API ${api.api} falló:`, error.message);
     }
-    await new Promise(resolve => setTimeout(resolve, 500))
   }
   
   throw new Error('No se pudo obtener el enlace de descarga de ninguna API de video');
-}
-
-async function getVideoInfoFromYouTubeAPI(videoId) {
-  try {
-    const apiUrl = `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&part=snippet,contentDetails,statistics,status&key=${global.youtubeApiKey}`;
-    const response = await fetch(apiUrl);
-    const data = await response.json();
-    
-    if (data.items && data.items.length > 0) {
-      const video = data.items[0];
-      return {
-        videoId: video.id,
-        title: video.snippet.title,
-        description: video.snippet.description,
-        channel: video.snippet.channelTitle,
-        publishedAt: video.snippet.publishedAt,
-        duration: video.contentDetails.duration,
-        views: video.statistics.viewCount,
-        likes: video.statistics.likeCount,
-        thumbnails: video.snippet.thumbnails
-      };
-    }
-    
-    throw new Error('Video no encontrado en YouTube Data API');
-  } catch (error) {
-    console.error('Error obteniendo info de YouTube API:', error);
-    throw error;
-  }
 }
 
 function extractYouTubeId(url) {
@@ -104,44 +72,6 @@ function extractYouTubeId(url) {
     if (match) return match[1];
   }
   return null;
-}
-
-function formatDuration(duration) {
-  if (!duration) return 'Desconocido';
-  
-  const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/);
-  if (!match) return duration;
-  
-  let hours = parseInt(match[1] || 0);
-  let minutes = parseInt(match[2] || 0);
-  let seconds = parseInt(match[3] || 0);
-  
-  if (hours > 0) {
-    return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  } else {
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  }
-}
-
-function formatAgo(publishedAt) {
-  if (!publishedAt) return 'Desconocido';
-  
-  const now = new Date();
-  const published = new Date(publishedAt);
-  const diffMs = now - published;
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  const diffMonths = Math.floor(diffDays / 30);
-  const diffYears = Math.floor(diffMonths / 12);
-  
-  if (diffYears > 0) {
-    return `hace ${diffYears} año${diffYears > 1 ? 's' : ''}`;
-  } else if (diffMonths > 0) {
-    return `hace ${diffMonths} mes${diffMonths > 1 ? 'es' : ''}`;
-  } else if (diffDays > 0) {
-    return `hace ${diffDays} día${diffDays > 1 ? 's' : ''}`;
-  } else {
-    return 'hoy';
-  }
 }
 
 function formatViews(views) {
@@ -181,18 +111,13 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         return m.reply('URL de YouTube inválida');
       }
       
-      try {
-        videoInfo = await getVideoInfoFromYouTubeAPI(videoId);
-        videoInfo.url = url;
-      } catch (apiError) {
-        console.log('YouTube API error, usando búsqueda rápida:', apiError.message);
-        const search = await yts(videoId);
-        if (search.all && search.all.length > 0) {
-          videoInfo = search.all.find(v => v.videoId === videoId);
-        }
+      
+      const search = await yts(videoId);
+      if (search.all && search.all.length > 0) {
+        videoInfo = search.all.find(v => v.videoId === videoId);
       }
     } else {
-      await conn.reply(m.chat, `💙 Buscando: ${text}...`, m);
+      
       const search = await yts(text);
       if (!search.all || search.all.length === 0) {
         return m.reply('No se encontraron resultados para tu búsqueda.');
@@ -206,12 +131,12 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     }
 
     const {
-      title = videoInfo.title || 'Desconocido', 
-      thumbnail = videoInfo.thumbnail || '', 
-      timestamp = videoInfo.timestamp || 'Desconocido', 
-      views = videoInfo.views || 0, 
-      ago = videoInfo.ago || 'Desconocido', 
-      author = { name: videoInfo.author?.name || 'Desconocido' } 
+      title = 'Desconocido', 
+      thumbnail = '', 
+      timestamp = 'Desconocido', 
+      views = 0, 
+      ago = 'Desconocido', 
+      author = { name: 'Desconocido' } 
     } = videoInfo;
 
     if (!url) {
