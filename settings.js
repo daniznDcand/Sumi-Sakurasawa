@@ -63,7 +63,10 @@ global.api = {
   key: 'Angelithixyz'
 }
 
+global.youtubeApiKey = 'AIzaSyCq64mln2364GHr3gzKZoRpOZ3K_F2Wq7I'
+
 global.playlistApiKey = 'f9e54e5c6amsh8b4dfc0bfb94abap19bab2jsne8b65338207e'
+global.rapidApiKey = 'f9e54e5c6amsh8b4dfc0bfb94abap19bab2jsne8b65338207e'
 
 
 global.apikey = 'adonix-key'
