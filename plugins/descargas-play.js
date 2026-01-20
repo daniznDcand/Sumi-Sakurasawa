@@ -32,10 +32,38 @@ async function getAudioFromApis(url) {
   throw new Error('No se pudo obtener el enlace de descarga de ninguna API de audio');
 }
 
+async function getVideoDescription(url) {
+  try {
+    const videoId = extractYouTubeId(url);
+    if (!videoId) {
+      throw new Error('Invalid YouTube URL');
+    }
+    
+    const apiUrl = `https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`;
+    const response = await fetch(apiUrl);
+    const data = await response.json();
+    
+    if (data.error) {
+      throw new Error('Video not found');
+    }
+    
+    return {
+      title: data.title || 'No title available',
+      description: data.description || 'No description available',
+      author: data.author_name || 'Unknown',
+      thumbnail: data.thumbnail_url || '',
+      url: data.url || url
+    };
+  } catch (error) {
+    console.error('Error getting video description:', error);
+    throw error;
+  }
+}
+
 async function getVideoFromApis(url) {
   
   const apis = [    
-    { api: 'AlyaBot Video', endpoint: `https://rest.alyabotpe.xyz/dl/ytmp4?url=${encodeURIComponent(url)}&key=${API_KEY}`, extractor: res => res.status ? (res.data?.dl || res.data?.url || res.data?.download) : null }
+    { api: 'Play API Video', endpoint: `https://api.stellarwa.xyz/api/play?url=${encodeURIComponent(url)}&format=mp4&apikey=kujou-4548`, extractor: res => res.url ? res.url : null }
   ].filter(api => api.endpoint !== null); 
 
   for (const api of apis) {
@@ -150,7 +178,8 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       ['🎵 Audio MP3', 'ytdlv2_audio_mp3'],
       ['🎬 Video MP4', 'ytdlv2_video_mp4'],
       ['📁 MP3 Documento', 'ytdlv2_audio_doc'],
-      ['📁 MP4 Documento', 'ytdlv2_video_doc']
+      ['📁 MP4 Documento', 'ytdlv2_video_doc'],
+      ['📝 Descripción', 'ytdlv2_description']
     ];
     
     const infoText = `*𖹭.╭╭ִ╼࣪━ִﮩ٨ـﮩ💙𝗠𝗶𝗸𝘂𝗺𝗶𝗻🌱ﮩ٨ـﮩ━ִ╾࣪╮╮.𖹭*
@@ -191,6 +220,52 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     return m.reply(`💙 Ocurrió un error: ${error.message || 'Desconocido'}`);
   }
 };
+
+async function processDescription(conn, m, url, title) {
+  await conn.reply(m.chat, `💙 Obteniendo descripción del video... ⚡`, m);
+  
+  try {
+    const descriptionData = await getVideoDescription(url);
+    
+    const descriptionText = `*𖹭.╭╭ִ╼࣪━ִﮩ٨ـﮩ💙𝗠𝗶𝗸𝘂𝗺𝗶𝗻🌱ﮩ٨ـﮩ━ִ╾࣪╮╮.𖹭*
+
+> 💙 *Título:* ${descriptionData.title}
+*°.⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸.°*
+> 🌱 *Canal:* ${descriptionData.author}
+*°.⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸.°*
+> 💙 *Descripción:*
+${descriptionData.description}
+*⏝ּׅ︣︢ۛ۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫ۜ⏝ּׅ︣︢ۛ۫۫۫۫۫ۜ⏝ּׅ︣ׄۛ۫۫۫۫۫ۜ*
+
+📝 *Descripción completa del video*`;
+
+    try {
+      const thumb = descriptionData.thumbnail ? (await conn.getFile(descriptionData.thumbnail))?.data : null;
+      await conn.sendMessage(m.chat, {
+        text: descriptionText,
+        contextInfo: {
+          externalAdReply: {
+            title: descriptionData.title,
+            body: `Canal: ${descriptionData.author}`,
+            thumbnailUrl: descriptionData.thumbnail,
+            sourceUrl: descriptionData.url,
+            mediaType: 1,
+            renderLargerThumbnail: true
+          }
+        }
+      }, { quoted: m });
+    } catch (thumbError) {
+      await conn.reply(m.chat, descriptionText, m);
+      console.error("Error al obtener la miniatura para descripción:", thumbError);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error("Error al obtener descripción:", error);
+    conn.reply(m.chat, `💙 Error al obtener descripción: ${error.message}`, m);
+    return false;
+  }
+}
 
 async function processDownload(conn, m, url, title, option) {
   const downloadTypes = {
@@ -275,7 +350,8 @@ handler.before = async (m, { conn }) => {
     /ytdlv2_audio_mp3/,
     /ytdlv2_video_mp4/,
     /ytdlv2_audio_doc/,
-    /ytdlv2_video_doc/
+    /ytdlv2_video_doc/,
+    /ytdlv2_description/
   ];
   
   let isButtonResponse = false;
@@ -315,6 +391,8 @@ handler.before = async (m, { conn }) => {
     option = 3; 
   } else if (m.text.includes('video_doc')) {
     option = 4; 
+  } else if (m.text.includes('description')) {
+    option = 5; 
   }
   
   if (!option) {
@@ -324,13 +402,17 @@ handler.before = async (m, { conn }) => {
   user.monedaDeducted = false;
 
   try {
-    await processDownload(
-      conn, 
-      m, 
-      user.lastYTSearch.url, 
-      user.lastYTSearch.title, 
-      option
-    );
+    if (option === 5) {
+      await processDescription(conn, m, user.lastYTSearch.url, user.lastYTSearch.title);
+    } else {
+      await processDownload(
+        conn, 
+        m, 
+        user.lastYTSearch.url, 
+        user.lastYTSearch.title, 
+        option
+      );
+    }
     
     user.lastYTSearch = null;
     
