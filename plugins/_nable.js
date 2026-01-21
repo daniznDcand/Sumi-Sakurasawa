@@ -66,7 +66,7 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
       
       
       if (!isValidFunction(type)) {
-        return conn.reply(m.chat, `❌ *Error:* La función "*${type}*" no existe.\n\n> Use *${usedPrefix}enable* sin parámetros para ver las funciones disponibles.`, m)
+        return conn.reply(m.chat, `❌ *Error:* La función "*${type}*" no existe.\n\n> Use *${usedPrefix}enable* sin parámetros para ver las funciones disponibles.`, m, global.miku)
       }
       
       isEnable = true
@@ -129,7 +129,7 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
         `🌸 *𝐄𝐉𝐄𝐌𝐏𝐋𝐎:* ${usedPrefix}enable antilink`
       ].join('\n')
       
-      return conn.reply(m.chat, funcionesDisponibles, m)
+      return conn.reply(m.chat, funcionesDisponibles, m, global.miku)
     }
   } else if (command === 'disable') {
     if (args[0]) {
@@ -137,7 +137,7 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
       
       
       if (!isValidFunction(type)) {
-        return conn.reply(m.chat, `❌ *Error:* La función "*${type}*" no existe.\n\n> Use *${usedPrefix}disable* sin parámetros para ver las funciones disponibles.`, m)
+        return conn.reply(m.chat, `❌ *Error:* La función "*${type}*" no existe.\n\n> Use *${usedPrefix}disable* sin parámetros para ver las funciones disponibles.`, m, global.miku)
       }
       
       isEnable = false
@@ -200,18 +200,18 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
         `🌸 *𝐄𝐉𝐄𝐌𝐏𝐋𝐎:* ${usedPrefix}disable antilink`
       ].join('\n')
       
-      return conn.reply(m.chat, funcionesDisponibles, m)
+      return conn.reply(m.chat, funcionesDisponibles, m, global.miku)
     }
   } else if (args[0] === 'on' || args[0] === 'enable') {
     
     if (!isValidFunction(type)) {
-      return conn.reply(m.chat, `❌ *Error:* La función "*${type}*" no existe.\n\n> Funciones disponibles: ${validFunctions.filter((f, i, arr) => arr.indexOf(f) === i).slice(0, 10).join(', ')}...`, m)
+      return conn.reply(m.chat, `❌ *Error:* La función "*${type}*" no existe.\n\n> Funciones disponibles: ${validFunctions.filter((f, i, arr) => arr.indexOf(f) === i).slice(0, 10).join(', ')}...`, m, global.miku)
     }
     isEnable = true;
   } else if (args[0] === 'off' || args[0] === 'disable') {
     
     if (!isValidFunction(type)) {
-      return conn.reply(m.chat, `❌ *Error:* La función "*${type}*" no existe.\n\n> Funciones disponibles: ${validFunctions.filter((f, i, arr) => arr.indexOf(f) === i).slice(0, 10).join(', ')}...`, m)
+      return conn.reply(m.chat, `❌ *Error:* La función "*${type}*" no existe.\n\n> Funciones disponibles: ${validFunctions.filter((f, i, arr) => arr.indexOf(f) === i).slice(0, 10).join(', ')}...`, m, global.miku)
     }
     isEnable = false
   } else {
@@ -220,7 +220,7 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
       return conn.reply(m.chat, `❌ *Error:* La función "*${type}*" no existe.\n\n> Use *${usedPrefix}enable* para ver las funciones disponibles.`, m)
     }
     const estado = isEnable ? '✓ Activado' : '✗ Desactivado'
-    return conn.reply(m.chat, `💙 Un administrador puede activar o desactivar el *${command}* utilizando:\n\n> ✐ *${usedPrefix}${command} on* para activar.\n> ✐ *${usedPrefix}${command} off* para desactivar.\n> ✐ *${usedPrefix}enable ${command}* para activar.\n> ✐ *${usedPrefix}disable ${command}* para desactivar.\n\n✧ Estado actual » *${estado}*`, m, global.getRcanal?.() || global.rcanal)
+    return conn.reply(m.chat, `💙 Un administrador puede activar o desactivar el *${command}* utilizando:\n\n> ✐ *${usedPrefix}${command} on* para activar.\n> ✐ *${usedPrefix}${command} off* para desactivar.\n> ✐ *${usedPrefix}enable ${command}* para activar.\n> ✐ *${usedPrefix}disable ${command}* para desactivar.\n\n✧ Estado actual » *${estado}*`, m, global.miku)
   }
 
   switch (type) {
@@ -405,7 +405,7 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
     case 'antilink':
       
       if (!m.isGroup) {
-        return conn.reply(m.chat, '💙 Este comando debe usarse dentro del grupo que desea configurar. Use el comando en el grupo objetivo.', m)
+        return conn.reply(m.chat, '💙 Este comando debe usarse dentro del grupo que desea configurar. Use el comando en el grupo objetivo.', m, global.miku)
       }
       if (!(isAdmin || isOwner)) {
         global.dfail('admin', m, conn)
@@ -417,7 +417,7 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
     case 'antilink2':
       
       if (!m.isGroup) {
-        return conn.reply(m.chat, '💙 Este comando debe usarse dentro del grupo que desea configurar. Use el comando en el grupo objetivo.', m)
+        return conn.reply(m.chat, '💙 Este comando debe usarse dentro del grupo que desea configurar. Use el comando en el grupo objetivo.', m, global.miku)
       }
       if (!(isAdmin || isOwner)) {
         global.dfail('admin', m, conn)
@@ -504,16 +504,16 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
   
   if ((dbKey === 'antiMencion' || type === 'antimencion') && args[1] && args[1].toLowerCase() === 'action') {
     const action = (args[2] || '').toLowerCase()
-    if (!m.isGroup) return conn.reply(m.chat, '❌ Este ajuste solo puede aplicarse en grupos.', m)
+    if (!m.isGroup) return conn.reply(m.chat, '❌ Este ajuste solo puede aplicarse en grupos.', m, global.miku)
     if (!(isAdmin || isOwner)) {
       global.dfail('admin', m, conn)
       throw false
     }
     if (!['kick', 'delete'].includes(action)) {
-      return conn.reply(m.chat, '❌ Acción inválida. Use `kick` o `delete`.\n\nEjemplo: `enable antimencion action kick`', m)
+      return conn.reply(m.chat, '❌ Acción inválida. Use `kick` o `delete`.\n\nEjemplo: `enable antimencion action kick`', m, global.miku)
     }
     chat.antiMencionAction = action
-    return conn.reply(m.chat, `✅ antiMencion action establecido a *${action}* para este chat.`, m)
+    return conn.reply(m.chat, `✅ antiMencion action establecido a *${action}* para este chat.`, m, global.miku)
   }
 
   
@@ -534,7 +534,7 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
 
   
   const mensaje = `💙 La función *${type}* se *${isEnable ? 'activó' : 'desactivó'}* ${isAll ? 'para este Bot' : isUser ? '' : 'para este chat'}`;
-  m.reply(mensaje)
+  m.reply(mensaje, global.miku)
 };
 
 handler.help = ['welcome', 'bienvenida', 'antiprivado', 'antiprivate', 'restrict', 'restringir', 'autolevelup', 'autonivel', 'antibot', 'antibots', 'autoaceptar', 'aceptarauto', 'autorechazar', 'rechazarauto', 'autoresponder', 'autorespond', 'antisubbots', 'antibot2', 'modoadmin', 'soloadmin', 'reaction', 'reaccion', 'nsfw', 'modohorny', 'antispam', 'jadibotmd', 'modejadibot', 'serbot', 'subbots', 'detect', 'avisos', 'antilink', 'antilink2', 'antifake', 'antiarabes', 'antitoxic', 'antimencion', 'antimencionar', 'audios', 'enable', 'disable']

@@ -61,14 +61,19 @@ export async function before(m, { conn, participants, groupMetadata }) {
 
         
         if (imagePath && fs.existsSync(imagePath)) {
-          
-          const contextInfo = JSON.parse(JSON.stringify(global.rcanal.contextInfo))
-          contextInfo.mentionedJid = [user]
-          
           await conn.sendMessage(jid, {
             image: { url: imagePath },
             caption: text,
-            contextInfo: contextInfo
+            contextInfo: {
+              mentionedJid: [user],
+              forwardingScore: 1,
+              isForwarded: true,
+              forwardedNewsletterMessageInfo: {
+                newsletterJid: global.ch.ch1,
+                newsletterName: '💙 HATSUNE MIKU CHANNEL💙',
+                serverMessageId: -1
+              }
+            }
           }, { quoted })
           
           setTimeout(() => {
