@@ -55,8 +55,20 @@ export async function before(m, { conn, participants, groupMetadata }) {
           imagePath = path.join(tmpDir, `welcome_${user}_${Date.now()}.jpg`)
           fs.writeFileSync(imagePath, buffer)
           console.log('✅ Imagen descargada a:', imagePath)
-        } catch (downloadError) {
-          console.log('❌ Error descargando imagen:', downloadError)
+        } catch (error) {
+          console.error('Error descargando imagen:', error)
+          
+          
+          let defaultImage = 'https://server.wallpaperaccess.com/cyberpunk/2077/4/wp-content/uploads/2023/01/28/wallpaperaccess_16742947356-872-874-6409-9.jpg'
+          
+          if (imagePath && fs.existsSync(imagePath)) {
+            await conn.sendMessage(jid, {
+              image: { url: imagePath },
+              caption: text
+            })
+          } else {
+            await conn.sendMessage(jid, { text })
+          }
         }
 
         
