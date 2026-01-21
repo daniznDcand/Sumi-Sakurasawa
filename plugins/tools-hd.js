@@ -22,12 +22,12 @@ let handler = async (m, { conn, usedPrefix, command }) => {
 
   if (!/image\/(jpe?g|png)/i.test(mime)) {
     await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } })
-    return replyWithChannel(conn, m.chat, `💙 *Responde a una imagen*`, m)
+    return conn.reply(m.chat, `💙 *Responde a una imagen*`, m, global.miku);
   }
 
   try {
     await conn.sendMessage(m.chat, { react: { text: '🕒', key: m.key } })
-    replyWithChannel(conn, m.chat, `♻️ *Procesando imagen...*`, m, ctxWarn)  
+    conn.reply(m.chat, `♻️ *Procesando imagen...*`, m, global.miku, ctxWarn);  
 
     const media = await quoted.download()
     const base64 = media.toString('base64')

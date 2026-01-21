@@ -4,21 +4,7 @@ import uploadImage from '../lib/uploadImage.js'
 import { webp2png } from '../lib/webp2mp4.js'
 
 
-async function replyWithChannel(conn, chat, text, quoted = null) {
-  try {
-    const buttons = []
-    const urls = [['🎵 Canal Oficial 💙', 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o']]
-    
-    await conn.sendNCarousel(chat, text, '💙 Hatsune Miku Bot', null, buttons, null, urls, null, quoted);
-  } catch (error) {
-    console.log('Error con botones, usando reply simple:', error.message);
-    conn.reply(chat, `${text}\n\n🎵 *Canal Oficial:* https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o`, quoted);
-  }
-}
-
 let handler = async (m, { conn, args }) => {
-const rcanal = 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
-let stiker = false
 let userId = m.sender
 let packstickers = global.db.data.users[userId] || {}
 let texto1 = packstickers.text1 || global.packsticker
@@ -30,7 +16,7 @@ let txt = args.join(' ')
 
 if (/webp|image|video/g.test(mime) && q.download) {
 if (/video/.test(mime) && (q.msg || q).seconds > 16)
-return replyWithChannel(conn, m.chat, '💙 El video no puede durar más de *15 segundos* para crear un sticker virtual perfecto ✨', m)
+return replyWithChannel(conn, m.chat, '💙 El video no puede durar más de *15 segundos* para crear un sticker virtual perfecto ✨', m,global.miku)
 let buffer = await q.download()
 await m.react('🎤')
 
@@ -40,9 +26,9 @@ stiker = await sticker(buffer, false, marca[0], marca[1])
 let buffer = await sticker(false, args[0], texto1, texto2)
 stiker = buffer
 } else {
-return replyWithChannel(conn, m.chat, '💙 Por favor, envía una *imagen* o *video* para crear un hermoso sticker virtual ✨', m,rcanal)
+return replyWithChannel(conn, m.chat, '💙 Por favor, envía una *imagen* o *video* para crear un hermoso sticker virtual ✨', m,global.miku)
 }} catch (e) {
-await replyWithChannel(conn, m.chat, '💫 ¡Gomen! Ocurrió un error en el escenario virtual: ' + e.message + ' ✨', m,rcanal)
+await replyWithChannel(conn, m.chat, '💫 ¡Gomen! Ocurrió un error en el escenario virtual: ' + e.message + ' ✨', m,global.miku)
 await m.react('🎵')
 } finally {
 if (stiker) {

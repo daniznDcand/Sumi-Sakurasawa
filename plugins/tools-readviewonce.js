@@ -14,8 +14,8 @@ async function replyWithChannel(conn, chat, text, quoted = null) {
 }
 
 let handler = async (m, { conn }) => {
-if (!m.quoted) return replyWithChannel(conn, m.chat, `💙 Responde a una imagen ViewOnce.`, m)
-if (!m?.quoted || !m?.quoted?.viewOnce) return replyWithChannel(conn, m.chat, `💙 Responde a una imagen ViewOnce.`, m)
+if (!m.quoted) return conn.reply(m.chat, `💙 Responde a una imagen ViewOnce.`, m, global.miku);
+if (!m?.quoted || !m?.quoted?.viewOnce) return conn.reply(m.chat, `💙 Responde a una imagen ViewOnce.`, m, global.miku);
 let buffer = await m.quoted.download(false);
 if (/videoMessage/.test(m.quoted.mtype)) {
 return conn.sendFile(m.chat, buffer, 'media.mp4', m.quoted.caption || '', m)
