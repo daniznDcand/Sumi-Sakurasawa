@@ -534,7 +534,7 @@ const handler = async (m, { conn, usedPrefix, command, args, isOwner, isAdmin, i
 
   
   const mensaje = `💙 La función *${type}* se *${isEnable ? 'activó' : 'desactivó'}* ${isAll ? 'para este Bot' : isUser ? '' : 'para este chat'}`;
-  m.reply(mensaje, global.miku)
+  conn.reply(m.chat, mensaje, m, global.miku)
 };
 
 handler.help = ['welcome', 'bienvenida', 'antiprivado', 'antiprivate', 'restrict', 'restringir', 'autolevelup', 'autonivel', 'antibot', 'antibots', 'autoaceptar', 'aceptarauto', 'autorechazar', 'rechazarauto', 'autoresponder', 'autorespond', 'antisubbots', 'antibot2', 'modoadmin', 'soloadmin', 'reaction', 'reaccion', 'nsfw', 'modohorny', 'antispam', 'jadibotmd', 'modejadibot', 'serbot', 'subbots', 'detect', 'avisos', 'antilink', 'antilink2', 'antifake', 'antiarabes', 'antitoxic', 'antimencion', 'antimencionar', 'audios', 'enable', 'disable']
