@@ -27,6 +27,8 @@ export async function before(m, { conn, participants, groupMetadata }) {
     const sendSingleWelcome = async (jid, text, user, quoted) => {
       try {
         let ppUrl = null
+        let userName = user
+        
         try {
           ppUrl = await conn.profilePictureUrl(user, 'image').catch(() => null)
         } catch (e) {
@@ -37,26 +39,32 @@ export async function before(m, { conn, participants, groupMetadata }) {
           ppUrl = 'https://server.wallpaperalchemy.com/storage/wallpapers/287/hatsune-miku-4k-anime-wallpaper.png'
         }
 
-        console.log('📤 Enviando welcome con imagen...')
+        console.log('📤 Enviando welcome con imagen no descargable y reenvío desde canal...')
 
         await conn.sendMessage(jid, {
-            image: { url: ppUrl },
-            caption: text,
-            mentions: typeof user === 'string' ? [user] : [user.id || user],
-            contextInfo: {
-              forwardingScore: 1,
-              isForwarded: true,
-              forwardedNewsletterMessageInfo: {
-                newsletterJid: '120363291713731699@newsletter',
-                newsletterName: '💙 HATSUNE MIKU CHANNEL💙',
-                serverMessageId: -1
-              }
+          text: text,
+          contextInfo: {
+            mentionedJid: [user],
+            forwardingScore: 1,
+            isForwarded: true,
+            forwardedNewsletterMessageInfo: {
+              newsletterJid: global.ch.ch1,
+              newsletterName: '💙 HATSUNE MIKU CHANNEL💙',
+              serverMessageId: -1
+            },
+            externalAdReply: {
+              title: '💙 HATSUNE MIKU 💙',
+              body: `La Diva Virtual te da la bienvenida • ${groupSize} miembros`,
+              thumbnailUrl: ppUrl,
+              mediaType: 1,
+              renderLargerThumbnail: true
             }
-          }, { quoted })
+          }
+        }, { quoted })
 
       } catch (err) {
         console.log('sendSingleWelcome error:', err)
-        return await conn.reply(jid, text, quoted, { mentions: typeof user === 'string' ? [user] : [user.id || user] })
+        return await conn.reply(jid, text, quoted, { mentions: [user] })
       }
     }
 
@@ -72,34 +80,39 @@ export async function before(m, { conn, participants, groupMetadata }) {
       for (const user of users) {
         if (!user) continue
 
-        // Extraer nombre/ID del usuario
-        let userName = user
-        let mentionTag = user
+        const mentionTag = '@' + user.replace(/@.+/, '')
         
-        if (typeof user === 'string') {
-          mentionTag = user
-          userName = user.replace(/@.+/, '') || user
-        } else if (user && user.id) {
-          mentionTag = user.id
-          userName = user.name || user.id || 'Usuario'
-        } else {
-          userName = 'Usuario'
+        try {
+          const userObj = await conn.getUser(user)
+          const userName = userObj?.name || userObj?.notify || mentionTag
+
+          const welcomeText = `💙*HATSUNE MIKU*💙
+
+🌸*¡NUEVO MIEMBRO EN EL ESCENARIO!*🌸
+〜〜〜〜〜〜〜〜〜〜〜〜〜〜〜
+💙 ¡Hola ${mentionTag}! 💙
+🎵 Te unes a *${groupMetadata?.subject || 'el grupo'}*
+🤑 Ahora somos *${groupSize}* vocaloids
+🤩 Usa *.menu* para descubrir la magia
+🎤 ¡Prepárate para cantar con nosotros!
+〜〜〜〜〜〜〜〜〜〜〜〜〜〜〜
+
+🌸*Hatsune Miku*💙
+💙*La Voz que Conecta Mundos*💙`
+
+          await sendSingleWelcome(m.chat, welcomeText, user, m)
+          console.log(`✅ Welcome enviado a ${userName}`)
+        } catch (error) {
+          console.log('Error obteniendo nombre de usuario:', error)
+          const fallbackText = `👋 ¡Hola ${mentionTag}! 🎵
+
+💙 Bienvenido a *${groupMetadata?.subject || 'el grupo'}*
+🌱 Ahora somos *${groupSize}* miembros
+🎵 Usa *.menu* para ver comandos`
+          
+          await sendSingleWelcome(m.chat, fallbackText, user, m)
+          console.log(`✅ Welcome enviado a ${mentionTag}`)
         }
-
-        const welcomeText = `🎵 *¡BIENVENIDO AL MUNDO DE HATSUNE MIKU!* 🎵
-
-💌 ¡Hola ${userName}! 💙
-💮 Te unes a *${groupMetadata?.subject || 'el grupo'}*
-🎶 Ahora somos *${groupSize}* miembros
-🎵 Usa *.menu* para ver comandos
-🎤 ¡Disfruta la música virtual!
-💙 ¡Cantemos juntos! 🎵
-
-🎵 *Hatsune Miku* 🎵
-💙 *La Diva Virtual del Futuro* 💙`
-
-        await sendSingleWelcome(m.chat, welcomeText, mentionTag, m)
-        console.log(`✅ Welcome enviado a ${userName}`)
         await new Promise(resolve => setTimeout(resolve, 1000))
       }
       return true
@@ -114,33 +127,38 @@ export async function before(m, { conn, participants, groupMetadata }) {
       for (const user of users) {
         if (!user) continue
 
-        // Extraer nombre/ID del usuario
-        let userName = user
-        let mentionTag = user
+        const mentionTag = '@' + user.replace(/@.+/, '')
         
-        if (typeof user === 'string') {
-          mentionTag = user
-          userName = user.replace(/@.+/, '') || user
-        } else if (user && user.id) {
-          mentionTag = user.id
-          userName = user.name || user.id || 'Usuario'
-        } else {
-          userName = 'Usuario'
-        }
+        try {
+          const userObj = await conn.getUser(user)
+          const userName = userObj?.name || userObj?.notify || mentionTag
 
-        const byeText = `🎵*HASTA PRONTO! DEl MUNDO DE HATSUNE MIKU*🎵
+          const byeText = `💙*HATSUNE MIKU*💙
 
-💙 Adiós ${userName}! 💙
+🌸*¡HASTA PRONTO, ARTISTA!*🌸
+〜〜〜〜〜〜〜〜〜〜〜〜〜〜〜
+💙 Adiós ${mentionTag}! 💙
 🎶 Gracias por cantar con nosotros
 🎤 Te esperamos en nuestro próximo concierto
 🎵 ¡Vuelve pronto a la música virtual!
 💙 Siempre serás bienvenido aquí 🎵
+〜〜〜〜〜〜〜〜〜〜〜〜〜〜〜
 
-🎵 *Hatsune Miku* 🎵
-💙 *La Diva Virtual del Futuro* 💙`
+💙*Hatsune Miku*💙
+💙*La Voz que Conecta Mundos*💙`
 
-        await sendSingleWelcome(m.chat, byeText, mentionTag, m)
-        console.log(`✅ Goodbye enviado a ${userName}`)
+          await sendSingleWelcome(m.chat, byeText, user, m)
+          console.log(`✅ Goodbye enviado a ${userName}`)
+        } catch (error) {
+          console.log('Error obteniendo nombre de usuario:', error)
+          const fallbackText = `👋 ¡Hasta luego ${mentionTag}! 💙
+
+😢 Te extrañaremos en *${groupMetadata?.subject || 'el grupo'}*
+🎵 ¡Vuelve pronto!`
+          
+          await sendSingleWelcome(m.chat, fallbackText, user, m)
+          console.log(`✅ Goodbye enviado a ${mentionTag}`)
+        }
         await new Promise(resolve => setTimeout(resolve, 1000))
       }
       return true
