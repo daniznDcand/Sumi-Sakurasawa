@@ -3,7 +3,7 @@ import fetch from 'node-fetch'
 let handler = async (m, { conn, usedPrefix, command }) => {
 try {
 await m.react(emojis)
-conn.reply(m.chat, `💙 Buscando una hermosa waifu virtual como yo... ¡Espera un momentito! ✨`, m, global.rcanal)
+conn.reply(m.chat, `💙 Buscando una hermosa waifu virtual como yo... ¡Espera un momentito! ✨`, m, global.miku)
 let res = await fetch('https://api.waifu.pics/sfw/waifu')
 if (!res.ok) return
 let json = await res.json()

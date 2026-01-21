@@ -18,7 +18,7 @@ txt += `💙  *Versiones Derivadas* : ${json.forks_count}\n`
 txt += `🎤  *Estrellas del Concierto* : ${json.stargazers_count}\n\n`
 txt += `> *🎵✨ ${dev} ✨🎵*`
 
-await conn.sendMessage(m.chat, {text: txt, contextInfo: { forwardingScore: 999, isForwarded: true, forwardedNewsletterMessageInfo: { newsletterName: channelRD.name, newsletterJid: channelRD.id, }, externalAdReply: { title: packname, body: dev, thumbnailUrl: 'https://files.catbox.moe/v2abfs.png', sourceUrl: redes, mediaType: 1, renderLargerThumbnail: true }}}, {quoted: m})
+await conn.sendMessage(m.chat, {text: txt, contextInfo: global.miku.contextInfo}, {quoted: m})
 
 } catch {
 await conn.reply(m.chat, `🎵💙 ¡Gomen! Ocurrió un error al acceder al repositorio virtual de Miku. ✨`, m)
