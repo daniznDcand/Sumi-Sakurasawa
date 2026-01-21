@@ -72,13 +72,6 @@ export async function before(m, { conn, participants, groupMetadata }) {
                 newsletterJid: global.ch.ch1,
                 newsletterName: '💙 HATSUNE MIKU CHANNEL💙',
                 serverMessageId: -1
-              },
-              externalAdReply: {
-                title: '💙 HATSUNE MIKU 💙',
-                body: `La Diva Virtual te da la bienvenida • ${groupSize} miembros`,
-                thumbnailUrl: ppUrl,
-                mediaType: 1,
-                renderLargerThumbnail: true
               }
             }
           }, { quoted })
