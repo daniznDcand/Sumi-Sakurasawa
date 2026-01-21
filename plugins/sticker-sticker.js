@@ -9,14 +9,15 @@ let userId = m.sender
 let packstickers = global.db.data.users[userId] || {}
 let texto1 = packstickers.text1 || global.packsticker
 let texto2 = packstickers.text2 || global.packsticker2
+let stiker = false
 try {
 let q = m.quoted ? m.quoted : m
-let mime = (q.msg || q).mimetype || q.mediaType || ''
+let mime = (q.msg || q).mimetype || ''
 let txt = args.join(' ')
 
 if (/webp|image|video/g.test(mime) && q.download) {
 if (/video/.test(mime) && (q.msg || q).seconds > 16)
-return replyWithChannel(conn, m.chat, '💙 El video no puede durar más de *15 segundos* para crear un sticker virtual perfecto ✨', m,global.miku)
+return conn.reply(m.chat, '💙 El video no puede durar más de *15 segundos* para crear un sticker virtual perfecto ✨', m, global.miku)
 let buffer = await q.download()
 await m.react('🎤')
 
