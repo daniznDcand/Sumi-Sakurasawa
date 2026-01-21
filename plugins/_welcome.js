@@ -1,4 +1,6 @@
 import fetch from 'node-fetch'
+import fs from 'fs'
+import path from 'path'
 
 export async function before(m, { conn, participants, groupMetadata }) {
   try {
@@ -39,28 +41,61 @@ export async function before(m, { conn, participants, groupMetadata }) {
           ppUrl = 'https://server.wallpaperalchemy.com/storage/wallpapers/287/hatsune-miku-4k-anime-wallpaper.png'
         }
 
-        console.log('📤 Enviando welcome con imagen no descargable y reenvío desde canal...')
+        console.log('📤 Enviando welcome con imagen descargada...')
 
-        await conn.sendMessage(jid, {
-          text: text,
-          contextInfo: {
-            mentionedJid: [user],
-            forwardingScore: 1,
-            isForwarded: true,
-            forwardedNewsletterMessageInfo: {
-              newsletterJid: global.ch.ch1,
-              newsletterName: '💙 HATSUNE MIKU CHANNEL💙',
-              serverMessageId: -1
-            },
-            externalAdReply: {
-              title: '💙 HATSUNE MIKU 💙',
-              body: `La Diva Virtual te da la bienvenida • ${groupSize} miembros`,
-              thumbnailUrl: ppUrl,
-              mediaType: 1,
-              renderLargerThumbnail: true
-            }
+        
+        let imagePath = null
+        try {
+          const response = await fetch(ppUrl)
+          const buffer = await response.buffer()
+          const tmpDir = './tmp'
+          if (!fs.existsSync(tmpDir)) {
+            fs.mkdirSync(tmpDir, { recursive: true })
           }
-        }, { quoted })
+          imagePath = path.join(tmpDir, `welcome_${user}_${Date.now()}.jpg`)
+          fs.writeFileSync(imagePath, buffer)
+          console.log('✅ Imagen descargada a:', imagePath)
+        } catch (downloadError) {
+          console.log('❌ Error descargando imagen:', downloadError)
+        }
+
+        
+        if (imagePath && fs.existsSync(imagePath)) {
+          await conn.sendMessage(jid, {
+            image: { url: imagePath },
+            caption: text,
+            contextInfo: {
+              mentionedJid: [user],
+              forwardingScore: 1,
+              isForwarded: true,
+              forwardedNewsletterMessageInfo: {
+                newsletterJid: global.ch.ch1,
+                newsletterName: '💙 HATSUNE MIKU CHANNEL💙',
+                serverMessageId: -1
+              },
+              externalAdReply: {
+                title: '💙 HATSUNE MIKU 💙',
+                body: `La Diva Virtual te da la bienvenida • ${groupSize} miembros`,
+                thumbnailUrl: ppUrl,
+                mediaType: 1,
+                renderLargerThumbnail: true
+              }
+            }
+          }, { quoted })
+          
+          
+          setTimeout(() => {
+            try {
+              fs.unlinkSync(imagePath)
+              console.log('🗑️ Archivo temporal eliminado:', imagePath)
+            } catch (cleanupError) {
+              console.log('❌ Error eliminando archivo temporal:', cleanupError)
+            }
+          }, 5000)
+        } else {
+          
+          await conn.reply(jid, text, quoted, { mentions: [user] })
+        }
 
       } catch (err) {
         console.log('sendSingleWelcome error:', err)
