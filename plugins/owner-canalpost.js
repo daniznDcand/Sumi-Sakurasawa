@@ -54,7 +54,28 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
           return conn.reply(m.chat, `${global.emoji} ❌ *No se pudo descargar el audio o el archivo está vacío. Por favor, intenta con otro archivo.*`, m, global.miku)
         }
         
+        
+        const tempDir = './tmp'
+        if (!fs.existsSync(tempDir)) {
+          fs.mkdirSync(tempDir, { recursive: true })
+        }
+        const tempFileName = `temp_audio_${Date.now()}.mp3`
+        const tempFilePath = path.join(tempDir, tempFileName)
+        fs.writeFileSync(tempFilePath, buffer)
+        
+        
         if (buffer && buffer.length > 0) {
+          
+          const audioHeader = buffer.slice(0, 12)
+          const isValidFormat = audioHeader.toString('hex').startsWith('49443670') || 
+                                 audioHeader.toString('hex').startsWith('6674719D') || 
+                                 audioHeader.toString('hex').startsWith('41424630') || 
+                                 audioHeader.toString('hex').startsWith('4D002D6F')
+          
+          if (!isValidFormat) {
+            return conn.reply(m.chat, `${global.emoji} ❌ *Formato de audio no válido. Por favor, envía un archivo MP3, M4A o AAC válido.*`, m, global.miku)
+          }
+          
           
           const audioSize = buffer.length
           const maxAudioSize = 16 * 1024 * 1024 
@@ -64,27 +85,16 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
           }
           
           
-          const audioHeader = buffer.slice(0, 12)
-          const isValidFormat = audioHeader.toString('hex').startsWith('49443670') || 
-                                   audioHeader.toString('hex').startsWith('6674719D') || 
-                                   audioHeader.toString('hex').startsWith('41424630') || 
-                                   audioHeader.toString('hex').startsWith('4D002D6F')
-          
-          if (!isValidFormat) {
-            return conn.reply(m.chat, `${global.emoji} ❌ *Formato de audio no válido. Por favor, envía un archivo MP3, M4A o AAC válido.*`, m, global.miku)
-          }
-          
-          
           if (mime.includes('audio/mpeg')) {
             messageContent = {
-              audio: buffer,
+              audio: fs.readFileSync(tempFilePath),
               mimetype: 'audio/mp4',
               ptt: true,
               caption: texto || `💙 *${channelName} - Audio de Voz Oficial* 💙\n\n📅 *Fecha:* ${new Date().toLocaleString('es-MX')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}`
             }
           } else {
             messageContent = {
-              audio: buffer,
+              audio: fs.readFileSync(tempFilePath),
               mimetype: 'audio/mpeg',
               caption: texto || `💙 *${channelName} - Audio Oficial* 💙\n\n📅 *Fecha:* ${new Date().toLocaleString('es-MX')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}`
             }
@@ -95,6 +105,16 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
       } catch (audioError) {
         console.error('Error procesando audio:', audioError)
         return conn.reply(m.chat, `${global.emoji} ❌ *Error al procesar el audio. Por favor, intenta con otro archivo.*`, m, global.miku)
+      } finally {
+        
+        if (fs.existsSync(tempFilePath)) {
+          try {
+            fs.unlinkSync(tempFilePath)
+            console.log(`Archivo temporal eliminado: ${tempFileName}`)
+          } catch (cleanupError) {
+            console.error('Error eliminando archivo temporal:', cleanupError)
+          }
+        }
       }
     } else {
       messageContent = {
