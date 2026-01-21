@@ -56,9 +56,27 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         const apiUrl = `https://api.rule34.xxx/index.php?page=dapi&s=post&q=index&tags=${encodeURIComponent(text)}&limit=20&json=1`
         
         const response = await fetch(apiUrl)
-        const data = await response.json()
+        const contentType = response.headers.get('content-type')
         
-        if (!data || data.length === 0) {
+        let data
+        if (contentType && contentType.includes('application/json')) {
+            data = await response.json()
+        } else {
+           
+            const text = await response.text()
+            return m.reply('❌ Error en el formato de respuesta de la API. Intenta más tarde.')
+        }
+        
+        if (!data || (Array.isArray(data) && data.length === 0)) {
+            return m.reply('❌ No se encontraron resultados para ese tag.')
+        }
+        
+        
+        if (!Array.isArray(data)) {
+            data = data.posts || data.data || []
+        }
+        
+        if (!Array.isArray(data) || data.length === 0) {
             return m.reply('❌ No se encontraron resultados para ese tag.')
         }
         
