@@ -49,8 +49,32 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
       try {
         let buffer = await quoted.download()
         
+        
+        if (!buffer || buffer.length === 0) {
+          return conn.reply(m.chat, `${global.emoji} ❌ *No se pudo descargar el audio o el archivo está vacío. Por favor, intenta con otro archivo.*`, m, global.miku)
+        }
+        
         if (buffer && buffer.length > 0) {
-         
+          
+          const audioSize = buffer.length
+          const maxAudioSize = 16 * 1024 * 1024 
+          
+          if (audioSize > maxAudioSize) {
+            return conn.reply(m.chat, `${global.emoji} ❌ *El audio es muy grande (máximo 16MB). Por favor, envía un audio más corto.*`, m, global.miku)
+          }
+          
+          
+          const audioHeader = buffer.slice(0, 12)
+          const isValidFormat = audioHeader.toString('hex').startsWith('49443670') || 
+                                   audioHeader.toString('hex').startsWith('6674719D') || 
+                                   audioHeader.toString('hex').startsWith('41424630') || 
+                                   audioHeader.toString('hex').startsWith('4D002D6F')
+          
+          if (!isValidFormat) {
+            return conn.reply(m.chat, `${global.emoji} ❌ *Formato de audio no válido. Por favor, envía un archivo MP3, M4A o AAC válido.*`, m, global.miku)
+          }
+          
+          
           if (mime.includes('audio/mpeg')) {
             messageContent = {
               audio: buffer,
