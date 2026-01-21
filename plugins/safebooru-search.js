@@ -47,18 +47,29 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
                 caption: caption
             }, { quoted: m })
         } else {
-           
-            const message = {
+            
+            await conn.sendMessage(m.chat, {
                 image: imageBuffers[0],
-                caption: caption
+                caption: caption,
+                jpegThumbnail: imageBuffers[1] || imageBuffers[0],
+                contextInfo: {
+                    externalAdReply: {
+                        title: 'Safebooru Gallery',
+                        body: `${imageBuffers.length} imágenes`,
+                        thumbnailUrl: 'https://safebooru.org/images/1.jpg',
+                        mediaType: 1,
+                        renderLargerThumbnail: true
+                    }
+                }
+            }, { quoted: m })
+            
+            
+            for (let i = 1; i < Math.min(imageBuffers.length, 5); i++) {
+                await conn.sendMessage(m.chat, {
+                    image: imageBuffers[i],
+                    caption: i === 1 ? caption : ''
+                }, { quoted: m })
             }
-            
-            
-            for (let i = 1; i < imageBuffers.length; i++) {
-                message[`image${i + 1}`] = imageBuffers[i]
-            }
-            
-            await conn.sendMessage(m.chat, message, { quoted: m })
         }
         
         await m.react('✅')
