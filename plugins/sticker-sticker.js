@@ -26,9 +26,9 @@ stiker = await sticker(buffer, false, marca[0], marca[1])
 let buffer = await sticker(false, args[0], texto1, texto2)
 stiker = buffer
 } else {
-return replyWithChannel(conn, m.chat, '💙 Por favor, envía una *imagen* o *video* para crear un hermoso sticker virtual ✨', m,global.miku)
+return conn.reply(m.chat, '💙 Por favor, envía una *imagen* o *video* para crear un hermoso sticker virtual ✨', m, global.miku)
 }} catch (e) {
-await replyWithChannel(conn, m.chat, '💫 ¡Gomen! Ocurrió un error en el escenario virtual: ' + e.message + ' ✨', m,global.miku)
+await conn.reply(m.chat, '💫 ¡Gomen! Ocurrió un error en el escenario virtual: ' + e.message + ' ✨', m, global.miku)
 await m.react('🎵')
 } finally {
 if (stiker) {
