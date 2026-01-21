@@ -104,7 +104,8 @@ global.miku = {
     forwardedNewsletterMessageInfo: { 
       newsletterJid: "120363315369913363@newsletter", 
       serverMessageId: 100, 
-      newsletterName: "💙 HATSUNE MIKU CHANNEL💙"
+      newsletterName: "💙 HATSUNE MIKU CHANNEL💙",
+      thumbnailUrl: global.banner || 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg'
     }
   }
 }
