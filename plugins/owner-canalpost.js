@@ -19,6 +19,9 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
     let mime = (quoted.msg || quoted).mimetype || quoted.mediaType || ''
     let texto = args.join(' ')
     
+    
+    const isValidAudio = mime && (mime.includes('audio') || mime.includes('mpeg')) && quoted && quoted.download
+    
     if (!quoted && !texto) {
       return conn.reply(m.chat, `${global.emoji} 💙 *Uso del comando*\n\n${usedPrefix}${command} [texto]\n${usedPrefix}${command} [texto] (responde a imagen/video)\n\n📝 *Ejemplos:*\n• ${usedPrefix}${command} ¡Hola a todos! 💙\n• ${usedPrefix}${command} Nueva actualización disponible (responde a imagen)\n• ${usedPrefix}${command} Video del día (responde a video)\n\n📺 *Canal destino:* ${channelName}`, m, global.miku)
     }
@@ -27,7 +30,6 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
     conn.reply(m.chat, `${global.emoji} 📤 *Enviando mensaje al canal...*\n\n📺 *Canal:* ${channelName}\n🎯 *ID:* ${channelId}`, m, global.miku)
     
     let messageContent = {}
-    
     
     if (quoted && (mime.includes('image') || mime.includes('video'))) {
       let buffer = await quoted.download()
@@ -43,28 +45,36 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
           caption: texto || `💙 *${channelName} - Video Oficial* 💙\n\n📅 *Fecha:* ${new Date().toLocaleString('es-MX')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}`
         }
       }
-    } else if (quoted && mime.includes('audio')) {
-      let buffer = await quoted.download()
-      
-      if (mime.includes('audio/mpeg')) {
-        messageContent = {
-          audio: buffer,
-          mimetype: 'audio/mp4',
-          ptt: true,
-          caption: texto || `💙 *${channelName} - Audio de Voz Oficial* 💙\n\n📅 *Fecha:* ${new Date().toLocaleString('es-MX')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}`
+    } else if (quoted && isValidAudio) {
+      try {
+        let buffer = await quoted.download()
+        
+        if (buffer && buffer.length > 0) {
+         
+          if (mime.includes('audio/mpeg')) {
+            messageContent = {
+              audio: buffer,
+              mimetype: 'audio/mp4',
+              ptt: true,
+              caption: texto || `💙 *${channelName} - Audio de Voz Oficial* 💙\n\n📅 *Fecha:* ${new Date().toLocaleString('es-MX')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}`
+            }
+          } else {
+            messageContent = {
+              audio: buffer,
+              mimetype: 'audio/mpeg',
+              caption: texto || `💙 *${channelName} - Audio Oficial* 💙\n\n📅 *Fecha:* ${new Date().toLocaleString('es-MX')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}`
+            }
+          }
+        } else {
+          return conn.reply(m.chat, `${global.emoji} ❌ *El archivo de audio no es válido o está corrupto. Por favor, envía un archivo de audio MP3 válido.*`, m, global.miku)
         }
-      } else {
-        messageContent = {
-          audio: buffer,
-          mimetype: 'audio/mpeg',
-          caption: texto || `💙 *${channelName} - Audio Oficial* 💙\n\n📅 *Fecha:* ${new Date().toLocaleString('es-MX')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}`
-        }
+      } catch (audioError) {
+        console.error('Error procesando audio:', audioError)
+        return conn.reply(m.chat, `${global.emoji} ❌ *Error al procesar el audio. Por favor, intenta con otro archivo.*`, m, global.miku)
       }
-    } 
-    
-    else {
+    } else {
       messageContent = {
-        text: `💙 *${channelName} - Mensaje Oficial* 💙\n\n📝 *Mensaje:*\n${texto}\n\n📅 *Fecha:* ${new Date().toLocaleString('es-MX')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}\n\n━━━━━━━━━━━━━━━━━━━━\n🌱 *Sigue nuestro canal para más contenido!*\n\n📺 *Canal:* ${channelName}`
+        text: `💙 *${channelName} - Mensaje Oficial* 💙\n\n📝 *Mensaje:*\n${texto}\n\n📅 *Fecha:* ${new Date().toLocaleString('es-MX')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}\n\n━━━━━━━━━━━━━━━━━━\n🌱 *Sigue nuestro canal para más contenido!*\n\n📺 *Canal:* ${channelName}`
       }
     }
     
