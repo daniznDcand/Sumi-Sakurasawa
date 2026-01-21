@@ -55,14 +55,15 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
         
         const maxAudioSize = 16 * 1024 * 1024
         if (buffer.length > maxAudioSize) {
-          return conn.reply(m.chat, `${global.emoji} ❌ *El audio es muy grande (máximo 16MB). Por favor, envía un audio más corto.*`, m, global.miku)
+          return conn.reply(m.chat, `${global.emoji} ❌ *El audio es muy grande (máximo 16MB). Por favor, envía un audio más corto para que sea compatible como nota de voz.*`, m, global.miku)
         }
         
+       
         messageContent = {
           audio: buffer,
-          mimetype: mime.includes('audio/mp3') ? 'audio/mp4' : 'audio/mpeg',
-          ptt: mime.includes('audio/ogg; codecs=opus'),
-          caption: texto || `💙 *${channelName} - ${mime.includes('audio/ogg; codecs=opus') ? 'Mensaje de Voz' : 'Audio'} Oficial* 💙\n\n📅 *Fecha:* ${new Date().toLocaleString('es-ES')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}`
+          mimetype: 'audio/ogg; codecs=opus',
+          ptt: true,
+          caption: texto || `💙 *${channelName} - Mensaje de Voz* 💙\n\n📅 *Fecha:* ${new Date().toLocaleString('es-ES')}\n� *Enviado por:* @${m.sender.split('@')[0]}`
         }
         
       } catch (audioError) {
@@ -71,9 +72,9 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
           `${global.emoji} ❌ *Error al procesar el audio.*\n\n` +
           `📝 *Detalles:* ${audioError.message}\n` +
           `💡 *Sugerencias:*\n` +
-          `• Verifica que el audio no esté dañado\n` +
+          `• Verifica que sea un archivo de audio válido\n` +
           `• Intenta con un archivo diferente\n` +
-          `• Asegúrate de que el audio no pase de 16MB`, 
+          `• El audio no debe superar los 16MB`,
           m, global.miku
         )
       }
