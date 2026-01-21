@@ -111,8 +111,8 @@ export async function before(m, { conn, participants, groupMetadata }) {
         const mentionTag = '@' + user.replace(/@.+/, '')
         
         try {
-          const userObj = await conn.getUser(user)
-          const userName = userObj?.name || userObj?.notify || mentionTag
+          const userObj = global.db.data.users[user]
+          const userName = userObj?.name || mentionTag
 
           const welcomeText = `💙*HATSUNE MIKU*💙
 
@@ -158,8 +158,8 @@ export async function before(m, { conn, participants, groupMetadata }) {
         const mentionTag = '@' + user.replace(/@.+/, '')
         
         try {
-          const userObj = await conn.getUser(user)
-          const userName = userObj?.name || userObj?.notify || mentionTag
+          const userObj = global.db.data.users[user]
+          const userName = userObj?.name || mentionTag
 
           const byeText = `💙*HATSUNE MIKU*💙
 
