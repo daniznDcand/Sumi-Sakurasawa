@@ -68,9 +68,9 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
           
           const audioHeader = buffer.slice(0, 12)
           const isValidFormat = audioHeader.toString('hex').startsWith('49443670') || 
-                                 audioHeader.toString('hex').startsWith('6674719D') || 
-                                 audioHeader.toString('hex').startsWith('41424630') || 
-                                 audioHeader.toString('hex').startsWith('4D002D6F')
+                                   audioHeader.toString('hex').startsWith('6674719D') || 
+                                   audioHeader.toString('hex').startsWith('41424630') || 
+                                   audioHeader.toString('hex').startsWith('4D002D6F')
           
           if (!isValidFormat) {
             return conn.reply(m.chat, `${global.emoji} ❌ *Formato de audio no válido. Por favor, envía un archivo MP3, M4A o AAC válido.*`, m, global.miku)
