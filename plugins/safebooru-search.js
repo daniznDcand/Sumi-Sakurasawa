@@ -18,34 +18,48 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         }
         
         
+        
         const images = data.slice(0, 3)
-        let sent = 0
+        const imageBuffers = []
         
         for (const post of images) {
             try {
                 const imageUrl = `https://safebooru.org/images/${post.directory}/${post.image}`
-                
-                
                 const imgResponse = await fetch(imageUrl)
                 const buffer = await imgResponse.buffer()
-                
-                
-                const caption = `🎌 *Safebooru Search*\n\n📛 *Tag:* ${text}\n👁️ *ID:* ${post.id}\n📊 *Score:* ${post.score || 0}\n🎨 *Artist:* ${post.author || 'Unknown'}\n\n💙 *Hatsune Miku Bot*`
-                
-                await conn.sendMessage(m.chat, {
-                    image: buffer,
-                    caption: caption
-                }, { quoted: m })
-                
-                sent++
-                await new Promise(resolve => setTimeout(resolve, 1000))
+                imageBuffers.push(buffer)
             } catch (imgError) {
-                console.log('Error enviando imagen:', imgError)
+                console.log('Error descargando imagen:', imgError)
             }
         }
         
-        if (sent === 0) {
-            return m.reply('❌ No se pudieron enviar las imágenes.')
+        if (imageBuffers.length === 0) {
+            return m.reply('❌ No se pudieron descargar las imágenes.')
+        }
+        
+        
+        const caption = `🎌 *Safebooru Search*\n\n📛 *Tag:* ${text}\n🔭 *Resultados:* ${imageBuffers.length} imágenes\n\n💙 *Hatsune Miku Bot*`
+        
+        if (imageBuffers.length === 1) {
+            
+            await conn.sendMessage(m.chat, {
+                image: imageBuffers[0],
+                caption: caption
+            }, { quoted: m })
+        } else {
+            
+            for (let i = 0; i < imageBuffers.length; i++) {
+                const imgCaption = i === 0 ? caption : `🎌 *Safebooru* - Imagen ${i + 1}/${imageBuffers.length}`
+                
+                await conn.sendMessage(m.chat, {
+                    image: imageBuffers[i],
+                    caption: imgCaption
+                }, { quoted: i === 0 ? m : null })
+                
+                if (i < imageBuffers.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 500))
+                }
+            }
         }
         
         await m.react('✅')
