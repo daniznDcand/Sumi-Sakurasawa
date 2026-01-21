@@ -43,6 +43,23 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
           caption: texto || `💙 *${channelName} - Video Oficial* 💙\n\n📅 *Fecha:* ${new Date().toLocaleString('es-MX')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}`
         }
       }
+    } else if (quoted && mime.includes('audio')) {
+      let buffer = await quoted.download()
+      
+      if (mime.includes('audio/mpeg')) {
+        messageContent = {
+          audio: buffer,
+          mimetype: 'audio/mp4',
+          ptt: true,
+          caption: texto || `💙 *${channelName} - Audio de Voz Oficial* 💙\n\n📅 *Fecha:* ${new Date().toLocaleString('es-MX')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}`
+        }
+      } else {
+        messageContent = {
+          audio: buffer,
+          mimetype: 'audio/mpeg',
+          caption: texto || `💙 *${channelName} - Audio Oficial* 💙\n\n📅 *Fecha:* ${new Date().toLocaleString('es-MX')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}`
+        }
+      }
     } 
     
     else {
