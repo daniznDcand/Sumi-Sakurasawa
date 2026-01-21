@@ -104,8 +104,16 @@ global.miku = {
     forwardedNewsletterMessageInfo: { 
       newsletterJid: "120363315369913363@newsletter", 
       serverMessageId: 100, 
-      newsletterName: "💙 HATSUNE MIKU CHANNEL💙",
-      thumbnailUrl: global.banner || 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg'
+      newsletterName: "💙 HATSUNE MIKU CHANNEL💙"
+    },
+    externalAdReply: {
+      mediaUrl: null,
+      description: '🎵 Hatsune Miku, la Diva Virtual del Futuro 🎵',
+      previewType: "PHOTO",
+      thumbnailUrl: global.banner || 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg',
+      sourceUrl: global.redes || 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o',
+      mediaType: 1,
+      renderLargerThumbnail: false
     }
   }
 }
