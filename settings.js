@@ -102,7 +102,7 @@ global.miku = {
   contextInfo: { 
     isForwarded: true, 
     forwardedNewsletterMessageInfo: { 
-      newsletterJid: "120363350523130615@newsletter", 
+      newsletterJid: "120363315369913363@newsletter", 
       serverMessageId: 100, 
       newsletterName: "💙 HATSUNE MIKU CHANNEL💙"
     }
