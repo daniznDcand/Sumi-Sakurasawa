@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename)
 
 let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   if (!isOwner) {
-    return conn.reply(m.chat, `${global.emoji} ❌ *Este comando solo puede ser usado por el owner del bot.*`, m)
+    return conn.reply(m.chat, `${global.emoji} ❌ *Este comando solo puede ser usado por el owner del bot.*`, m, global.miku)
   }
 
  
@@ -20,11 +20,11 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
     let texto = args.join(' ')
     
     if (!quoted && !texto) {
-      return conn.reply(m.chat, `${global.emoji} 💙 *Uso del comando*\n\n${usedPrefix}${command} [texto]\n${usedPrefix}${command} [texto] (responde a imagen/video)\n\n📝 *Ejemplos:*\n• ${usedPrefix}${command} ¡Hola a todos! 💙\n• ${usedPrefix}${command} Nueva actualización disponible (responde a imagen)\n• ${usedPrefix}${command} Video del día (responde a video)\n\n📺 *Canal destino:* ${channelName}`, m)
+      return conn.reply(m.chat, `${global.emoji} 💙 *Uso del comando*\n\n${usedPrefix}${command} [texto]\n${usedPrefix}${command} [texto] (responde a imagen/video)\n\n📝 *Ejemplos:*\n• ${usedPrefix}${command} ¡Hola a todos! 💙\n• ${usedPrefix}${command} Nueva actualización disponible (responde a imagen)\n• ${usedPrefix}${command} Video del día (responde a video)\n\n📺 *Canal destino:* ${channelName}`, m, global.miku)
     }
     
     await m.react('📤')
-    conn.reply(m.chat, `${global.emoji} 📤 *Enviando mensaje al canal...*\n\n📺 *Canal:* ${channelName}\n🎯 *ID:* ${channelId}`, m)
+    conn.reply(m.chat, `${global.emoji} 📤 *Enviando mensaje al canal...*\n\n📺 *Canal:* ${channelName}\n🎯 *ID:* ${channelId}`, m, global.miku)
     
     let messageContent = {}
     
@@ -86,9 +86,9 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
               image: messageContent.image, 
               caption: messageContent.caption 
             })
-          } else if (messageContent.video) {
+          } else if (messageContent.audio) {
             result = await conn.sendMessage(channelId, { 
-              video: messageContent.video, 
+              audio: messageContent.audio, 
               caption: messageContent.caption 
             })
           } else {
@@ -111,7 +111,7 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
       
       if (result) {
         await m.react('✅')
-        conn.reply(m.chat, `${global.emoji} ✅ *Mensaje enviado exitosamente al canal*\n\n📊 *Tipo:* ${mime.includes('image') ? 'Imagen' : mime.includes('video') ? 'Video' : 'Texto'}\n📝 *Contenido:* ${texto ? texto.substring(0, 30) + '...' : 'Sin texto'}\n📺 *Canal:* ${channelName}\n🎯 *ID:* ${channelId}\n🆔 *Message ID:* ${result.key?.id || 'N/A'}`, m)
+        conn.reply(m.chat, `${global.emoji} ✅ *Mensaje enviado exitosamente al canal*\n\n📊 *Tipo:* ${mime.includes('image') ? 'Imagen' : mime.includes('video') ? 'Video' : 'Texto'}\n📝 *Contenido:* ${texto ? texto.substring(0, 30) + '...' : 'Sin texto'}\n📺 *Canal:* ${channelName}\n🎯 *ID:* ${channelId}\n🆔 *Message ID:* ${result.key?.id || 'N/A'}`, m, global.miku)
       } else {
         throw new Error('No se recibió respuesta del canal')
       }
@@ -119,7 +119,7 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
     } catch (error) {
       console.error('Error enviando al canal:', error)
       await m.react('❌')
-      conn.reply(m.chat, `${global.emoji} ❌ *Error al enviar mensaje al canal*\n\n📝 *Error:* ${error.message}\n💡 *Posibles soluciones:*\n• Verifica que el bot sea admin del canal\n• Verifica que el ID del canal sea correcto\n• Intenta reiniciar el bot\n\n📺 *Canal:* ${channelName}\n🎯 *ID:* ${channelId}`, m)
+      conn.reply(m.chat, `${global.emoji} ❌ *Error al enviar mensaje al canal*\n\n📝 *Error:* ${error.message}\n💡 *Posibles soluciones:*\n• Verifica que el bot sea admin del canal\n• Verifica que el ID del canal sea correcto\n• Intenta reiniciar el bot\n\n📺 *Canal:* ${channelName}\n🎯 *ID:* ${channelId}`, m, global.miku)
     }
     
   } catch (error) {
