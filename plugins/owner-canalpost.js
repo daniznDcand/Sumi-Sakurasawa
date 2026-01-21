@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename)
 
 let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
   if (!isOwner) {
-    return conn.reply(m.chat, `${global.emoji} ❌ *Este comando solo puede ser usado por el owner del bot.*`, m, global.miku)
+    return conn.reply(m.chat, `${global.emoji} ❌ *Este comando solo puede ser usado por el dueño del bot.*`, m, global.miku)
   }
 
  
@@ -53,75 +53,33 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
           return conn.reply(m.chat, `${global.emoji} ❌ *No se pudo descargar el audio o el archivo está vacío. Por favor, intenta con otro archivo.*`, m, global.miku)
         }
         
-        
-        const tempDir = './temp_canalpost'
-        if (!fs.existsSync(tempDir)) {
-          fs.mkdirSync(tempDir, { recursive: true })
-        }
-        const tempFileName = `temp_audio_${Date.now()}.mp3`
-        const tempFilePath = path.join(tempDir, tempFileName)
-        
-        
-        try {
-          fs.accessSync(tempFilePath, fs.constants.F_OK)
-          console.log(`✅ Audio guardado temporalmente: ${tempFileName}`)
-        } catch (validateError) {
-          console.error('Error validando archivo temporal:', validateError)
-          
-          console.log('⚠️ Usando buffer original debido a error de validación')
-        }
-        
-        
-        const audioHeader = buffer.slice(0, 12)
-        const isValidFormat = audioHeader.toString('hex').startsWith('49443670') || 
-                                   audioHeader.toString('hex').startsWith('6674719D') || 
-                                   audioHeader.toString('hex').startsWith('41424630') || 
-                                   audioHeader.toString('hex').startsWith('4D002D6F')
-          
-        if (!isValidFormat) {
-          return conn.reply(m.chat, `${global.emoji} ❌ *Formato de audio no válido. Por favor, envía un archivo MP3, M4A o AAC válido.*`, m, global.miku)
-        }
-          
-        
-        const audioSize = buffer.length
         const maxAudioSize = 16 * 1024 * 1024
-          
-        if (audioSize > maxAudioSize) {
+        if (buffer.length > maxAudioSize) {
           return conn.reply(m.chat, `${global.emoji} ❌ *El audio es muy grande (máximo 16MB). Por favor, envía un audio más corto.*`, m, global.miku)
         }
-          
         
-        if (mime.includes('audio/mpeg')) {
-          messageContent = {
-            audio: fs.readFileSync(tempFilePath),
-            mimetype: 'audio/mp4',
-            ptt: true,
-            caption: texto || `💙 *${channelName} - Audio de Voz Oficial* 💙\n\n📅 *Fecha:* ${new Date().toLocaleString('es-MX')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}`
-          }
-        } else {
-          messageContent = {
-            audio: fs.readFileSync(tempFilePath),
-            mimetype: 'audio/mpeg',
-            caption: texto || `💙 *${channelName} - Audio Oficial* 💙\n\n📅 *Fecha:* ${new Date().toLocaleString('es-MX')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}`
-          }
+        messageContent = {
+          audio: buffer,
+          mimetype: mime.includes('audio/mp3') ? 'audio/mp4' : 'audio/mpeg',
+          ptt: mime.includes('audio/ogg; codecs=opus'),
+          caption: texto || `💙 *${channelName} - ${mime.includes('audio/ogg; codecs=opus') ? 'Mensaje de Voz' : 'Audio'} Oficial* 💙\n\n📅 *Fecha:* ${new Date().toLocaleString('es-ES')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}`
         }
+        
       } catch (audioError) {
         console.error('Error procesando audio:', audioError)
-        return conn.reply(m.chat, `${global.emoji} ❌ *Error al procesar el audio. Por favor, intenta con otro archivo.*`, m, global.miku)
-      } finally {
-       
-        if (fs.existsSync(tempFilePath)) {
-          try {
-            fs.unlinkSync(tempFilePath)
-            console.log(`Archivo temporal eliminado: ${tempFileName}`)
-          } catch (cleanupError) {
-            console.error('Error eliminando archivo temporal:', cleanupError)
-          }
-        }
+        return conn.reply(m.chat, 
+          `${global.emoji} ❌ *Error al procesar el audio.*\n\n` +
+          `📝 *Detalles:* ${audioError.message}\n` +
+          `💡 *Sugerencias:*\n` +
+          `• Verifica que el audio no esté dañado\n` +
+          `• Intenta con un archivo diferente\n` +
+          `• Asegúrate de que el audio no pase de 16MB`, 
+          m, global.miku
+        )
       }
     } else {
       messageContent = {
-        text: `💙 *${channelName} - Mensaje Oficial* 💙\n\n📝 *Mensaje:*\n${texto}\n\n📅 *Fecha:* ${new Date().toLocaleString('es-MX')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}\n\n━━━━━━━━━━━━━━━━━━\n🌱 *Sigue nuestro canal para más contenido!*\n\n📺 *Canal:* ${channelName}`
+        text: `💙 *${channelName} - Mensaje Oficial* 💙\n\n📝 *Mensaje:*\n${texto}\n\n📅 *Fecha:* ${new Date().toLocaleString('es-ES')}\n🎵 *Publicado por:* @${m.sender.split('@')[0]}\n\n━━━━━━━━━━━━━━━━━━\n🌱 *¡Sigue nuestro canal para más contenido!*\n\n📺 *Canal:* ${channelName}`
       }
     }
     
@@ -134,8 +92,7 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
       try {
         result = await conn.sendMessage(channelId, messageContent)
       } catch (e1) {
-        console.log('Método 1 falló, intentando método 2:', e1.message)
-        
+        console.log('Error en método 1, intentando método 2:', e1.message)
         
         try {
           if (messageContent.image) {
@@ -154,8 +111,7 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
             })
           }
         } catch (e2) {
-          console.log('Método 2 falló, intentando método 3:', e2.message)
-          
+          console.log('Error en método 2, intentando método 3:', e2.message)
           
           try {
             const msg = await conn.prepareMessageFromContent(channelId, messageContent, {})
@@ -168,21 +124,21 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
       
       if (result) {
         await m.react('✅')
-        conn.reply(m.chat, `${global.emoji} ✅ *Mensaje enviado exitosamente al canal*\n\n📊 *Tipo:* ${mime.includes('image') ? 'Imagen' : mime.includes('video') ? 'Video' : 'Texto'}\n📝 *Contenido:* ${texto ? texto.substring(0, 30) + '...' : 'Sin texto'}\n📺 *Canal:* ${channelName}\n🎯 *ID:* ${channelId}\n🆔 *Message ID:* ${result.key?.id || 'N/A'}`, m, global.miku)
+        conn.reply(m.chat, `${global.emoji} ✅ *Mensaje enviado correctamente al canal*\n\n📊 *Tipo:* ${mime.includes('image') ? 'Imagen' : mime.includes('video') ? 'Video' : mime.includes('audio') ? 'Audio' : 'Texto'}\n📝 *Contenido:* ${texto ? texto.substring(0, 30) + '...' : 'Sin texto'}\n📺 *Canal:* ${channelName}\n🎯 *ID:* ${channelId}`, m, global.miku)
       } else {
         throw new Error('No se recibió respuesta del canal')
       }
       
     } catch (error) {
-      console.error('Error enviando al canal:', error)
+      console.error('Error al enviar al canal:', error)
       await m.react('❌')
-      conn.reply(m.chat, `${global.emoji} ❌ *Error al enviar mensaje al canal*\n\n📝 *Error:* ${error.message}\n💡 *Posibles soluciones:*\n• Verifica que el bot sea admin del canal\n• Verifica que el ID del canal sea correcto\n• Intenta reiniciar el bot\n\n📺 *Canal:* ${channelName}\n🎯 *ID:* ${channelId}`, m, global.miku)
+      conn.reply(m.chat, `${global.emoji} ❌ *Error al enviar mensaje al canal*\n\n📝 *Error:* ${error.message}\n💡 *Posibles soluciones:*\n• Verifica que el bot sea administrador del canal\n• Comprueba que el ID del canal sea correcto\n• Intenta reiniciar el bot\n\n📺 *Canal:* ${channelName}\n🎯 *ID:* ${channelId}`, m, global.miku)
     }
     
   } catch (error) {
     console.error('Error general:', error)
     await m.react('❌')
-    conn.reply(m.chat, `${global.emoji} ❌ *Ocurrió un error inesperado*\n\n📝 *Error:* ${error.message}`, m)
+    conn.reply(m.chat, `${global.emoji} ❌ *Ocurrió un error inesperado*\n\n📝 *Error:* ${error.message}\n\nPor favor, inténtalo de nuevo más tarde.`, m)
   }
 }
 
