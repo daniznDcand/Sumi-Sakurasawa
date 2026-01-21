@@ -8,7 +8,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         await m.react('⏳')
         
         
-        const apiUrl = `https://safebooru.org/index.php?page=dapi&s=post&q=index&tags=${encodeURIComponent(text)}&limit=10&json=1`
+        const apiUrl = `https://safebooru.org/index.php?page=dapi&s=post&q=index&tags=${encodeURIComponent(text)}&limit=15&json=1`
         
         const response = await fetch(apiUrl)
         const data = await response.json()
@@ -19,7 +19,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         
         
         
-        const images = data.slice(0, 3)
+        const images = data.slice(0, 5)
         const imageBuffers = []
         
         for (const post of images) {
@@ -40,26 +40,25 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         
         const caption = `🎌 *Safebooru Search*\n\n📛 *Tag:* ${text}\n🔭 *Resultados:* ${imageBuffers.length} imágenes\n\n💙 *Hatsune Miku Bot*`
         
+        
         if (imageBuffers.length === 1) {
-            
             await conn.sendMessage(m.chat, {
                 image: imageBuffers[0],
                 caption: caption
             }, { quoted: m })
         } else {
-            
-            for (let i = 0; i < imageBuffers.length; i++) {
-                const imgCaption = i === 0 ? caption : `🎌 *Safebooru* - Imagen ${i + 1}/${imageBuffers.length}`
-                
-                await conn.sendMessage(m.chat, {
-                    image: imageBuffers[i],
-                    caption: imgCaption
-                }, { quoted: i === 0 ? m : null })
-                
-                if (i < imageBuffers.length - 1) {
-                    await new Promise(resolve => setTimeout(resolve, 500))
-                }
+           
+            const message = {
+                image: imageBuffers[0],
+                caption: caption
             }
+            
+            
+            for (let i = 1; i < imageBuffers.length; i++) {
+                message[`image${i + 1}`] = imageBuffers[i]
+            }
+            
+            await conn.sendMessage(m.chat, message, { quoted: m })
         }
         
         await m.react('✅')
