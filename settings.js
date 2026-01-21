@@ -100,11 +100,13 @@ global.correo = 'brauliovh3@gmail.com'
 
 global.rcanal = { 
   contextInfo: { 
-    isForwarded: true, 
-    forwardedNewsletterMessageInfo: { 
+    mentionedJid: null, 
+    forwardingScore: 1,
+    isForwarded: true,
+    forwardedNewsletterMessageInfo: {
       newsletterJid: "120363350523130615@newsletter", 
-      serverMessageId: 100, 
-      newsletterName: "💙🌱 Hatsune – Miku – Bot 🌱💙"
+      serverMessageId: -1, 
+      newsletterName: "💙 HATSUNE MIKU CHANNEL💙"
     },
     externalAdReply: {
       showAdAttribution: true,
