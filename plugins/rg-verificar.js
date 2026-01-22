@@ -4,9 +4,11 @@ import PhoneNumber from 'awesome-phonenumber'
 import { createHash } from 'crypto'  
 import fetch from 'node-fetch'
 
-let Reg = /^(.+)[.|]\s*([0-9]+)$/i
+let Reg = /^[!\/.]?(?:reg(?:ister|istrar)?|verify|verificar)\s+(.+?)(?:\.|\s+)(\d+)$/i
 
-let handler = async function (m, { conn, text, usedPrefix, command }) {
+let handler = async function (m, { conn, text, usedPrefix, command, isPrems }) {
+  
+  if (!m.text.startsWith(usedPrefix) && !m.text.startsWith('!') && !m.text.startsWith('/') && !m.text.startsWith('.')) return
   let user = global.db.data.users[m.sender]
   let name2 = (await conn.getName(m.sender)) || 'MikuFan'
   let channel = 'https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
