@@ -43,7 +43,8 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
                 `${emoji} Ingresa la cantidad de 💸 *${moneda}* que deseas apostar contra *${botname}*\n\n` +
                 '`Ejemplo:`\n' +
                 `> *${usedPrefix + command}* 100`,
-                m
+                m,
+                global.miku
             );
         }
 
