@@ -36,7 +36,7 @@ async function getVideoFromApis(url) {
   
   const apis = [    
     { api: 'AlyaBot Video', endpoint: `https://rest.alyabotpe.xyz/dl/ytmp4?url=${encodeURIComponent(url)}&key=${API_KEY}`, extractor: res => res.status ? (res.data?.dl || res.data?.url || res.data?.download) : null },
-    { api: 'API Causas', endpoint: `https://api-causas.duckdns.org/api/v1/descargas/youtube?url=${encodeURIComponent(url)}&type=video&apikey=causa-4e1aab5b5e9eb38f`, extractor: res => res.status ? res.data?.download?.url : null }
+    { api: 'API Causas', endpoint: `https://api-causas.duckdns.org/api/v1/descargas/youtube?url=${encodeURIComponent(url)}&type=video&apikey=causa-adc2c572476abdd8`, extractor: res => res.status ? res.data?.download?.url : null }
   ].filter(api => api.endpoint !== null); 
 
   for (const api of apis) {
