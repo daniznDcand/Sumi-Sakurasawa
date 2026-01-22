@@ -1,85 +1,107 @@
-import db from '../lib/database.js'
-import fs from 'fs'
-import PhoneNumber from 'awesome-phonenumber'
-import { createHash } from 'crypto'  
-import fetch from 'node-fetch'
+import db from '../lib/database.js';
+import { createHash } from 'crypto';
 
-let Reg = /^[!\/.]?(?:reg(?:ister|istrar)?|verify|verificar)\s+(.+?)(?:\.|\s+)(\d+)$/i
+const handler = async (m, { conn, text, usedPrefix, command }) => {
+  try {
+    
+    if (!global.db.data.users[m.sender]) {
+      global.db.data.users[m.sender] = {
+        name: '',
+        age: 0,
+        registered: false,
+        coin: 0,
+        exp: 0,
+        joincount: 0
+      };
+    }
+    
+    const user = global.db.data.users[m.sender];
+    
+    
+    if (!text) {
+      return conn.reply(m.chat, 
+        `💙 *FORMATO DE REGISTRO* 💙\n\n` +
+        `Usa: *${usedPrefix + command} nombre.edad*\n` +
+        `Ejemplo: *${usedPrefix + command} miku.18*`,
+        m, global.miku
+      );
+    }
+   
+    if (user.registered) {
+      return conn.reply(m.chat, 
+        `🧧 *¡YA ESTÁS REGISTRADO!*\n\n` +
+        `💙 *Nombre:* ${user.name || 'Sin nombre'}\n` +
+        `🎂 *Edad:* ${user.age} años\n` +
+        `💰 *Monedas:* ${user.coin || 0}\n\n` +
+        `Usa *${usedPrefix}perfil* para ver tu progreso.`,
+        m, global.miku
+      );
+    }
 
-let handler = async function (m, { conn, text, usedPrefix, command, isPrems }) {
-  
-  if (!m.text.startsWith(usedPrefix) && !m.text.startsWith('!') && !m.text.startsWith('/') && !m.text.startsWith('.')) return
-  let user = global.db.data.users[m.sender]
-  let name2 = (await conn.getName(m.sender)) || 'MikuFan'
-  let channel = 'https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
-  let mikuImg = 'https://i.postimg.cc/QCzMhBR1/1757986334220.png'
+    
+    const match = text.match(/^(.+?)[\s.](\d+)$/);
+    if (!match) {
+      return conn.reply(m.chat, 
+        `❌ *Formato incorrecto*\n\n` +
+        `Usa: *${usedPrefix + command} nombre.edad*\n` +
+        `Ejemplo: *${usedPrefix + command} miku.18*`,
+        m, global.miku
+      );
+    }
 
-  if (user.registered === true) {
-    return m.reply(
-      `🌟 *¡YA ESTÁS REGISTRADO EN MIKU BOT!* 🌟\n\n` +
-      `💙 *Nombre:* ${user.name || 'Sin nombre'}\n` +
-      `🎂 *Edad:* ${user.age || 'No especificada'} años\n` +
-      `📅 *Registrado el:* ${new Date(user.regTime).toLocaleDateString()}\n\n` +
-      `🧧 *Consejo:* Si quieres eliminar tu registro, usa:\n*${usedPrefix}unreg*\n\n` +
-      `📢 *Únete a nuestro canal:*\n${channel}`
-    )
+    const [_, name, ageStr] = match;
+    const age = parseInt(ageStr);
+    
+    
+    const nameClean = name.trim();
+    if (nameClean.length < 2) {
+      return conn.reply(m.chat, '❌ El nombre debe tener al menos 2 caracteres.', m, global.miku);
+    }
+    
+    if (nameClean.length > 30) {
+      return conn.reply(m.chat, '❌ El nombre es demasiado largo (máx. 30 caracteres).', m, global.miku);
+    }
+   
+    
+    if (isNaN(age) || age < 10 || age > 100) {
+      return conn.reply(m.chat, '❌ La edad debe ser un número entre 10 y 100 años.', m, global.miku);
+    }
+    
+    
+    user.name = nameClean;
+    user.age = age;
+    user.registered = true;
+    user.regTime = Date.now();
+    user.coin = (user.coin || 0) + 50;
+    user.exp = (user.exp || 0) + 100;
+    
+    
+    await global.db.write();
+    
+    
+    return conn.reply(m.chat, 
+      `🎉 *¡REGISTRO EXITOSO!*\n\n` +
+      `👤 *Nombre:* ${nameClean}\n` +
+      `🎂 *Edad:* ${age} años\n` +
+      `💰 *+50 monedas*\n` +
+      `✨ *+100 XP*\n\n` +
+      `¡Bienvenid@ a la familia Miku! 🎵`,
+      m, global.miku
+    );
+
+  } catch (error) {
+    console.error('Error en el registro:', error);
+    return conn.reply(m.chat, 
+      '❌ *¡Ups!* Ocurrió un error en el registro.\n' +
+      'Por favor, inténtalo de nuevo más tarde.',
+      m, global.miku
+    );
   }
+};
 
-  if (!Reg.test(text)) {
-    return m.reply(
-      `🌸 *📝 REGISTRO MIKU BOT* 🌸\n\n` +
-      `*Formato requerido:*\n` +
-      `*${usedPrefix + command} nombre.edad*\n\n` +
-      `*Ejemplo práctico:*\n` +
-      `*${usedPrefix + command} ${name2}.18*\n\n` +
-      `💡 *Consejo:* Completa tu registro para desbloquear todos los comandos y recibir tu tarjeta Miku personalizada.\n\n` +
-      `📢 *Únete a nuestro canal:*\n${channel}`
-    )
-  }
+handler.help = ['reg'];
+handler.tags = ['rg'];
+handler.command = ['verify', 'verificar', 'reg', 'register', 'registrar'];
+handler.group = true;
 
-  let [_, name, age] = text.match(Reg)
-  if (!name) return m.reply('❌ *Error*: El nombre no puede estar vacío. Por favor, inténtalo de nuevo.')
-  if (!age) return m.reply('❌ *Error*: La edad no puede estar vacía. Por favor, inténtalo de nuevo.')
-  if (name.length >= 30) return m.reply('❌ *Error*: El nombre es demasiado largo. Por favor, usa menos de 30 caracteres.')
-  age = parseInt(age)
-  if (age > 100) return m.reply('❌ *Error*: La edad debe ser un número real. Por favor, ingresa una edad válida.')
-  if (age < 10) return m.reply('❌ *Error*: Debes tener al menos 10 años para usar este bot.')
-
-  user.name = name.trim() + ' ✨'
-  user.age = age
-  user.regTime = +new Date
-  user.registered = true
-  user.coin = (user.coin || 0) + 39
-  user.exp = (user.exp || 0) + 300
-  user.joincount = (user.joincount || 0) + 20
-
-  let sn = createHash('md5').update(m.sender).digest('hex').slice(0, 20)
-
-  let regbot = `💙 *¡REGISTRO EXITOSO!* 🎵\n\n` +
-  `🎤 *¡BIENVENID@ A HATSUNE MIKU BOT!* 💙\n\n` +
-  `👤 *Nombre:* ${name}\n` +
-  `🎂 *Edad:* ${age} años\n` +
-  `🆔 *ID:* ${sn}\n\n` +
-  `✨ *¡Disfruta de tu estadía en el mundo de Hatsune Miku!* ✨\n\n` +
-  `🎁 *Recompensas por registro:*\n` +
-  `🌱 +39 Cebollines\n` +
-  `⭐ +300 XP\n` +
-  `🎟️ +20 tickets\n\n` +
-  `💙 *¡Ahora puedes usar todos los comandos del bot!*`
-
-  await m.react('💙')
-  
-  let mikuRegisterImage = 'https://i.pinimg.com/736x/76/ec/16/76ec1693791a33594059d478ae9206f7.jpg' 
-  
-  await conn.sendFile(m.chat, mikuRegisterImage, 'miku_register.jpg', regbot, m, false, {
-    mentions: [m.sender]
-  })
-}
-
-handler.help = ['reg']
-handler.tags = ['rg']
-handler.command = ['verify', 'verificar', 'reg', 'register', 'registrar']
-
-export default handler
-
-
+export default handler;

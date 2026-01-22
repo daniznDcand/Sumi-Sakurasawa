@@ -8,7 +8,7 @@ let senderName = conn.getName(senderId)
 let tiempo = 5 * 60
 if (cooldowns[m.sender] && Date.now() - cooldowns[m.sender] < tiempo * 1000) {
 let tiempo2 = segundosAHMS(Math.ceil((cooldowns[m.sender] + tiempo * 1000 - Date.now()) / 1000))
-m.reply(`${emoji3} Debes esperar *${tiempo2}* para usar *#slut* de nuevo.`)
+m.reply(`${emoji3} Debes esperar *${tiempo2}* para usar *#slut* de nuevo.`, null, global.miku)
 return
 }
 cooldowns[m.sender] = Date.now()
@@ -34,7 +34,7 @@ break
 case 1:
 let amountSubtracted = Math.min(Math.floor(Math.random() * (senderCoin - minAmount + 1)) + minAmount, maxAmount)
 users[senderId].coin -= amountSubtracted
-conn.reply(m.chat, `${emoji} No fuiste cuidadoso y le rompiste la verga a tu cliente, se te restaron *-${amountSubtracted} ${moneda}* a ${senderName}.`, m)
+conn.reply(m.chat, `${emoji} No fuiste cuidadoso y le rompiste la verga a tu cliente, se te restaron *-${amountSubtracted} ${moneda}* a ${senderName}.`, m, global.miku)
 break
 case 2:
 let smallAmountTaken = Math.min(Math.floor(Math.random() * (randomUserCoin / 2 - minAmount + 1)) + minAmount, maxAmount)

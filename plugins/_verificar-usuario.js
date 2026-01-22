@@ -17,7 +17,8 @@ export async function before(m, { conn, isBotAdmin, isAdmin, usedPrefix }) {
   if (esComandoPermitido) return true
 
   
-  if (!user || !user.registered) {
+ 
+  if (!user || user.registered !== true) {
     const userId = m.sender
     const now = Date.now()
     const lastMessage = restrictionCooldowns.get(userId) || 0
@@ -29,32 +30,14 @@ export async function before(m, { conn, isBotAdmin, isAdmin, usedPrefix }) {
 
     restrictionCooldowns.set(userId, now)
 
-    const friendlyMsg = `╭─「 🎵 *HATSUNE MIKU BOT* 🎵 」─╮
-┃ 💫 *¡Hola! Para usar este comando necesitas registrarte* 💫
-┃╰─────────────────────────────────────────╯
+    const friendlyMsg = `🎵 *REGISTRO MIKU BOT* 🎵\n\n` +
+      `✨ *¡Hola!* Usa este comando para registrarte:\n` +
+      `*${usedPrefix}reg nombre.edad*\n` +
+      `Ejemplo: *${usedPrefix}reg ${m.name || 'MikuFan'}.18*\n\n` +
+      `💡 *Beneficios:* Monedas, XP y más comandos\n` +
+      `📢 Canal: whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o`
 
-🌸 *📝 REGISTRO GRATIS* 🌸
-
-🎯 *Usa este comando para registrarte:*
-${usedPrefix}reg nombre.edad
-
-📝 *Ejemplo práctico:*
-${usedPrefix}reg ${m.name || 'MikuFan'}.18
-
-🎁 *¿Qué obtienes al registrarte?*
-💰 • Monedas para comprar en la tienda
-⭐ • Experiencia y niveles
-🎟️ • Tickets exclusivos
-🎤 • Acceso a todos los comandos
-
-🌱 *¡Únete a la familia Miku!*
-📢 Canal oficial: https://whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o
-
-╰─「 💙 *¡Te esperamos!* 💙 」─╯
-
-💫 *Escribe ${usedPrefix}reg para comenzar tu aventura* 💫`
-
-    await m.reply(friendlyMsg)
+    await m.reply(friendlyMsg, null, global.miku)
     return false
   }
 

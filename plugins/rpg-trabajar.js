@@ -3,13 +3,11 @@ let cooldowns = {}
 
 async function replyWithChannel(conn, chat, text, quoted = null) {
   try {
-    const buttons = []
-    const urls = [['🎵 Canal Oficial 💙', 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o']]
-    
-    await conn.sendNCarousel(chat, text, '💙 Hatsune Miku Bot', null, buttons, null, urls, null, quoted);
+   
+    return await conn.reply(chat, text, quoted, global.miku);
   } catch (error) {
-    console.log('Error con botones, usando reply simple:', error.message);
-    conn.reply(chat, `${text}\n\n🎵 *Canal Oficial:* https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o`, quoted);
+    console.error('Error al enviar mensaje:', error.message);
+    return conn.reply(chat, text, quoted, global.miku);
   }
 }
 
@@ -18,12 +16,12 @@ let user = global.db.data.users[m.sender]
 let tiempo = 5 * 60
 if (cooldowns[m.sender] && Date.now() - cooldowns[m.sender] < tiempo * 1000) {
 const tiempo2 = segundosAHMS(Math.ceil((cooldowns[m.sender] + tiempo * 1000 - Date.now()) / 1000))
-replyWithChannel(conn, m.chat, `💙 Necesitas descansar tu voz virtual... 💙\n\n✨ Debes esperar *${tiempo2}* para trabajar en el próximo concierto de nuevo ✨`, m)
+conn.reply(m.chat, `💙 Necesitas descansar tu voz virtual... 💙\n\n✨ Debes esperar *${tiempo2}* para trabajar en el próximo concierto de nuevo ✨`, m, global.miku)
 return
 }
 let rsl = Math.floor(Math.random() * 500)
 cooldowns[m.sender] = Date.now()
-await replyWithChannel(conn, m.chat, ` ${pickRandom(trabajo)} *${toNum(rsl)}* ( *${rsl}* ) ${moneda} `, m)
+await conn.reply(m.chat, `${pickRandom(trabajo)} *${toNum(rsl)}* ( *${rsl}* ) ${moneda}`, m, global.miku)
 user.coin += rsl
 }
 
