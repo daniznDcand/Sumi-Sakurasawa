@@ -16,9 +16,8 @@ const handler = async (m, {args, usedPrefix, command}) => {
     await conn.reply(m.chat, result.text, m);
   } catch {
     try {
-    conn.reply(m.chat, wait, m, {
-    contextInfo: { externalAdReply :{ mediaUrl: null, mediaType: 1, showAdAttribution: true }}})
-      const lol = await fetch(`https://api.lolhuman.xyz/api/translate/auto/${lang}?apikey=${lolkeysapi}&text=${text}`);
+    conn.reply(m.chat, wait, m, global.miku);
+    const lol = await fetch(`https://api.lolhuman.xyz/api/translate/auto/${lang}?apikey=${lolkeysapi}&text=${text}`);
       const loll = await lol.json();
       const result2 = loll.result.translated;
       await conn.reply(m.chat, result2, m);

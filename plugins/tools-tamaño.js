@@ -4,13 +4,10 @@ import fetch from 'node-fetch'
 
 async function replyWithChannel(conn, chat, text, quoted = null) {
   try {
-    const buttons = []
-    const urls = [['🎵 Canal Oficial 💙', 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o']]
-    
-    await conn.sendNCarousel(chat, text, '💙 Hatsune Miku Bot', null, buttons, null, urls, null, quoted);
+    return await conn.reply(chat, text, quoted, global.miku);
   } catch (error) {
-    console.log('Error con botones, usando reply simple:', error.message);
-    conn.reply(chat, `${text}\n\n🎵 *Canal Oficial:* https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o`, quoted);
+    console.log('Error al enviar mensaje:', error.message);
+    return conn.reply(chat, text, quoted, global.miku);
   }
 }
 
