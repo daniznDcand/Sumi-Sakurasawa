@@ -1,4 +1,5 @@
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '1'
+import { format } from 'util'
 import './settings.js'
 import './plugins/main-allfake.js'
 import cfonts from 'cfonts'
