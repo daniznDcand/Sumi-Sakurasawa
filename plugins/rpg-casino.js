@@ -4,7 +4,7 @@ import db from '../lib/database.js'
 const emoji = '🎰';
 const emoji2 = '🎲';
 const emoji3 = '⏱️';
-const moneda = global.rpgshop.emoticon('money') || '💵';
+const moneda = (global.rpgshop && global.rpgshop.emoticon) ? global.rpgshop.emoticon('money') : '💵';
 const botname = global.botname || 'Hatsune Miku Bot';
 
 let buatall = 1;

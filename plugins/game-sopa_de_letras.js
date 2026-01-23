@@ -144,7 +144,8 @@ diamante = 32
 }
 global.db.data.users[m.sender].coin += coin
 
-await m.reply(`\`\`\`${emoji} Has ganado ${moneda} ${rpgshop.emoticon('limit')}!!\`\`\`\n\n*Correcto!! la palabra _"${sopaPalabra}"_ Se encontraba en la dirección _${cambioLetra}_ De la fila _${fila}_ Y Columna _${columna}_*`)
+const limitEmoji = (global.rpgshop && global.rpgshop.emoticon) ? global.rpgshop.emoticon('limit') : '✨';
+await m.reply(`\`\`\`${emoji} Has ganado ${moneda} ${limitEmoji}!!\`\`\`\n\n*Correcto!! la palabra _"${sopaPalabra}"_ Se encontraba en la dirección _${cambioLetra}_ De la fila _${fila}_ Y Columna _${columna}_*`)
 fila = null, columna = null, sopaNube = null, sopaPalabra = null, sopaDir = null, userSP = null, cambioLetra = null
 intentos = 0
 return
