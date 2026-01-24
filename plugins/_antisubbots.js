@@ -4,14 +4,14 @@ export async function before(m, { participants, conn }) {
         let chat = global.getChat ? global.getChat(m.chat) : global.db.data.chats[m.chat];
 
          if (!chat || !chat.antiBot2) {
-            return
+            return true
         }
 
 
         let botJid = global.conn.user.jid 
 
        if (botJid === conn.user.jid) {
-           return
+           return true
         } else {
            let isBotPresent = participants.some(p => areJidsSameUser(botJid, p.id))
 

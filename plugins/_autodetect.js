@@ -15,7 +15,7 @@ let pp = await conn.profilePictureUrl(m.chat, 'image').catch(_ => null) || 'http
 
 
 if (!m.messageStubParameters || !Array.isArray(m.messageStubParameters)) {
-  return
+  return true
 }
 
 let nombre, foto, edit, newlink, status, admingp, noadmingp

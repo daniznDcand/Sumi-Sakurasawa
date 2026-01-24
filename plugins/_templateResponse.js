@@ -3,19 +3,19 @@
 const { proto, generateWAMessage, areJidsSameUser, decryptPollVote, } = (await import('@whiskeysockets/baileys')).default;
 export async function all(m, chatUpdate) {
 if (m.isBaileys) {
-return
+return true
 }
 if (!m.message) {
-return
+return true
 }
 
 
 if (m.isMenu) {
-return
+return true
 }
 
 if (!(m.message.buttonsResponseMessage || m.message.templateButtonReplyMessage || m.message.listResponseMessage || m.message.interactiveResponseMessage)) {
-return
+return true
 }
 let id
 if (m.message.buttonsResponseMessage) {
