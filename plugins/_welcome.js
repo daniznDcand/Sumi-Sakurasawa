@@ -15,11 +15,10 @@ export async function before(m, { conn, participants, groupMetadata }) {
     const chat = global.db.data.chats[m.chat]
 
     if (chat.welcome === undefined) chat.welcome = true
-    if (chat.welcome === false && chat.welcome !== true) chat.welcome = true
 
     console.log(`🔍 Estado welcome para ${m.chat}:`, chat.welcome)
 
-    if (!chat.welcome) {
+    if (chat.welcome === false) {
       console.log('❌ Welcome desactivado, saltando...')
       return true
     }
@@ -90,8 +89,10 @@ export async function before(m, { conn, participants, groupMetadata }) {
           
           setTimeout(() => {
             try {
-              fs.unlinkSync(imagePath)
-              console.log('🗑️ Archivo temporal eliminado:', imagePath)
+              if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath)
+                console.log('🗑️ Archivo temporal eliminado:', imagePath)
+              }
             } catch (cleanupError) {
               console.log('❌ Error eliminando archivo temporal:', cleanupError)
             }
