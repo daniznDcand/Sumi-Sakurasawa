@@ -252,7 +252,7 @@ global.fkontak = { key: {participant: `0@s.whatsapp.net`, ...(m.chat ? { remoteJ
 global.miku = global.miku || {}
 
 
-export default handler
+module.exports = handler
 
 function pickRandom(list) {
 return list[Math.floor(Math.random() * list.length)]
