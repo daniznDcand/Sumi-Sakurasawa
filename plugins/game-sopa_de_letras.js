@@ -131,6 +131,7 @@ await conn.reply( m.chat, `*@${m.sender.split("@")[0]} El tiempo se ha acabado!!
 fila = null, columna = null, sopaNube = null, sopaPalabra = null, sopaDir = null, userSP = null, cambioLetra = null
 intentos = 0
 }
+return
 }}else {
 if (`${fila}${columna}` == text) {
 if (sopaPalabra.length <= 4) {
