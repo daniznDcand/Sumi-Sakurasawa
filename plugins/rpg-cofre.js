@@ -33,7 +33,7 @@ const handler = async (m, { isPrems, conn }) => {
     const tiempoRestante = timeToNextCofre - Date.now();
     const mensajeEspera = `💙 ¡Ya reclamaste tu cofre virtual de Miku hoy! 💙\n⏰️ Regresa en: *${msToTime(tiempoRestante)}* para obtener más tesoros musicales. ✨`;
     await conn.sendMessage(m.chat, { text: mensajeEspera }, { quoted: m });
-    return;
+    return true;
   }
 
   const img = 'https://media.tenor.com/I_1R0Sf588QAAAPo/hatsune-miku-hatsune.mp4';

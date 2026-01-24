@@ -8,7 +8,7 @@ let handler = async (m, { conn, text, command, usedPrefix }) => {
   if (cooldowns[m.sender] && Date.now() - cooldowns[m.sender] < tiempoEspera * 1000) {
     let tiempoRestante = segundosAHMS(Math.ceil((cooldowns[m.sender] + tiempoEspera * 1000 - Date.now()) / 1000))
     conn.reply(m.chat, `${emoji3} Ya has iniciado una apuesta recientemente, espera *⏱ ${tiempoRestante}* para apostar nuevamente`, m, global.rcanal)
-    return
+    return true
   }
 
   cooldowns[m.sender] = Date.now()

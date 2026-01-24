@@ -147,7 +147,7 @@ handler = async (m, { conn, command, usedPrefix }) => {
             ]
             const text = `💙 @${target.split('@')[0]}, @${sender.split('@')[0]} te ha propuesto matrimonio~\nPresiona *Aceptar* o *Rechazar*.`
             await conn.sendMessage(m.chat, { text, footer: 'Propuesta de matrimonio', buttons, mentions: [target, sender] })
-            return
+            return true
         }
 
         

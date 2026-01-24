@@ -9,7 +9,7 @@ let tiempo = 5 * 60
 if (cooldowns[m.sender] && Date.now() - cooldowns[m.sender] < tiempo * 1000) {
 let tiempo2 = segundosAHMS(Math.ceil((cooldowns[m.sender] + tiempo * 1000 - Date.now()) / 1000))
 m.reply(`${emoji3} Ya has cometido un Crimen recientemente, espera ⏱️ *${tiempo2}* para cometer tu próximo Crimen y evitar ser atrapado.`)
-return
+return true
 }
 cooldowns[m.sender] = Date.now()
 let senderCoin = users[senderId].coin || 0

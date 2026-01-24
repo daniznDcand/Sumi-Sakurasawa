@@ -3,18 +3,18 @@ const handler = async (m, {conn, usedPrefix, command}) => {
   const time = global.db.data.users[m.sender].lastrob2 + 7200000;
   if (new Date - global.db.data.users[m.sender].lastrob2 < 7200000) {
   conn.reply(m.chat, `${emoji3} Debes esperar ${msToTime(time - new Date())} para usar #rob de nuevo.`, m);
-  return;
+  return true;
   }
   let who;
   if (m.isGroup) who = m.mentionedJid[0] ? m.mentionedJid[0] : m.quoted ? m.quoted.sender : false;
   else who = m.chat;
   if (!who) {
   conn.reply(m.chat, `${emoji} Debes mencionar a alguien para intentar robarle.`, m)
-  return;
+  return true;
     };
   if (!(who in global.db.data.users)) { 
   conn.reply(m.chat, `${emoji2} El usuario no se encuentra en mi base de datos.`, m)
-return;
+return true;
   }
   const users = global.db.data.users[who];
   const rob = Math.floor(Math.random() * ro);

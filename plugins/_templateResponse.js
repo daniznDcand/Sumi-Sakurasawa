@@ -30,7 +30,7 @@ id = JSON.parse(m.message.interactiveResponseMessage.nativeFlowResponseMessage.p
 
 
 if (id && (id.startsWith('menu') || id === 'menu')) {
-return
+return true
 }
 
 const text = m.message.buttonsResponseMessage?.selectedDisplayText || m.message.templateButtonReplyMessage?.selectedDisplayText || m.message.listResponseMessage?.title
