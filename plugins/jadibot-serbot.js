@@ -180,7 +180,6 @@ function checkResourceLimits() {
   
   
   if (activeConnections >= RESOURCE_LIMITS.MAX_SUBBOTS) {
-    console.log(chalk.yellow(`⚠️ Límite de SubBots funcionando alcanzado: ${activeConnections}/${RESOURCE_LIMITS.MAX_SUBBOTS}`))
     return false
   }
   
@@ -285,17 +284,12 @@ try {
     } catch (e) { return false }
   }).length
   
-  console.log(`🔍 Estado del servidor: ${activeConnections}/${MAX_CONNECTIONS} conexiones, ${memUsage}MB RAM`)
-  
-  
   if (memUsage > MEMORY_LIMIT_MB) {
-    console.log(chalk.red(`⚠️ Memoria crítica: ${memUsage}MB - Rechazando nueva conexión`))
     return m.reply(`🚫 *Servidor en alta demanda*\n\n⚠️ El servidor está utilizando ${memUsage}MB de RAM\n🔄 Intenta crear tu SubBot en unos minutos cuando los recursos se liberen.\n\n💡 *Tip:* Los SubBots existentes tienen prioridad de recursos.`)
   }
   
   
   if (activeConnections >= MAX_CONNECTIONS) {
-    console.log(chalk.red(`⚠️ Límite de conexiones alcanzado: ${activeConnections}/${MAX_CONNECTIONS}`))
     return m.reply(`🚫 *Límite de conexiones alcanzado*\n\n📊 Conexiones activas: ${activeConnections}/${MAX_CONNECTIONS}\n⏳ Espera a que se liberen recursos o intenta más tarde.\n\n💡 *Tip:* El sistema da prioridad a mantener las conexiones existentes estables.`)
   }
   
@@ -308,7 +302,6 @@ try {
     ).length
     
     if (userConnections >= MAX_CONNECTIONS_PER_USER) {
-      console.log(chalk.yellow(`⚠️ Usuario ${userPhone} ya tiene ${userConnections} SubBots activos`))
       return m.reply(`🚫 *Límite por usuario alcanzado*\n\n👤 Ya tienes ${userConnections}/${MAX_CONNECTIONS_PER_USER} SubBots activos\n📱 Desconecta un SubBot existente antes de crear uno nuevo.\n\n💡 *Comando:* ${usedPrefix}stop para desconectar un SubBot.`)
     }
   }
@@ -519,8 +512,6 @@ try {
   vlog('✅ Socket creado exitosamente')
 } catch (error) {
   console.error('❌ Error creando socket:', error.message)
-  console.error('❌ Stack completo:', error.stack)
-  console.log('🔍 Opciones usadas:', Object.keys(cleanConnectionOptions))
   throw new Error(`Error en configuración de socket: ${error.message}`)
 }
 sock.maxReconnectAttempts = 5  
@@ -587,7 +578,6 @@ sock.sessionErrorHandler = (error) => {
         
        
         if (sock.autoReconnect && sock.reconnectAttempts < sock.maxReconnectAttempts) {
-          console.log('🔄 Iniciando reconexión automática por SessionError no capturado...')
           await attemptReconnect()
         }
         
@@ -635,7 +625,6 @@ function isSocketReady(s) {
       s._shouldDelete = true
       
       if (!s._deleteMarked) {
-        console.log(`🗑️ MARCADO PARA ELIMINACIÓN: +${path.basename(s.user?.jid || 'unknown')} - ${Math.round(connectionAge/1000)}s roto`)
         s._deleteMarked = true
       }
       return false
@@ -681,7 +670,6 @@ let isInit = true
 const attemptReconnect = async () => {
 if (sock.reconnectAttempts < sock.maxReconnectAttempts) {
 sock.reconnectAttempts++
-console.log(chalk.yellow(`🔄 Intento de reconexión ${sock.reconnectAttempts}/${sock.maxReconnectAttempts} para +${path.basename(pathMikuJadiBot)}`))
 
   
     try {
@@ -690,15 +678,12 @@ console.log(chalk.yellow(`🔄 Intento de reconexión ${sock.reconnectAttempts}/
       try {
         const now = Date.now()
         const lastNotify = sock._lastReconnectNotify || 0
-        if (!sock._reconnectNotified && options.fromCommand && (now - lastNotify) > NOTIFY_COOLDOWN) {
+        
+        const isManualReconnect = options.fromCommand && sock.reconnectAttempts === 1
+        if (!sock._reconnectNotified && isManualReconnect && (now - lastNotify) > NOTIFY_COOLDOWN) {
           try {
-            
-            console.log(`🔄 Reconectando SubBot +${path.basename(pathMikuJadiBot)}... Intento ${sock.reconnectAttempts}/${sock.maxReconnectAttempts} (Interno)`)
-          } catch (e) {
-            console.error('Error notificando reconexión:', e?.message || e)
-          } finally {
-            
             sock._reconnectNotified = true
+          } catch (e) {  
             sock._lastReconnectNotify = Date.now()
           }
         }
@@ -716,7 +701,6 @@ const waitTime = baseWait * sock.reconnectAttempts
 const maxWait = 60000
 const totalWait = Math.min(waitTime, maxWait)
 
-console.log(chalk.blue(`⏳ Esperando ${Math.round(totalWait/1000)}s antes de reconectar (intento ${sock.reconnectAttempts})`))
 await new Promise(resolve => setTimeout(resolve, totalWait))
 
 try {
@@ -731,7 +715,6 @@ try {
   }
   await new Promise(resolve => setTimeout(resolve, 1500))
 } catch (e) {
-  console.log('Error cerrando conexión anterior:', e.message)
 }
 
 
@@ -1010,9 +993,6 @@ const reason = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.erro
 const errorMessage = lastDisconnect?.error?.message || ''
 
 if (connection === 'close') {
-console.log(chalk.yellow(`🔌 Conexión cerrada para +${path.basename(pathMikuJadiBot)}. Código: ${reason}`))
-
-
 if (errorMessage.includes('SessionError: No sessions')) {
   console.log(chalk.red(`🚨 SessionError detectado: ${errorMessage}`))
   
@@ -1025,15 +1005,11 @@ if (errorMessage.includes('SessionError: No sessions')) {
       }
     }
     
-    
-    console.log('⏱️ Esperando 10 segundos antes de reconectar por SessionError...')
     await new Promise(resolve => setTimeout(resolve, 10000))
     
     if (sock.reconnectAttempts < sock.maxReconnectAttempts) {
-      console.log(chalk.cyan('🔄 Iniciando reconexión por SessionError...'))
       const reconnected = await attemptReconnect()
       if (!reconnected) {
-        console.log(chalk.red(`❌ Falló la reconexión por SessionError para +${path.basename(pathMikuJadiBot)} (Interno)`))
         
         await endSesion(false)
       }
@@ -1060,14 +1036,11 @@ const shouldReconnect = [
 const criticalReconnect = [428, 440, 515].includes(reason)
 if (criticalReconnect && sock.maxReconnectAttempts < 12) { 
   sock.maxReconnectAttempts = 15
-  console.log(chalk.cyan(`🔄 Aumentando intentos de reconexión a ${sock.maxReconnectAttempts} por código crítico ${reason}`))
 }
 
 if (shouldReconnect && sock.reconnectAttempts < sock.maxReconnectAttempts) {
-console.log(chalk.cyan(`📣 Preparando reconexión automática para código ${reason}...`))
 const reconnected = await attemptReconnect()
 if (!reconnected) {
-console.log(chalk.red(`❌ Falló la reconexión automática para +${path.basename(pathMikuJadiBot)}`))
 await endSesion(false)
 }
 } else if (reason === 401) {
@@ -1079,7 +1052,9 @@ await endSesion(false)
     const recipient = (m && m.sender) ? m.sender : `${path.basename(pathMikuJadiBot)}@s.whatsapp.net`
     try {
       sock._notifiedExpired = sock._notifiedExpired || false
-      if (options.fromCommand && !sock._notifiedExpired && shouldNotifyUser(recipient)) {
+
+      const isManualConnection = options.fromCommand && sock.reconnectAttempts === 0
+      if (isManualConnection && !sock._notifiedExpired && shouldNotifyUser(recipient)) {
         await conn.sendMessage(recipient, {
           text: '*🔄 SESIÓN EXPIRADA*\n\n> La sesión del SubBot ha expirado y debe ser revinculada.\n> Use .qr o .code para crear una nueva sesión.\n> *Sus datos están seguros y se mantendrán.*'
         }, { quoted: m || null }).catch(() => {})
@@ -1105,7 +1080,6 @@ await endSesion(false)
     await endSesion(false)
   }
 } else {
-console.log(chalk.gray(`⚠️ Cerrando sesión sin reconexión. Código: ${reason}, Intentos: ${sock.reconnectAttempts}/${sock.maxReconnectAttempts}`))
 await endSesion(false)
 }
 }
@@ -1240,7 +1214,6 @@ try {
           
           
           if (sock.autoReconnect && sock.reconnectAttempts < sock.maxReconnectAttempts) {
-            console.log(chalk.cyan(`🔄 Iniciando reconexión automática por socket no listo...`))
             sock._shouldReconnect = true
             setTimeout(() => attemptReconnect(), 2000) 
           }
@@ -1287,7 +1260,6 @@ try {
             }
             sock.lastActivity = now
           } else {
-            console.log(chalk.red(`❌ Socket no responde después de inactividad, iniciando reconexión...`))
             if (sock.autoReconnect) {
               setTimeout(() => attemptReconnect(), 2000)
             }
@@ -1328,7 +1300,6 @@ try {
         } else {
           const timeSinceLastHeartbeat = Date.now() - (sock.lastHeartbeat || 0)
           if (timeSinceLastHeartbeat > 300000) {  
-            console.log(chalk.red(`💔 Heartbeat perdido para +${path.basename(pathMikuJadiBot)}, marcando para reconexión...`))
             sock.isAlive = false
             if (sock.autoReconnect) {
               setTimeout(() => attemptReconnect(), 1000)
@@ -1394,7 +1365,6 @@ console.log('⚙️ Error configurando propiedades básicas:', error.message)
 
 
 try {
-console.log('🔍 Configurando handler para SubBot recién conectado...')
 const handlerModule = await import('../handler.js')
 if (handlerModule && handlerModule.handler && typeof handlerModule.handler === 'function') {
 
@@ -1436,7 +1406,6 @@ if (handlerModule && handlerModule.handler && typeof handlerModule.handler === '
          
           setTimeout(async () => {
             if (sock.autoReconnect && sock.reconnectAttempts < sock.maxReconnectAttempts) {
-              console.log('🔄 Iniciando reconexión por SessionError...')
               await attemptReconnect()
             }
           }, 5000)
@@ -1515,7 +1484,9 @@ await joinChannels(sock)
   try {
     const openRecipient = m?.chat || ((sock.user && sock.user.jid) ? sock.user.jid : null)
     sock._notifiedOpen = sock._notifiedOpen || false
-    if (options.fromCommand && !sock._notifiedOpen && openRecipient && shouldNotifyUser(openRecipient)) {
+   
+    const isFirstConnection = sock.reconnectAttempts === 0
+    if (options.fromCommand && !sock._notifiedOpen && openRecipient && shouldNotifyUser(openRecipient) && isFirstConnection) {
       try {
         await conn.sendMessage(m.chat, { 
           text: `✅ *SubBot conectado exitosamente* 🤖\n\n` +
