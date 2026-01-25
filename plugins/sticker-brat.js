@@ -36,6 +36,11 @@ let handler = async (m, { conn, text }) => {
         let texto1 = packstickers.text1 || global.packsticker
         let texto2 = packstickers.text2 || global.packsticker2
 
+        console.log('🔍 sticker-brat - texto1:', texto1)
+        console.log('🔍 sticker-brat - texto2:', texto2)
+        console.log('🔍 sticker-brat - global.packsticker:', global.packsticker)
+        console.log('🔍 sticker-brat - global.packsticker2:', global.packsticker2)
+
         let stiker = await sticker(buffer, false, texto1, texto2)
 
         if (stiker) {
