@@ -60,13 +60,28 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
     const memUsage = Math.round(process.memoryUsage().heapUsed / 1024 / 1024)
     const userPhone = cleanPhoneNumber(m.sender)
     
-   
-    let subBotsInGroup = []
+    const userActiveConnections = activeConnections.filter(c => {
+      try {
+        return c && c.user && c.user.jid && cleanPhoneNumber(c.user.jid) === userPhone
+      } catch (e) {
+        return false
+      }
+    })
+    const userInactiveConnections = inactiveConnections.filter(c => {
+      try {
+        return c && c.user && c.user.jid && cleanPhoneNumber(c.user.jid) === userPhone
+      } catch (e) {
+        return false
+      }
+    })
+    
+ 
     if (m.chat.endsWith('@g.us')) {
       try {
         const groupMetadata = await conn.groupMetadata(m.chat)
         const participants = groupMetadata.participants.map(p => p.id)
         
+        let subBotsInGroup = []
         for (const subbot of activeConnections) {
           const subbotJid = subbot.user.jid
           if (participants.includes(subbotJid)) {
