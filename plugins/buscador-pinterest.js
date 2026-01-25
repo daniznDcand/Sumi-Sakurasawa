@@ -37,6 +37,8 @@ async function sendAlbumMessage(jid, medias, options = {}) {
 
 const pinterest = async (m, { conn, text, usedPrefix, command }) => {
     if (!text) return conn.reply(m.chat, `*💙 Uso Correcto: ${usedPrefix + command} Miku*`, m, global.rcanal);
+    
+    const icons = global.icons || null;
 
     await m.react('⏳');
     conn.reply(m.chat, '💙 *Descargando imágenes de Pinterest...*', m, {
