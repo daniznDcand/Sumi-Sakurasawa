@@ -56,75 +56,120 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
 
     console.log(chalk.blue(`📊 Generando estado de SubBots...`))
 
-   
+    
     const memUsage = Math.round(process.memoryUsage().heapUsed / 1024 / 1024)
     const userPhone = cleanPhoneNumber(m.sender)
     
-    
-    const userActiveConnections = activeConnections.filter(c => {
+   
+    let subBotsInGroup = []
+    if (m.chat.endsWith('@g.us')) {
       try {
-        return c && c.user && c.user.jid && cleanPhoneNumber(c.user.jid) === userPhone
+        const groupMetadata = await conn.groupMetadata(m.chat)
+        const participants = groupMetadata.participants.map(p => p.id)
+        
+        for (const subbot of activeConnections) {
+          const subbotJid = subbot.user.jid
+          if (participants.includes(subbotJid)) {
+            subBotsInGroup.push({
+              jid: subbotJid,
+              name: subbot.user.name || subbot.user.verifiedName || subbotJid.split('@')[0],
+              status: '🟢 Activo',
+              connection: 'Conectado',
+              lastSeen: new Date().toLocaleString()
+            })
+          }
+        }
       } catch (e) {
-        return false
+        console.log('Error verificando SubBots en grupo:', e.message)
       }
-    })
-    const userInactiveConnections = inactiveConnections.filter(c => {
-      try {
-        return c && c.user && c.user.jid && cleanPhoneNumber(c.user.jid) === userPhone
-      } catch (e) {
-        return false
-      }
-    })
-
-    
-    let statusText = `🤖 *SUBBOTS*\n\n`
-    statusText += `📊 Total: *${totalBots}*\n`
-    statusText += `✅ Activos: *${activeConnections.length}*\n`
-    statusText += `❌ Inactivos: *${inactiveConnections.length}*\n\n`
-
-    const list = (args[0] === 'all' && isOwner) ? activeConnections : userActiveConnections
-    if (list.length > 0) {
-      statusText += `📋 ${args[0] === 'all' && isOwner ? '*SubBots activos (global):*' : '*Tus SubBots activos:*'}\n`
-      list.slice(0, 10).forEach((bot, index) => {
-        const botPhone = cleanPhoneNumber(bot.user?.jid) || 'Desconocido'
-        statusText += `${index + 1}. wa.me/${botPhone}\n`
-      })
-      if (list.length > 10) statusText += `... y ${list.length - 10} más\n`
-      statusText += `\n`
-    } else {
-      statusText += `📋 No hay SubBots activos para mostrar.\n\n`
     }
 
-    statusText += `💡 \`${usedPrefix}bots\` | \`${usedPrefix}bots all\` (owner) | \`${usedPrefix}deletebot\`\n`
+    
+    let statusText = `🤖 *INFORME COMPLETO DE SUBBOTS*\n\n`
+
+    if (args[0] === 'all' && isOwner) {
+      
+      statusText += `📊 *Resumen global:*\n`
+      statusText += `• SubBots activos: ${activeConnections.length}\n`
+      statusText += `• SubBots inactivos: ${inactiveConnections.length}\n`
+      statusText += `• SubBots totales: ${totalBots}\n`
+      statusText += `• Memoria usada: ${memUsage}MB\n\n`
+
+      statusText += `🤖 *Lista global de SubBots:*\n\n`
+      activeConnections.slice(0, 10).forEach((bot, index) => {
+        const botPhone = cleanPhoneNumber(bot.user?.jid) || 'Desconocido'
+        const botName = bot.user?.name || bot.user?.verifiedName || 'Sin nombre'
+        statusText += `━━━━━━━━━━━━━━━━━━━━━━━━━━\n`
+        statusText += `📱 *SubBot #${index + 1}*\n`
+        statusText += `👤 *Nombre:* ${botName}\n`
+        statusText += `📞 *Teléfono:* wa.me/${botPhone}\n`
+        statusText += `🆔 *JID:* ${bot.user?.jid}\n`
+        statusText += `🟢 *Estado:* 🟢 Activo\n`
+        statusText += `🔌 *Conexión:* Conectado\n\n`
+      })
+      if (activeConnections.length > 10) statusText += `... y ${activeConnections.length - 10} SubBots más\n\n`
+    } else if (subBotsInGroup.length > 0) {
+     
+      statusText += `📊 *Resumen del grupo:*\n`
+      statusText += `• SubBots activos en este grupo: ${subBotsInGroup.length}\n`
+      statusText += `• SubBots totales conectados: ${activeConnections.length}\n`
+      statusText += `• Porcentaje del grupo: ${Math.round((subBotsInGroup.length / activeConnections.length) * 100)}%\n\n`
+
+      statusText += `🤖 *SubBots en este grupo:*\n\n`
+      subBotsInGroup.forEach((subbot, index) => {
+        statusText += `━━━━━━━━━━━━━━━━━━━━━━━━━━\n`
+        statusText += `📱 *SubBot #${index + 1}*\n`
+        statusText += `👤 *Nombre:* ${subbot.name}\n`
+        statusText += `🆔 *JID:* ${subbot.jid}\n`
+        statusText += `🟢 *Estado:* ${subbot.status}\n`
+        statusText += `🔌 *Conexión:* ${subbot.connection}\n`
+        statusText += `🕐 *Última actividad:* ${subbot.lastSeen}\n`
+        statusText += `💡 *Control:* Usa \`${usedPrefix}offsubbot ${index + 1}\` para apagar\n\n`
+      })
+
+      statusText += `━━━━━━━━━━━━━━━━━━━━━━━━━━\n`
+      statusText += `🎮 *Comandos de control:*\n`
+      statusText += `• \`${usedPrefix}offsubbot <número>\` - Apagar SubBot específico\n`
+      statusText += `• \`${usedPrefix}offsubbot todos\` - Apagar todos los SubBots\n\n`
+      statusText += `⚠️ *Nota:* Los SubBots apagados permanecerán en el grupo pero no responderán comandos.\n\n`
+    } else {
+      
+      statusText += `📊 *Resumen general:*\n`
+      statusText += `• SubBots activos: ${activeConnections.length}\n`
+      statusText += `• SubBots inactivos: ${inactiveConnections.length}\n`
+      statusText += `• SubBots totales: ${totalBots}\n`
+      statusText += `• Memoria usada: ${memUsage}MB\n\n`
+
+      if (userActiveConnections.length > 0) {
+        statusText += `🤖 *Tus SubBots activos:*\n\n`
+        userActiveConnections.slice(0, 10).forEach((bot, index) => {
+          const botPhone = cleanPhoneNumber(bot.user?.jid) || 'Desconocido'
+          const botName = bot.user?.name || bot.user?.verifiedName || 'Sin nombre'
+          statusText += `━━━━━━━━━━━━━━━━━━━━━━━━━━\n`
+          statusText += `📱 *SubBot #${index + 1}*\n`
+          statusText += `👤 *Nombre:* ${botName}\n`
+          statusText += `📞 *Teléfono:* wa.me/${botPhone}\n`
+          statusText += `🆔 *JID:* ${bot.user?.jid}\n`
+          statusText += `🟢 *Estado:* 🟢 Activo\n\n`
+        })
+        if (userActiveConnections.length > 10) statusText += `... y ${userActiveConnections.length - 10} más\n\n`
+      } else {
+        statusText += `📋 No tienes SubBots activos.\n\n`
+      }
+    }
+
+    statusText += `━━━━━━━━━━━━━━━━━━━━━━━━━━\n`
+    statusText += `💡 *Comandos disponibles:*\n`
+    statusText += `• \`${usedPrefix}bots\` - Ver tus SubBots\n`
+    if (isOwner) statusText += `• \`${usedPrefix}bots all\` - Ver todos los SubBots (owner)\n`
+    statusText += `• \`${usedPrefix}verbots\` - Ver SubBots del grupo\n`
+    statusText += `• \`${usedPrefix}serbot\` - Crear nuevo SubBot\n\n`
     statusText += `⏰ ${new Date().toLocaleString('es-ES')}`
 
+    await m.reply(statusText)
     
-    const mikuImagePath = path.join(process.cwd(), 'src', 'miku-bots.jpg')
-    const catalogoImagePath = path.join(process.cwd(), 'src', 'catalogo.jpg')
-    
-    let imagePath = null
-    if (fs.existsSync(mikuImagePath)) {
-      imagePath = mikuImagePath
-    } else if (fs.existsSync(catalogoImagePath)) {
-      imagePath = catalogoImagePath
-    }
-
-    if (imagePath) {
-      try {
-        await conn.sendFile(m.chat, imagePath, 'subbots-status.jpg', statusText, m)
-        console.log(chalk.green(`✅ Estado de SubBots enviado con imagen`))
-      } catch (e) {
-        console.error('Error enviando imagen:', e.message)
-        await m.reply(statusText)
-      }
-    } else {
-      await m.reply(statusText)
-      console.log(chalk.green(`✅ Estado de SubBots enviado (solo texto)`))
-    }
-
   } catch (error) {
     console.error('Error en comando bots:', error)
-    
     
     const activeConnections = global.conns?.filter(c => c && c.user && isSocketReady(c)) || []
     const totalBots = global.conns?.filter(c => c && c.user).length || 0
