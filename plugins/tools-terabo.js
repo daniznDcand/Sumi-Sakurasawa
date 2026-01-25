@@ -5,7 +5,6 @@ import fs from 'fs'
 let handler = async (m, { conn, args, usedPrefix, command }) => {
     const subCommand = args[0]?.toLowerCase()
     
-    
     console.log('Mensaje recibido:', {
         hasQuoted: !!m.quoted,
         quotedType: m.quoted?.type,
@@ -18,14 +17,19 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
     if (!subCommand && m.quoted) {
         console.log('Hay mensaje citado, verificando si es imagen...')
         
-      
+        
         const isImage = (
-            (m.quoted.type === 'imageMessage') ||
-            (m.quoted.msg && m.quoted.msg.mimetype && m.quoted.msg.mimetype.startsWith('image/')) ||
-            (m.quoted.mtype && m.quoted.mtype === 'imageMessage')
+            m.quoted.type === 'imageMessage' ||
+            m.quoted.mtype === 'imageMessage' ||
+            (m.quoted.msg && (
+                m.quoted.msg.mimetype?.startsWith('image/') ||
+                m.quoted.msg.type === 'imageMessage'
+            )) ||
+            m.quoted.message?.imageMessage
         )
         
         console.log('¿Es imagen?', isImage)
+        console.log('Detalles completos:', JSON.stringify(m.quoted, null, 2))
         
         if (isImage) {
             console.log('Procesando imagen automáticamente...')
@@ -68,6 +72,9 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
                 await m.reply('❌ Error al procesar la imagen: ' + error.message)
             }
             return
+        } else {
+           
+            return m.reply(`❌ El mensaje citado no es una imagen.\n\n💡 *Para subir una imagen:*\n1. Responde a una imagen con \`${usedPrefix + command}\`\n2. O usa \`${usedPrefix + command} upload\``)
         }
     }
     
@@ -77,22 +84,32 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
    
     if (subCommand === 'upload') {
-        if (!m.quoted || !m.quoted.msg) {
+        if (!m.quoted) {
             return m.reply(`📸 *Subir imagen*\n\n❌ Responde a una imagen con:\n\`${usedPrefix + command} upload\``)
         }
 
-        const quotedMsg = m.quoted.msg
-        if (quotedMsg.mimetype && quotedMsg.mimetype.startsWith('image/')) {
+
+        const isImage = (
+            m.quoted.type === 'imageMessage' ||
+            m.quoted.mtype === 'imageMessage' ||
+            (m.quoted.msg && (
+                m.quoted.msg.mimetype?.startsWith('image/') ||
+                m.quoted.msg.type === 'imageMessage'
+            )) ||
+            m.quoted.message?.imageMessage
+        )
+        
+        console.log('Upload - ¿Es imagen?', isImage)
+        console.log('Upload - Detalles:', JSON.stringify(m.quoted, null, 2))
+        
+        if (isImage) {
             await m.reply('📤 *Subiendo imagen...*\n\nProcesando tu imagen...')
             
             try {
-               
                 const buffer = await m.quoted.download()
                 const fileName = `terabo_${Date.now()}.jpg`
                 
-               
                 fs.writeFileSync(fileName, buffer)
-                
                 
                 const simulatedUrl = `https://terabo.pro/uploads/${fileName}`
                 
@@ -119,7 +136,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
                 
             } catch (error) {
                 console.error('Error subiendo imagen:', error.message)
-                await m.reply('❌ Error al procesar la imagen. Intenta de nuevo.')
+                await m.reply('❌ Error al procesar la imagen: ' + error.message)
             }
         } else {
             await m.reply('❌ El mensaje citado no es una imagen válida.')
