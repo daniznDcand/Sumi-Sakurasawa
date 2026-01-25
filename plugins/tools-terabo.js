@@ -21,6 +21,56 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
             return m.reply('❌ La URL debe comenzar con http:// o https://')
         }
 
+        
+        const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg']
+        const videoExtensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm', '.mkv', '.3gp']
+        
+        const isDirectImage = imageExtensions.some(ext => url.toLowerCase().includes(ext))
+        const isDirectVideo = videoExtensions.some(ext => url.toLowerCase().includes(ext))
+        
+        if (isDirectImage || isDirectVideo) {
+            
+            const mediaType = isDirectVideo ? 'video' : 'image'
+            await m.reply(`📥 *Descargando ${mediaType} directo...*\n\n🔗 ${url}`)
+            
+            try {
+                const response = await axios.get(url, { 
+                    responseType: 'arraybuffer',
+                    timeout: 30000,
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    }
+                })
+                
+                const buffer = Buffer.from(response.data)
+                const fileName = `temp_${Date.now()}.${isDirectVideo ? 'mp4' : 'jpg'}`
+
+               
+                if (!fs.existsSync('./temp')) {
+                    fs.mkdirSync('./temp')
+                }
+                fs.writeFileSync(`./temp/${fileName}`, buffer)
+                
+                if (isDirectVideo) {
+                    await conn.sendMessage(m.chat, {
+                        video: buffer,
+                        caption: `🎥 *Video descargado*\n\n🔗 URL: ${url}\n📁 Guardado como: ./temp/${fileName}`
+                    }, { quoted: m })
+                } else {
+                    await conn.sendMessage(m.chat, {
+                        image: buffer,
+                        caption: `🖼️ *Imagen descargada*\n\n🔗 URL: ${url}\n📁 Guardado como: ./temp/${fileName}`
+                    }, { quoted: m })
+                }
+                
+            } catch (error) {
+                console.error('Error descargando medio directo:', error.message)
+                await m.reply(`❌ Error descargando el ${mediaType}: ${error.message}`)
+            }
+            return
+        }
+        
+        
         await m.reply('🔍 *Buscando imágenes y videos...*\n\nExtrayendo URLs de la página...')
 
         try {
@@ -33,11 +83,11 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
             const $ = cheerio.load(response.data)
             
-           
+            
             const images = []
             const videos = []
             
-           
+            
             $('img').each((i, elem) => {
                 const $img = $(elem)
                 let src = $img.attr('src')
@@ -64,7 +114,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
                 }
             })
 
-           
+            
             $('video').each((i, elem) => {
                 const $video = $(elem)
                 let src = $video.attr('src')
@@ -117,7 +167,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
             result += `📊 *Total imágenes:* ${uniqueImages.length}\n`
             result += `📊 *Total videos:* ${uniqueVideos.length}\n\n`
 
-           
+            
             if (uniqueImages.length > 0) {
                 result += `📸 *IMÁGENES:*\n\n`
                 const imagesToShow = uniqueImages.slice(0, 5)
@@ -147,7 +197,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
                 }
             }
 
-            
+           
             global.lastTeraboMedia = [...uniqueImages, ...uniqueVideos]
             global.lastTeraboUrl = url
 
