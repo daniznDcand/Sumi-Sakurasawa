@@ -36,7 +36,18 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
             await m.reply('📤 *Subiendo imagen...*\n\nProcesando tu imagen...')
             
             try {
-                const buffer = await m.quoted.download()
+                
+                let buffer
+                if (typeof m.quoted.download === 'function') {
+                    buffer = await m.quoted.download()
+                } else if (m.quoted.msg && typeof m.quoted.msg.download === 'function') {
+                    buffer = await m.quoted.msg.download()
+                } else if (conn && conn.downloadMediaMessage) {
+                    buffer = await conn.downloadMediaMessage(m.quoted)
+                } else {
+                    throw new Error('No se encontró método de descarga compatible')
+                }
+                
                 console.log('Imagen descargada, tamaño:', buffer.length)
                 
                 const fileName = `terabo_${Date.now()}.jpg`
@@ -106,7 +117,18 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
             await m.reply('📤 *Subiendo imagen...*\n\nProcesando tu imagen...')
             
             try {
-                const buffer = await m.quoted.download()
+                
+                let buffer
+                if (typeof m.quoted.download === 'function') {
+                    buffer = await m.quoted.download()
+                } else if (m.quoted.msg && typeof m.quoted.msg.download === 'function') {
+                    buffer = await m.quoted.msg.download()
+                } else if (conn && conn.downloadMediaMessage) {
+                    buffer = await conn.downloadMediaMessage(m.quoted)
+                } else {
+                    throw new Error('No se encontró método de descarga compatible')
+                }
+                
                 const fileName = `terabo_${Date.now()}.jpg`
                 
                 fs.writeFileSync(fileName, buffer)
