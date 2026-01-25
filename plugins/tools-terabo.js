@@ -5,182 +5,25 @@ import fs from 'fs'
 let handler = async (m, { conn, args, usedPrefix, command }) => {
     const subCommand = args[0]?.toLowerCase()
     
-    console.log('Mensaje recibido:', {
-        hasQuoted: !!m.quoted,
-        quotedType: m.quoted?.type,
-        quotedMsg: !!m.quoted?.msg,
-        quotedMimetype: m.quoted?.msg?.mimetype,
-        subCommand: subCommand
-    })
-    
-   
-    if (!subCommand && m.quoted) {
-        console.log('Hay mensaje citado, verificando si es imagen...')
-        
-        
-        const isImage = (
-            m.quoted.type === 'imageMessage' ||
-            m.quoted.mtype === 'imageMessage' ||
-            (m.quoted.msg && (
-                m.quoted.msg.mimetype?.startsWith('image/') ||
-                m.quoted.msg.type === 'imageMessage'
-            )) ||
-            m.quoted.message?.imageMessage
-        )
-        
-        console.log('¿Es imagen?', isImage)
-        console.log('Detalles completos:', JSON.stringify(m.quoted, null, 2))
-        
-        if (isImage) {
-            console.log('Procesando imagen automáticamente...')
-            await m.reply('📤 *Subiendo imagen...*\n\nProcesando tu imagen...')
-            
-            try {
-                
-                let buffer
-                if (typeof m.quoted.download === 'function') {
-                    buffer = await m.quoted.download()
-                } else if (m.quoted.msg && typeof m.quoted.msg.download === 'function') {
-                    buffer = await m.quoted.msg.download()
-                } else if (conn && conn.downloadMediaMessage) {
-                    buffer = await conn.downloadMediaMessage(m.quoted)
-                } else {
-                    throw new Error('No se encontró método de descarga compatible')
-                }
-                
-                console.log('Imagen descargada, tamaño:', buffer.length)
-                
-                const fileName = `terabo_${Date.now()}.jpg`
-                
-                fs.writeFileSync(fileName, buffer)
-                console.log('Imagen guardada como:', fileName)
-                
-                const simulatedUrl = `https://terabo.pro/uploads/${fileName}`
-                
-                let result = `✅ *IMAGEN SUBIDA*\n\n`
-                result += `📁 *Nombre:* ${fileName}\n`
-                result += `📏 *Tamaño:* ${buffer.length} bytes\n`
-                result += `🔗 *URL:* ${simulatedUrl}\n`
-                result += `📅 *Fecha:* ${new Date().toLocaleString()}\n\n`
-                result += `💡 *Usa esta URL para compartir tu imagen*`
-                
-                await conn.sendMessage(m.chat, {
-                    text: result,
-                    contextInfo: {
-                        externalAdReply: {
-                            title: "Imagen Subida - Terabo",
-                            body: fileName,
-                            thumbnailUrl: simulatedUrl,
-                            sourceUrl: simulatedUrl,
-                            mediaType: 1,
-                            renderLargerThumbnail: true
-                        }
-                    }
-                }, { quoted: m })
-                
-            } catch (error) {
-                console.error('Error subiendo imagen:', error.message)
-                await m.reply('❌ Error al procesar la imagen: ' + error.message)
-            }
-            return
-        } else {
-           
-            return m.reply(`❌ El mensaje citado no es una imagen.\n\n💡 *Para subir una imagen:*\n1. Responde a una imagen con \`${usedPrefix + command}\`\n2. O usa \`${usedPrefix + command} upload\``)
-        }
-    }
-    
     if (!subCommand) {
-        return m.reply(`🛠️ *TOOLS TERABO*\n\n💡 *Comandos disponibles:*\n\n\`${usedPrefix + command} upload <imagen>\` - Sube una imagen\n\`${usedPrefix + command} url <link>\` - Extrae imágenes de una URL\n\n📋 *Ejemplos:*\n• \`${usedPrefix + command} upload\` (responde a una imagen)\n• \`${usedPrefix + command} url https://terabo.pro\`\n\n💡 *O responde directamente a una imagen con \`${usedPrefix + command}\``)
+        return m.reply(`🛠️ *TOOLS TERABO*\n\n💡 *Comandos disponibles:*\n\n\`${usedPrefix + command} url <link>\` - Extrae imágenes y videos de una URL\n\`${usedPrefix + command} download <número>\` - Descarga elemento específico\n\`${usedPrefix + command} save\` - Guardar lista de enlaces\n\n📋 *Ejemplo:*\n\`${usedPrefix + command} url https://terabo.pro\``)
     }
 
-   
-    if (subCommand === 'upload') {
-        if (!m.quoted) {
-            return m.reply(`📸 *Subir imagen*\n\n❌ Responde a una imagen con:\n\`${usedPrefix + command} upload\``)
-        }
-
-
-        const isImage = (
-            m.quoted.type === 'imageMessage' ||
-            m.quoted.mtype === 'imageMessage' ||
-            (m.quoted.msg && (
-                m.quoted.msg.mimetype?.startsWith('image/') ||
-                m.quoted.msg.type === 'imageMessage'
-            )) ||
-            m.quoted.message?.imageMessage
-        )
-        
-        console.log('Upload - ¿Es imagen?', isImage)
-        console.log('Upload - Detalles:', JSON.stringify(m.quoted, null, 2))
-        
-        if (isImage) {
-            await m.reply('📤 *Subiendo imagen...*\n\nProcesando tu imagen...')
-            
-            try {
-                
-                let buffer
-                if (typeof m.quoted.download === 'function') {
-                    buffer = await m.quoted.download()
-                } else if (m.quoted.msg && typeof m.quoted.msg.download === 'function') {
-                    buffer = await m.quoted.msg.download()
-                } else if (conn && conn.downloadMediaMessage) {
-                    buffer = await conn.downloadMediaMessage(m.quoted)
-                } else {
-                    throw new Error('No se encontró método de descarga compatible')
-                }
-                
-                const fileName = `terabo_${Date.now()}.jpg`
-                
-                fs.writeFileSync(fileName, buffer)
-                
-                const simulatedUrl = `https://terabo.pro/uploads/${fileName}`
-                
-                let result = `✅ *IMAGEN SUBIDA*\n\n`
-                result += `📁 *Nombre:* ${fileName}\n`
-                result += `📏 *Tamaño:* ${buffer.length} bytes\n`
-                result += `🔗 *URL:* ${simulatedUrl}\n`
-                result += `📅 *Fecha:* ${new Date().toLocaleString()}\n\n`
-                result += `💡 *Usa esta URL para compartir tu imagen*`
-                
-                await conn.sendMessage(m.chat, {
-                    text: result,
-                    contextInfo: {
-                        externalAdReply: {
-                            title: "Imagen Subida - Terabo",
-                            body: fileName,
-                            thumbnailUrl: simulatedUrl,
-                            sourceUrl: simulatedUrl,
-                            mediaType: 1,
-                            renderLargerThumbnail: true
-                        }
-                    }
-                }, { quoted: m })
-                
-            } catch (error) {
-                console.error('Error subiendo imagen:', error.message)
-                await m.reply('❌ Error al procesar la imagen: ' + error.message)
-            }
-        } else {
-            await m.reply('❌ El mensaje citado no es una imagen válida.')
-        }
-    }
     
-    
-    else if (subCommand === 'url') {
+    if (subCommand === 'url') {
         const url = args[1]
         
         if (!url) {
-            return m.reply(`🔗 *Extraer imágenes de URL*\n\n❌ Proporciona una URL válida:\n\`${usedPrefix + command} url <URL>\`\n\n📋 *Ejemplo:*\n\`${usedPrefix + command} url https://terabo.pro\``)
+            return m.reply(`🔗 *Extraer imágenes y videos*\n\n❌ Proporciona una URL válida:\n\`${usedPrefix + command} url <URL>\`\n\n📋 *Ejemplo:*\n\`${usedPrefix + command} url https://terabo.pro\``)
         }
         
         if (!url.startsWith('http://') && !url.startsWith('https://')) {
             return m.reply('❌ La URL debe comenzar con http:// o https://')
         }
 
-        await m.reply('🔍 *Buscando imágenes...*\n\nExtrayendo URLs de imágenes de la página...')
+        await m.reply('🔍 *Buscando imágenes y videos...*\n\nExtrayendo URLs de la página...')
 
         try {
-            
             const response = await axios.get(url, {
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -190,8 +33,9 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
             const $ = cheerio.load(response.data)
             
-            
+           
             const images = []
+            const videos = []
             
            
             $('img').each((i, elem) => {
@@ -199,11 +43,8 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
                 let src = $img.attr('src')
                 const alt = $img.attr('alt') || ''
                 
-                
                 if (src) {
-                    
                     if (!src.startsWith('data:') && !src.includes('1x1') && !src.includes('spacer')) {
-                        
                         if (src.startsWith('//')) {
                             src = 'https:' + src
                         } else if (src.startsWith('/')) {
@@ -216,9 +57,44 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
                         images.push({
                             index: i + 1,
                             src: src,
-                            alt: alt
+                            alt: alt,
+                            type: 'image'
                         })
                     }
+                }
+            })
+
+           
+            $('video').each((i, elem) => {
+                const $video = $(elem)
+                let src = $video.attr('src')
+                
+                
+                if (!src) {
+                    $video.find('source').each((j, source) => {
+                        const sourceSrc = $(source).attr('src')
+                        if (sourceSrc) {
+                            src = sourceSrc
+                            return false
+                        }
+                    })
+                }
+                
+                if (src) {
+                    if (src.startsWith('//')) {
+                        src = 'https:' + src
+                    } else if (src.startsWith('/')) {
+                        const urlObj = new URL(url)
+                        src = urlObj.origin + src
+                    } else if (!src.startsWith('http')) {
+                        src = new URL(src, url).href
+                    }
+                    
+                    videos.push({
+                        index: i + 1,
+                        src: src,
+                        type: 'video'
+                    })
                 }
             })
 
@@ -226,44 +102,63 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
             const uniqueImages = images.filter((img, index, self) => 
                 index === self.findIndex((t) => t.src === img.src)
             )
+            
+            const uniqueVideos = videos.filter((vid, index, self) => 
+                index === self.findIndex((t) => t.src === vid.src)
+            )
 
-            if (uniqueImages.length === 0) {
-                return m.reply('❌ No se encontraron imágenes válidas en la página.')
+            if (uniqueImages.length === 0 && uniqueVideos.length === 0) {
+                return m.reply('❌ No se encontraron imágenes o videos válidos en la página.')
             }
 
             
-            let result = `🖼️ *IMÁGENES ENCONTRADAS*\n\n`
+            let result = `🖼️ *IMÁGENES Y VIDEOS ENCONTRADOS*\n\n`
             result += `🌐 *URL:* ${url}\n`
-            result += `📊 *Total de imágenes:* ${uniqueImages.length}\n\n`
-
-            
-            const imagesToShow = uniqueImages.slice(0, 10)
-            
-            result += `📋 *LISTA DE IMÁGENES:*\n\n`
-            
-            imagesToShow.forEach((img, i) => {
-                result += `${i + 1}. 🔗 ${img.src}\n`
-                if (img.alt) result += `   📝 ${img.alt}\n`
-                result += `\n`
-            })
-
-            
-            if (uniqueImages.length > 10) {
-                result += `📝 *... y ${uniqueImages.length - 10} imágenes más*\n\n`
-            }
+            result += `📊 *Total imágenes:* ${uniqueImages.length}\n`
+            result += `📊 *Total videos:* ${uniqueVideos.length}\n\n`
 
            
-            global.lastTeraboImages = uniqueImages
+            if (uniqueImages.length > 0) {
+                result += `📸 *IMÁGENES:*\n\n`
+                const imagesToShow = uniqueImages.slice(0, 5)
+                
+                imagesToShow.forEach((img, i) => {
+                    result += `${i + 1}. 🖼️ ${img.src}\n`
+                    if (img.alt) result += `   📝 ${img.alt}\n`
+                    result += `\n`
+                })
+                
+                if (uniqueImages.length > 5) {
+                    result += `📝 *... y ${uniqueImages.length - 5} imágenes más*\n\n`
+                }
+            }
+
+            
+            if (uniqueVideos.length > 0) {
+                result += `🎬 *VIDEOS:*\n\n`
+                const videosToShow = uniqueVideos.slice(0, 5)
+                
+                videosToShow.forEach((vid, i) => {
+                    result += `${i + 1}. 🎥 ${vid.src}\n\n`
+                })
+                
+                if (uniqueVideos.length > 5) {
+                    result += `📝 *... y ${uniqueVideos.length - 5} videos más*\n\n`
+                }
+            }
+
+            
+            global.lastTeraboMedia = [...uniqueImages, ...uniqueVideos]
             global.lastTeraboUrl = url
 
-            result += `💡 *Para descargar una imagen usa:*\n\`${usedPrefix}terabo download <número>\`\n\n`
+            result += `💡 *Para descargar usa:*\n\`${usedPrefix}terabo download <número>\`\n\n`
             result += `💾 *Para guardar la lista usa:*\n\`${usedPrefix}terabo save\``
 
             await conn.reply(m.chat, result, m)
 
         } catch (error) {
-            console.error('Error extrayendo imágenes:', error.message)
-            let errorMsg = '❌ *Error extrayendo imágenes*\n\n'
+            console.error('Error extrayendo medios:', error.message)
+            let errorMsg = '❌ *Error extrayendo medios*\n\n'
             
             if (error.code === 'ENOTFOUND') {
                 errorMsg += '❌ No se pudo encontrar el servidor. Verifica la URL.'
@@ -283,20 +178,20 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
     
     
     else if (subCommand === 'download') {
-        const imageIndex = parseInt(args[1]) - 1
+        const mediaIndex = parseInt(args[1]) - 1
         
-        if (!global.lastTeraboImages || !global.lastTeraboImages[imageIndex]) {
-            return m.reply('❌ No hay imágenes disponibles o el número es inválido. Usa primero `tools-terabo url <URL>`.')
+        if (!global.lastTeraboMedia || !global.lastTeraboMedia[mediaIndex]) {
+            return m.reply('❌ No hay medios disponibles o el número es inválido. Usa primero `tools-terabo url <URL>`.')
         }
 
-        const image = global.lastTeraboImages[imageIndex]
+        const media = global.lastTeraboMedia[mediaIndex]
         
-        await m.reply(`📥 *Descargando imagen ${imageIndex + 1}...*\n\n🔗 ${image.src}`)
+        await m.reply(`📥 *Descargando ${media.type === 'video' ? 'video' : 'imagen'} ${mediaIndex + 1}...*\n\n🔗 ${media.src}`)
 
         try {
-            const response = await axios.get(image.src, { 
+            const response = await axios.get(media.src, { 
                 responseType: 'arraybuffer',
-                timeout: 15000,
+                timeout: 30000,
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
                 }
@@ -304,38 +199,47 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
             
             const buffer = Buffer.from(response.data)
             
-            await conn.sendMessage(m.chat, {
-                image: buffer,
-                caption: `🖼️ *Imagen ${imageIndex + 1}*\n\n📝 ALT: ${image.alt || 'Sin descripción'}\n🔗 URL: ${image.src}`
-            }, { quoted: m })
+            if (media.type === 'video') {
+                await conn.sendMessage(m.chat, {
+                    video: buffer,
+                    caption: `🎥 *Video ${mediaIndex + 1}*\n\n🔗 URL: ${media.src}`
+                }, { quoted: m })
+            } else {
+                await conn.sendMessage(m.chat, {
+                    image: buffer,
+                    caption: `🖼️ *Imagen ${mediaIndex + 1}*\n\n📝 ALT: ${media.alt || 'Sin descripción'}\n🔗 URL: ${media.src}`
+                }, { quoted: m })
+            }
 
         } catch (error) {
-            console.error('Error descargando imagen:', error.message)
-            await m.reply(`❌ Error descargando la imagen: ${error.message}`)
+            console.error('Error descargando medio:', error.message)
+            await m.reply(`❌ Error descargando el ${media.type}: ${error.message}`)
         }
     }
     
     
     else if (subCommand === 'save') {
-        if (!global.lastTeraboImages || global.lastTeraboImages.length === 0) {
-            return m.reply('❌ No hay imágenes para guardar. Usa primero `tools-terabo url <URL>`.')
+        if (!global.lastTeraboMedia || global.lastTeraboMedia.length === 0) {
+            return m.reply('❌ No hay medios para guardar. Usa primero `tools-terabo url <URL>`.')
         }
 
-        const imageData = {
+        const mediaData = {
             url: global.lastTeraboUrl,
             timestamp: new Date().toISOString(),
-            totalImages: global.lastTeraboImages.length,
-            images: global.lastTeraboImages
+            totalMedia: global.lastTeraboMedia.length,
+            images: global.lastTeraboMedia.filter(m => m.type === 'image').length,
+            videos: global.lastTeraboMedia.filter(m => m.type === 'video').length,
+            media: global.lastTeraboMedia
         }
 
-        const fileName = `terabo_images_${Date.now()}.json`
-        fs.writeFileSync(fileName, JSON.stringify(imageData, null, 2))
+        const fileName = `terabo_media_${Date.now()}.json`
+        fs.writeFileSync(fileName, JSON.stringify(mediaData, null, 2))
 
-        await m.reply(`💾 *Lista de imágenes guardada*\n\n📁 Archivo: ${fileName}\n📊 Total: ${global.lastTeraboImages.length} imágenes\n🌐 URL: ${global.lastTeraboUrl}`)
+        await m.reply(`💾 *Lista de medios guardada*\n\n📁 Archivo: ${fileName}\n📊 Total: ${global.lastTeraboMedia.length} medios\n🖼️ Imágenes: ${mediaData.images}\n🎬 Videos: ${mediaData.videos}\n🌐 URL: ${global.lastTeraboUrl}`)
     }
     
     else {
-        await m.reply(`❌ Comando no reconocido. Usa:\n\`${usedPrefix + command} upload\`\n\`${usedPrefix + command} url <URL>\`\n\`${usedPrefix + command} download <número>\`\n\`${usedPrefix + command} save\``)
+        await m.reply(`❌ Comando no reconocido. Usa:\n\`${usedPrefix + command} url <URL>\`\n\`${usedPrefix + command} download <número>\`\n\`${usedPrefix + command} save\``)
     }
 }
 
