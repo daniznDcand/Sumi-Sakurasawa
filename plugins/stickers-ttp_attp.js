@@ -14,6 +14,31 @@ let handler = async (m, { conn, text, args, usedPrefix, command }) => {
     let teks = encodeURI(text)
     let userId = m.sender
     let packstickers = global.db.data.users[userId] || {}
+
+    
+    if (!global.packsticker) {
+      const botname = global.botname || '💙HATSUNE MIKU💙'
+      const fecha = new Date().toLocaleDateString('es-ES')
+      const tiempo = new Date().toLocaleTimeString('es-ES')
+      const nombre = m.pushName || 'Anónimo'
+      
+      global.packsticker = `💙━━━✦✧✦━━━💙
+🎤 Usuario: ${nombre}
+🤖 Bot: ${botname}
+📅 Fecha: ${fecha}
+⏰ Hora: ${tiempo}
+💙━━━✦✧✦━━━💙`
+    }
+
+    if (!global.packsticker2) {
+      const dev = global.dev || 'Miku Development'
+      global.packsticker2 = `
+💙━━━✦✧✦━━━💙
+
+${dev}
+`
+    }
+
     let texto1 = packstickers.text1 || global.packsticker
     let texto2 = packstickers.text2 || global.packsticker2
 
