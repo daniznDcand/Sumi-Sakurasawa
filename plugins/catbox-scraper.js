@@ -3,12 +3,24 @@ import fs from 'fs'
 import path from 'path'
 
 let handler = async (m, { conn, text, args, usedPrefix, command }) => {
-    if (!text) {
+    let q = m.quoted ? m.quoted : m
+    let mime = (q.msg || q).mimetype || ''
+
+    if (!mime) {
         return conn.sendMessage(m.chat, {
             text: `💙 *Uso del comando Catbox*\n\n` +
-                  `📤 *Sube archivos a Catbox y obtén el enlace directo*\n\n` +
-                  `📝 *Ejemplo:* \`${usedPrefix + command} https://example.com/image.png\`\n\n` +
+                  `📤 *Sube imágenes o videos a Catbox y obtén el enlace directo*\n\n` +
+                  `📝 *Ejemplos:*\n` +
+                  `• Responde a una imagen/video con \`${usedPrefix + command}\`\n` +
+                  `• Envía una imagen/video con \`${usedPrefix + command}\`\n\n` +
                   `📊 *Límite:* Hasta 200 MB por archivo`,
+            quoted: m
+        })
+    }
+
+    if (!mime.includes('image/') && !mime.includes('video/')) {
+        return conn.sendMessage(m.chat, {
+            text: `❌ *Solo se permiten imágenes y videos*\n\n📁 *Formatos aceptados:* JPG, PNG, GIF, MP4, WEBP, etc.`,
             quoted: m
         })
     }
@@ -16,17 +28,16 @@ let handler = async (m, { conn, text, args, usedPrefix, command }) => {
     await m.react('⏳')
 
     try {
-        const response = await axios.get(text, {
-            responseType: 'arraybuffer',
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            },
-            timeout: 30000
-        })
+        const buffer = await q.download()
+        if (!buffer) {
+            return conn.sendMessage(m.chat, {
+                text: `❌ *No se pudo descargar el archivo*`,
+                quoted: m
+            })
+        }
 
-        const buffer = Buffer.from(response.data)
-        const fileName = path.basename(new URL(text).pathname) || 'upload'
-        const contentType = response.headers['content-type'] || 'application/octet-stream'
+        const fileName = q.filename || `upload_${Date.now()}.${mime.split('/')[1] || 'file'}`
+        const contentType = mime
 
         const formData = new FormData()
         formData.append('reqtype', 'fileupload')
@@ -47,7 +58,8 @@ let handler = async (m, { conn, text, args, usedPrefix, command }) => {
             const successMessage = `✅ *Archivo subido exitosamente*\n\n` +
                                  `🔗 *Enlace:* ${uploadedUrl}\n` +
                                  `📁 *Nombre:* ${fileName}\n` +
-                                 `📊 *Tamaño:* ${(buffer.length / 1024 / 1024).toFixed(2)} MB`
+                                 `📊 *Tamaño:* ${(buffer.length / 1024 / 1024).toFixed(2)} MB\n` +
+                                 `🏷️ *Tipo:* ${contentType.includes('image/') ? '🖼️ Imagen' : '🎥 Video'}`
 
             conn.sendMessage(m.chat, {
                 text: successMessage,
@@ -65,10 +77,8 @@ let handler = async (m, { conn, text, args, usedPrefix, command }) => {
         
         let errorMessage = '❌ *Error al subir archivo*\n\n'
         
-        if (error.response?.status === 404) {
-            errorMessage += '🔍 *Motivo:* El enlace no existe'
-        } else if (error.response?.status === 403) {
-            errorMessage += '🔒 *Motivo:* Acceso denegado'
+        if (error.response?.status === 413) {
+            errorMessage += '� *Motivo:* Archivo demasiado grande (máximo 200 MB)'
         } else if (error.code === 'ECONNABORTED') {
             errorMessage += '⏱️ *Motivo:* Tiempo de espera agotado'
         } else {
