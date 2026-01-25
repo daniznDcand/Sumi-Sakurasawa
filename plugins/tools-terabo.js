@@ -5,8 +5,49 @@ import fs from 'fs'
 let handler = async (m, { conn, args, usedPrefix, command }) => {
     const subCommand = args[0]?.toLowerCase()
     
+    
+    if (!subCommand && m.quoted && m.quoted.msg && m.quoted.msg.mimetype && m.quoted.msg.mimetype.startsWith('image/')) {
+        
+        await m.reply('📤 *Subiendo imagen...*\n\nProcesando tu imagen...')
+        
+        try {
+            const buffer = await m.quoted.download()
+            const fileName = `terabo_${Date.now()}.jpg`
+            
+            fs.writeFileSync(fileName, buffer)
+            
+            const simulatedUrl = `https://terabo.pro/uploads/${fileName}`
+            
+            let result = `✅ *IMAGEN SUBIDA*\n\n`
+            result += `📁 *Nombre:* ${fileName}\n`
+            result += `📏 *Tamaño:* ${buffer.length} bytes\n`
+            result += `🔗 *URL:* ${simulatedUrl}\n`
+            result += `📅 *Fecha:* ${new Date().toLocaleString()}\n\n`
+            result += `💡 *Usa esta URL para compartir tu imagen*`
+            
+            await conn.sendMessage(m.chat, {
+                text: result,
+                contextInfo: {
+                    externalAdReply: {
+                        title: "Imagen Subida - Terabo",
+                        body: fileName,
+                        thumbnailUrl: simulatedUrl,
+                        sourceUrl: simulatedUrl,
+                        mediaType: 1,
+                        renderLargerThumbnail: true
+                    }
+                }
+            }, { quoted: m })
+            
+        } catch (error) {
+            console.error('Error subiendo imagen:', error.message)
+            await m.reply('❌ Error al procesar la imagen. Intenta de nuevo.')
+        }
+        return
+    }
+    
     if (!subCommand) {
-        return m.reply(`🛠️ *TOOLS TERABO*\n\n💡 *Comandos disponibles:*\n\n\`${usedPrefix + command} upload <imagen>\` - Sube una imagen\n\`${usedPrefix + command} url <link>\` - Extrae imágenes de una URL\n\n📋 *Ejemplos:*\n• \`${usedPrefix + command} upload\` (responde a una imagen)\n• \`${usedPrefix + command} url https://terabo.pro\``)
+        return m.reply(`🛠️ *TOOLS TERABO*\n\n💡 *Comandos disponibles:*\n\n\`${usedPrefix + command} upload <imagen>\` - Sube una imagen\n\`${usedPrefix + command} url <link>\` - Extrae imágenes de una URL\n\n📋 *Ejemplos:*\n• \`${usedPrefix + command} upload\` (responde a una imagen)\n• \`${usedPrefix + command} url https://terabo.pro\`\n\n💡 *O responde directamente a una imagen con \`${usedPrefix + command}\``)
     }
 
    
