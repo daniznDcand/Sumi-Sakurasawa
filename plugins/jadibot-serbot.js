@@ -686,14 +686,14 @@ console.log(chalk.yellow(`🔄 Intento de reconexión ${sock.reconnectAttempts}/
   
     try {
       sock._reconnectNotified = sock._reconnectNotified || false
-      const notifyTo = (m && m.sender) ? m.sender : `${path.basename(pathMikuJadiBot)}@s.whatsapp.net`
+      
       try {
         const now = Date.now()
         const lastNotify = sock._lastReconnectNotify || 0
-        if (!sock._reconnectNotified && options.fromCommand && (now - lastNotify) > NOTIFY_COOLDOWN && shouldNotifyUser(notifyTo) && isSocketReady(conn)) {
+        if (!sock._reconnectNotified && options.fromCommand && (now - lastNotify) > NOTIFY_COOLDOWN) {
           try {
             
-            pushInternalNotification(sock, notifyTo, `🔄 Reconectando SubBot +${path.basename(pathMikuJadiBot)}... Intento ${sock.reconnectAttempts}/${sock.maxReconnectAttempts}\n⏰ Tiempo de sesión: ${msToTime(Date.now() - sock.sessionStartTime)}\n🔒 Sesión persistente activada`)
+            console.log(`🔄 Reconectando SubBot +${path.basename(pathMikuJadiBot)}... Intento ${sock.reconnectAttempts}/${sock.maxReconnectAttempts} (Interno)`)
           } catch (e) {
             console.error('Error notificando reconexión:', e?.message || e)
           } finally {
@@ -1033,9 +1033,8 @@ if (errorMessage.includes('SessionError: No sessions')) {
       console.log(chalk.cyan('🔄 Iniciando reconexión por SessionError...'))
       const reconnected = await attemptReconnect()
       if (!reconnected) {
-        console.log(chalk.red(`❌ Falló la reconexión por SessionError para +${path.basename(pathMikuJadiBot)}`))
+        console.log(chalk.red(`❌ Falló la reconexión por SessionError para +${path.basename(pathMikuJadiBot)} (Interno)`))
         
-        pushInternalNotification(sock, (m && m.sender) ? m.sender : `${path.basename(pathMikuJadiBot)}@s.whatsapp.net`, `❌ Falló la reconexión por SessionError para +${path.basename(pathMikuJadiBot)}`)
         await endSesion(false)
       }
       return 
