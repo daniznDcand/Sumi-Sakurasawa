@@ -104,8 +104,8 @@ return m.reply(`❌ Error al analizar SubBots: ${error.message}`)
 }
 }
 
-handler.help = ['subbots']
+handler.help = ['verbots']
 handler.tags = ['serbot']
-handler.command = ['subbots']
+handler.command = ['verbots']
 
 export default handler
