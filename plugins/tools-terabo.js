@@ -6,44 +6,69 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
     const subCommand = args[0]?.toLowerCase()
     
     
-    if (!subCommand && m.quoted && m.quoted.msg && m.quoted.msg.mimetype && m.quoted.msg.mimetype.startsWith('image/')) {
+    console.log('Mensaje recibido:', {
+        hasQuoted: !!m.quoted,
+        quotedType: m.quoted?.type,
+        quotedMsg: !!m.quoted?.msg,
+        quotedMimetype: m.quoted?.msg?.mimetype,
+        subCommand: subCommand
+    })
+    
+   
+    if (!subCommand && m.quoted) {
+        console.log('Hay mensaje citado, verificando si es imagen...')
         
-        await m.reply('📤 *Subiendo imagen...*\n\nProcesando tu imagen...')
+      
+        const isImage = (
+            (m.quoted.type === 'imageMessage') ||
+            (m.quoted.msg && m.quoted.msg.mimetype && m.quoted.msg.mimetype.startsWith('image/')) ||
+            (m.quoted.mtype && m.quoted.mtype === 'imageMessage')
+        )
         
-        try {
-            const buffer = await m.quoted.download()
-            const fileName = `terabo_${Date.now()}.jpg`
+        console.log('¿Es imagen?', isImage)
+        
+        if (isImage) {
+            console.log('Procesando imagen automáticamente...')
+            await m.reply('📤 *Subiendo imagen...*\n\nProcesando tu imagen...')
             
-            fs.writeFileSync(fileName, buffer)
-            
-            const simulatedUrl = `https://terabo.pro/uploads/${fileName}`
-            
-            let result = `✅ *IMAGEN SUBIDA*\n\n`
-            result += `📁 *Nombre:* ${fileName}\n`
-            result += `📏 *Tamaño:* ${buffer.length} bytes\n`
-            result += `🔗 *URL:* ${simulatedUrl}\n`
-            result += `📅 *Fecha:* ${new Date().toLocaleString()}\n\n`
-            result += `💡 *Usa esta URL para compartir tu imagen*`
-            
-            await conn.sendMessage(m.chat, {
-                text: result,
-                contextInfo: {
-                    externalAdReply: {
-                        title: "Imagen Subida - Terabo",
-                        body: fileName,
-                        thumbnailUrl: simulatedUrl,
-                        sourceUrl: simulatedUrl,
-                        mediaType: 1,
-                        renderLargerThumbnail: true
+            try {
+                const buffer = await m.quoted.download()
+                console.log('Imagen descargada, tamaño:', buffer.length)
+                
+                const fileName = `terabo_${Date.now()}.jpg`
+                
+                fs.writeFileSync(fileName, buffer)
+                console.log('Imagen guardada como:', fileName)
+                
+                const simulatedUrl = `https://terabo.pro/uploads/${fileName}`
+                
+                let result = `✅ *IMAGEN SUBIDA*\n\n`
+                result += `📁 *Nombre:* ${fileName}\n`
+                result += `📏 *Tamaño:* ${buffer.length} bytes\n`
+                result += `🔗 *URL:* ${simulatedUrl}\n`
+                result += `📅 *Fecha:* ${new Date().toLocaleString()}\n\n`
+                result += `💡 *Usa esta URL para compartir tu imagen*`
+                
+                await conn.sendMessage(m.chat, {
+                    text: result,
+                    contextInfo: {
+                        externalAdReply: {
+                            title: "Imagen Subida - Terabo",
+                            body: fileName,
+                            thumbnailUrl: simulatedUrl,
+                            sourceUrl: simulatedUrl,
+                            mediaType: 1,
+                            renderLargerThumbnail: true
+                        }
                     }
-                }
-            }, { quoted: m })
-            
-        } catch (error) {
-            console.error('Error subiendo imagen:', error.message)
-            await m.reply('❌ Error al procesar la imagen. Intenta de nuevo.')
+                }, { quoted: m })
+                
+            } catch (error) {
+                console.error('Error subiendo imagen:', error.message)
+                await m.reply('❌ Error al procesar la imagen: ' + error.message)
+            }
+            return
         }
-        return
     }
     
     if (!subCommand) {
