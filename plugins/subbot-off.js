@@ -3,20 +3,19 @@ import chalk from 'chalk'
 
 let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
 if (!globalThis.db.data.settings[conn.user.jid].jadibotmd) {
-return m.reply(`💙 El Comando *${command}* está desactivado temporalmente.`,m ,global.miku)
+return m.reply(`💙 El Comando *${command}* está desactivado temporalmente.`)
 }
 
 if (!globalThis.db.data.settings[conn.user.jid].serbot) {
-return m.reply(`💙 La función *serbot* está desactivada.`,m ,global.miku)
+return m.reply(`💙 La función *serbot* está desactivada.`)
 }
 
 
 const isSubBot = conn.isSubBot === true
 if (!isSubBot) {
-return m.reply(`❌ Este comando solo puede ser usado por un SubBot.`,m ,global.miku)
+return m.reply(`❌ Este comando solo puede ser usado por un SubBot.`)
 }
 
-if (command === 'off') {
 try {
 
 const currentChat = m.chat
@@ -48,13 +47,10 @@ console.log('No se pudo notificar al bot principal:', e.message)
 console.error('Error al salir del grupo:', error)
 return m.reply(`❌ Error al salir del grupo: ${error.message}`)
 }
-} else {
-return m.reply(`💡 *Uso del comando*\n\n\`${usedPrefix}subbot off\` - Para que el SubBot salga del grupo actual\n\n📌 Nota: Este comando solo funciona en grupos y solo lo puede usar un SubBot.`)
-}
 }
 
-handler.help = ['subbot off']
+handler.help = ['salir']
 handler.tags = ['serbot']
-handler.command = ['subbot']
+handler.command = ['salir']
 
 export default handler
