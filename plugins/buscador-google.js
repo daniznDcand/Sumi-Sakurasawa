@@ -3,7 +3,7 @@ import fetch from 'node-fetch';
 let handler = async (m, { text }) => {
   if (!text) {
     m.reply(`💙 Por favor, proporciona el término de búsqueda que deseas que busque en el ciberespacio de Google ✨`, m, global.miku);
-    return;
+    return true;
   }
 
   const apiUrl = `https://delirius-apiofc.vercel.app/search/googlesearch?query=${encodeURIComponent(text)}`;
@@ -14,7 +14,7 @@ let handler = async (m, { text }) => {
 
     if (!result.status) {
       m.reply('🎵 Error al realizar la búsqueda en el mundo virtual 💫', m, global.miku);
-      return;
+      return true;
     }
 
     let replyMessage = `💙 Resultados de búsqueda virtual:\n\n`;

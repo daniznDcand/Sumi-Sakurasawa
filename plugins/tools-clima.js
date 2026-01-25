@@ -14,7 +14,7 @@ let handler = async (m, { conn, args }) => {
       }
     }
     await conn.sendMessage(m.chat, { text: txt.trim(), mentions: conn.parseMention(txt) }, { quoted: m, ephemeralExpiration: 24*60*60, disappearingMessagesInChat: 24*60*60 });
-    return;
+    return true;
   }
 
   try {

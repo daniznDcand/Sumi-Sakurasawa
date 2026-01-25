@@ -108,10 +108,10 @@ this.ev.emit('messages.upsert', msg)
 } = (await import('@whiskeysockets/baileys')).default
 export async function all(m, chatUpdate) {
   try {
-    if (m.isBaileys) return
-    if (!m.message) return
+    if (m.isBaileys) return true
+    if (!m.message) return true
     if (!(m.message.buttonsResponseMessage || m.message.templateButtonReplyMessage || m.message.listResponseMessage ||
-        m.message.interactiveResponseMessage)) return
+        m.message.interactiveResponseMessage)) return true
     let id = m.message.buttonsResponseMessage?.selectedButtonId || m.message.templateButtonReplyMessage?.selectedId ||
       m.message.listResponseMessage?.singleSelectReply?.selectedRowId || JSON.parse(m.message
         .interactiveResponseMessage?.nativeFlowResponseMessage?.paramsJson)?.id

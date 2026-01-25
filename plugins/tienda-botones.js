@@ -1063,7 +1063,7 @@ handler.before = async function (m, { conn }) {
                 await conn.sendMessage(m.chat, waifuMessage, { quoted: m });
             }
 
-            return;
+            return true;
         }
 
         return await m.reply(successMessage)

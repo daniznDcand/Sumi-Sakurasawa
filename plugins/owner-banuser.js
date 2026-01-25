@@ -29,7 +29,7 @@ var handler = async (m, { conn, text, usedPrefix, command }) => {
             if (user.replace(/@s\.whatsapp\.net$/, '') === ownerNumber) {
                 aa = ownerNumber + '@s.whatsapp.net'
                 await conn.reply(m.chat, `💙 No puedo banear al propietario @${ownerNumber} de *${botname}*.`, m, rcanal, { mentions: [aa] })
-                return
+                return true
             }
         }
 

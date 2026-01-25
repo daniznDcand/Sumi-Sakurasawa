@@ -211,7 +211,7 @@ let handler = async (m, { conn, text, isOwner }) => {
   
   if (!m || !m.text) {
     console.log(`❌ DEBUG AI-MIKU: Sin mensaje o texto`)
-    return
+    return true
   }
   
   const messageText = m.text.toLowerCase().trim()

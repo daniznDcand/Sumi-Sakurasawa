@@ -309,7 +309,7 @@ let handler = async (m, { conn, usedPrefix, command, args }) => {
         await conn.sendFile(m.chat, downloadedImages[i].buffer, downloadedImages[i].filename, '', m, null, global.rcanal)
       }
       await m.react('💙')
-      return
+      return true
     }
 
     throw new Error('No se pudieron descargar imágenes válidas')

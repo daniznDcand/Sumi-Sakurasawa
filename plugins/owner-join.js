@@ -14,7 +14,7 @@ let handler = async (m, { conn, text, isOwner, command }) => {
     if (m.messageStubType === 20) { 
         const groupJid = m.key.remoteJid;
         console.log('Mensaje de unión detectado para el grupo:', groupJid);
-        return; 
+        return true; 
     }
 
     

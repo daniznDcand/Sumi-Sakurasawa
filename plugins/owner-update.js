@@ -10,7 +10,7 @@ let handler = async (m, { conn }) => {
     if (err) {
       console.log('Git pull error:', err);
       conn.reply(m.chat, `❌ *Error en la actualización*\n├─ 📝 ${err.message}\n└─ 🔧 Verifica la conexión`, m);
-      return;
+      return true;
     }
 
     if (stderr) {

@@ -12,7 +12,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
             m.reply('Error');
             console.error(`exec error: ${error}`);
             reject(error);
-            return;
+            return true;
           }
           resolve(stdout.trim());
         });

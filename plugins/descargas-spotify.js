@@ -87,7 +87,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
         user.spotifyResults = searchData.result
         user.spotifySearchTime = Date.now()
         
-        return
+        return true
 
     } catch (e1) {
         m.reply(`${e1.message || e1}`)

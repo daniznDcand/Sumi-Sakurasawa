@@ -1,5 +1,5 @@
-let handler = async (m, { conn, args, isAdmin, isROwner, usedPrefix }) => {
-    if (!(isAdmin || isROwner)) return dfail('admin', m, conn)
+let handler = async (m, { conn, args, isROwner, usedPrefix }) => {
+    if (!isROwner) return dfail('owner', m, conn)
 
     const action = (args[0] || '').toLowerCase()
     if (!action || (action !== 'on' && action !== 'off')) {
@@ -9,13 +9,17 @@ let handler = async (m, { conn, args, isAdmin, isROwner, usedPrefix }) => {
     const chat = global.getChat ? global.getChat(m.chat) : global.db.data.chats[m.chat]
     if (action === 'on') {
         chat.isBanned = false
-        await conn.reply(m.chat, '💙 Bot activo en este grupo.', m, global.rcanal)
+        if (isROwner) {
+            await conn.reply(m.chat, '💙 Bot activo en este grupo.', m, global.rcanal)
+        }
         await m.react('✅')
-        return
+        return true
     }
 
     chat.isBanned = true
-    await conn.reply(m.chat, '💙 El bot fue desactivado en este grupo.', m, global.rcanal)
+    if (isROwner) {
+        await conn.reply(m.chat, '💙 El bot fue desactivado en este grupo.', m, global.rcanal)
+    }
     await m.react('✅')
 }
 
