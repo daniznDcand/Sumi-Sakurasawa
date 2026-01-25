@@ -76,12 +76,12 @@ let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
     })
     
  
+    let subBotsInGroup = []
     if (m.chat.endsWith('@g.us')) {
       try {
         const groupMetadata = await conn.groupMetadata(m.chat)
         const participants = groupMetadata.participants.map(p => p.id)
         
-        let subBotsInGroup = []
         for (const subbot of activeConnections) {
           const subbotJid = subbot.user.jid
           if (participants.includes(subbotJid)) {
