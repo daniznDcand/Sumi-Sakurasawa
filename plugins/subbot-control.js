@@ -115,24 +115,28 @@ try {
 const subBotsInGroup = global.lastSubBotsInGroup
 
 if (target === 'todos') {
-
 await m.reply(`🔄 *Apagando todos los SubBots...*\n\n🤖 Desconectando ${subBotsInGroup.length} SubBots del grupo...`)
 
 let disconnected = 0
 for (const subbot of subBotsInGroup) {
 try {
-await subbot.socket.groupLeave(m.chat)
+if (subbot.socket.ws && subbot.socket.ws.socket) {
+subbot.socket.ws.socket.close()
+}
+const index = global.conns.indexOf(subbot.socket)
+if (index > -1) {
+global.conns.splice(index, 1)
+}
 disconnected++
-console.log(chalk.blue(`🤖 SubBot ${subbot.jid} salió del grupo ${m.chat}`))
+console.log(chalk.blue(`🤖 SubBot ${subbot.jid} desconectado del grupo ${m.chat}`))
 } catch (e) {
 console.log(`Error apagando SubBot ${subbot.jid}:`, e.message)
 }
 }
 
-await conn.reply(m.chat, `✅ *SubBots apagados*\n\n🤖 ${disconnected} SubBots salieron del grupo correctamente.\n📱 El bot principal sigue funcionando normalmente.`, m)
+await conn.reply(m.chat, `✅ *SubBots apagados*\n\n🤖 ${disconnected} SubBots se desconectaron correctamente.\n📱 Permanecen en el grupo pero no responderán comandos.\n🔧 El bot principal sigue funcionando normalmente.`, m)
 
 } else {
-
 const index = parseInt(target) - 1
 if (isNaN(index) || index < 0 || index >= subBotsInGroup.length) {
 return m.reply(`❌ Número inválido. Usa un número del 1 al ${subBotsInGroup.length}.`)
@@ -142,10 +146,16 @@ const subbot = subBotsInGroup[index]
 await m.reply(`🔄 *Apagando SubBot...*\n\n🤖 Desconectando a ${subbot.name} del grupo...`)
 
 try {
-await subbot.socket.groupLeave(m.chat)
-console.log(chalk.blue(`🤖 SubBot ${subbot.jid} salió del grupo ${m.chat}`))
+if (subbot.socket.ws && subbot.socket.ws.socket) {
+subbot.socket.ws.socket.close()
+}
+const socketIndex = global.conns.indexOf(subbot.socket)
+if (socketIndex > -1) {
+global.conns.splice(socketIndex, 1)
+}
+console.log(chalk.blue(`🤖 SubBot ${subbot.jid} desconectado del grupo ${m.chat}`))
 
-await conn.reply(m.chat, `✅ *SubBot apagado*\n\n🤖 ${subbot.name} salió del grupo correctamente.\n📱 El bot principal sigue funcionando normalmente.`, m)
+await conn.reply(m.chat, `✅ *SubBot apagado*\n\n🤖 ${subbot.name} se desconectó correctamente.\n📱 Permanece en el grupo pero no responderá comandos.\n🔧 El bot principal sigue funcionando normalmente.`, m)
 
 } catch (e) {
 console.error('Error apagando SubBot:', e)
