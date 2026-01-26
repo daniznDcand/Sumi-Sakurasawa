@@ -8,9 +8,9 @@ let handler = async (m, { conn }) => {
     let q = m.quoted ? m.quoted : m;
     let mime = (q.msg || q).mimetype || '';
     if (!mime) {
-      return conn.reply(m.chat, `💙 Por favor, responde a un archivo válido (imagen, video, etc.).`, m, global.rcanal);
+      return conn.reply(m.chat, `💙 Por favor, responde a un archivo válido (imagen, video, etc.).`, m);
     }
-    await m.react(rwait);
+    await m.react('⏳');
 
     let media = await q.download();
     if (!media) throw "No se pudo descargar el archivo.";
@@ -27,14 +27,14 @@ let handler = async (m, { conn }) => {
     txt += `*» Enlace* : ${link}\n`;
     txt += `*» Tamaño* : ${formatBytes(media.length)}\n`;
     txt += `*» Expiración* : ${isTele ? 'No expira' : 'Desconocido'}\n\n`;
-    txt += `> *${typeof dev !== "undefined" ? dev : "Bot"}*`;
+    txt += `> *${global.dev || "Bot"}*`;
 
-    await conn.sendFile(m.chat, media, 'thumbnail.jpg', txt, m, fkontak);
-    await m.react(done);
+    await conn.sendFile(m.chat, media, 'thumbnail.jpg', txt, m);
+    await m.react('✅');
 
   } catch (err) {
     console.error(err);
-    await m.react(error);
+    await m.react('❌');
     await m.reply(`❌ Error al convertir o subir el archivo a Catbox.\n${err && err.toString ? err.toString() : err}`, m);
   }
 };

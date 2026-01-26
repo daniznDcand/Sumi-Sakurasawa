@@ -47,28 +47,44 @@ let handler = async (m, { conn, text, args, usedPrefix, command }) => {
         const uploadResponse = await axios.post('https://catbox.moe/user/api.php', formData, {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-                'Referer': 'https://catbox.moe/'
+                'Referer': 'https://catbox.moe/',
+                'Accept': 'text/plain, */*; q=0.01',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Connection': 'keep-alive'
             },
             timeout: 60000
         })
 
-        if (uploadResponse.data && uploadResponse.data.includes('https://files.catbox.moe/')) {
-            const uploadedUrl = uploadResponse.data.trim()
-            
-            const successMessage = `✅ *Archivo subido exitosamente*\n\n` +
-                                 `🔗 *Enlace:* ${uploadedUrl}\n` +
-                                 `📁 *Nombre:* ${fileName}\n` +
-                                 `📊 *Tamaño:* ${(buffer.length / 1024 / 1024).toFixed(2)} MB\n` +
-                                 `🏷️ *Tipo:* ${contentType.includes('image/') ? '🖼️ Imagen' : '🎥 Video'}`
+        console.log('Respuesta de Catbox:', uploadResponse.data)
 
-            conn.sendMessage(m.chat, {
-                text: successMessage,
-                quoted: m
-            })
+        if (uploadResponse.data) {
+            const responseData = uploadResponse.data.toString().trim()
             
-            await m.react('✅')
+            if (responseData.includes('https://files.catbox.moe/') || responseData.includes('https://catbox.moe/files/')) {
+                const uploadedUrl = responseData.match(/https:\/\/files\.catbox\.moe\/[^\s]+/)?.[0] || responseData.match(/https:\/\/catbox\.moe\/files\/[^\s]+/)?.[0]
+                
+                if (uploadedUrl) {
+                    const successMessage = `✅ *Archivo subido exitosamente*\n\n` +
+                                         `🔗 *Enlace:* ${uploadedUrl}\n` +
+                                         `📁 *Nombre:* ${fileName}\n` +
+                                         `📊 *Tamaño:* ${(buffer.length / 1024 / 1024).toFixed(2)} MB\n` +
+                                         `🏷️ *Tipo:* ${contentType.includes('image/') ? '🖼️ Imagen' : '🎥 Video'}`
+
+                    conn.sendMessage(m.chat, {
+                        text: successMessage,
+                        quoted: m
+                    })
+                    
+                    await m.react('✅')
+                    return
+                }
+            }
+            
+            // Si no es un enlace, mostrar la respuesta para depuración
+            console.log('Respuesta no reconocida:', responseData)
+            throw new Error(`Respuesta del servidor: ${responseData.substring(0, 100)}...`)
         } else {
-            throw new Error('Respuesta inválida del servidor')
+            throw new Error('El servidor no devolvió respuesta')
         }
 
     } catch (error) {
@@ -78,7 +94,7 @@ let handler = async (m, { conn, text, args, usedPrefix, command }) => {
         let errorMessage = '❌ *Error al subir archivo*\n\n'
         
         if (error.response?.status === 413) {
-            errorMessage += '� *Motivo:* Archivo demasiado grande (máximo 200 MB)'
+            errorMessage += '💦 *Motivo:* Archivo demasiado grande (máximo 200 MB)'
         } else if (error.code === 'ECONNABORTED') {
             errorMessage += '⏱️ *Motivo:* Tiempo de espera agotado'
         } else {
