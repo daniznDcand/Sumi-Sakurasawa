@@ -14,7 +14,8 @@ export async function before(m, { conn, participants, groupMetadata }) {
 
     const chat = global.db.data.chats[m.chat]
 
-    if (chat.welcome === undefined) chat.welcome = true
+   
+    if (!('welcome' in chat)) chat.welcome = true
 
     console.log(`🔍 Estado welcome para ${m.chat}:`, chat.welcome)
 

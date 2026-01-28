@@ -95,8 +95,8 @@ if (!("autoresponder" in chat)) chat.autoresponder = false
 if (!("reaction" in chat)) chat.reaction = true
 if (!("antifake" in chat)) chat.antifake = false
 if (!("antiarabes" in chat)) chat.antiarabes = false
-if (!("antitoxic" in chat)) chat.antitoxic = false
-if (!("antiMencion" in chat)) chat.antiMencion = false
+if (!("antitoxic" in chat)) chat.antitoxic = true
+if (!("antiMencion" in chat)) chat.antiMencion = true
 if (!("antiMencionAction" in chat)) chat.antiMencionAction = "kick"
 if (!("autolevelup" in chat)) chat.autolevelup = false
 if (!("antispam" in chat)) chat.antispam = false
@@ -123,7 +123,8 @@ autoresponder: false,
 reaction: true,
 antifake: false,
 antiarabes: false,
-antitoxic: false,
+antitoxic: true,
+antiMencion: true,
 antiMencion: false,
 antiMencionAction: "kick",
 autolevelup: false,
