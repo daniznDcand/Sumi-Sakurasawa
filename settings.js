@@ -55,8 +55,8 @@ global.etiqueta = 'Daniel 🇦🇱'
 global.moneda = 'Dulces'
 global.welcom1 = '💙 ¡Konnichiwa! Bienvenido al mundo virtual de Hatsune Miku! 💙 \n✨ Aquí podrás disfrutar de la magia musical ✨ \n🎶 Edita este mensaje con setwelcome 🎶'
 global.welcom2 = '💫 ¡Sayonara! Gracias por cantar con nosotros 🌟 \n🎵 ¡Esperamos verte pronto en el escenario virtual! 🎵 \n🎤 Edita este mensaje con setbye 🎤'
-global.banner = 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg'
-global.avatar = 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg'
+global.banner = 'https://files.catbox.moe/6gg8hj.jpg'
+global.avatar = 'https://files.catbox.moe/6gg8hj.jpg'
 
 global.api = {
   url: 'https://api.stellarwa.xyz',
@@ -110,7 +110,7 @@ global.miku = {
       mediaUrl: null,
       description: 'Sumi Sakurasawa',
       previewType: "PHOTO",
-      thumbnailUrl: global.banner || 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg',
+      thumbnailUrl: global.banner || 'https://files.catbox.moe/6gg8hj.jpg',
       sourceUrl: global.channel || 'https://whatsapp.com/channel/0029VbCRM6SKWEKhvvQzJT38',
       mediaType: 1,
       renderLargerThumbnail: false
