@@ -88,12 +88,12 @@ global.APIs = {
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
-global.gp1 = 'https://chat.whatsapp.com/FQ78boTUpJ7Ge3oEtn8pRE?mode=ac_t'
-global.comunidad1 = 'https://chat.whatsapp.com/FQ78boTUpJ7Ge3oEtn8pRE?mode=ac_t'
-global.channel = 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
-global.channel2 = 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
-global.md = 'https://github.com/Brauliovh3/HATSUNE-MIKU'
-global.correo = 'brauliovh3@gmail.com'
+global.gp1 = 'https://whatsapp.com/channel/0029VbCRM6SKWEKhvvQzJT38'
+global.comunidad1 = 'https://whatsapp.com/channel/0029VbCRM6SKWEKhvvQzJT38'
+global.channel = 'https://whatsapp.com/channel/0029VbCRM6SKWEKhvvQzJT38'
+global.channel2 = 'https://whatsapp.com/channel/0029VbCRM6SKWEKhvvQzJT38'
+global.md = 'https://whatsapp.com/channel/0029VbCRM6SKWEKhvvQzJT38'
+global.correo = 'https://whatsapp.com/channel/0029VbCRM6SKWEKhvvQzJT38'
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
@@ -102,28 +102,28 @@ global.miku = {
   contextInfo: { 
     isForwarded: true, 
     forwardedNewsletterMessageInfo: { 
-      newsletterJid: "120363315369913363@newsletter", 
+      newsletterJid: "120363407087260811@newsletter", 
       serverMessageId: 100, 
-      newsletterName: "💙 HATSUNE MIKU CHANNEL💙"
+      newsletterName: "Sumi Sakurasawa 🍭"
     },
     externalAdReply: {
       mediaUrl: null,
-      description: '🎵 Hatsune Miku, la Diva Virtual del Futuro 🎵',
+      description: 'Sumi Sakurasawa',
       previewType: "PHOTO",
       thumbnailUrl: global.banner || 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg',
-      sourceUrl: global.channel || 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o',
+      sourceUrl: global.channel || 'https://whatsapp.com/channel/0029VbCRM6SKWEKhvvQzJT38',
       mediaType: 1,
       renderLargerThumbnail: false
     }
   }
 }
 
-global.redes = 'https://www.whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o'
-global.dev = '© 🄿🄾🅆🄴🅁🄴🄳 (ㅎㅊDEPOOLㅊㅎ)'
+global.redes = 'https://whatsapp.com/channel/0029VbCRM6SKWEKhvvQzJT38'
+global.dev = 'Powered By Daniel 🇦🇱'
 
-global.emoji = '🌟'
-global.emoji2 = '🎵'
-global.emoji3 = '💖'
+global.emoji = '🍭'
+global.emoji2 = '🍭'
+global.emoji3 = '🍭'
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
