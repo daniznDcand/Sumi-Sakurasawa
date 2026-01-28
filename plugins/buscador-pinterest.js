@@ -53,15 +53,15 @@ async function searchPinterestAPI(query) {
 
         const data = await response.json();
         
-        if (!data || !Array.isArray(data)) {
+        if (!data || !data.status || !data.data || !Array.isArray(data.data)) {
             console.log('API Response:', data);
             return [];
         }
 
-        return data.slice(0, 10).map(item => ({
-            url: item.image || item.url || item.media_url,
+        return data.data.slice(0, 10).map(item => ({
+            url: item.hd || item.mini || item.image || item.url || item.media_url,
             title: item.title || item.description || '',
-            pinner: item.source || item.author || 'Pinterest'
+            pinner: item.username || item.full_name || 'Pinterest'
         })).filter(item => item.url);
         
     } catch (error) {
