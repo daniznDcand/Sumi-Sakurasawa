@@ -4,6 +4,10 @@ let handler = async (m, { conn }) => {
 let user = global.db.data.users[m.sender];
 if (!user) return;
 
+
+let moneda = '🌱'
+let fkontak = { key: { remoteJid: 'status@broadcast', participant: '0@s.whatsapp.net' }, message: { contactMessage: { displayName: 'Hatsune Miku', vcard: 'BEGIN:VCARD\nVERSION:3.0\nN:;Hatsune Miku;;\nFN:Hatsune Miku\nORG:Hatsune Miku\nTEL:+1234567890\nEND:VCARD' } } }
+
 let coin = pickRandom([20, 5, 7, 8, 88, 40, 50, 70, 90, 999, 300]);
 let emerald = pickRandom([1, 5, 7, 8]);
 let iron = pickRandom([5, 6, 7, 9, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80]);

@@ -242,9 +242,12 @@ function shouldNotifyUser(jid) {
   try {
     if (!global.getUser) return true
     const u = global.getUser(jid)
+    if (!u) return true
+    
     const last = u.subBotLastNotify || 0
-    if (Date.now() - last > NOTIFY_COOLDOWN) {
-      u.subBotLastNotify = Date.now()
+    const now = Date.now()
+    if (now - last > NOTIFY_COOLDOWN) {
+      u.subBotLastNotify = now
       return true
     }
     return false
@@ -730,6 +733,11 @@ const reconnectOptions = {
 
 vlog('🔄 Creando socket de reconexión con opciones limpias...')
 const cleanReconnectOptions = cleanSocketOptions(reconnectOptions)
+
+// Preservar flags de notificación para evitar spam
+const oldNotifiedOpen = sock._notifiedOpen || false
+const oldCustomizeIntroSent = sock._customizeIntroSent || false
+
 sock = makeWASocket(cleanReconnectOptions)
 sock.reconnectAttempts = reconnectAttempts
 sock.maxReconnectAttempts = 10 
@@ -741,6 +749,10 @@ sock.isAlive = true
 sock.sessionPersistence = true
 sock.autoReconnect = true
 sock.lastHeartbeat = Date.now()
+
+// Restaurar flags de notificación
+sock._notifiedOpen = oldNotifiedOpen
+sock._customizeIntroSent = oldCustomizeIntroSent
 
 
 sock.isSubBot = true
@@ -1485,8 +1497,10 @@ await joinChannels(sock)
     const openRecipient = m?.chat || ((sock.user && sock.user.jid) ? sock.user.jid : null)
     sock._notifiedOpen = sock._notifiedOpen || false
    
+    // SOLO enviar mensaje en la PRIMERA conexión, NUNCA en reconexiones
     const isFirstConnection = sock.reconnectAttempts === 0
-    if (options.fromCommand && !sock._notifiedOpen && openRecipient && shouldNotifyUser(openRecipient) && isFirstConnection) {
+    
+    if (options.fromCommand && !sock._notifiedOpen && openRecipient && isFirstConnection) {
       try {
         await conn.sendMessage(m.chat, { 
           text: `✅ *SubBot conectado exitosamente* 🤖\n\n` +
