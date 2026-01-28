@@ -16,8 +16,8 @@ global.botNumber = ''
 
 global.owner = [
 // <-- Número @s.whatsapp.net -->
-  ['51988514570', '(ㅎㅊDEPOOLㅊㅎ)', true],
-  ['51988514570', '(ㅎㅊDEPOOLㅊㅎ)', true],
+  ['51994143761', 'Daniel', true],
+  ['51900105468', 'Cande', true],
   
 // <-- Número @lid -->
   ['141807421759536', '(ㅎㅊDEPOOLㅊㅎ)', true]
@@ -26,7 +26,7 @@ global.owner = [
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
 global.mods = []
-global.suittag = ['51988514570'] 
+global.suittag = ['51994143761'] 
 global.prems = []
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
@@ -34,25 +34,25 @@ global.prems = []
 global.libreria = 'Baileys'
 global.baileys = 'V 6.7.17' 
 global.vs = '2.2.5'
-global.nameqr = '🎵 Hatsune-Miku-MD 🎵'
-global.namebot = '💙 Ｈａｔｓｕｎｅ Ｍｉｋｕ Ｂｏｔ 💙'
+global.nameqr = 'sumi Sakurasawa'
+global.namebot = 'Sumi Sakurasawa'
 global.sessions = 'Sessions'
 global.jadi = 'JadiBots' 
 
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
-global.packname = '🎤 𝙃𝘼𝙏𝙎𝙐𝙉𝙀 𝙈𝙄𝙆𝙐 𝘽𝙊𝙏 🎤'
-global.botname = '🄷🄰🅃🅂🅄🄽🄴 🄼🄸🄺🅄'
+global.packname = 'Sumi Sakurasawa 🍭'
+global.botname = 'Sumi Sakurasawa 🍭 '
 global.wm = '🎵◟Hαƚsυɳҽ Mιƙυ◞🎵'
-global.author = '© (ㅎㅊDEPOOLㅊㅎ)'
-global.dev = '© 🄿🄾🅆🄴🅁🄴🄳 (ㅎㅊDEPOOLㅊㅎ)'
-global.textbot = '🎤Hatsune Miku, la Diva Virtual del Futuro🎤'
-global.etiqueta = '🎵(ㅎㅊDEPOOLㅊㅎ)🎵'
+global.author = 'Dev.Daniel 🇦🇱'
+global.dev = '© Powered By Daniel 🇦🇱'
+global.textbot = 'Sumi Sakurasawa'
+global.etiqueta = 'Daniel 🇦🇱'
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
-global.moneda = 'Cebollines 🌱'
+global.moneda = 'Dulces'
 global.welcom1 = '💙 ¡Konnichiwa! Bienvenido al mundo virtual de Hatsune Miku! 💙 \n✨ Aquí podrás disfrutar de la magia musical ✨ \n🎶 Edita este mensaje con setwelcome 🎶'
 global.welcom2 = '💫 ¡Sayonara! Gracias por cantar con nosotros 🌟 \n🎵 ¡Esperamos verte pronto en el escenario virtual! 🎵 \n🎤 Edita este mensaje con setbye 🎤'
 global.banner = 'https://i.pinimg.com/736x/30/42/b8/3042b89ced13fefda4e75e3bc6dc2a57.jpg'
