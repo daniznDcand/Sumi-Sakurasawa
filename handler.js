@@ -383,11 +383,12 @@ console.log(m.message)
 
 global.dfail = (type, m, conn) => {
 const msg = {
-rowner: `💙 El comando *${comando}* solo puede ser usado por los creadores del bot.`,
-premium: `💙 El comando *${comando}* solo puede ser usado por los usuarios premium.`,
-group: `💙 El comando *${comando}* solo puede ser usado en grupos.`,
-admin: `💙 El comando *${comando}* solo puede ser usado por los administradores del grupo.`,
-botAdmin: `💙 Para ejecutar el comando *${comando}* debo ser administrador del grupo.`
+rowner: `🍭 Hola, este comando solo puede ser utilizado por el *Creador* de la Bot.`,
+owner: `🍭 Hola, este comando solo puede ser utilizado por el *Creador* de la Bot y *Sub Bots*.`,
+premium: `🍭 Hola, este comando solo puede ser utilizado por Usuarios *Premium*.`,
+group: `🍭 Hola, este comando solo puede ser utilizado en *Grupos*.`,
+admin: `🍭 Hola, este comando solo puede ser utilizado por los *Administradores* del Grupo.`,
+botAdmin: `🍭 Hola, la bot debe ser *Administradora* para ejecutar este Comando.`,
 }[type]
 if (msg) return conn.reply(m.chat, msg, m, global.rcanal).then(_ => m.react('💢'))
 }
