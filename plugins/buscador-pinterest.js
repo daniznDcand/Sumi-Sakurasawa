@@ -1,6 +1,5 @@
 import fetch from 'node-fetch';
 import baileys from '@whiskeysockets/baileys';
-import cheerio from 'cheerio';
 
 async function sendAlbumMessage(jid, medias, options = {}) {
     if (typeof jid !== "string") throw new TypeError(`jid must be string, received: ${jid}`);
@@ -36,135 +35,37 @@ async function sendAlbumMessage(jid, medias, options = {}) {
     return album;
 }
 
-
-async function scrapePinterest(query) {
+async function searchPinterestAPI(query) {
     try {
-        const url = `https://es.pinterest.com/search/pins/?q=${encodeURIComponent(query)}&rs=typed`;
+        const url = `https://rest.alyabotpe.xyz/search/pinterest?query=${encodeURIComponent(query)}&key=Duarte-zz12`;
         
         const response = await fetch(url, {
             headers: {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'DNT': '1',
-                'Connection': 'keep-alive',
-                'Upgrade-Insecure-Requests': '1',
-                'Sec-Fetch-Dest': 'document',
-                'Sec-Fetch-Mode': 'navigate',
-                'Sec-Fetch-Site': 'none',
-                'Cache-Control': 'max-age=0'
+                'Accept': 'application/json, text/plain, */*',
+                'Accept-Language': 'es-ES,es;q=0.8,en-US;q=0.5,en;q=0.3'
             }
         });
 
-        const html = await response.text();
-        const $ = cheerio.load(html);
-        
-        const images = [];
-        
-        const scriptData = $('script[id="__PWS_DATA__"]').html();
-        if (scriptData) {
-            try {
-                const data = JSON.parse(scriptData);
-                const pins = data?.resourceResponses?.[0]?.response?.data?.results || [];
-                
-                for (const pin of pins.slice(0, 10)) {
-                    const imageUrl = pin?.images?.orig?.url || 
-                                    pin?.images?.original?.url || 
-                                    pin?.images?.['736x']?.url ||
-                                    pin?.images?.['564x']?.url ||
-                                    pin?.images?.['236x']?.url;
-                    if (imageUrl) {
-                        images.push({
-                            url: imageUrl,
-                            title: pin.title || pin.description || pin.alt_text || '',
-                            pinner: pin.board?.name || pin.pinner?.username || 'Unknown'
-                        });
-                    }
-                }
-            } catch (e) {
-                console.log('Error parsing JSON data:', e.message);
-            }
+        if (!response.ok) {
+            throw new Error(`API Error: ${response.status}`);
         }
+
+        const data = await response.json();
         
-       
-        if (images.length === 0) {
-            $('script').each((i, elem) => {
-                const scriptContent = $(elem).html();
-                if (scriptContent && scriptContent.includes('pinId') && scriptContent.includes('images')) {
-                    try {
-                        const jsonMatch = scriptContent.match(/\{[\s\S]*\}/);
-                        if (jsonMatch) {
-                            const data = JSON.parse(jsonMatch[0]);
-                            const pins = data?.pins || data?.data || [];
-                            
-                            if (Array.isArray(pins)) {
-                                for (const pin of pins.slice(0, 10)) {
-                                    const imageUrl = pin?.images?.orig?.url || 
-                                                    pin?.images?.original?.url || 
-                                                    pin?.images?.['736x']?.url ||
-                                                    pin?.image?.url;
-                                    if (imageUrl && images.length < 10) {
-                                        images.push({
-                                            url: imageUrl,
-                                            title: pin.title || pin.description || '',
-                                            pinner: pin.board?.name || 'Pinterest'
-                                        });
-                                    }
-                                }
-                            }
-                        }
-                    } catch (e) {
-                        
-                    }
-                }
-            });
+        if (!data || !Array.isArray(data)) {
+            console.log('API Response:', data);
+            return [];
         }
+
+        return data.slice(0, 10).map(item => ({
+            url: item.image || item.url || item.media_url,
+            title: item.title || item.description || '',
+            pinner: item.source || item.author || 'Pinterest'
+        })).filter(item => item.url);
         
-       
-        if (images.length === 0) {
-            $('img[src*="pinimg.com"], img[data-test-id="pin-visual-image"]').each((i, elem) => {
-                const src = $(elem).attr('src') || $(elem).attr('data-src');
-                if (src && images.length < 10) {
-                    let imageUrl = src;
-                    
-                   
-                    if (src.includes('/236x/')) {
-                        imageUrl = src.replace('/236x/', '/736x/');
-                    } else if (src.includes('/564x/')) {
-                        imageUrl = src.replace('/564x/', '/736x/');
-                    } else if (src.includes('/474x/')) {
-                        imageUrl = src.replace('/474x/', '/736x/');
-                    }
-                    
-                    images.push({
-                        url: imageUrl,
-                        title: $(elem).attr('alt') || $(elem).attr('title') || '',
-                        pinner: 'Pinterest'
-                    });
-                }
-            });
-        }
-        
-        
-        if (images.length === 0) {
-            $('[data-test-id="pin-visual"], [data-test-id="pin-wrapper"]').each((i, elem) => {
-                const img = $(elem).find('img').first();
-                const src = img.attr('src') || img.attr('data-src');
-                if (src && images.length < 10) {
-                    images.push({
-                        url: src.replace('/236x/', '/736x/'),
-                        title: img.attr('alt') || '',
-                        pinner: 'Pinterest'
-                    });
-                }
-            });
-        }
-        
-        console.log(`Found ${images.length} images for query: ${query}`);
-        return images;
     } catch (error) {
-        console.error('Error scraping Pinterest:', error);
+        console.error('Error calling Pinterest API:', error);
         return [];
     }
 }
@@ -191,10 +92,10 @@ const pinterest = async (m, { conn, text, usedPrefix, command }) => {
     });
 
     try {
-        const images = await scrapePinterest(text);
+        const images = await searchPinterestAPI(text);
         
         if (!images || images.length === 0) {
-            return conn.reply(m.chat, '💙 No se encontraron imágenes. Pinterest puede estar bloqueando el acceso o el término de búsqueda no tiene resultados.', m, global.rcanal);
+            return conn.reply(m.chat, '💙 No se encontraron imágenes. Intenta con otra búsqueda.', m, global.rcanal);
         }
         
         if (images.length === 1) {
@@ -219,9 +120,9 @@ const pinterest = async (m, { conn, text, usedPrefix, command }) => {
         await m.react('✅');
         
     } catch (error) {
-        console.error('Error en Pinterest scraper:', error);
+        console.error('Error en Pinterest API:', error);
         await m.react('❌');
-        conn.reply(m.chat, '💙 Hubo un error al buscar en Pinterest. Pinterest puede estar bloqueando el acceso temporalmente.', m, global.rcanal);
+        conn.reply(m.chat, '💙 Hubo un error al buscar en Pinterest. Intenta más tarde.', m, global.rcanal);
     }
 };
 
