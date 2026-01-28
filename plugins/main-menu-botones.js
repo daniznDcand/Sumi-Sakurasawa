@@ -55,11 +55,9 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
       ['ℹ️ Info Bot', 'menu_info']
     ]
 
-    const text = `╔══════════════════╗
-║🎤 *HATSUNE MIKU BOT* 🎤║
-╚══════════════════╝
+    const text = `Sumi Sakurasawa 🪷
 
-✨!Ohayo, *@${userId.split('@')[0]}*!
+Hola usuario 👋🏻, *@${userId.split('@')[0]}*!
 
 ╭───────────────╮
 │ 💙 *Estado:* ${(conn.user.jid == global.conn.user.jid ? 'Principal ⚡️' : 'Sub-Bot 🔌')}
@@ -73,12 +71,10 @@ const handler = async (m, { conn, usedPrefix, command, args }) => {
 ✨ Usa los botones de abajo
 🎯 O escribe el comando directamente
 📱 Prueba \`.menucompleto\` para ver todo
-━━━━━━━━━━━━━━━━━━━━━
-
-💙 ¡Disfruta de la experiencia Miku! 🎶`
+━━━━━━━━━━━━━━━━━━`
     
-    const footer = '🌱 Powered by (ㅎㅊDEPOOLㅊㅎ)'
-    const menuGif = 'https://wallpapers-clan.com/wp-content/uploads/2025/04/hatsune-miku-cherry-blossoms-pc-desktop-laptop-wallpaper-cover.jpg'
+    const footer = 'Powered by Daniel 🇦🇱'
+    const menuGif = 'https://files.catbox.moe/mtrj8z.jpg'
 
     try {
       return await conn.sendNCarousel(m.chat, text, footer, menuGif, buttons, null, null, null, m)
