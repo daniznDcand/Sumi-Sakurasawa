@@ -39,13 +39,13 @@ const handler = async (m, { conn, usedPrefix, command, text }) => {
                   header: video.title,
                   title: video.author.name,
                   description: `𝖣𝖾𝗌𝖼𝖺𝗋𝗀𝖺𝗋 𝖺𝗎𝖽𝗂𝗈 | Duración: ${video.timestamp}`,
-                  id: `.ytmp3 ${video.url}`
+                  id: `.mp3 ${video.url}`
                 },
                 {
                   header: video.title,
                   title: video.author.name,
                   description: `𝖣𝖾𝗌𝖼𝖺𝗋𝗀𝖺𝗋 𝗏𝗂𝖽𝖾𝗈 | Duración: ${video.timestamp}`,
-                  id: `.ytmp4doc ${video.url}`
+                  id: `.mp4 ${video.url}`
                 }
               ]
             }))
