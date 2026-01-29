@@ -20,9 +20,9 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     
     if (!text) {
       return conn.reply(m.chat, 
-        `💙 *FORMATO DE REGISTRO* 💙\n\n` +
+        `*FORMATO DE REGISTRO*\n\n` +
         `Usa: *${usedPrefix + command} nombre.edad*\n` +
-        `Ejemplo: *${usedPrefix + command} miku.18*`,
+        `Ejemplo: *${usedPrefix + command} Daniel.19*`,
         m, global.miku
       );
     }
