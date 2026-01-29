@@ -30,12 +30,10 @@ export async function before(m, { conn, isBotAdmin, isAdmin, usedPrefix }) {
 
     restrictionCooldowns.set(userId, now)
 
-    const friendlyMsg = `🎵 *REGISTRO MIKU BOT* 🎵\n\n` +
-      `✨ *¡Hola!* Usa este comando para registrarte:\n` +
+    const friendlyMsg = `*REGISTRO*\n\n` +
+      `🍭 *¡Hola!* Usa este comando para registrarte:\n` +
       `*${usedPrefix}reg nombre.edad*\n` +
-      `Ejemplo: *${usedPrefix}reg ${m.name || 'MikuFan'}.18*\n\n` +
-      `💡 *Beneficios:* Monedas, XP y más comandos\n` +
-      `📢 Canal: whatsapp.com/channel/0029VajYamSIHphMAl3ABi1o`
+      `Ejemplo: *.reg ${m.name || 'Daniel'}.18*\n\n`
 
     await m.reply(friendlyMsg, null, global.miku)
     return false
