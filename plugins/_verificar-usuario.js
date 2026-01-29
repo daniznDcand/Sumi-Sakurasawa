@@ -32,7 +32,7 @@ export async function before(m, { conn, isBotAdmin, isAdmin, usedPrefix }) {
 
     const friendlyMsg = `*REGISTRO*\n\n` +
       `🍭 *¡Hola!* Usa este comando para registrarte:\n` +
-      `*${usedPrefix}reg nombre.edad*\n` +
+      `*.reg nombre.edad*\n` +
       `Ejemplo: *.reg ${m.name || 'Daniel'}.18*\n\n`
 
     await m.reply(friendlyMsg, null, global.miku)
