@@ -1,7 +1,7 @@
 import { exec } from 'child_process';
 
 let handler = async (m, { conn }) => {
-  m.reply('🎵 *Iniciando actualización...*\n└─ 🔄 Verificando cambios...');
+  //m.reply('🎵 *Iniciando actualización...*\n└─ 🔄 Verificando cambios...');
 
   exec('git pull', { cwd: process.cwd() }, (err, stdout, stderr) => {
     console.log('Git pull stdout:', stdout);
@@ -40,9 +40,9 @@ let handler = async (m, { conn }) => {
           const emoji = file.endsWith('.js') ? '📜' : file.endsWith('.json') ? '📋' : '📄';
           response += `│  ${emoji} ${file}\n`;
         });
-        response += `└─ ✅ Cambios Aplicados por Papi DEPOOL`;
+        response += `└─ ✅ Cambios Aplicados`;
       } else {
-        response += `└─ ✅ Cambios Aplicados por Papi DEPOOL`;
+        response += `└─ ✅ Cambios Aplicados`;
       }
 
       conn.reply(m.chat, response, m);
