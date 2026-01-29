@@ -84,8 +84,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
       `👤 *Nombre:* ${nameClean}\n` +
       `🎂 *Edad:* ${age} años\n` +
       `💰 *+50 monedas*\n` +
-      `✨ *+100 XP*\n\n`,
-      m);
+      `✨ *+100 XP*` m);
 
   } catch (error) {
     console.error('Error en el registro:', error);
