@@ -1,19 +1,11 @@
 import fetch from "node-fetch";
 
-// Sistema de cache
-const soundcloudCache = {};
-const cacheTimeout = 10 * 60 * 1000;
-
 // Función para obtener datos de SoundCloud
 const fetchSoundCloud = async (url) => {
   try {
     const apiUrl = `https://api.delirius.store/download/soundcloud?url=${encodeURIComponent(url)}`;
-    console.log(`Consultando API: ${apiUrl}`);
-    
     let response = await fetch(apiUrl);
     let data = await response.json();
-    
-    console.log("Respuesta API:", JSON.stringify(data, null, 2));
     
     if (data?.status && data.status === "success" && data.result) {
       return {
@@ -37,24 +29,10 @@ const fetchSoundCloud = async (url) => {
 };
 
 const handler = async (m, { conn, text, usedPrefix, command }) => {
-  console.log(`Comando recibido: ${command}, Texto: ${text}`);
-  
   try {
-    // Reaccionar al mensaje con emoji inmediatamente
-    try {
-      await conn.sendMessage(m.chat, {
-        react: {
-          text: "🔍",
-          key: m.key
-        }
-      });
-    } catch (error) {
-      console.log("No se pudo enviar reacción:", error.message);
-    }
-
-    if (!text || !text.trim()) {
+    if (!text.trim()) {
       return conn.reply(m.chat, 
-        `🎵 *DESCARGAR DE SOUNDCLOUD*\n\n✨ *Uso:* ${usedPrefix}soundcloud [enlace]\n\n📝 *Ejemplo:*\n${usedPrefix}soundcloud https://soundcloud.com/twice-57013/one-spark\n\n⚠️ *Solo enlaces de SoundCloud*`, 
+        `🎵 *DESCARGAR DE SOUNDCLOUD*\n\nUso: ${usedPrefix}${command} [enlace]\n\nEjemplo: ${usedPrefix}${command} https://soundcloud.com/twice-57013/one-spark\n\nSolo enlaces de SoundCloud`, 
         m
       );
     }
@@ -62,32 +40,20 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     // Validar que sea un enlace de SoundCloud
     if (!text.includes('soundcloud.com')) {
       return conn.reply(m.chat, 
-        `❌ *ENLACE INVÁLIDO*\n\nDebe ser un enlace de SoundCloud.\n\n✅ *Correcto:*\nhttps://soundcloud.com/usuario/cancion\n\n❌ *Incorrecto:*\n${text}`, 
+        `❌ *ENLACE INVÁLIDO*\n\nDebe ser un enlace de SoundCloud.\n\nFormato: https://soundcloud.com/usuario/cancion`, 
         m
       );
     }
 
     // Mensaje de procesamiento
-    const processingMsg = await conn.sendMessage(m.chat, { 
-      text: `⏳ *PROCESANDO...*\n\n🔗 Enlace: ${text}\n\nPor favor espera, esto puede tomar unos segundos...` 
-    }, { quoted: m });
+    await conn.reply(m.chat, `⏳ *Procesando enlace de SoundCloud...*`, m);
 
     // Obtener datos de SoundCloud
     const soundcloudData = await fetchSoundCloud(text);
     
     if (!soundcloudData.success) {
-      // Reacción de error
-      try {
-        await conn.sendMessage(m.chat, {
-          react: {
-            text: "❌",
-            key: m.key
-          }
-        });
-      } catch {}
-      
       return conn.reply(m.chat, 
-        `❌ *ERROR DE DESCARGA*\n\nNo se pudo obtener la información.\n\n🔍 *Posibles causas:*\n• Enlace privado/eliminado\n• Error temporal de API\n• Formato no compatible\n\n✨ *Intenta con otro enlace*`, 
+        `❌ *ERROR DE DESCARGA*\n\nNo se pudo obtener la información.\n\nError: ${soundcloudData.error}`, 
         m
       );
     }
@@ -116,25 +82,13 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 ✅ *"si"* - Para descargar audio
 ❌ *"no"* - Para cancelar`;
 
-    // Reacción de éxito
-    try {
-      await conn.sendMessage(m.chat, {
-        react: {
-          text: "✅",
-          key: m.key
-        }
-      });
-    } catch {}
-
-    // Guardar en cache
-    soundcloudCache[m.sender] = {
-      title: title,
+    // Guardar información en cache global (igual que tu código de YouTube)
+    const usr = global.db.data.users[m.sender] = global.db.data.users[m.sender] || {};
+    usr.lastSCSearch = {
       url: url,
-      timestamp: Date.now(),
-      chatId: m.chat
+      title: title,
+      timestamp: Date.now()
     };
-
-    console.log(`Cache guardado para ${m.sender}:`, soundcloudCache[m.sender]);
 
     // Enviar mensaje
     try {
@@ -142,152 +96,97 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         const thumb = (await conn.getFile(thumbnail))?.data;
         await conn.sendMessage(m.chat, {
           image: thumb,
-          caption: infoMessage,
-          footer: `🎵 Usa: ${usedPrefix}soundcloud [enlace]`,
+          caption: infoMessage
         }, { quoted: m });
       } else {
         await conn.sendMessage(m.chat, {
-          text: infoMessage,
-          footer: `🎵 Usa: ${usedPrefix}soundcloud [enlace]`,
+          text: infoMessage
         }, { quoted: m });
       }
     } catch (error) {
       console.log("Error enviando mensaje:", error);
       await conn.sendMessage(m.chat, {
-        text: infoMessage,
-        footer: `🎵 Usa: ${usedPrefix}soundcloud [enlace]`,
+        text: infoMessage
       }, { quoted: m });
     }
 
   } catch (error) {
     console.error("Error en handler:", error);
-    
-    try {
-      await conn.sendMessage(m.chat, {
-        react: {
-          text: "💥",
-          key: m.key
-        }
-      });
-    } catch {}
-    
     await conn.reply(m.chat, 
-      `💥 *ERROR CRÍTICO*\n\n${error.message}\n\n🔧 Por favor, intenta más tarde.`, 
+      `💥 *ERROR*\n\n${error.message}`, 
       m
     );
   }
 };
 
-// Handler para respuestas
-export async function all(m, { conn, usedPrefix }) {
-  try {
-    // Si es un mensaje normal (no comando)
-    if (m.isBaileys || !m.text) return;
-    
-    const text = m.text.toLowerCase().trim();
-    const sender = m.sender;
-    
-    console.log(`Mensaje recibido de ${sender}: ${text}`);
-    console.log(`Cache disponible:`, soundcloudCache[sender]);
-    
-    // Verificar si el usuario tiene cache activo
-    if (soundcloudCache[sender]) {
-      const cacheData = soundcloudCache[sender];
-      
-      // Verificar si el cache expiró
-      if (Date.now() - cacheData.timestamp > cacheTimeout) {
-        delete soundcloudCache[sender];
-        console.log(`Cache expirado para ${sender}`);
-        return;
-      }
-      
-      // Procesar respuesta "si" o "no"
-      if (text === 'si' || text === 'sí' || text === 'yes') {
-        console.log(`Usuario ${sender} confirmó descarga`);
-        
-        // Reacción de procesamiento
-        try {
-          await conn.sendMessage(m.chat, {
-            react: {
-              text: "⬇️",
-              key: m.key
-            }
-          });
-        } catch {}
-        
-        const { title, url } = cacheData;
-        
-        await conn.reply(m.chat, 
-          `⬇️ *DESCARGANDO...*\n\n🎵 ${title}\n\n⏳ Por favor espera...`, 
-          m
-        );
-
-        try {
-          // Enviar el audio
-          await conn.sendMessage(m.chat, {
-            audio: { url: url },
-            mimetype: 'audio/mpeg',
-            fileName: `${title.substring(0, 50)}.mp3`.replace(/[^\w\s.-]/gi, ''),
-            ptt: false
-          }, { quoted: m });
-
-          // Reacción de éxito
-          try {
-            await conn.sendMessage(m.chat, {
-              react: {
-                text: "✅",
-                key: m.key
-              }
-            });
-          } catch {}
-          
-          await conn.sendMessage(m.chat, { 
-            text: `✨ *¡DESCARGA COMPLETADA!*\n\n🎧 ${title}\n\n✅ Audio descargado exitosamente` 
-          });
-
-        } catch (error) {
-          console.error("Error enviando audio:", error);
-          await conn.reply(m.chat, 
-            `❌ *ERROR DE DESCARGA*\n\n${error.message}`, 
-            m
-          );
-        }
-        
-        // Limpiar cache
-        delete soundcloudCache[sender];
-        console.log(`Cache limpiado para ${sender}`);
-        
-      } else if (text === 'no') {
-        console.log(`Usuario ${sender} canceló descarga`);
-        
-        try {
-          await conn.sendMessage(m.chat, {
-            react: {
-              text: "👋",
-              key: m.key
-            }
-          });
-        } catch {}
-        
-        await conn.reply(m.chat, 
-          `👋 *DESCARGA CANCELADA*\n\nUsa ${usedPrefix}soundcloud para otra canción`, 
-          m
-        );
-        
-        // Limpiar cache
-        delete soundcloudCache[sender];
-        console.log(`Cache limpiado para ${sender}`);
-      }
-    }
-  } catch (error) {
-    console.error("Error en handler all:", error);
+// Handler para respuestas - IDÉNTICO a tu código de YouTube
+handler.before = async (m, { conn, usedPrefix }) => {
+  // Verificar si es una respuesta con "si" o "no"
+  if (!m.text || m.isBaileys) return;
+  
+  const text = m.text.toLowerCase().trim();
+  
+  // Solo procesar si es "si" o "no"
+  if (text !== 'si' && text !== 'sí' && text !== 'yes' && text !== 'no') {
+    return false;
   }
-}
+  
+  // Obtener usuario de la misma forma que tu código
+  const user = global.db.data.users[m.sender];
+  if (!user || !user.lastSCSearch) {
+    return false;
+  }
+  
+  // Verificar tiempo de expiración (10 minutos igual que tu código)
+  const currentTime = Date.now();
+  const searchTime = user.lastSCSearch.timestamp || 0;
+  
+  if (currentTime - searchTime > 10 * 60 * 1000) {
+    await conn.reply(m.chat, '⏰ La búsqueda ha expirado. Por favor realiza una nueva búsqueda.', m);
+    user.lastSCSearch = null;
+    return false;
+  }
+  
+  // Si el usuario dice "no"
+  if (text === 'no') {
+    await conn.reply(m.chat, '👋 *Descarga cancelada*', m);
+    user.lastSCSearch = null;
+    return true;
+  }
+  
+  // Si el usuario dice "si" - proceder con la descarga
+  const { url, title } = user.lastSCSearch;
+  
+  try {
+    await conn.reply(m.chat, `⬇️ *Descargando audio...*\n\n🎵 ${title}`, m);
+    
+    // Enviar el audio
+    await conn.sendMessage(m.chat, {
+      audio: { url: url },
+      mimetype: 'audio/mpeg',
+      fileName: `${title.replace(/[^\w\s]/gi, '').substring(0, 50)}.mp3`,
+      ptt: false
+    }, { quoted: m });
+    
+    await conn.sendMessage(m.chat, { 
+      text: `✨ *¡Descarga completada!*\n\n🎧 ${title}` 
+    });
+    
+  } catch (error) {
+    console.error("Error enviando audio:", error);
+    await conn.reply(m.chat, 
+      `❌ *ERROR DE DESCARGA*\n\n${error.message}`, 
+      m
+    );
+  }
+  
+  // Limpiar cache
+  user.lastSCSearch = null;
+  return true;
+};
 
 handler.command = ['soundcloud', 'sc', 'scloud'];
 handler.help = ['soundcloud <enlace>', 'sc <enlace>', 'scloud <enlace>'];
 handler.tags = ['downloader'];
-handler.premium = false;
-handler.limit = true;
 
 export default handler;
