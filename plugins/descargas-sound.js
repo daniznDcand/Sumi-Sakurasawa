@@ -4,7 +4,7 @@ const handler = async (m, { conn, text }) => {
     // Verificar que haya texto después del comando
     if (!text || text.trim() === '') {
         return conn.reply(m.chat, 
-            `🎵 *SOUNDCLOUD DOWNLOADER*\n\n🔍 *Uso:* .soundcloud <nombre de canción o artista>\n\n📝 *Ejemplo:* .soundcloud Un amor del ayer\n\n⚠️ *Nota:* Solo funciona con búsquedas, no con enlaces directos.`, 
+            '🎵 *SOUNDCLOUD DOWNLOADER*\n\n🔍 *Uso:* .soundcloud <nombre de canción o artista>\n\n📝 *Ejemplo:* .soundcloud Un amor del ayer\n\n⚠️ *Nota:* Solo funciona con búsquedas, no con enlaces directos.', 
             m
         );
     }
@@ -27,7 +27,7 @@ const handler = async (m, { conn, text }) => {
         console.log(`📥 Respuesta API recibida:`, JSON.stringify(data, null, 2));
         
         if (!data.success || !data.data) {
-            throw new Error('❌ No se encontraron resultados para tu búsqueda');
+            throw new Error('No se encontraron resultados para tu búsqueda');
         }
         
         const result = data.data;
@@ -39,20 +39,13 @@ const handler = async (m, { conn, text }) => {
         const formattedDuration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
         
         // Crear mensaje de información
-        const infoMessage = `
-🎧 *RESULTADO ENCONTRADO*
-
-📌 *Título:* ${result.title || 'Sin título'}
-👤 *Artista:* ${result.artist || 'Desconocido'}
-⏱️ *Duración:* ${formattedDuration}
-
-⬇️ *Iniciando descarga...*`;
+        const infoMessage = `🎧 *RESULTADO ENCONTRADO*\n\n📌 *Título:* ${result.title || 'Sin título'}\n👤 *Artista:* ${result.artist || 'Desconocido'}\n⏱️ *Duración:* ${formattedDuration}\n\n⬇️ *Iniciando descarga...*`;
         
         // Mostrar información primero
         await conn.reply(m.chat, infoMessage, m);
         
         // Empezar descarga
-        await conn.reply(m.chat, `⏳ *Descargando audio...*`, m);
+        await conn.reply(m.chat, '⏳ *Descargando audio...*', m);
         
         console.log(`⬇️ Intentando descargar desde: ${result.dl}`);
         
@@ -69,16 +62,16 @@ const handler = async (m, { conn, text }) => {
             ptt: false
         }, { quoted: m });
         
-        console.log(`✅ Audio enviado exitosamente`);
+        console.log('✅ Audio enviado exitosamente');
         
         // Mensaje de confirmación
         await conn.reply(m.chat, `✅ *¡Descarga completada!*\n\n🎵 Disfruta de: ${result.title}`, m);
         
     } catch (error) {
-        console.error(`💥 ERROR en soundcloud:`, error);
+        console.error('💥 ERROR en soundcloud:', error);
         
         // Mensaje de error específico
-        let errorMessage = `❌ *Error*\n\n`;
+        let errorMessage = '❌ *Error*\n\n';
         
         if (error.message.includes('No se encontraron resultados')) {
             errorMessage += 'No se encontró música con ese nombre.\n\n🔍 *Sugerencias:*\n• Revisa la ortografía\n• Intenta con otro término\n• Usa palabras clave más específicas';
@@ -94,7 +87,7 @@ const handler = async (m, { conn, text }) => {
     }
 };
 
-// Configuración MUY IMPORTANTE - igual que tus otros comandos
+// Configuración
 handler.help = ['soundcloud <texto>'];
 handler.tags = ['downloader'];
 handler.command = /^(soundcloud|sc)$/i;
